@@ -7,9 +7,9 @@ namespace Warpstone.Sandbox
     {
         public static void Main(string[] args)
         {
-            Parser<string> parser = Many(Or(Char('x'), Char('y'))).Transform(x => string.Join(string.Empty, x));
+            Parser<string> parser = Many(Or(String("xyz"), String("abc"))).Transform(x => string.Join(string.Empty, x));
 
-            ParseResult<string> result = parser.Parse("xxxyyxxy");
+            ParseResult<string> result = parser.Parse("xyzabcabc");
 
             Console.WriteLine($"Success: {result.Success}, Value: {result.Value}");
         }
