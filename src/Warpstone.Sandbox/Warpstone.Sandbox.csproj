@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\Warpstone\Warpstone.csproj" />
+    <ProjectReference Include="..\Warpstone\Warpstone.csproj" />
   </ItemGroup>
 
 </Project>

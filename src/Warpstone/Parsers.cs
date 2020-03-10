@@ -80,6 +80,37 @@ namespace Warpstone
             => new ManyParser<T>(parser);
 
         /// <summary>
+        /// Creates a parser applying the given parser multiple times and collects all results.
+        /// </summary>
+        /// <typeparam name="T1">The type of results collected.</typeparam>
+        /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <param name="parser">The parser to apply multiple times.</param>
+        /// <param name="delimiter">The delimiter seperating the different elements.</param>
+        /// <returns>A parser applying the given parser multiple times.</returns>
+        public static Parser<IEnumerable<T1>> Many<T1, T2>(Parser<T1> parser, Parser<T2> delimiter)
+            => Many(parser.ThenSkip(delimiter));
+
+        /// <summary>
+        /// Creates a parser which applies the given parser at least once and collects all results.
+        /// </summary>
+        /// <typeparam name="T">The result type of the parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
+        public static Parser<IEnumerable<T>> OneOrMore<T>(Parser<T> parser)
+            => parser.ThenAdd(Many(parser)).Transform(x => x.Item2.Prepend(x.Item1));
+
+        /// <summary>
+        /// Creates a parser which applies the given parser at least once and collects all results.
+        /// </summary>
+        /// <typeparam name="T1">The type of results collected.</typeparam>
+        /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <param name="parser">The parser to apply multiple times.</param>
+        /// <param name="delimiter">The delimiter seperating the different elements.</param>
+        /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
+        public static Parser<IEnumerable<T1>> OneOrMore<T1, T2>(Parser<T1> parser, Parser<T2> delimiter)
+            => parser.ThenSkip(delimiter).ThenAdd(Many(parser, delimiter)).Transform(x => x.Item2.Prepend(x.Item1));
+
+        /// <summary>
         /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
         /// </summary>
         /// <typeparam name="T">The type of results of the given parsers.</typeparam>
@@ -109,8 +140,8 @@ namespace Warpstone
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
-        public static Parser<(T1, T2)> AndThen<T1, T2>(this Parser<T1> first, Parser<T2> second)
-            => new AndThenParser<T1, T2>(first, second);
+        public static Parser<(T1, T2)> ThenAdd<T1, T2>(this Parser<T1> first, Parser<T2> second)
+            => new ThenAddParser<T1, T2>(first, second);
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -121,8 +152,8 @@ namespace Warpstone
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
-        public static Parser<(T1, T2, T3)> AndThen<T1, T2, T3>(this Parser<(T1, T2)> first, Parser<T3> second)
-            => first.AndThen<(T1, T2), T3>(second)
+        public static Parser<(T1, T2, T3)> ThenAdd<T1, T2, T3>(this Parser<(T1, T2)> first, Parser<T3> second)
+            => first.ThenAdd<(T1, T2), T3>(second)
             .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item2));
 
         /// <summary>
@@ -135,8 +166,8 @@ namespace Warpstone
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
-        public static Parser<(T1, T2, T3, T4)> AndThen<T1, T2, T3, T4>(this Parser<(T1, T2, T3)> first, Parser<T4> second)
-            => first.AndThen<(T1, T2, T3), T4>(second)
+        public static Parser<(T1, T2, T3, T4)> ThenAdd<T1, T2, T3, T4>(this Parser<(T1, T2, T3)> first, Parser<T4> second)
+            => first.ThenAdd<(T1, T2, T3), T4>(second)
             .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item2));
 
         /// <summary>
@@ -150,8 +181,8 @@ namespace Warpstone
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
-        public static Parser<(T1, T2, T3, T4, T5)> AndThen<T1, T2, T3, T4, T5>(this Parser<(T1, T2, T3, T4)> first, Parser<T5> second)
-            => first.AndThen<(T1, T2, T3, T4), T5>(second)
+        public static Parser<(T1, T2, T3, T4, T5)> ThenAdd<T1, T2, T3, T4, T5>(this Parser<(T1, T2, T3, T4)> first, Parser<T5> second)
+            => first.ThenAdd<(T1, T2, T3, T4), T5>(second)
             .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item1.Item4, x.Item2));
 
         /// <summary>
@@ -166,8 +197,8 @@ namespace Warpstone
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
-        public static Parser<(T1, T2, T3, T4, T5, T6)> AndThen<T1, T2, T3, T4, T5, T6>(this Parser<(T1, T2, T3, T4, T5)> first, Parser<T6> second)
-            => first.AndThen<(T1, T2, T3, T4, T5), T6>(second)
+        public static Parser<(T1, T2, T3, T4, T5, T6)> ThenAdd<T1, T2, T3, T4, T5, T6>(this Parser<(T1, T2, T3, T4, T5)> first, Parser<T6> second)
+            => first.ThenAdd<(T1, T2, T3, T4, T5), T6>(second)
             .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item1.Item4, x.Item1.Item5, x.Item2));
 
         /// <summary>
@@ -183,8 +214,8 @@ namespace Warpstone
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
-        public static Parser<(T1, T2, T3, T4, T5, T6, T7)> AndThen<T1, T2, T3, T4, T5, T6, T7>(this Parser<(T1, T2, T3, T4, T5, T6)> first, Parser<T7> second)
-            => first.AndThen<(T1, T2, T3, T4, T5, T6), T7>(second)
+        public static Parser<(T1, T2, T3, T4, T5, T6, T7)> ThenAdd<T1, T2, T3, T4, T5, T6, T7>(this Parser<(T1, T2, T3, T4, T5, T6)> first, Parser<T7> second)
+            => first.ThenAdd<(T1, T2, T3, T4, T5, T6), T7>(second)
             .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item1.Item4, x.Item1.Item5, x.Item1.Item6, x.Item2));
 
         /// <summary>
@@ -201,8 +232,8 @@ namespace Warpstone
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
-        public static Parser<(T1, T2, T3, T4, T5, T6, T7, T8)> AndThen<T1, T2, T3, T4, T5, T6, T7, T8>(this Parser<(T1, T2, T3, T4, T5, T6, T7)> first, Parser<T8> second)
-            => first.AndThen<(T1, T2, T3, T4, T5, T6, T7), T8>(second)
+        public static Parser<(T1, T2, T3, T4, T5, T6, T7, T8)> ThenAdd<T1, T2, T3, T4, T5, T6, T7, T8>(this Parser<(T1, T2, T3, T4, T5, T6, T7)> first, Parser<T8> second)
+            => first.ThenAdd<(T1, T2, T3, T4, T5, T6, T7), T8>(second)
             .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item1.Item4, x.Item1.Item5, x.Item1.Item6, x.Item1.Item7, x.Item2));
 
         /// <summary>
@@ -214,7 +245,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser returning the result of the second parser.</returns>
         public static Parser<T2> Then<T1, T2>(this Parser<T1> first, Parser<T2> second)
-            => first.AndThen(second).Transform(x => x.Item2);
+            => first.ThenAdd(second).Transform(x => x.Item2);
 
         /// <summary>
         /// Creates a parser that applies two parsers and returns the result of the first one.
@@ -224,8 +255,8 @@ namespace Warpstone
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <returns>A parser returning the result of the first parser.</returns>
-        public static Parser<T1> Skip<T1, T2>(this Parser<T1> first, Parser<T2> second)
-            => first.AndThen(second).Transform(x => x.Item1);
+        public static Parser<T1> ThenSkip<T1, T2>(this Parser<T1> first, Parser<T2> second)
+            => first.ThenAdd(second).Transform(x => x.Item1);
 
         /// <summary>
         /// Creates a parser that parses a string.
@@ -248,11 +279,30 @@ namespace Warpstone
 
             for (int i = 1; i < str.Length; i++)
             {
-                parser = parser.AndThen(Char(str[i])).Transform(x => x.Item1 + x.Item2);
+                parser = parser.ThenAdd(Char(str[i])).Transform(x => x.Item1 + x.Item2);
             }
 
             return parser;
         }
+
+        public static Parser<T> Peek<T>(Parser<T> parser)
+            => new PeekParser<T>(parser);
+
+        public static Parser<TBranches> If<TCondition, TBranches>(Parser<TCondition> conditionParser, Parser<TBranches> thenParser, Parser<TBranches> elseParser)
+            => new ConditionalParser<TCondition, TBranches>(conditionParser, thenParser, elseParser);
+
+        public static Parser<IOption<T>> Maybe<T>(Parser<T> parser)
+            => If(Peek(parser), parser.Transform(x => (IOption<T>)new Some<T>(x)), Create((IOption<T>)new None<T>()));
+
+        public static Parser<T> Maybe<T>(Parser<T> parser, T defaultValue)
+            => Maybe(parser).Transform(x => x switch
+            {
+                Some<T>(T value) => value,
+                _ => defaultValue,
+            });
+
+        public static Parser<T> Create<T>(T value)
+            => new VoidParser<T>().Transform(x => value);
 
         private static Parser<T> InnerOr<T>(IEnumerable<Parser<T>> parsers)
         {

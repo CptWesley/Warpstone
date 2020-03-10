@@ -6,14 +6,14 @@
     /// <typeparam name="T1">The result type of the first parser.</typeparam>
     /// <typeparam name="T2">The result type of the second parser.</typeparam>
     /// <seealso cref="Warpstone.Parser{T}" />
-    public class AndThenParser<T1, T2> : Parser<(T1, T2)>
+    internal class ThenAddParser<T1, T2> : Parser<(T1, T2)>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AndThenParser{T1, T2}"/> class.
+        /// Initializes a new instance of the <see cref="ThenAddParser{T1, T2}"/> class.
         /// </summary>
         /// <param name="first">The first parser that's tried.</param>
         /// <param name="second">The second parser that's applied if the first one fails.</param>
-        internal AndThenParser(Parser<T1> first, Parser<T2> second)
+        internal ThenAddParser(Parser<T1> first, Parser<T2> second)
         {
             First = first;
             Second = second;
