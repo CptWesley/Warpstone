@@ -22,12 +22,13 @@
         {
             Value = value;
             Position = position;
+            Success = true;
         }
 
         /// <summary>
         /// Gets a value indicating whether the parsing was success.
         /// </summary>
-        public bool Success => Value != null;
+        public bool Success { get; }
 
         /// <summary>
         /// Gets the parsed value.

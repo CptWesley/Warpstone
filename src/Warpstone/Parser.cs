@@ -25,6 +25,9 @@ namespace Warpstone
 
         public static Parser<T> Or<T>(Parser<T> first, Parser<T> second)
             => new OrParser<T>(first, second);
+
+        public static Parser<TOutput> Transform<TInput, TOutput>(this Parser<TInput> parser, Func<TInput, TOutput> transformation)
+            => new TransformParser<TInput, TOutput>(parser, transformation);
     }
 
     internal class CharParser : Parser<char>
@@ -44,7 +47,7 @@ namespace Warpstone
         /// <inheritdoc/>
         internal override ParseResult<char> Parse(string input, int position)
         {
-            if (input[position] == Character)
+            if (position < input.Length && input[position] == Character)
             {
                 return new ParseResult<char>(input[position], position + 1);
             }

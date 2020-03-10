@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone", "Warpstone\Warpstone.csproj", "{5F8EFC87-E8A4-464E-909A-C001203A7603}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone.Sandbox", "..\Warpstone.Sandbox\Warpstone.Sandbox.csproj", "{90B90196-3D36-4E02-95B7-C8F0864CE3CB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{5F8EFC87-E8A4-464E-909A-C001203A7603}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F8EFC87-E8A4-464E-909A-C001203A7603}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F8EFC87-E8A4-464E-909A-C001203A7603}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90B90196-3D36-4E02-95B7-C8F0864CE3CB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90B90196-3D36-4E02-95B7-C8F0864CE3CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90B90196-3D36-4E02-95B7-C8F0864CE3CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90B90196-3D36-4E02-95B7-C8F0864CE3CB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
