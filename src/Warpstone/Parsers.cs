@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Warpstone.InternalParsers;
 
 namespace Warpstone
@@ -27,14 +28,15 @@ namespace Warpstone
             => new ManyParser<T>(parser);
 
         /// <summary>
-        /// Creates a parser that first tries to apply the first parser and if it fails, tries the second one.
+        /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
         /// </summary>
         /// <typeparam name="T">The type of results of the given parsers.</typeparam>
         /// <param name="first">The first parser to try.</param>
         /// <param name="second">The second parser to try.</param>
-        /// <returns>A Parser trying two different parsers and returning the result of the succesful one.</returns>
-        public static Parser<T> Or<T>(Parser<T> first, Parser<T> second)
-            => new OrParser<T>(first, second);
+        /// <param name="parsers">The other parsers to try.</param>
+        /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
+        public static Parser<T> Or<T>(Parser<T> first, Parser<T> second, params Parser<T>[] parsers)
+            => InnerOr(parsers.Prepend(second).Prepend(first));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -46,5 +48,15 @@ namespace Warpstone
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
         public static Parser<TOutput> Transform<TInput, TOutput>(this Parser<TInput> parser, Func<TInput, TOutput> transformation)
             => new TransformParser<TInput, TOutput>(parser, transformation);
+
+        private static Parser<T> InnerOr<T>(IEnumerable<Parser<T>> parsers)
+        {
+            if (parsers.Count() == 1)
+            {
+                return parsers.First();
+            }
+
+            return new OrParser<T>(parsers.First(), InnerOr(parsers.Skip(1)));
+        }
     }
 }
