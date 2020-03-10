@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using Warpstone.InternalParsers;
@@ -20,6 +21,46 @@ namespace Warpstone
         /// A parser parsing a whitespace.
         /// </summary>
         public static readonly Parser<string> Whitespace = Or(Newline, String("\t"), String(" "));
+
+        /// <summary>
+        /// A parser matching any lowercase letter.
+        /// </summary>
+        [SuppressMessage("Style", "SA1117", Justification = "Used for compacting a huge number of calls.")]
+        public static readonly Parser<char> LowercaseLetter
+            = Or(Char('a'), Char('b'), Char('c'), Char('d'), Char('e'),
+                Char('f'), Char('g'), Char('h'), Char('i'), Char('j'),
+                Char('k'), Char('l'), Char('m'), Char('n'), Char('o'),
+                Char('p'), Char('q'), Char('r'), Char('s'), Char('t'),
+                Char('u'), Char('v'), Char('w'), Char('x'), Char('y'),
+                Char('z'));
+
+        /// <summary>
+        /// A parser matching any uppercase letter.
+        /// </summary>
+        [SuppressMessage("Style", "SA1117", Justification = "Used for compacting a huge number of calls.")]
+        public static readonly Parser<char> UppercaseLetter
+            = Or(Char('A'), Char('B'), Char('C'), Char('D'), Char('E'),
+                Char('F'), Char('G'), Char('H'), Char('I'), Char('J'),
+                Char('K'), Char('L'), Char('M'), Char('N'), Char('O'),
+                Char('P'), Char('Q'), Char('R'), Char('S'), Char('T'),
+                Char('U'), Char('V'), Char('W'), Char('X'), Char('Y'),
+                Char('Z'));
+
+        /// <summary>
+        /// A parser matching any letter.
+        /// </summary>
+        public static readonly Parser<char> Letter = Or(LowercaseLetter, UppercaseLetter);
+
+        /// <summary>
+        /// A parser matching a single digit.
+        /// </summary>
+        public static readonly Parser<char> Digit
+            = Or(Char('0'), Char('1'), Char('2'), Char('3'), Char('4'), Char('5'), Char('6'), Char('7'), Char('8'), Char('9'));
+
+        /// <summary>
+        /// A parser matching a single alphanumeric character.
+        /// </summary>
+        public static readonly Parser<char> Alphanumeric = Or(Letter, Digit);
 
         /// <summary>
         /// Creates a parser parsing the given character.
