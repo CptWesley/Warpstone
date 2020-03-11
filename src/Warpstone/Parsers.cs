@@ -349,6 +349,15 @@ namespace Warpstone
         public static Parser<T> ThenEnd<T>(this Parser<T> parser)
             => parser.ThenSkip(End);
 
+        /// <summary>
+        /// Creates a parser that lazily applies a given parser allowing for recursion.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser that lazily applies a given parser.</returns>
+        public static Parser<T> Lazy<T>(Func<Parser<T>> parser)
+            => new LazyParser<T>(parser);
+
         private static Parser<T> InnerOr<T>(IEnumerable<Parser<T>> parsers)
         {
             if (parsers.Count() == 1)
