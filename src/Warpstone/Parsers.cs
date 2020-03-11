@@ -64,6 +64,11 @@ namespace Warpstone
         public static readonly Parser<char> Alphanumeric = Or(Letter, Digit);
 
         /// <summary>
+        /// A parser matching the end of an input stream.
+        /// </summary>
+        public static readonly Parser<object> End = new EndParser();
+
+        /// <summary>
         /// Creates a parser parsing the given character.
         /// </summary>
         /// <param name="c">The character to parse.</param>
@@ -334,6 +339,15 @@ namespace Warpstone
         /// <returns>A parser always returning the object.</returns>
         public static Parser<T> Create<T>(T value)
             => new VoidParser<T>().Transform(x => value);
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then expects the input stream to end.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser applying the given parser and then expects the input stream to end.</returns>
+        public static Parser<T> ThenEnd<T>(this Parser<T> parser)
+            => parser.ThenSkip(End);
 
         private static Parser<T> InnerOr<T>(IEnumerable<Parser<T>> parsers)
         {
