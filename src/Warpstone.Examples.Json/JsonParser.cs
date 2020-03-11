@@ -6,9 +6,6 @@ namespace Warpstone.Examples.Json
 {
     public static class JsonParser
     {
-        private static readonly Parser<string> OptionalWhitespaces
-            = Many(Whitespace).Transform(x => string.Join(string.Empty, x));
-
         private static readonly Parser<JsonValue> Null
             = String("null").Then(Create(new JsonNull() as JsonValue));
 

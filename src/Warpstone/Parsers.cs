@@ -24,6 +24,18 @@ namespace Warpstone
         public static readonly Parser<string> Whitespace = Or(Newline, String("\t"), String(" "));
 
         /// <summary>
+        /// A parser skipping all whitespaces that are optional.
+        /// </summary>
+        public static readonly Parser<string> OptionalWhitespaces
+            = Many(Whitespace).Transform(x => string.Join(string.Empty, x));
+
+        /// <summary>
+        /// A parser skipping all whitespaces that are mandatory.
+        /// </summary>
+        public static readonly Parser<string> Whitespaces
+            = OneOrMore(Whitespace).Transform(x => string.Join(string.Empty, x));
+
+        /// <summary>
         /// A parser matching any lowercase letter.
         /// </summary>
         public static readonly Parser<char> LowercaseLetter
