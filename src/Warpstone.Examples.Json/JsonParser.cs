@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using static Warpstone.Parsers;
 
 namespace Warpstone.Examples.Json
@@ -33,8 +32,17 @@ namespace Warpstone.Examples.Json
         private static readonly Parser<JsonValue> Boolean
             = Or(True, False);
 
+        private static readonly Parser<string> StringContent
+            = Or(
+                String("\\n").Transform(x => "\n"),
+                String("\\r").Transform(x => "\t"),
+                String("\\\"").Transform(x => "\""),
+                String("\\\\").Transform(x => "\\"),
+                Alphanumeric.Transform(x => x.ToString()),
+                Char(' ').Transform(x => x.ToString()));
+
         private static readonly Parser<JsonValue> String
-            = Char('"').Then(Many(Letter).Concat()).ThenSkip(Char('"'))
+            = Char('"').Then(Many(StringContent).Concat()).ThenSkip(Char('"'))
             .Transform(x => new JsonString(x) as JsonValue);
 
         private static readonly Parser<KeyValuePair<JsonString, JsonValue>> Field
