@@ -39,7 +39,7 @@ namespace Warpstone
             }
 
             string expectedString = $"Expected ";
-            if (result.Expected.Any())
+            if (result.Expected.Count() > 1)
             {
                 expectedString += "one of ";
             }

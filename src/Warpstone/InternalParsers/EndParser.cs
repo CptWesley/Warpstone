@@ -16,7 +16,7 @@ namespace Warpstone.InternalParsers
                 return new ParseResult<object>(default, position, position);
             }
 
-            return new ParseResult<object>(position, position, Array.Empty<string>());
+            return new ParseResult<object>(position, position, new string[] { string.Empty });
         }
     }
 }
