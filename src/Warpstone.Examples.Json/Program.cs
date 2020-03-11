@@ -6,8 +6,10 @@ namespace Warpstone.Examples.Json
     {
         public static void Main(string[] args)
         {
-            JsonValue result = JsonParser.Parse(@"{""elements"": [null, null], ""name"": ""NullContainer"", ""body"": ""This is the first paragraph\nThis is the second paragraph"" }}");
-            Console.WriteLine(result);
+            Parse(@"{""elements"": [null, null], ""name"": ""NullContainer"", ""body"": ""This is the first paragraph\nThis is the second paragraph"" }");
         }
+
+        public static void Parse(string input)
+            => Console.WriteLine(JsonParser.Parse(input));
     }
 }
