@@ -310,7 +310,7 @@ namespace Warpstone
         /// <param name="elseParser">The else branch parser.</param>
         /// <returns>A parser applying a parser based on a condition.</returns>
         public static Parser<TBranches> If<TCondition, TBranches>(Parser<TCondition> conditionParser, Parser<TBranches> thenParser, Parser<TBranches> elseParser)
-            => new ConditionalParser<TCondition, TBranches>(conditionParser, thenParser, elseParser);
+            => Or(conditionParser.Then(thenParser), elseParser);
 
         /// <summary>
         /// Creates a parser that tries to parse something, but still proceeds if it fails.
