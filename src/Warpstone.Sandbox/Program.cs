@@ -11,8 +11,8 @@ namespace Warpstone.Sandbox
             ParseResult<string> result = parser.Parse("xyzabcabc");
             Console.WriteLine($"Success: {result.Success}, Value: {result.Value}");
 
-            parser = Many(String("aaa"), String(", ")).Transform(x => string.Join(string.Empty, x));
-            result = parser.Parse("");
+            parser = Many(String("aaa"), String(", ")).Transform(x => string.Join(string.Empty, x)).ThenEnd();
+            result = parser.Parse("aaa");
             Console.WriteLine($"Success: {result.Success}, Value: {result.Value}");
         }
     }

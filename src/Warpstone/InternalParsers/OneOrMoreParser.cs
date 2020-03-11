@@ -51,8 +51,7 @@ namespace Warpstone.InternalParsers
                     break;
                 }
 
-                newPosition = delimiterResult.Position;
-                result = Parser.Parse(input, newPosition);
+                result = Parser.Parse(input, delimiterResult.Position);
                 if (!result.Success)
                 {
                     break;
