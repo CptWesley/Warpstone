@@ -4,7 +4,7 @@
     /// Parser that checks for the end of the input stream.
     /// </summary>
     /// <seealso cref="Warpstone.Parser{T}" />
-    public class EndParser : Parser<object>
+    internal class EndParser : Parser<object>
     {
         /// <inheritdoc/>
         internal override ParseResult<object> Parse(string input, int position)
