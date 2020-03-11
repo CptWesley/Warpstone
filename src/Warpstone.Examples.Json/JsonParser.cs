@@ -16,8 +16,8 @@ namespace Warpstone.Examples.Json
             = OneOrMore(Digit).Concat().Transform(x => new JsonInt(int.Parse(x)) as JsonValue);
 
         private static readonly Parser<JsonValue> Double
-            = Many(Digit).Concat().ThenSkip(Char('.')).ThenAdd(OneOrMore(Digit).Concat())
-            .Transform(x => new JsonDouble(double.Parse($"{x.Item1}.{x.Item2}")) as JsonValue);
+            = Regex(@"[0-9]*\.[0-9]+")
+            .Transform(x => new JsonDouble(double.Parse(x)) as JsonValue);
 
         private static readonly Parser<JsonValue> Array
             = Char('[').Then(Many(Lazy(() => Json), Char(','))).ThenSkip(Char(']'))
