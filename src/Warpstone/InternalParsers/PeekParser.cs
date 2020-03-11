@@ -26,7 +26,7 @@
 
             if (parseResult.Success)
             {
-                return new ParseResult<T>(default, position);
+                return new ParseResult<T>(default, position, position);
             }
 
             return new ParseResult<T>();

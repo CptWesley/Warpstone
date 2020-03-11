@@ -38,7 +38,7 @@ namespace Warpstone.InternalParsers
                 elements.Add(result.Value);
             }
 
-            return new ParseResult<IEnumerable<T>>(elements, newPosition);
+            return new ParseResult<IEnumerable<T>>(elements, position, newPosition);
         }
     }
 }

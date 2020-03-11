@@ -22,7 +22,7 @@
         {
             if (position < input.Length && input[position] == Character)
             {
-                return new ParseResult<char>(input[position], position + 1);
+                return new ParseResult<char>(input[position], position, position + 1);
             }
 
             return new ParseResult<char>();

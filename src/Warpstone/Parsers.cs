@@ -10,6 +10,7 @@ namespace Warpstone
     /// <summary>
     /// Static class providing simple parsers.
     /// </summary>
+    [SuppressMessage("Maintainability", "CA1506", Justification = "Not exposed to end user.")]
     public static class Parsers
     {
         /// <summary>
@@ -285,22 +286,52 @@ namespace Warpstone
             return parser;
         }
 
+        /// <summary>
+        /// Creates a parser that applies the given parser but does not consume the input.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser applying the given parser that does not consume the input.</returns>
         public static Parser<T> Peek<T>(Parser<T> parser)
             => new PeekParser<T>(parser);
 
+        /// <summary>
+        /// Creates a parser that applies a parser and then applies a different parser depending on the result.
+        /// </summary>
+        /// <typeparam name="TCondition">The result type of the attempted parser.</typeparam>
+        /// <typeparam name="TBranches">The result type of the branch parsers.</typeparam>
+        /// <param name="conditionParser">The condition parser.</param>
+        /// <param name="thenParser">The then branch parser.</param>
+        /// <param name="elseParser">The else branch parser.</param>
+        /// <returns>A parser applying a parser based on a condition.</returns>
         public static Parser<TBranches> If<TCondition, TBranches>(Parser<TCondition> conditionParser, Parser<TBranches> thenParser, Parser<TBranches> elseParser)
             => new ConditionalParser<TCondition, TBranches>(conditionParser, thenParser, elseParser);
 
+        /// <summary>
+        /// Creates a parser that tries to parse something, but still proceeds if it fails.
+        /// </summary>
+        /// <typeparam name="T">The result type of the parser.</typeparam>
+        /// <param name="parser">The parser.</param>
+        /// <returns>A parser trying to apply a parser, but always proceeding.</returns>
         public static Parser<IOption<T>> Maybe<T>(Parser<T> parser)
-            => If(Peek(parser), parser.Transform(x => (IOption<T>)new Some<T>(x)), Create((IOption<T>)new None<T>()));
+            => Or(parser.Transform(x => (IOption<T>)new Some<T>(x)), Create((IOption<T>)new None<T>()));
 
+        /// <summary>
+        /// Creates a parser that tries to apply a given parser, but proceeds and returns a default value if it fails.
+        /// </summary>
+        /// <typeparam name="T">The result type of the parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <param name="defaultValue">The default value to return when the parser fails.</param>
+        /// <returns>A parser applying a parser, but returning a default value if it fails.</returns>
         public static Parser<T> Maybe<T>(Parser<T> parser, T defaultValue)
-            => Maybe(parser).Transform(x => x switch
-            {
-                Some<T>(T value) => value,
-                _ => defaultValue,
-            });
+            => Or(parser, Create(defaultValue));
 
+        /// <summary>
+        /// Creates a parser that always passes and creates an object.
+        /// </summary>
+        /// <typeparam name="T">The type of the parser result.</typeparam>
+        /// <param name="value">The value to always return from the parser.</param>
+        /// <returns>A parser always returning the object.</returns>
         public static Parser<T> Create<T>(T value)
             => new VoidParser<T>().Transform(x => value);
 

@@ -44,7 +44,7 @@
                 return new ParseResult<(T1, T2)>();
             }
 
-            return new ParseResult<(T1, T2)>((firstResult.Value, secondResult.Value), secondResult.Position);
+            return new ParseResult<(T1, T2)>((firstResult.Value, secondResult.Value), position, secondResult.Position);
         }
     }
 }

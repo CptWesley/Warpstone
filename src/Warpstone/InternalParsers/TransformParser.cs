@@ -37,7 +37,14 @@ namespace Warpstone.InternalParsers
             ParseResult<TInput> result = Parser.Parse(input, position);
             if (result.Success)
             {
-                return new ParseResult<TOutput>(Transformation(result.Value), result.Position);
+                TOutput value = Transformation(result.Value);
+                if (value is ISourcePosition sp)
+                {
+                    sp.Start = position;
+                    sp.Length = result.Position - position;
+                }
+
+                return new ParseResult<TOutput>(value, position, result.Position);
             }
 
             return new ParseResult<TOutput>();

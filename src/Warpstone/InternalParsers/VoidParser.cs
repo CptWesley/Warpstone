@@ -9,6 +9,6 @@
     {
         /// <inheritdoc/>
         internal override ParseResult<T> Parse(string input, int position)
-            => new ParseResult<T>(default, position);
+            => new ParseResult<T>(default, position, position);
     }
 }
