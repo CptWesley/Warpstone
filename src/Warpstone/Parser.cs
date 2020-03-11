@@ -44,7 +44,7 @@ namespace Warpstone
                 expectedString += "one of ";
             }
 
-            expectedString += string.Join(", ", result.Expected.Select(x => string.IsNullOrEmpty(x) ? "EOF" : $"'{x}'"));
+            expectedString += string.Join(", ", result.Expected.Select(x => string.IsNullOrEmpty(x) ? "EOF" : $"'{x}'").Distinct());
             expectedString += $" but found '{input[result.Position]}'.";
 
             throw new ParseException(expectedString);
