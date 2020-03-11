@@ -33,17 +33,11 @@ namespace Warpstone.Examples.Json
             = Or(True, False);
 
         private static readonly Parser<string> StringContent
-            = Or(
-                String("\\n").Transform(x => "\n"),
-                String("\\r").Transform(x => "\t"),
-                String("\\\"").Transform(x => "\""),
-                String("\\\\").Transform(x => "\\"),
-                Alphanumeric.Transform(x => x.ToString()),
-                Char(' ').Transform(x => x.ToString()));
+            = Or(Regex("[^\"\\n\\r]"), String("\\\""));
 
         private static readonly Parser<JsonValue> String
             = Char('"').Then(Many(StringContent).Concat()).ThenSkip(Char('"'))
-            .Transform(x => new JsonString(x) as JsonValue);
+            .Transform(x => new JsonString(System.Text.RegularExpressions.Regex.Unescape(x)) as JsonValue);
 
         private static readonly Parser<KeyValuePair<JsonString, JsonValue>> Field
             = OptionalWhitespaces
