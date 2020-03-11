@@ -1,4 +1,6 @@
-﻿namespace Warpstone
+﻿using System.Collections.Generic;
+
+namespace Warpstone
 {
     /// <summary>
     /// Object representing the parsing result.
@@ -9,8 +11,15 @@
         /// <summary>
         /// Initializes a new instance of the <see cref="ParseResult{T}"/> class.
         /// </summary>
-        public ParseResult()
+        /// <param name="startPosition">The start position.</param>
+        /// <param name="position">The position.</param>
+        /// <param name="expected">The expected.</param>
+        public ParseResult(int startPosition, int position, IEnumerable<string> expected)
         {
+            StartPosition = startPosition;
+            Position = position;
+            Expected = expected;
+            Success = false;
         }
 
         /// <summary>
@@ -46,5 +55,10 @@
         /// Gets the position of the parser.
         /// </summary>
         public int Position { get; }
+
+        /// <summary>
+        /// Gets the possible expected characters.
+        /// </summary>
+        public IEnumerable<string> Expected { get; }
     }
 }

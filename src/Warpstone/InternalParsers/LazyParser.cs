@@ -22,7 +22,7 @@ namespace Warpstone.InternalParsers
         internal Lazy<Parser<T>> Parser { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<T> Parse(string input, int position)
-            => Parser.Value.Parse(input, position);
+        internal override ParseResult<T> TryParse(string input, int position)
+            => Parser.Value.TryParse(input, position);
     }
 }

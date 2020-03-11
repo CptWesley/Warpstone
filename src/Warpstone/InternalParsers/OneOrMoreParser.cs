@@ -31,13 +31,13 @@ namespace Warpstone.InternalParsers
         internal Parser<T2> DelimiterParser { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<IEnumerable<T1>> Parse(string input, int position)
+        internal override ParseResult<IEnumerable<T1>> TryParse(string input, int position)
         {
             List<T1> elements = new List<T1>();
-            ParseResult<T1> result = Parser.Parse(input, position);
+            ParseResult<T1> result = Parser.TryParse(input, position);
             if (!result.Success)
             {
-                return new ParseResult<IEnumerable<T1>>();
+                return new ParseResult<IEnumerable<T1>>(position, result.Position, result.Expected);
             }
 
             elements.Add(result.Value);
@@ -45,13 +45,13 @@ namespace Warpstone.InternalParsers
 
             while (true)
             {
-                ParseResult<T2> delimiterResult = DelimiterParser.Parse(input, newPosition);
+                ParseResult<T2> delimiterResult = DelimiterParser.TryParse(input, newPosition);
                 if (!delimiterResult.Success)
                 {
                     break;
                 }
 
-                result = Parser.Parse(input, delimiterResult.Position);
+                result = Parser.TryParse(input, delimiterResult.Position);
                 if (!result.Success)
                 {
                     break;

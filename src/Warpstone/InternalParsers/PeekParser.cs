@@ -20,16 +20,16 @@
         internal Parser<T> Parser { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<T> Parse(string input, int position)
+        internal override ParseResult<T> TryParse(string input, int position)
         {
-            ParseResult<T> parseResult = Parser.Parse(input, position);
+            ParseResult<T> parseResult = Parser.TryParse(input, position);
 
             if (parseResult.Success)
             {
                 return new ParseResult<T>(default, position, position);
             }
 
-            return new ParseResult<T>();
+            return new ParseResult<T>(position, parseResult.Position, parseResult.Expected);
         }
     }
 }

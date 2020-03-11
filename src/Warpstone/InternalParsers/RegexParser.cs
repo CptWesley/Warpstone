@@ -13,21 +13,21 @@ namespace Warpstone.InternalParsers
         /// </summary>
         /// <param name="pattern">The pattern.</param>
         internal RegexParser(string pattern)
-            => Regex = new Regex(pattern);
+            => Pattern = pattern;
 
         /// <summary>
         /// Gets the regular expression.
         /// </summary>
-        internal Regex Regex { get; }
+        internal string Pattern { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<string> Parse(string input, int position)
+        internal override ParseResult<string> TryParse(string input, int position)
         {
-            Match match = Regex.Match(input, position);
+            Match match = new Regex(Pattern).Match(input, position);
 
             if (!match.Success || match.Index != position)
             {
-                return new ParseResult<string>();
+                return new ParseResult<string>(position, position, new string[] { Pattern });
             }
 
             return new ParseResult<string>(match.Value, match.Index, match.Index + match.Length);

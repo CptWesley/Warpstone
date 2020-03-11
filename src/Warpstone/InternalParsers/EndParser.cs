@@ -1,4 +1,6 @@
-﻿namespace Warpstone.InternalParsers
+﻿using System;
+
+namespace Warpstone.InternalParsers
 {
     /// <summary>
     /// Parser that checks for the end of the input stream.
@@ -7,14 +9,14 @@
     internal class EndParser : Parser<object>
     {
         /// <inheritdoc/>
-        internal override ParseResult<object> Parse(string input, int position)
+        internal override ParseResult<object> TryParse(string input, int position)
         {
             if (position == input.Length)
             {
                 return new ParseResult<object>(default, position, position);
             }
 
-            return new ParseResult<object>();
+            return new ParseResult<object>(position, position, Array.Empty<string>());
         }
     }
 }

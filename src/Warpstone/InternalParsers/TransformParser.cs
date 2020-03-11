@@ -32,9 +32,9 @@ namespace Warpstone.InternalParsers
         internal Func<TInput, TOutput> Transformation { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<TOutput> Parse(string input, int position)
+        internal override ParseResult<TOutput> TryParse(string input, int position)
         {
-            ParseResult<TInput> result = Parser.Parse(input, position);
+            ParseResult<TInput> result = Parser.TryParse(input, position);
             if (result.Success)
             {
                 TOutput value = Transformation(result.Value);
@@ -47,7 +47,7 @@ namespace Warpstone.InternalParsers
                 return new ParseResult<TOutput>(value, position, result.Position);
             }
 
-            return new ParseResult<TOutput>();
+            return new ParseResult<TOutput>(position, result.Position, result.Expected);
         }
     }
 }

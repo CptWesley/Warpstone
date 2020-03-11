@@ -1,4 +1,6 @@
-﻿namespace Warpstone.InternalParsers
+﻿using System.Linq;
+
+namespace Warpstone.InternalParsers
 {
     /// <summary>
     /// Parser that first applies the left parser and if it fails applies the right parser.
@@ -29,15 +31,21 @@
         internal Parser<T> Second { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<T> Parse(string input, int position)
+        internal override ParseResult<T> TryParse(string input, int position)
         {
-            ParseResult<T> firstResult = First.Parse(input, position);
+            ParseResult<T> firstResult = First.TryParse(input, position);
             if (firstResult.Success)
             {
                 return firstResult;
             }
 
-            return Second.Parse(input, position);
+            ParseResult<T> secondResult = Second.TryParse(input, position);
+            if (secondResult.Success)
+            {
+                return secondResult;
+            }
+
+            return new ParseResult<T>(position, secondResult.Position, firstResult.Expected.Concat(secondResult.Expected));
         }
     }
 }
