@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone", "Warpstone\Warpstone.csproj", "{5F8EFC87-E8A4-464E-909A-C001203A7603}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone", "Warpstone\Warpstone.csproj", "{5F8EFC87-E8A4-464E-909A-C001203A7603}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone.Sandbox", "Warpstone.Sandbox\Warpstone.Sandbox.csproj", "{90B90196-3D36-4E02-95B7-C8F0864CE3CB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Sandbox", "Warpstone.Sandbox\Warpstone.Sandbox.csproj", "{90B90196-3D36-4E02-95B7-C8F0864CE3CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone.Examples.Json", "Warpstone.Examples.Json\Warpstone.Examples.Json.csproj", "{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{90B90196-3D36-4E02-95B7-C8F0864CE3CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{90B90196-3D36-4E02-95B7-C8F0864CE3CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{90B90196-3D36-4E02-95B7-C8F0864CE3CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
