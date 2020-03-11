@@ -69,12 +69,28 @@ namespace Warpstone
         public static readonly Parser<object> End = new EndParser();
 
         /// <summary>
+        /// Creates a parser which matches a regular expression.
+        /// </summary>
+        /// <param name="pattern">The pattern to match.</param>
+        /// <returns>A parser matching a regular expression.</returns>
+        public static Parser<string> Regex(string pattern)
+            => new RegexParser(pattern);
+
+        /// <summary>
+        /// Creates a parser that parses a string.
+        /// </summary>
+        /// <param name="str">The string to parse.</param>
+        /// <returns>A parser parsing a string.</returns>
+        public static Parser<string> String(string str)
+            => Regex(System.Text.RegularExpressions.Regex.Escape(str));
+
+        /// <summary>
         /// Creates a parser parsing the given character.
         /// </summary>
         /// <param name="c">The character to parse.</param>
         /// <returns>A parser parsing the given character.</returns>
         public static Parser<char> Char(char c)
-            => new CharParser(c);
+            => String(c.ToString(CultureInfo.InvariantCulture)).Transform(x => x[0]);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -263,33 +279,6 @@ namespace Warpstone
         /// <returns>A parser returning the result of the first parser.</returns>
         public static Parser<T1> ThenSkip<T1, T2>(this Parser<T1> first, Parser<T2> second)
             => first.ThenAdd(second).Transform(x => x.Item1);
-
-        /// <summary>
-        /// Creates a parser that parses a string.
-        /// </summary>
-        /// <param name="str">The string to parse.</param>
-        /// <returns>A parser parsing a string.</returns>
-        public static Parser<string> String(string str)
-        {
-            if (str == null)
-            {
-                throw new ArgumentNullException(nameof(str));
-            }
-
-            if (str.Length <= 0)
-            {
-                throw new ArgumentException("Expected string to be at least of size 1.", nameof(str));
-            }
-
-            Parser<string> parser = Char(str[0]).Transform(x => x.ToString(CultureInfo.InvariantCulture));
-
-            for (int i = 1; i < str.Length; i++)
-            {
-                parser = parser.ThenAdd(Char(str[i])).Transform(x => x.Item1 + x.Item2);
-            }
-
-            return parser;
-        }
 
         /// <summary>
         /// Creates a parser that applies the given parser but does not consume the input.
