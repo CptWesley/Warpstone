@@ -12,7 +12,7 @@ namespace Warpstone.Sandbox
             Console.WriteLine($"Success: {result.Success}, Value: {result.Value}");
 
             parser = Many(String("aaa"), String(", ")).Transform(x => string.Join(string.Empty, x));
-            result = parser.Parse("aaa, aaa, aaa");
+            result = parser.Parse("");
             Console.WriteLine($"Success: {result.Success}, Value: {result.Value}");
         }
     }

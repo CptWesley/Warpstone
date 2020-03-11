@@ -78,7 +78,7 @@ namespace Warpstone
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static Parser<IEnumerable<T>> Many<T>(Parser<T> parser)
-            => new ManyParser<T>(parser);
+            => Many(parser, new VoidParser<object>());
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -89,7 +89,7 @@ namespace Warpstone
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static Parser<IEnumerable<T1>> Many<T1, T2>(Parser<T1> parser, Parser<T2> delimiter)
-            => Many(parser.ThenSkip(delimiter));
+            => Or(OneOrMore(parser, delimiter), Create<IEnumerable<T1>>(Array.Empty<T1>()));
 
         /// <summary>
         /// Creates a parser which applies the given parser at least once and collects all results.
@@ -98,7 +98,7 @@ namespace Warpstone
         /// <param name="parser">The given parser.</param>
         /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
         public static Parser<IEnumerable<T>> OneOrMore<T>(Parser<T> parser)
-            => parser.ThenAdd(Many(parser)).Transform(x => x.Item2.Prepend(x.Item1));
+            => OneOrMore(parser, new VoidParser<object>());
 
         /// <summary>
         /// Creates a parser which applies the given parser at least once and collects all results.
@@ -109,7 +109,7 @@ namespace Warpstone
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
         public static Parser<IEnumerable<T1>> OneOrMore<T1, T2>(Parser<T1> parser, Parser<T2> delimiter)
-            => parser.ThenSkip(delimiter).ThenAdd(Many(parser, delimiter)).Transform(x => x.Item2.Prepend(x.Item1));
+            => new OneOrMoreParser<T1, T2>(parser, delimiter);
 
         /// <summary>
         /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
