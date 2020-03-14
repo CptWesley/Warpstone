@@ -43,7 +43,7 @@ namespace Warpstone.Examples.Json
             .ThenSkip(Char(':'))
             .ThenSkip(OptionalWhitespaces)
             .ThenAdd(Lazy(() => Json))
-            .Transform(x => new KeyValuePair<JsonString, JsonValue>(x.Item1, x.Item2));
+            .Transform((x, y) => new KeyValuePair<JsonString, JsonValue>(x, y));
 
         private static readonly Parser<JsonValue> Object
             = Char('{').Then(Many(Field, Char(','))).ThenSkip(Char('}'))

@@ -157,6 +157,111 @@ namespace Warpstone
             => new TransformParser<TInput, TOutput>(parser, transformation);
 
         /// <summary>
+        /// Creates a parser that first applies the given parser and then applies a transformation on its result.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the given input parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the given input parser.</typeparam>
+        /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
+        /// <param name="parser">The given input parser.</param>
+        /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
+        public static Parser<TOutput> Transform<T1, T2, TOutput>(this Parser<(T1, T2)> parser, Func<T1, T2, TOutput> transformation)
+            => parser.Transform(x => transformation(x.Item1, x.Item2));
+
+        /// <summary>
+        /// Creates a parser that first applies the given parser and then applies a transformation on its result.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the given input parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the given input parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the given input parser.</typeparam>
+        /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
+        /// <param name="parser">The given input parser.</param>
+        /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
+        public static Parser<TOutput> Transform<T1, T2, T3, TOutput>(this Parser<(T1, T2, T3)> parser, Func<T1, T2, T3, TOutput> transformation)
+            => parser.Transform(x => transformation(x.Item1, x.Item2, x.Item3));
+
+        /// <summary>
+        /// Creates a parser that first applies the given parser and then applies a transformation on its result.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the given input parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the given input parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the given input parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the given input parser.</typeparam>
+        /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
+        /// <param name="parser">The given input parser.</param>
+        /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
+        public static Parser<TOutput> Transform<T1, T2, T3, T4, TOutput>(this Parser<(T1, T2, T3, T4)> parser, Func<T1, T2, T3, T4, TOutput> transformation)
+            => parser.Transform(x => transformation(x.Item1, x.Item2, x.Item3, x.Item4));
+
+        /// <summary>
+        /// Creates a parser that first applies the given parser and then applies a transformation on its result.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the given input parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the given input parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the given input parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the given input parser.</typeparam>
+        /// <typeparam name="T5">The fifth result type of the given input parser.</typeparam>
+        /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
+        /// <param name="parser">The given input parser.</param>
+        /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
+        public static Parser<TOutput> Transform<T1, T2, T3, T4, T5, TOutput>(this Parser<(T1, T2, T3, T4, T5)> parser, Func<T1, T2, T3, T4, T5, TOutput> transformation)
+            => parser.Transform(x => transformation(x.Item1, x.Item2, x.Item3, x.Item4, x.Item5));
+
+        /// <summary>
+        /// Creates a parser that first applies the given parser and then applies a transformation on its result.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the given input parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the given input parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the given input parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the given input parser.</typeparam>
+        /// <typeparam name="T5">The fifth result type of the given input parser.</typeparam>
+        /// <typeparam name="T6">The sixth result type of the given input parser.</typeparam>
+        /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
+        /// <param name="parser">The given input parser.</param>
+        /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
+        public static Parser<TOutput> Transform<T1, T2, T3, T4, T5, T6, TOutput>(this Parser<(T1, T2, T3, T4, T5, T6)> parser, Func<T1, T2, T3, T4, T5, T6, TOutput> transformation)
+            => parser.Transform(x => transformation(x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6));
+
+        /// <summary>
+        /// Creates a parser that first applies the given parser and then applies a transformation on its result.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the given input parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the given input parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the given input parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the given input parser.</typeparam>
+        /// <typeparam name="T5">The fifth result type of the given input parser.</typeparam>
+        /// <typeparam name="T6">The sixth result type of the given input parser.</typeparam>
+        /// <typeparam name="T7">The seventh result type of the given input parser.</typeparam>
+        /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
+        /// <param name="parser">The given input parser.</param>
+        /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
+        public static Parser<TOutput> Transform<T1, T2, T3, T4, T5, T6, T7, TOutput>(this Parser<(T1, T2, T3, T4, T5, T6, T7)> parser, Func<T1, T2, T3, T4, T5, T6, T7, TOutput> transformation)
+            => parser.Transform(x => transformation(x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, x.Item7));
+
+        /// <summary>
+        /// Creates a parser that first applies the given parser and then applies a transformation on its result.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the given input parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the given input parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the given input parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the given input parser.</typeparam>
+        /// <typeparam name="T5">The fifth result type of the given input parser.</typeparam>
+        /// <typeparam name="T6">The sixth result type of the given input parser.</typeparam>
+        /// <typeparam name="T7">The seventh result type of the given input parser.</typeparam>
+        /// <typeparam name="T8">The eight result type of the given input parser.</typeparam>
+        /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
+        /// <param name="parser">The given input parser.</param>
+        /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
+        public static Parser<TOutput> Transform<T1, T2, T3, T4, T5, T6, T7, T8, TOutput>(this Parser<(T1, T2, T3, T4, T5, T6, T7, T8)> parser, Func<T1, T2, T3, T4, T5, T6, T7, T8, TOutput> transformation)
+            => parser.Transform(x => transformation(x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, x.Item7, x.Item8));
+
+        /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
         /// </summary>
         /// <typeparam name="T1">The result type of the first parser.</typeparam>
@@ -178,7 +283,7 @@ namespace Warpstone
         /// <returns>A parser combining the results of both parsers.</returns>
         public static Parser<(T1, T2, T3)> ThenAdd<T1, T2, T3>(this Parser<(T1, T2)> first, Parser<T3> second)
             => first.ThenAdd<(T1, T2), T3>(second)
-            .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item2));
+            .Transform((x, y) => (x.Item1, x.Item2, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -192,7 +297,7 @@ namespace Warpstone
         /// <returns>A parser combining the results of both parsers.</returns>
         public static Parser<(T1, T2, T3, T4)> ThenAdd<T1, T2, T3, T4>(this Parser<(T1, T2, T3)> first, Parser<T4> second)
             => first.ThenAdd<(T1, T2, T3), T4>(second)
-            .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item2));
+            .Transform((x, y) => (x.Item1, x.Item2, x.Item3, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -207,7 +312,7 @@ namespace Warpstone
         /// <returns>A parser combining the results of both parsers.</returns>
         public static Parser<(T1, T2, T3, T4, T5)> ThenAdd<T1, T2, T3, T4, T5>(this Parser<(T1, T2, T3, T4)> first, Parser<T5> second)
             => first.ThenAdd<(T1, T2, T3, T4), T5>(second)
-            .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item1.Item4, x.Item2));
+            .Transform((x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -223,7 +328,7 @@ namespace Warpstone
         /// <returns>A parser combining the results of both parsers.</returns>
         public static Parser<(T1, T2, T3, T4, T5, T6)> ThenAdd<T1, T2, T3, T4, T5, T6>(this Parser<(T1, T2, T3, T4, T5)> first, Parser<T6> second)
             => first.ThenAdd<(T1, T2, T3, T4, T5), T6>(second)
-            .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item1.Item4, x.Item1.Item5, x.Item2));
+            .Transform((x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -240,7 +345,7 @@ namespace Warpstone
         /// <returns>A parser combining the results of both parsers.</returns>
         public static Parser<(T1, T2, T3, T4, T5, T6, T7)> ThenAdd<T1, T2, T3, T4, T5, T6, T7>(this Parser<(T1, T2, T3, T4, T5, T6)> first, Parser<T7> second)
             => first.ThenAdd<(T1, T2, T3, T4, T5, T6), T7>(second)
-            .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item1.Item4, x.Item1.Item5, x.Item1.Item6, x.Item2));
+            .Transform((x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -258,7 +363,7 @@ namespace Warpstone
         /// <returns>A parser combining the results of both parsers.</returns>
         public static Parser<(T1, T2, T3, T4, T5, T6, T7, T8)> ThenAdd<T1, T2, T3, T4, T5, T6, T7, T8>(this Parser<(T1, T2, T3, T4, T5, T6, T7)> first, Parser<T8> second)
             => first.ThenAdd<(T1, T2, T3, T4, T5, T6, T7), T8>(second)
-            .Transform(x => (x.Item1.Item1, x.Item1.Item2, x.Item1.Item3, x.Item1.Item4, x.Item1.Item5, x.Item1.Item6, x.Item1.Item7, x.Item2));
+            .Transform((x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, x.Item7, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and returns the result of the second one.
@@ -269,7 +374,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser returning the result of the second parser.</returns>
         public static Parser<T2> Then<T1, T2>(this Parser<T1> first, Parser<T2> second)
-            => first.ThenAdd(second).Transform(x => x.Item2);
+            => first.ThenAdd(second).Transform((l, r) => r);
 
         /// <summary>
         /// Creates a parser that applies two parsers and returns the result of the first one.
@@ -280,7 +385,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser returning the result of the first parser.</returns>
         public static Parser<T1> ThenSkip<T1, T2>(this Parser<T1> first, Parser<T2> second)
-            => first.ThenAdd(second).Transform(x => x.Item1);
+            => first.ThenAdd(second).Transform((l, r) => l);
 
         /// <summary>
         /// Creates a parser that applies the given parser but does not consume the input.
