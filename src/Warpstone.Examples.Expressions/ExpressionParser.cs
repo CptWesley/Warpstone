@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using static Warpstone.Parsers;
+﻿using static Warpstone.Parsers;
+using static Warpstone.ExpressionParser;
 
 namespace Warpstone.Examples.Expressions
 {
@@ -23,49 +21,16 @@ namespace Warpstone.Examples.Expressions
             = Or(Char('+'), Char('*')).Trim();
 
         private static readonly Parser<Expression> Exp
-            = Atom.ThenAdd(Many(Operator.ThenAdd(Atom)))
-            .Transform(UnfoldExpression);
+            = BinaryExpression(Atom, Operator, new[]
+            {
+                LeftToRight<Expression, char>('*', (l, r) => new MulExpression(l, r)),
+                LeftToRight<Expression, char>('+', (l, r) => new AddExpression(l, r))
+            });
 
         private static Parser<T> Trim<T>(this Parser<T> parser)
             => OptionalWhitespaces.Then(parser).ThenSkip(OptionalWhitespaces);
 
         public static Expression Parse(string input)
             => Exp.ThenEnd().Parse(input);
-
-        private static Expression UnfoldExpression(Expression head, IEnumerable<(char, Expression)> tail)
-        {
-            List<object> list = new List<object>();
-            list.Add(head);
-            foreach ((char op, Expression e) in tail)
-            {
-                list.Add(op);
-                list.Add(e);
-            }
-
-            UnfoldExpression(list, '*', (l, r) => new MulExpression(l, r));
-            UnfoldExpression(list, '+', (l, r) => new AddExpression(l, r));
-
-            return list.First() as Expression;
-        }
-
-        private static void UnfoldExpression(List<object> list, char op, Func<Expression, Expression, Expression> transform)
-        {
-            int index = 1;
-            while (index < list.Count)
-            {
-                if (list[index].Equals(op))
-                {
-                    Expression exp = transform(list[index - 1] as Expression, list[index + 1] as Expression);
-                    list.RemoveAt(index + 1);
-                    list.RemoveAt(index);
-                    list.Insert(index, exp);
-                    list.RemoveAt(index - 1);
-                }
-                else
-                {
-                    index += 2;
-                }
-            }
-        }
     }
 }
