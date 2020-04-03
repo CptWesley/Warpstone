@@ -34,13 +34,13 @@ namespace Warpstone.Expressions
         /// </summary>
         /// <param name="associativity">The associativity.</param>
         /// <param name="transformations">The possible performed transformations.</param>
-        public Operation(Associativity associativity, Dictionary<TOperator, Func<TExpression, TExpression, TExpression>> transformations)
+        public Operation(Associativity associativity, Dictionary<Parser<TOperator>, Func<TExpression, TExpression, TExpression>> transformations)
             : base(associativity)
             => Transformations = transformations;
 
         /// <summary>
         /// Gets the transformation.
         /// </summary>
-        public Dictionary<TOperator, Func<TExpression, TExpression, TExpression>> Transformations { get; }
+        public Dictionary<Parser<TOperator>, Func<TExpression, TExpression, TExpression>> Transformations { get; }
     }
 }
