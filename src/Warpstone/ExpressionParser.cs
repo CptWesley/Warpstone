@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Warpstone.Expressions;
 using static Warpstone.Parsers;
 
@@ -28,6 +29,16 @@ namespace Warpstone
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
+        public static Operation<TExpression, TOperator> LeftToRight<TExpression, TOperator>(IEnumerable<(Parser<TOperator>, Func<TExpression, TExpression, TExpression>)> transformations)
+            => LeftToRight(transformations.ToDictionary(x => x.Item1, x => x.Item2));
+
+        /// <summary>
+        /// Creates a left-to-right associative operation.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A left-to-right associative operation.</returns>
         public static Operation<TExpression, TOperator> LeftToRight<TExpression, TOperator>(Dictionary<Parser<TOperator>, Func<TExpression, TExpression, TExpression>> transformations)
             => new Operation<TExpression, TOperator>(Associativity.Left, transformations);
 
@@ -41,6 +52,16 @@ namespace Warpstone
         /// <returns>A right-to-left associative operation.</returns>
         public static Operation<TExpression, TOperator> RightToLeft<TExpression, TOperator>(Parser<TOperator> op, Func<TExpression, TExpression, TExpression> transformation)
             => SingleOperation(Associativity.Right, op, transformation);
+
+        /// <summary>
+        /// Creates a right-to-left associative operation.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A right-to-left associative operation.</returns>
+        public static Operation<TExpression, TOperator> RightToLeft<TExpression, TOperator>(IEnumerable<(Parser<TOperator>, Func<TExpression, TExpression, TExpression>)> transformations)
+            => RightToLeft(transformations.ToDictionary(x => x.Item1, x => x.Item2));
 
         /// <summary>
         /// Creates a right-to-left associative operation.

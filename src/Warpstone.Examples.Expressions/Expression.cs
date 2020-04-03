@@ -42,9 +42,23 @@
         }
     }
 
+    public class SubExpression : BinaryExpression
+    {
+        public SubExpression(Expression left, Expression right) : base(left, right, "-")
+        {
+        }
+    }
+
     public class MulExpression : BinaryExpression
     {
         public MulExpression(Expression left, Expression right) : base(left, right, "*")
+        {
+        }
+    }
+
+    public class DivExpression : BinaryExpression
+    {
+        public DivExpression(Expression left, Expression right) : base(left, right, "/")
         {
         }
     }

@@ -1,5 +1,7 @@
 ﻿using static Warpstone.Parsers;
 using static Warpstone.ExpressionParser;
+using System;
+using System.Collections.Generic;
 
 namespace Warpstone.Examples.Expressions
 {
@@ -20,8 +22,14 @@ namespace Warpstone.Examples.Expressions
         private static readonly Parser<Expression> Exp
             = BinaryExpression(Atom, new[]
             {
-                LeftToRight<Expression, char>(Operator('*'), (l, r) => new MulExpression(l, r)),
-                LeftToRight<Expression, char>(Operator('+'), (l, r) => new AddExpression(l, r))
+                LeftToRight(new List<(Parser<char>, Func<Expression, Expression, Expression>)> {
+                    (Operator('*'), (l, r) => new MulExpression(l, r)),
+                    (Operator('/'), (l, r) => new DivExpression(l, r)),
+                }),
+                LeftToRight(new List<(Parser<char>, Func<Expression, Expression, Expression>)> {
+                    (Operator('+'), (l, r) => new AddExpression(l, r)),
+                    (Operator('-'), (l, r) => new SubExpression(l, r)),
+                }),
             });
 
         private static Parser<char> Operator(char c)
