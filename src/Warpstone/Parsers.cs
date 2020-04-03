@@ -454,6 +454,33 @@ namespace Warpstone
         public static Parser<T> Lazy<T>(Func<Parser<T>> parser)
             => new LazyParser<T>(parser);
 
+        /// <summary>
+        /// Trims optional whitespaces from the left side of the parser.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser which trims optional whitespace from the left hand side before applying another parser.</returns>
+        public static Parser<T> TrimLeft<T>(this Parser<T> parser)
+            => OptionalWhitespaces.Then(parser);
+
+        /// <summary>
+        /// Trims optional whitespaces from the right side of the parser.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser which trims optional whitespace from the right hand side before applying another parser.</returns>
+        public static Parser<T> TrimRight<T>(this Parser<T> parser)
+            => parser.ThenSkip(OptionalWhitespaces);
+
+        /// <summary>
+        /// Trims optional whitespaces from the both sides of the parser.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser which trims optional whitespace from the left and right hand side before applying another parser.</returns>
+        public static Parser<T> Trim<T>(this Parser<T> parser)
+            => parser.TrimLeft().TrimRight();
+
         private static Parser<T> InnerOr<T>(IEnumerable<Parser<T>> parsers)
         {
             if (parsers.Count() == 1)

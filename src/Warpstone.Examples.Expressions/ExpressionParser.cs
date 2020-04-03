@@ -24,9 +24,6 @@ namespace Warpstone.Examples.Expressions
                 LeftToRight<Expression, char>(Operator('+'), (l, r) => new AddExpression(l, r))
             });
 
-        private static Parser<T> Trim<T>(this Parser<T> parser)
-            => OptionalWhitespaces.Then(parser).ThenSkip(OptionalWhitespaces);
-
         private static Parser<char> Operator(char c)
             => Char(c).Trim();
 
