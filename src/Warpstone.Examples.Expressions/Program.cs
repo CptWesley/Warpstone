@@ -6,7 +6,7 @@ namespace Warpstone.Examples.Expressions
     {
         public static void Main(string[] args)
         {
-            Parse("2+3*5*6+7*(3+2)-6/9");
+            Parse("2+3*5*6+7*(3+2)-6/9+2-3-4+5");
         }
 
         private static void Parse(string input)
