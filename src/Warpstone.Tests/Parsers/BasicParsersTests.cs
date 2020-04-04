@@ -241,7 +241,7 @@ namespace Warpstone.Tests.Parsers
                 .Parse("abcdefghijklmnop")).IsEqualTo(('a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'));
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrect1()
@@ -250,7 +250,7 @@ namespace Warpstone.Tests.Parsers
                 .Parse("abcdefghijklmnop")).IsEqualTo("a");
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrectIParsed()
@@ -262,7 +262,7 @@ namespace Warpstone.Tests.Parsers
         }
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrect2()
@@ -272,7 +272,7 @@ namespace Warpstone.Tests.Parsers
                 .Parse("abcdefghijklmnop")).IsEqualTo("ab");
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrect3()
@@ -283,7 +283,7 @@ namespace Warpstone.Tests.Parsers
                 .Parse("abcdefghijklmnop")).IsEqualTo("abc");
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrect4()
@@ -295,7 +295,7 @@ namespace Warpstone.Tests.Parsers
                 .Parse("abcdefghijklmnop")).IsEqualTo("abcd");
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrect5()
@@ -308,7 +308,7 @@ namespace Warpstone.Tests.Parsers
                 .Parse("abcdefghijklmnop")).IsEqualTo("abcde");
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrect6()
@@ -322,7 +322,7 @@ namespace Warpstone.Tests.Parsers
                 .Parse("abcdefghijklmnop")).IsEqualTo("abcdef");
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrect7()
@@ -337,7 +337,7 @@ namespace Warpstone.Tests.Parsers
                 .Parse("abcdefghijklmnop")).IsEqualTo("abcdefg");
 
         /// <summary>
-        /// Checks that parsing sequentially works correctly.
+        /// Checks that parsing transformations works correctly.
         /// </summary>
         [Fact]
         public static void TransformParserCorrect8()
@@ -365,6 +365,20 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void ThenAddParserIncorrectRight()
             => AssertThat(() => Char('x').ThenAdd(Char('y')).Parse("xz")).ThrowsExactlyException<ParseException>();
+
+        /// <summary>
+        /// Checks that peek parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void PeekParserCorrect()
+            => AssertThat(Peek(Char('x')).ThenAdd(Char('x')).Parse("xyz")).IsEqualTo(('x', 'x'));
+
+        /// <summary>
+        /// Checks that peek parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void PeekParserIncorrect()
+            => AssertThat(() => Peek(Char('x')).Parse("yz")).ThrowsExactlyException<ParseException>();
 
         private class Parsed : IParsed
         {
