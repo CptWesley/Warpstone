@@ -5,7 +5,14 @@
     <CodeAnalysisRuleSet>../Ruleset.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
-  
+
+  <PropertyGroup>
+    <CollectCoverage>true</CollectCoverage>
+    <CoverletOutputFormat>opencover</CoverletOutputFormat>
+    <CoverletOutput>./bin/</CoverletOutput>
+    <Include>[Warpstone]*</Include>
+  </PropertyGroup>
+
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json" Link="stylecop.json" />
   </ItemGroup>
