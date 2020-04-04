@@ -1,0 +1,21 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.0
+    steps:
+      - checkout
+      - run:
+          name: Dependencies
+          command: |
+                   cd src
+                   dotnet restore
+      - run:
+          name: Tests
+          command: |
+                   cd src
+                   dotnet test
+      - run:
+          name: Codecov
+          command: |
+                   bash <(curl -s https://codecov.io/bash) -f "src/Warpstone.Tests/bin/coverage.opencover.xml" -t $CODECOV_KEY
