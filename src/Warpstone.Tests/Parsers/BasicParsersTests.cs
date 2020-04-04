@@ -493,6 +493,22 @@ namespace Warpstone.Tests.Parsers
             => AssertThat(Maybe(Char('x'), '-').Parse("yz")).IsEqualTo('-');
 
         /// <summary>
+        /// Checks that optional parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void MaybeParserOptions()
+        {
+            Parser<IOption<char>> parser = Maybe(Char('x'));
+            IOption<char> result1 = parser.Parse("xyz");
+            AssertThat(result1.HasValue).IsTrue();
+            AssertThat(result1.Value).IsEqualTo('x');
+
+            IOption<char> result2 = parser.Parse("yz");
+            AssertThat(result2.HasValue).IsFalse();
+            AssertThat(result2.Value).IsEqualTo(default(char));
+        }
+
+        /// <summary>
         /// Checks that lazy parsing works correctly.
         /// </summary>
         [Fact]
