@@ -7,7 +7,7 @@
 Parser combinator forged deep within Ikit's forges in the Under-City from a shard of Morrslieb itself.
 
 ## What is it?
-Warpstone is a parser combinator library written in C# targetting .NET Standard 2.0, meaning that it can be used by any application running either .NET Framework >= 4.6.1 or .NET Core >= 2.0.
+Warpstone is a parser combinator library written in C# targetting .NET Standard 2.0, meaning that it can be used by any application running either .NET Framework >= 4.6.1, .NET Core >= 2.0 or Mono >= 5.4.
 The main focus of the library is to provide a powerful lightweight parser combinator framework for developers to create their own parsers with.
 
 ## Why did you make it?
