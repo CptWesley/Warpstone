@@ -94,6 +94,20 @@ namespace Warpstone.Tests.Parsers
             => AssertThat(OneOrMore(Char('x')).Parse("xxxyz")).ContainsExactly('x', 'x', 'x');
 
         /// <summary>
+        /// Checks that parsing one or more works correctly with delimiters.
+        /// </summary>
+        [Fact]
+        public static void OneOrMoreParserCorrectMoreDelimited1()
+            => AssertThat(OneOrMore(Char('x'), Char('y')).Parse("xyxyxzzz")).ContainsExactly('x', 'x', 'x');
+
+        /// <summary>
+        /// Checks that parsing one or more works correctly with delimiters.
+        /// </summary>
+        [Fact]
+        public static void OneOrMoreParserCorrectMoreDelimited2()
+            => AssertThat(OneOrMore(Char('x'), Char('y')).Parse("xyxyxy")).ContainsExactly('x', 'x', 'x');
+
+        /// <summary>
         /// Checks that parsing one or more works correctly.
         /// </summary>
         [Fact]
