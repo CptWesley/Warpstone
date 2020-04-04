@@ -38,7 +38,7 @@ namespace Warpstone.InternalParsers
             if (result.Success)
             {
                 TOutput value = Transformation(result.Value);
-                if (value is IParsed parsed)
+                if (value is IParsed parsed && parsed.Position == null)
                 {
                     parsed.Position = new SourcePosition(position, result.Position - position);
                 }

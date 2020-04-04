@@ -5,10 +5,10 @@ namespace Warpstone
     /// <summary>
     /// Position of a parsed element in the source code.
     /// </summary>
-    public struct SourcePosition : IEquatable<SourcePosition>
+    public class SourcePosition : IEquatable<SourcePosition>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="SourcePosition"/> struct.
+        /// Initializes a new instance of the <see cref="SourcePosition"/> class.
         /// </summary>
         /// <param name="start">The start.</param>
         /// <param name="length">The length.</param>
@@ -37,7 +37,14 @@ namespace Warpstone
         /// The result of the operator.
         /// </returns>
         public static bool operator ==(SourcePosition left, SourcePosition right)
-            => left.Equals(right);
+        {
+            if (left is null)
+            {
+                return right is null;
+            }
+
+            return left.Equals(right);
+        }
 
         /// <summary>
         /// Implements the operator !=.
@@ -56,7 +63,7 @@ namespace Warpstone
 
         /// <inheritdoc/>
         public bool Equals(SourcePosition other)
-            => Start == other.Start && Length == other.Length;
+            => !(other is null) && Start == other.Start && Length == other.Length;
 
         /// <inheritdoc/>
         public override int GetHashCode()
