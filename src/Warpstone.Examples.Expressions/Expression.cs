@@ -2,10 +2,9 @@
 
 namespace Warpstone.Examples.Expressions
 {
-    public abstract class Expression : ISourcePosition
+    public abstract class Expression : IParsed
     {
-        public int Start { get; set; }
-        public int Length { get; set; }
+        public SourcePosition Position { get; set; }
 
         public abstract int Evaluate();
     }

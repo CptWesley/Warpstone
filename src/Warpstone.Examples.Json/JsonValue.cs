@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Warpstone.Examples.Json
 {
-    public abstract class JsonValue : ISourcePosition
+    public abstract class JsonValue : IParsed
     {
         public int Start { get; set; }
         public int Length { get; set; }
