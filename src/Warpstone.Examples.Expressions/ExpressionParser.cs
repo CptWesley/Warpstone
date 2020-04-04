@@ -1,5 +1,6 @@
-﻿using static Warpstone.Parsers;
-using static Warpstone.ExpressionParser;
+﻿using static Warpstone.Parsers.BasicParsers;
+using static Warpstone.Parsers.CommonParsers;
+using static Warpstone.Parsers.ExpressionParsers;
 
 namespace Warpstone.Examples.Expressions
 {

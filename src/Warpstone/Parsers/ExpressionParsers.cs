@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using Warpstone.Expressions;
-using static Warpstone.Parsers;
+using static Warpstone.Parsers.BasicParsers;
 
-namespace Warpstone
+namespace Warpstone.Parsers
 {
     /// <summary>
     /// Static class for dealing with expression parsers.
     /// </summary>
-    public static class ExpressionParser
+    public static class ExpressionParsers
     {
         /// <summary>
         /// Creates a left-to-right associative operation.

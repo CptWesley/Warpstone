@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using static Warpstone.Parsers;
+using static Warpstone.Parsers.BasicParsers;
+using static Warpstone.Parsers.CommonParsers;
+using static Warpstone.Parsers.ExpressionParsers;
 
 namespace Warpstone.Examples.Json
 {

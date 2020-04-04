@@ -1,5 +1,5 @@
 ﻿using System;
-using static Warpstone.Parsers;
+using static Warpstone.BasicParsers;
 
 namespace Warpstone.Sandbox
 {
