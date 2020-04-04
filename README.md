@@ -1,7 +1,7 @@
 [![CircleCI](https://circleci.com/gh/CptWesley/Warpstone.svg?style=shield)](https://circleci.com/gh/CptWesley/Warpstone)
 [![CodeCov](https://codecov.io/gh/CptWesley/Warpstone/branch/master/graph/badge.svg)](https://codecov.io/gh/CptWesley/Warpstone/)
-[![NuGet](https://img.shields.io/nuget/v/Warpstone.svg)](https://www.nuget.org/packages/Warpstone/)
-[![BetterCodeHub](https://bettercodehub.com/edge/badge/CptWesley/Warpstone?branch=master)](https://bettercodehub.com/results/CptWesley/Warpstone)  
+[![BetterCodeHub](https://bettercodehub.com/edge/badge/CptWesley/Warpstone?branch=master)](https://bettercodehub.com/results/CptWesley/Warpstone)
+[![NuGet](https://img.shields.io/nuget/v/Warpstone.svg)](https://www.nuget.org/packages/Warpstone/)  
 
 ![Warpstone](https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo.png)
 # Warpstone
