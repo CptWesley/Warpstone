@@ -69,6 +69,13 @@ namespace Warpstone.Tests.Parsers
         /// Checks that branch parsing works correctly.
         /// </summary>
         [Fact]
+        public static void OrParserCorrect3()
+            => AssertThat(Or(Char('x'), Char('y'), Char('z')).Parse("z")).IsEqualTo('z');
+
+        /// <summary>
+        /// Checks that branch parsing works correctly.
+        /// </summary>
+        [Fact]
         public static void OrParserIncorrect()
             => AssertThat(() => Or(Char('x'), Char('y')).Parse("zzz")).ThrowsExactlyException<ParseException>();
 
@@ -379,6 +386,104 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void PeekParserIncorrect()
             => AssertThat(() => Peek(Char('x')).Parse("yz")).ThrowsExactlyException<ParseException>();
+
+        /// <summary>
+        /// Checks that end parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void EndParserCorrect()
+            => AssertThat(End.Parse(string.Empty)).IsNull();
+
+        /// <summary>
+        /// Checks that end parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void EndParserIncorrect()
+            => AssertThat(() => End.Parse("yz")).ThrowsExactlyException<ParseException>();
+
+        /// <summary>
+        /// Checks that end parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void ThenEndParserCorrect()
+            => AssertThat(Char('a').ThenEnd().Parse("a")).IsEqualTo('a');
+
+        /// <summary>
+        /// Checks that end parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void ThenEndParserIncorrectLeft()
+            => AssertThat(() => Char('a').ThenEnd().Parse("yz")).ThrowsExactlyException<ParseException>();
+
+        /// <summary>
+        /// Checks that end parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void ThenEndParserIncorrectRight()
+            => AssertThat(() => Char('a').ThenEnd().Parse("ayz")).ThrowsExactlyException<ParseException>();
+
+        /// <summary>
+        /// Checks that creation parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void CreateParserCorrect()
+            => AssertThat(Create("abc").Parse(string.Empty)).IsEqualTo("abc");
+
+        /// <summary>
+        /// Checks that conditional parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void IfParserCorrectTrue()
+            => AssertThat(If(Char('x'), Char('y'), Char('z')).Parse("xyz")).IsEqualTo('y');
+
+        /// <summary>
+        /// Checks that conditional parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void IfParserCorrectFalse()
+            => AssertThat(If(Char('x'), Char('y'), Char('z')).Parse("zd")).IsEqualTo('z');
+
+        /// <summary>
+        /// Checks that conditional parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void IfParserIncorrect()
+            => AssertThat(() => If(Char('x'), Char('y'), Char('z')).Parse("g")).ThrowsExactlyException<ParseException>();
+
+        /// <summary>
+        /// Checks that optional parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void MaybeParserCorrectExists()
+            => AssertThat(Maybe(Char('x')).Parse("xyz")).IsExactlyInstanceOf<Some<char>>();
+
+        /// <summary>
+        /// Checks that optional parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void MaybeParserCorrectDoesNotExist()
+            => AssertThat(Maybe(Char('x')).Parse("yz")).IsExactlyInstanceOf<None<char>>();
+
+        /// <summary>
+        /// Checks that optional parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void MaybeParserCorrectExistsDefaultValue()
+            => AssertThat(Maybe(Char('x'), '-').Parse("xyz")).IsEqualTo('x');
+
+        /// <summary>
+        /// Checks that optional parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void MaybeParserCorrectDoesNotExistDefaultValue()
+            => AssertThat(Maybe(Char('x'), '-').Parse("yz")).IsEqualTo('-');
+
+        /// <summary>
+        /// Checks that lazy parsing works correctly.
+        /// </summary>
+        [Fact]
+        public static void LazyParserCorrect()
+            => AssertThat(Lazy(() => Char('x')).Parse("xyz")).IsEqualTo('x');
 
         private class Parsed : IParsed
         {
