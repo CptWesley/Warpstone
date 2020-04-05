@@ -15,8 +15,8 @@ The main focus of the library is to provide a powerful lightweight parser combin
 After following a course on compiler construction I was intrigued and wanted a way of parsing languages within code without requiring external tools to generate a parser for me first.
 During my quest I stumbled upon the concept of parser combinators and started looking for existing libraries for .NET.
 I soon stumbled upon [Pidgin](https://github.com/benjamin-hodgson/Pidgin).
-After toying around with the library for a bit I felt dissatisfied with some of it's syntax and I still felt like I didn't fully understand the concepts it was using behind the scenes.
-This lead me to create my own parser combinator library, with syntax inspired by Pidgin.
+After toying around with the library for a bit I felt dissatisfied with some of its syntax and I still felt like I didn't fully understand the concepts it was using behind the scenes.
+This led me to create my own parser combinator library, with syntax inspired by Pidgin.
 
 ## Why the name? (Or: What are all those strange words in the description?!?!?)
 Coming up with names is difficult, I wanted to get the project started and at the time I was consumed by the Warhammer Fantasy universe.
