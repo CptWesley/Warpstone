@@ -15,7 +15,7 @@ namespace Warpstone.Grammars
             = Regex("[ \t]*");
 
         private static readonly Parser<BnfTerm> Literal
-            = Trim(Char('"').Then(Regex(".+\"").Transform(x => new BnfLiteral(x.Substring(0, x.Length - 1)) as BnfTerm)));
+            = Trim(Char('"').Then(Regex("[^\"]+\"").Transform(x => new BnfLiteral(x.Substring(0, x.Length - 1)) as BnfTerm)));
 
         private static readonly Parser<BnfTerm> Symbol
             = Trim(Char('<').Then(Regex("[a-zA-Z-]+").Transform(x => new BnfSymbol(x) as BnfTerm)).ThenSkip(Char('>')));
