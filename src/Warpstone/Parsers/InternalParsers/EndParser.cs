@@ -1,4 +1,4 @@
-﻿namespace Warpstone.InternalParsers
+﻿namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser that checks for the end of the input stream.

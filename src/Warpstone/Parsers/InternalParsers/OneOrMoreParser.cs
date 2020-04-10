@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Warpstone.InternalParsers
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Executes the wrapped parser multiple times and collects the results.

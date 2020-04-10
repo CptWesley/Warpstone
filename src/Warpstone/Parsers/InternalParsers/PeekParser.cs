@@ -1,4 +1,4 @@
-﻿namespace Warpstone.InternalParsers
+﻿namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser that attempts a parse, but does not record it.

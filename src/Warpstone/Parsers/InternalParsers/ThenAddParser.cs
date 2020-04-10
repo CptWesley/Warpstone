@@ -1,4 +1,4 @@
-﻿namespace Warpstone.InternalParsers
+﻿namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// A Parser applying two parsers and retaining both results.

@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 
-namespace Warpstone.InternalParsers
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser that first applies the left parser and if it fails applies the right parser.

@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace Warpstone.InternalParsers
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser which parser a given regular expression pattern.

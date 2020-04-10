@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Warpstone.InternalParsers
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser which first applies a wrapped parser before applying a transformation on the result.
