@@ -14,7 +14,7 @@
                 return new ParseResult<object>(default, position, position);
             }
 
-            return new ParseResult<object>(position, position, new string[] { string.Empty });
+            return new ParseResult<object>(position, position, new ParseError(new string[] { string.Empty }, GetFound(input, position)));
         }
     }
 }

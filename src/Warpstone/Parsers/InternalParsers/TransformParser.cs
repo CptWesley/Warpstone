@@ -46,7 +46,7 @@ namespace Warpstone.Parsers.InternalParsers
                 return new ParseResult<TOutput>(value, position, result.Position);
             }
 
-            return new ParseResult<TOutput>(position, result.Position, result.Expected);
+            return new ParseResult<TOutput>(position, result.Position, result.Error);
         }
     }
 }

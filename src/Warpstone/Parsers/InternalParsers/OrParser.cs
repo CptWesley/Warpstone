@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -45,7 +46,9 @@ namespace Warpstone.Parsers.InternalParsers
                 return secondResult;
             }
 
-            return new ParseResult<T>(position, secondResult.Position, firstResult.Expected.Concat(secondResult.Expected));
+            IEnumerable<string> newExpected = firstResult.Error.Expected.Concat(secondResult.Error.Expected);
+
+            return new ParseResult<T>(position, secondResult.Position, new ParseError(newExpected, GetFound(input, position)));
         }
     }
 }

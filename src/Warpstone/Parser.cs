@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 
 namespace Warpstone
 {
@@ -38,16 +37,7 @@ namespace Warpstone
                 return result.Value;
             }
 
-            string expectedString = $"Expected ";
-            if (result.Expected.Count() > 1)
-            {
-                expectedString += "one of ";
-            }
-
-            expectedString += string.Join(", ", result.Expected.Select(x => string.IsNullOrEmpty(x) ? "EOF" : $"'{x}'").Distinct());
-            expectedString += $" but found {(result.Position < input.Length ? $"'{input[result.Position]}'" : "EOF")}.";
-
-            throw new ParseException(expectedString);
+            throw new ParseException(result.Error.Message);
         }
 
         /// <summary>
@@ -57,5 +47,14 @@ namespace Warpstone
         /// <param name="position">The position.</param>
         /// <returns>The result of running the parser.</returns>
         internal abstract ParseResult<TOutput> TryParse(string input, int position);
-    }
+
+        /// <summary>
+        /// Gets the found characters.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="position">The position.</param>
+        /// <returns>The found characters.</returns>
+        protected string GetFound(string input, int position)
+            => position < input?.Length ? $"'{input[position]}'" : "EOF";
+}
 }

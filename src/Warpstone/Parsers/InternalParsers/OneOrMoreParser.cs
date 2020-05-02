@@ -37,7 +37,7 @@ namespace Warpstone.Parsers.InternalParsers
             ParseResult<T1> result = Parser.TryParse(input, position);
             if (!result.Success)
             {
-                return new ParseResult<IEnumerable<T1>>(position, result.Position, result.Expected);
+                return new ParseResult<IEnumerable<T1>>(position, result.Position, result.Error);
             }
 
             elements.Add(result.Value);

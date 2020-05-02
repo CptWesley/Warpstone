@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Warpstone
+﻿namespace Warpstone
 {
     /// <summary>
     /// Object representing the parsing result.
@@ -13,12 +11,12 @@ namespace Warpstone
         /// </summary>
         /// <param name="startPosition">The start position.</param>
         /// <param name="position">The position.</param>
-        /// <param name="expected">The expected.</param>
-        public ParseResult(int startPosition, int position, IEnumerable<string> expected)
+        /// <param name="error">The parse error that occured.</param>
+        public ParseResult(int startPosition, int position, ParseError error)
         {
             StartPosition = startPosition;
             Position = position;
-            Expected = expected;
+            Error = error;
             Success = false;
         }
 
@@ -57,8 +55,8 @@ namespace Warpstone
         public int Position { get; }
 
         /// <summary>
-        /// Gets the possible expected characters.
+        /// Gets the parse error.
         /// </summary>
-        public IEnumerable<string> Expected { get; }
+        public ParseError Error { get; }
     }
 }

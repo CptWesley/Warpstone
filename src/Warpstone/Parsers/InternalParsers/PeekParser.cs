@@ -29,7 +29,7 @@
                 return new ParseResult<T>(parseResult.Value, position, position);
             }
 
-            return new ParseResult<T>(position, parseResult.Position, parseResult.Expected);
+            return new ParseResult<T>(position, parseResult.Position, parseResult.Error);
         }
     }
 }
