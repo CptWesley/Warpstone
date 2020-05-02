@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Examples.Json", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Examples.Expressions", "Warpstone.Examples.Expressions\Warpstone.Examples.Expressions.csproj", "{052BBEBD-11BE-4316-94F8-261DDD0D77A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone.Tests", "Warpstone.Tests\Warpstone.Tests.csproj", "{A81E1B83-5552-40F4-BEFC-F4F180F7484D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Tests", "Warpstone.Tests\Warpstone.Tests.csproj", "{A81E1B83-5552-40F4-BEFC-F4F180F7484D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone.Grammars", "Warpstone.Grammars\Warpstone.Grammars.csproj", "{FA1723CE-13CA-4052-952D-B66B17F3A440}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

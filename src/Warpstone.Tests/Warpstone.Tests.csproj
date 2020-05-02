@@ -39,6 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Warpstone.Grammars\Warpstone.Grammars.csproj" />
     <ProjectReference Include="..\Warpstone\Warpstone.csproj" />
   </ItemGroup>
 </Project>
