@@ -9,9 +9,9 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Parser combinator with a focus on elegance.</Description>
     <PackageTags>parser combinator language parsing parsercombinator</PackageTags>
-    <AssemblyVersion>1.0.1.0</AssemblyVersion>
-    <FileVersion>1.0.1.0</FileVersion>
-    <Version>1.0.1</Version>
+    <AssemblyVersion>1.0.2.0</AssemblyVersion>
+    <FileVersion>1.0.2.0</FileVersion>
+    <Version>1.0.2</Version>
     <Copyright></Copyright>
     <PackageIconUrl>https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo.png</PackageIconUrl>
   </PropertyGroup>
