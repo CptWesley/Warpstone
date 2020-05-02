@@ -16,6 +16,17 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <param name="op">The operator.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <returns>A left-to-right associative operation.</returns>
+        public static Operation<TExpression, TOperator> LeftToRight<TExpression, TOperator>(Parser<TOperator> op, Func<TExpression, TExpression, TExpression> transformation)
+            => SingleOperation(Associativity.Left, op, transformation);
+
+        /// <summary>
+        /// Creates a left-to-right associative operation.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
         public static Operation<TExpression, TOperator> LeftToRight<TExpression, TOperator>(IEnumerable<(Parser<TOperator>, Func<TExpression, TExpression, TExpression>)> transformations)
@@ -41,6 +52,17 @@ namespace Warpstone.Parsers
         /// <returns>A left-to-right associative operation.</returns>
         public static Operation<TExpression, TOperator> LeftToRight<TExpression, TOperator>(Dictionary<Parser<TOperator>, Func<TExpression, TExpression, TExpression>> transformations)
             => new Operation<TExpression, TOperator>(Associativity.Left, transformations);
+
+        /// <summary>
+        /// Creates a right-to-left associative operation.
+        /// </summary>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <param name="op">The operator.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <returns>A right-to-left associative operation.</returns>
+        public static Operation<TExpression, TOperator> RightToLeft<TExpression, TOperator>(Parser<TOperator> op, Func<TExpression, TExpression, TExpression> transformation)
+            => SingleOperation(Associativity.Right, op, transformation);
 
         /// <summary>
         /// Creates a right-to-left associative operation.
@@ -112,6 +134,12 @@ namespace Warpstone.Parsers
             return terminalParser.ThenAdd(Many(operatorParser.ThenAdd(terminalParser)))
             .Transform((x, y) => UnfoldExpression(x, y, operations));
         }
+
+        private static Operation<TExpression, TOperator> SingleOperation<TExpression, TOperator>(Associativity associativity, Parser<TOperator> op, Func<TExpression, TExpression, TExpression> transformation)
+            => new Operation<TExpression, TOperator>(associativity, new Dictionary<Parser<TOperator>, Func<TExpression, TExpression, TExpression>>
+            {
+                { op, transformation },
+            });
 
         private static TExpression UnfoldExpression<TExpression, TOperator>(TExpression head, IEnumerable<(Parser<TOperator>, TExpression)> tail, IEnumerable<Operation<TExpression>> operations)
         {
