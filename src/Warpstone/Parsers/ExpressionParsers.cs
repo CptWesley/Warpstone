@@ -187,7 +187,7 @@ namespace Warpstone.Parsers
         /// <param name="terminalParser">The terminal parser.</param>
         /// <param name="operations">The operations.</param>
         /// <returns>A parser parsing a binary expression recursively.</returns>
-        public static Parser<TExpression> BinaryExpression<TOperator, TExpression>(Parser<TExpression> terminalParser, IEnumerable<Operation<TOperator, TExpression>> operations)
+        public static Parser<TExpression> BuildExpression<TOperator, TExpression>(Parser<TExpression> terminalParser, IEnumerable<Operation<TOperator, TExpression>> operations)
         {
             if (operations == null)
             {

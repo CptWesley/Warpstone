@@ -19,7 +19,7 @@ namespace Warpstone.Examples.Expressions
             = Or(Parenthesized, Num).Trim();
 
         private static readonly Parser<Expression> Exp
-            = BinaryExpression(Atom, new[]
+            = BuildExpression(Atom, new[]
             {
                 RightToLeft<char, Expression>(
                     (Operator('^'), (l, r) => new PowExpression(l, r))
