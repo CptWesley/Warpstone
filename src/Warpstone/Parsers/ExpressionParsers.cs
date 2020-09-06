@@ -14,96 +14,180 @@ namespace Warpstone.Parsers
         /// <summary>
         /// Creates a left-to-right associative operation.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="op">The operator.</param>
         /// <param name="transformation">The transformation.</param>
         /// <returns>A left-to-right associative operation.</returns>
-        public static Operation<TOperator, TExpression> LeftToRight<TExpression, TOperator>(Parser<TOperator> op, OperatorTransform<TOperator, TExpression> transformation)
+        public static Operation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(Parser<TOperator> op, OperatorTransform<TOperator, TExpression> transformation)
             => SingleOperation(Associativity.Left, op, transformation);
 
         /// <summary>
         /// Creates a left-to-right associative operation.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="op">The operator.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <returns>A left-to-right associative operation.</returns>
+        public static Operation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(Parser<TOperator> op, OperatorTransform<TExpression> transformation)
+            => LeftToRight(op, transformation.ExpandTransform<TOperator, TExpression>());
+
+        /// <summary>
+        /// Creates a left-to-right associative operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
-        public static Operation<TOperator, TExpression> LeftToRight<TExpression, TOperator>(IEnumerable<(Parser<TOperator>, OperatorTransform<TOperator, TExpression>)> transformations)
+        public static Operation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(IEnumerable<(Parser<TOperator>, OperatorTransform<TOperator, TExpression>)> transformations)
             => LeftToRight(transformations.ToDictionary(x => x.Item1, x => x.Item2));
 
         /// <summary>
         /// Creates a left-to-right associative operation.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A left-to-right associative operation.</returns>
+        public static Operation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(IEnumerable<(Parser<TOperator>, OperatorTransform<TExpression>)> transformations)
+            => LeftToRight(transformations.Select(x => x.ExpandTransform()));
+
+        /// <summary>
+        /// Creates a left-to-right associative operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
-        public static Operation<TOperator, TExpression> LeftToRight<TExpression, TOperator>((Parser<TOperator>, OperatorTransform<TOperator, TExpression>) first, params (Parser<TOperator>, OperatorTransform<TOperator, TExpression>)[] others)
+        public static Operation<TOperator, TExpression> LeftToRight<TOperator, TExpression>((Parser<TOperator>, OperatorTransform<TOperator, TExpression>) first, params (Parser<TOperator>, OperatorTransform<TOperator, TExpression>)[] others)
             => LeftToRight(others.Prepend(first));
 
         /// <summary>
         /// Creates a left-to-right associative operation.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="first">The first transformation.</param>
+        /// <param name="others">The other transformations.</param>
+        /// <returns>A left-to-right associative operation.</returns>
+        public static Operation<TOperator, TExpression> LeftToRight<TOperator, TExpression>((Parser<TOperator>, OperatorTransform<TExpression>) first, params (Parser<TOperator>, OperatorTransform<TExpression>)[] others)
+            => LeftToRight(others.Prepend(first).Select(x => x.ExpandTransform()));
+
+        /// <summary>
+        /// Creates a left-to-right associative operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
-        public static Operation<TOperator, TExpression> LeftToRight<TExpression, TOperator>(Dictionary<Parser<TOperator>, OperatorTransform<TOperator, TExpression>> transformations)
+        public static Operation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(Dictionary<Parser<TOperator>, OperatorTransform<TOperator, TExpression>> transformations)
             => new Operation<TOperator, TExpression>(Associativity.Left, transformations);
+
+        /// <summary>
+        /// Creates a left-to-right associative operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A left-to-right associative operation.</returns>
+        public static Operation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(Dictionary<Parser<TOperator>, OperatorTransform<TExpression>> transformations)
+            => LeftToRight(transformations.ToDictionary(x => x.Key, x => x.Value.ExpandTransform<TOperator, TExpression>()));
 
         /// <summary>
         /// Creates a right-to-left associative operation.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="op">The operator.</param>
         /// <param name="transformation">The transformation.</param>
         /// <returns>A right-to-left associative operation.</returns>
-        public static Operation<TOperator, TExpression> RightToLeft<TExpression, TOperator>(Parser<TOperator> op, OperatorTransform<TOperator, TExpression> transformation)
+        public static Operation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(Parser<TOperator> op, OperatorTransform<TOperator, TExpression> transformation)
             => SingleOperation(Associativity.Right, op, transformation);
 
         /// <summary>
         /// Creates a right-to-left associative operation.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="op">The operator.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <returns>A right-to-left associative operation.</returns>
+        public static Operation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(Parser<TOperator> op, OperatorTransform<TExpression> transformation)
+            => RightToLeft(op, transformation.ExpandTransform<TOperator, TExpression>());
+
+        /// <summary>
+        /// Creates a right-to-left associative operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A right-to-left associative operation.</returns>
-        public static Operation<TOperator, TExpression> RightToLeft<TExpression, TOperator>(IEnumerable<(Parser<TOperator>, OperatorTransform<TOperator, TExpression>)> transformations)
+        public static Operation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(IEnumerable<(Parser<TOperator>, OperatorTransform<TOperator, TExpression>)> transformations)
             => RightToLeft(transformations.ToDictionary(x => x.Item1, x => x.Item2));
 
         /// <summary>
         /// Creates a right-to-left associative operation.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A right-to-left associative operation.</returns>
+        public static Operation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(IEnumerable<(Parser<TOperator>, OperatorTransform<TExpression>)> transformations)
+            => RightToLeft(transformations.Select(x => x.ExpandTransform()));
+
+        /// <summary>
+        /// Creates a right-to-left associative operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A right-to-left associative operation.</returns>
-        public static Operation<TOperator, TExpression> RightToLeft<TExpression, TOperator>((Parser<TOperator>, OperatorTransform<TOperator, TExpression>) first, params (Parser<TOperator>, OperatorTransform<TOperator, TExpression>)[] others)
+        public static Operation<TOperator, TExpression> RightToLeft<TOperator, TExpression>((Parser<TOperator>, OperatorTransform<TOperator, TExpression>) first, params (Parser<TOperator>, OperatorTransform<TOperator, TExpression>)[] others)
             => RightToLeft(others.Prepend(first));
 
         /// <summary>
         /// Creates a right-to-left associative operation.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="first">The first transformation.</param>
+        /// <param name="others">The other transformations.</param>
+        /// <returns>A right-to-left associative operation.</returns>
+        public static Operation<TOperator, TExpression> RightToLeft<TOperator, TExpression>((Parser<TOperator>, OperatorTransform<TExpression>) first, params (Parser<TOperator>, OperatorTransform<TExpression>)[] others)
+            => RightToLeft(others.Prepend(first).Select(x => x.ExpandTransform()));
+
+        /// <summary>
+        /// Creates a right-to-left associative operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A right-to-left associative operation.</returns>
-        public static Operation<TOperator, TExpression> RightToLeft<TExpression, TOperator>(Dictionary<Parser<TOperator>, OperatorTransform<TOperator, TExpression>> transformations)
+        public static Operation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(Dictionary<Parser<TOperator>, OperatorTransform<TOperator, TExpression>> transformations)
             => new Operation<TOperator, TExpression>(Associativity.Right, transformations);
+
+        /// <summary>
+        /// Creates a right-to-left associative operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A right-to-left associative operation.</returns>
+        public static Operation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(Dictionary<Parser<TOperator>, OperatorTransform<TExpression>> transformations)
+            => RightToLeft(transformations.ToDictionary(x => x.Key, x => x.Value.ExpandTransform<TOperator, TExpression>()));
 
         /// <summary>
         /// Creates a parser which parses a binary expression recursively.
         /// </summary>
-        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="terminalParser">The terminal parser.</param>
         /// <param name="operations">The operations.</param>
         /// <returns>A parser parsing a binary expression recursively.</returns>
-        public static Parser<TExpression> BinaryExpression<TExpression, TOperator>(Parser<TExpression> terminalParser, IEnumerable<Operation<TOperator, TExpression>> operations)
+        public static Parser<TExpression> BinaryExpression<TOperator, TExpression>(Parser<TExpression> terminalParser, IEnumerable<Operation<TOperator, TExpression>> operations)
         {
             if (operations == null)
             {
@@ -135,13 +219,13 @@ namespace Warpstone.Parsers
             .Transform((x, y) => UnfoldExpression(x, y, operations));
         }
 
-        private static Operation<TOperator, TExpression> SingleOperation<TExpression, TOperator>(Associativity associativity, Parser<TOperator> op, OperatorTransform<TOperator, TExpression> transformation)
+        private static Operation<TOperator, TExpression> SingleOperation<TOperator, TExpression>(Associativity associativity, Parser<TOperator> op, OperatorTransform<TOperator, TExpression> transformation)
             => new Operation<TOperator, TExpression>(associativity, new Dictionary<Parser<TOperator>, OperatorTransform<TOperator, TExpression>>
             {
                 { op, transformation },
             });
 
-        private static TExpression UnfoldExpression<TExpression, TOperator>(TExpression head, IEnumerable<(Parser<TOperator>, TExpression)> tail, IEnumerable<Operation<TOperator, TExpression>> operations)
+        private static TExpression UnfoldExpression<TOperator, TExpression>(TExpression head, IEnumerable<(Parser<TOperator>, TExpression)> tail, IEnumerable<Operation<TOperator, TExpression>> operations)
         {
             List<object> list = new List<object>
             {
@@ -211,5 +295,11 @@ namespace Warpstone.Parsers
             list.Insert(index, value);
             list.RemoveAt(index - 1);
         }
+
+        private static OperatorTransform<TOperator, TExpression> ExpandTransform<TOperator, TExpression>(this OperatorTransform<TExpression> transformation)
+            => (d, l, r) => transformation(l, r);
+
+        private static (Parser<TOperator>, OperatorTransform<TOperator, TExpression>) ExpandTransform<TOperator, TExpression>(this (Parser<TOperator> op, OperatorTransform<TExpression> transformation) pair)
+            => (pair.op, (d, l, r) => pair.transformation(l, r));
     }
 }

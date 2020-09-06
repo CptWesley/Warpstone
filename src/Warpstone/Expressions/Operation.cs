@@ -14,6 +14,15 @@ namespace Warpstone.Expressions
     public delegate TExpression OperatorTransform<TOperator, TExpression>(TOperator @operator, TExpression l, TExpression r);
 
     /// <summary>
+    /// Delegate for operator transformations.
+    /// </summary>
+    /// <typeparam name="TExpression">The type of the expression.</typeparam>
+    /// <param name="l">The left argument of the operator.</param>
+    /// <param name="r">The right argument of the operator.</param>
+    /// <returns>The transformation which is applied.</returns>
+    public delegate TExpression OperatorTransform<TExpression>(TExpression l, TExpression r);
+
+    /// <summary>
     /// A pattern for matching expressions with two sub-expressions and a single operator.
     /// </summary>
     /// <typeparam name="TOperator">The expression type.</typeparam>
