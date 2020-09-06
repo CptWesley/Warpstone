@@ -20,13 +20,13 @@ namespace Warpstone.Tests.Parsers
         [SuppressMessage("Readability Rules", "SA1009", Justification = "Nicer to look at.")]
         [SuppressMessage("Readability Rules", "SA1111", Justification = "Nicer to look at.")]
         private static readonly Parser<Expression> Exp
-            = BinaryExpression(Num, new[]
+            = BuildExpression(Num, new[]
             {
-                RightToLeft<Expression, char>(
+                RightToLeft<char, Expression>(
                     (Operator('^'), (l, r) => new PowExpression(l, r))
                 ),
-                LeftToRight<Expression, char>(Operator('*'), (l, r) => new MulExpression(l, r)),
-                LeftToRight<Expression, char>(
+                LeftToRight<char, Expression>(Operator('*'), (l, r) => new MulExpression(l, r)),
+                LeftToRight<char, Expression>(
                     (Operator('+'), (l, r) => new AddExpression(l, r)),
                     (Operator('-'), (l, r) => new SubExpression(l, r))
                 ),
