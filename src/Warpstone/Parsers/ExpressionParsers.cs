@@ -194,12 +194,12 @@ namespace Warpstone.Parsers
                 throw new ArgumentNullException(nameof(operations));
             }
 
-            List<Parser<Parser<TOperator>>> operators = new List<Parser<Parser<TOperator>>>();
+            List<Parser<(Parser<TOperator>, TOperator)>> operators = new List<Parser<(Parser<TOperator>, TOperator)>>();
             foreach (var operation in operations)
             {
                 foreach (var transformation in operation.Transformations)
                 {
-                    operators.Add(transformation.Key.Transform(x => transformation.Key));
+                    operators.Add(transformation.Key.Transform(x => (transformation.Key, x)));
                 }
             }
 
@@ -208,7 +208,7 @@ namespace Warpstone.Parsers
                 throw new ArgumentException("Requires at least one operator.", nameof(operations));
             }
 
-            Parser<Parser<TOperator>> operatorParser = operators[0];
+            Parser<(Parser<TOperator>, TOperator)> operatorParser = operators[0];
 
             for (int i = 1; i < operators.Count; i++)
             {
@@ -225,15 +225,15 @@ namespace Warpstone.Parsers
                 { op, transformation },
             });
 
-        private static TExpression UnfoldExpression<TOperator, TExpression>(TExpression head, IEnumerable<(Parser<TOperator>, TExpression)> tail, IEnumerable<Operation<TOperator, TExpression>> operations)
+        private static TExpression UnfoldExpression<TOperator, TExpression>(TExpression head, IEnumerable<(Parser<TOperator>, TOperator, TExpression)> tail, IEnumerable<Operation<TOperator, TExpression>> operations)
         {
             List<object> list = new List<object>
             {
                 head,
             };
-            foreach ((Parser<TOperator> op, TExpression e) in tail)
+            foreach ((Parser<TOperator> opParser, TOperator op, TExpression e) in tail)
             {
-                list.Add(op);
+                list.Add((opParser, op));
                 list.Add(e);
             }
 
@@ -259,9 +259,9 @@ namespace Warpstone.Parsers
                 int index = 1;
                 while (index < list.Count)
                 {
-                    if (binop.Transformations.TryGetValue((Parser<TOperator>)list[index], out OperatorTransform<TOperator, TExpression> transformation))
+                    if (binop.Transformations.TryGetValue(list[index].GetParser<TOperator>(), out OperatorTransform<TOperator, TExpression> transformation))
                     {
-                        ReplaceExpression(list, index, transformation((TOperator)list[index], (TExpression)list[index - 1], (TExpression)list[index + 1]));
+                        ReplaceExpression(list, index, transformation(list[index].GetOperator<TOperator>(), (TExpression)list[index - 1], (TExpression)list[index + 1]));
                     }
                     else
                     {
@@ -278,9 +278,9 @@ namespace Warpstone.Parsers
                 int index = list.Count - 2;
                 while (index > 0)
                 {
-                    if (binop.Transformations.TryGetValue((Parser<TOperator>)list[index], out OperatorTransform<TOperator, TExpression> transformation))
+                    if (binop.Transformations.TryGetValue(list[index].GetParser<TOperator>(), out OperatorTransform<TOperator, TExpression> transformation))
                     {
-                        ReplaceExpression(list, index, transformation((TOperator)list[index], (TExpression)list[index - 1], (TExpression)list[index + 1]));
+                        ReplaceExpression(list, index, transformation(list[index].GetOperator<TOperator>(), (TExpression)list[index - 1], (TExpression)list[index + 1]));
                     }
 
                     index -= 2;
@@ -301,5 +301,11 @@ namespace Warpstone.Parsers
 
         private static (Parser<TOperator>, OperatorTransform<TOperator, TExpression>) ExpandTransform<TOperator, TExpression>(this (Parser<TOperator> op, OperatorTransform<TExpression> transformation) pair)
             => (pair.op, (d, l, r) => pair.transformation(l, r));
+
+        private static Parser<TOperator> GetParser<TOperator>(this object o)
+            => ((ValueTuple<Parser<TOperator>, TOperator>)o).Item1;
+
+        private static TOperator GetOperator<TOperator>(this object o)
+            => ((ValueTuple<Parser<TOperator>, TOperator>)o).Item2;
     }
 }
