@@ -21,14 +21,14 @@ namespace Warpstone.Examples.Expressions
         private static readonly Parser<Expression> Exp
             = BinaryExpression(Atom, new[]
             {
-                RightToLeft<Expression, char>(
+                RightToLeft<char, Expression>(
                     (Operator('^'), (l, r) => new PowExpression(l, r))
                 ),
-                LeftToRight<Expression, char>(
+                LeftToRight<char, Expression>(
                     (Operator('*'), (l, r) => new MulExpression(l, r)),
                     (Operator('/'), (l, r) => new DivExpression(l, r))
                 ),
-                LeftToRight<Expression, char>(
+                LeftToRight<char, Expression>(
                     (Operator('+'), (l, r) => new AddExpression(l, r)),
                     (Operator('-'), (l, r) => new SubExpression(l, r))
                 ),
