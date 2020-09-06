@@ -22,13 +22,14 @@ namespace Warpstone.Tests.Parsers
         private static readonly Parser<Expression> Exp
             = BuildExpression(Num, new[]
             {
-                RightToLeft<char, Expression>(
-                    (Operator('^'), (l, r) => new PowExpression(l, r))
+                Post<string, Expression>(Operator("++"), (op, e) => new IncrExpression(e)),
+                RightToLeft<string, Expression>(
+                    (Operator("^"), (l, r) => new PowExpression(l, r))
                 ),
-                LeftToRight<char, Expression>(Operator('*'), (l, r) => new MulExpression(l, r)),
-                LeftToRight<char, Expression>(
-                    (Operator('+'), (l, r) => new AddExpression(l, r)),
-                    (Operator('-'), (l, r) => new SubExpression(l, r))
+                LeftToRight<string, Expression>(Operator("*"), (l, r) => new MulExpression(l, r)),
+                LeftToRight<string, Expression>(
+                    (Operator("+"), (l, r) => new AddExpression(l, r)),
+                    (Operator("-"), (l, r) => new SubExpression(l, r))
                 ),
             });
 
@@ -107,8 +108,16 @@ namespace Warpstone.Tests.Parsers
             => AssertThat(Parse("3 + 2 * 6 + 1"))
             .IsEquivalentTo(new AddExpression(new AddExpression(new NumExpression(3), new MulExpression(new NumExpression(2), new NumExpression(6))), new NumExpression(1)));
 
-        private static Parser<char> Operator(char c)
-            => Char(c).Trim();
+        /// <summary>
+        /// Checks that simple increments work correctly.
+        /// </summary>
+        [Fact]
+        public static void IncrSimple()
+            => AssertThat(Parse("5++"))
+            .IsEquivalentTo(new IncrExpression(new NumExpression(5)));
+
+        private static Parser<string> Operator(string c)
+            => String(c).Trim();
 
         private static Expression Parse(string input)
             => Exp.ThenEnd().Parse(input);
@@ -168,6 +177,14 @@ namespace Warpstone.Tests.Parsers
                 : base(left, right)
             {
             }
+        }
+
+        private class IncrExpression : Expression
+        {
+            public IncrExpression(Expression expression)
+                => Expression = expression;
+
+            public Expression Expression { get; }
         }
     }
 }
