@@ -31,7 +31,7 @@ namespace Warpstone.Parsers
                 pattern = $"-{max + 1}|-?{pattern}";
             }
 
-            return Regex(pattern);
+            return Regex($@"({pattern})(?!\d)");
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace Warpstone.Parsers
                 throw new ArgumentException("Must be greater than 0.", nameof(maxValue));
             }
 
-            return Regex(BuildPattern(maxValue.ToString(CultureInfo.InvariantCulture), true) + @"(?!\d)");
+            return Regex($@"({BuildPattern(maxValue.ToString(CultureInfo.InvariantCulture), true)})(?!\d)");
         }
 
         /// <summary>
