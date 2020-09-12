@@ -23,6 +23,7 @@ namespace Warpstone.Tests.Parsers
             = BuildExpression(Num, new[]
             {
                 Post<string, Expression>(Operator("++"), (op, e) => new IncrExpression(e)),
+                Post<string, Expression>(Operator("--"), (op, e) => new IncrExpression(e)),
                 RightToLeft<string, Expression>(
                     (Operator("^"), (l, r) => new PowExpression(l, r))
                 ),
@@ -116,6 +117,14 @@ namespace Warpstone.Tests.Parsers
             => AssertThat(Parse("5++"))
             .IsEquivalentTo(new IncrExpression(new NumExpression(5)));
 
+        /// <summary>
+        /// Checks that simple increments work correctly.
+        /// </summary>
+        [Fact]
+        public static void IncrDoubleSimple()
+            => AssertThat(Parse("5++++"))
+            .IsEquivalentTo(new DecrExpression(new IncrExpression(new NumExpression(5))));
+
         private static Parser<string> Operator(string c)
             => String(c).Trim();
 
@@ -179,12 +188,28 @@ namespace Warpstone.Tests.Parsers
             }
         }
 
-        private class IncrExpression : Expression
+        private class UnaryExpression : Expression
         {
-            public IncrExpression(Expression expression)
+            public UnaryExpression(Expression expression)
                 => Expression = expression;
 
             public Expression Expression { get; }
+        }
+
+        private class IncrExpression : UnaryExpression
+        {
+            public IncrExpression(Expression expression)
+                : base(expression)
+            {
+            }
+        }
+
+        private class DecrExpression : UnaryExpression
+        {
+            public DecrExpression(Expression expression)
+                : base(expression)
+            {
+            }
         }
     }
 }

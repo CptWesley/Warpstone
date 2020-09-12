@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using Warpstone.Expressions;
 using Warpstone.Parsers.InternalParsers;
 using static Warpstone.Parsers.BasicParsers;
@@ -240,7 +241,7 @@ namespace Warpstone.Parsers
             Parser<ExpressionTuple<TOperator, TExpression>> expParser = terminalParser.ThenAdd(Many(postOpParser)).Transform((e, pop) => new ExpressionTuple<TOperator, TExpression>(e, pop));
 
             return expParser.ThenAdd(Many(binOpParser.ThenAdd(expParser)))
-                .Transform((x, y) => UnfoldExpression(x, y, operations));
+                .Transform((x, y) => UnfoldExpression(CreateList(x, y), operations));
         }
 
         private static Operation<TOperator, TExpression> SingleOperation<TOperator, TExpression>(Associativity associativity, Parser<TOperator> op, BinaryOperatorTransform<TOperator, TExpression> transformation)
@@ -249,7 +250,7 @@ namespace Warpstone.Parsers
                 { op, transformation },
             });
 
-        private static TExpression UnfoldExpression<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple<TOperator>, ExpressionTuple<TOperator, TExpression>)> tail, IEnumerable<Operation<TOperator, TExpression>> operations)
+        private static List<object> CreateList<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple<TOperator>, ExpressionTuple<TOperator, TExpression>)> tail)
         {
             List<object> list = new List<object>
             {
@@ -263,6 +264,11 @@ namespace Warpstone.Parsers
                 list.AddRange(exp.PostOperators);
             }
 
+            return list;
+        }
+
+        private static TExpression UnfoldExpression<TOperator, TExpression>(List<object> list, IEnumerable<Operation<TOperator, TExpression>> operations)
+        {
             foreach (Operation<TOperator, TExpression> operation in operations)
             {
                 operation.UnfoldExpression(list);

@@ -56,7 +56,7 @@ namespace Warpstone.Expressions
             }
         }
 
-        private static void ReplaceExpression(List<object> list, int index, TExpression value)
+        private static void ReplaceExpression(List<object> list, int index, object value)
         {
             list.RemoveAt(index);
             list.Insert(index, value);
