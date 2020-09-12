@@ -126,5 +126,45 @@ namespace Warpstone.Tests.Parsers
             AssertThat(() => parser.Parse("-1")).ThrowsExactlyException<ParseException>();
             AssertThat(() => parser.Parse("12")).ThrowsExactlyException<ParseException>();
         }
+
+        /// <summary>
+        /// Checks that we can parse 32 bit floats correctly.
+        /// </summary>
+        /// <param name="x">The input of the test.</param>
+        [Theory]
+        [InlineData("0")]
+        [InlineData("128")]
+        [InlineData("255")]
+        [InlineData("2147483647")]
+        [InlineData("-2147483648")]
+        [InlineData("914748364")]
+        [InlineData("10")]
+        [InlineData("20")]
+        [InlineData("202")]
+        [InlineData("2147483648")]
+        [InlineData("-2147483649")]
+        [InlineData("340282346638528859811704183484516925440")]
+        [InlineData("340282346638528859811704183484516925439")]
+        [InlineData("-340282346638528859811704183484516925440")]
+        [InlineData("-340282346638528859811704183484516925439")]
+        public static void Float32SuccessTest(string x)
+        {
+            Parser<string> parser = Float(float.MaxValue).ThenEnd();
+            AssertThat(parser.Parse(x)).IsEqualTo(x);
+        }
+
+        /// <summary>
+        /// Checks that we can parse 32 bit signed ints correctly.
+        /// </summary>
+        /// <param name="x">The input of the test.</param>
+        [Theory]
+        [InlineData("04")]
+        [InlineData("340282346638528859811704183484516925441")]
+        [InlineData("-340282346638528859811704183484516925441")]
+        public static void Float32FailTest(string x)
+        {
+            Parser<string> parser = Float(float.MaxValue).ThenEnd();
+            AssertThat(() => parser.Parse(x)).ThrowsExactlyException<ParseException>();
+        }
     }
 }

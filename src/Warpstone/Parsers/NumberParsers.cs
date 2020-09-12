@@ -68,6 +68,39 @@ namespace Warpstone.Parsers
             return Regex(BuildPattern(maxValue.ToString(CultureInfo.InvariantCulture), true));
         }
 
+        /// <summary>
+        /// Creates a parser which parses any given floating point value within the given maximum value either positive or negative.
+        /// </summary>
+        /// <param name="maxValue">The maximum value.</param>
+        /// <returns>A parser which parses a floating point value.</returns>
+        public static Parser<string> Float(float maxValue)
+            => Float(new BigInteger(maxValue));
+
+        /// <summary>
+        /// Creates a parser which parses any given floating point value within the given maximum value either positive or negative.
+        /// </summary>
+        /// <param name="maxValue">The maximum value.</param>
+        /// <returns>A parser which parses a floating point value.</returns>
+        public static Parser<string> Float(double maxValue)
+            => Float(new BigInteger(maxValue));
+
+        /// <summary>
+        /// Creates a parser which parses any given floating point value within the given maximum value either positive or negative.
+        /// </summary>
+        /// <param name="maxValue">The maximum value.</param>
+        /// <returns>A parser which parses a floating point value.</returns>
+        public static Parser<string> Float(BigInteger maxValue)
+        {
+            if (maxValue < 0)
+            {
+                maxValue = -maxValue;
+            }
+
+            string pattern = BuildPattern(maxValue.ToString(CultureInfo.InvariantCulture), true);
+
+            return Regex($@"(((-?{pattern})(\.[0-9]+)?)|(\.[0-9]+))");
+        }
+
         private static string BuildPattern(string number, bool isTop)
         {
             int first = int.Parse(number[0].ToString(CultureInfo.InvariantCulture), CultureInfo.InvariantCulture);
