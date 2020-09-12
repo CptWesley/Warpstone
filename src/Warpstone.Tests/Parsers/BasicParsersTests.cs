@@ -515,6 +515,17 @@ namespace Warpstone.Tests.Parsers
         public static void LazyParserCorrect()
             => AssertThat(Lazy(() => Char('x')).Parse("xyz")).IsEqualTo('x');
 
+        /// <summary>
+        /// Checks that the expected parser works correctly.
+        /// </summary>
+        [Fact]
+        public static void ExpectedParserCorrect()
+        {
+            Parser<string> parser = Or(String("x").WithName("booboo"), String("z").WithName("bahbah"));
+            ParseResult<string> result = parser.TryParse("y");
+            AssertThat(result.Error.Expected).ContainsExactly("booboo", "bahbah");
+        }
+
         private class Parsed : IParsed
         {
             public Parsed(char c)

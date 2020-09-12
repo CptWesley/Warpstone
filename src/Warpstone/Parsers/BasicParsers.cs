@@ -402,6 +402,16 @@ namespace Warpstone.Parsers
         public static Parser<T> Lazy<T>(Func<Parser<T>> parser)
             => new LazyParser<T>(parser);
 
+        /// <summary>
+        /// Creates a parser that replaces the nested expected values with a given expected name.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <param name="name">The name.</param>
+        /// <returns>A parser that replaces the nested expected values with a given expected name.</returns>
+        public static Parser<T> WithName<T>(this Parser<T> parser, string name)
+            => new ExpectedParser<T>(parser, name);
+
         private static Parser<T> InnerOr<T>(IEnumerable<Parser<T>> parsers)
         {
             if (parsers.Count() == 1)

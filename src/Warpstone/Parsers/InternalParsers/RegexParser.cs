@@ -32,7 +32,7 @@ namespace Warpstone.Parsers.InternalParsers
 
             if (!match.Success || match.Index != position)
             {
-                return new ParseResult<string>(position, position, new ParseError(new string[] { Pattern }, GetFound(input, position)));
+                return new ParseResult<string>(position, position, new ParseError(new string[] { $"'{Pattern}'" }, GetFound(input, position)));
             }
 
             return new ParseResult<string>(match.Value, match.Index, match.Index + match.Length);
