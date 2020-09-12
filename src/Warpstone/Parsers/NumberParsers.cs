@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Numerics;
 using static Warpstone.Parsers.BasicParsers;
 
@@ -31,6 +32,40 @@ namespace Warpstone.Parsers
             }
 
             return Regex(pattern);
+        }
+
+        /// <summary>
+        /// Creates a parser which parses any given integer number between zero and the given maximum value.
+        /// </summary>
+        /// <param name="maxValue">The maximum value.</param>
+        /// <returns>A parser which parses an integer.</returns>
+        /// <exception cref="ArgumentException">Must be greater than 0. - maxValue.</exception>
+        public static Parser<string> Integer(long maxValue)
+            => Integer(new BigInteger(maxValue));
+
+        /// <summary>
+        /// Creates a parser which parses any given integer number between zero and the given maximum value.
+        /// </summary>
+        /// <param name="maxValue">The maximum value.</param>
+        /// <returns>A parser which parses an integer.</returns>
+        /// <exception cref="ArgumentException">Must be greater than 0. - maxValue.</exception>
+        public static Parser<string> Integer(int maxValue)
+            => Integer(new BigInteger(maxValue));
+
+        /// <summary>
+        /// Creates a parser which parses any given integer number between zero and the given maximum value.
+        /// </summary>
+        /// <param name="maxValue">The maximum value.</param>
+        /// <returns>A parser which parses an integer.</returns>
+        /// <exception cref="ArgumentException">Must be greater than 0. - maxValue.</exception>
+        public static Parser<string> Integer(BigInteger maxValue)
+        {
+            if (maxValue < 0)
+            {
+                throw new ArgumentException("Must be greater than 0.", nameof(maxValue));
+            }
+
+            return Regex(BuildPattern(maxValue.ToString(CultureInfo.InvariantCulture), true));
         }
 
         private static string BuildPattern(string number, bool isTop)

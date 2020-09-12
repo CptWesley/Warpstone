@@ -25,7 +25,7 @@ namespace Warpstone.Tests.Parsers
         }
 
         /// <summary>
-        /// Checks that we can parse bytes correctly.
+        /// Checks that we can parse 32 bit signed ints correctly.
         /// </summary>
         /// <param name="x">The input of the test.</param>
         [Theory]
@@ -45,7 +45,7 @@ namespace Warpstone.Tests.Parsers
         }
 
         /// <summary>
-        /// Checks that we can parse bytes correctly.
+        /// Checks that we can parse 32 bit signed ints correctly.
         /// </summary>
         /// <param name="x">The input of the test.</param>
         [Theory]
@@ -59,7 +59,7 @@ namespace Warpstone.Tests.Parsers
         }
 
         /// <summary>
-        /// Checks that we can parse bytes correctly.
+        /// Checks that we can parse 10 bit ints correctly.
         /// </summary>
         [Fact]
         public static void Max1023Test()
@@ -77,6 +77,31 @@ namespace Warpstone.Tests.Parsers
             AssertThat(() => parser.Parse("04")).ThrowsExactlyException<ParseException>();
             AssertThat(() => parser.Parse("-1")).ThrowsExactlyException<ParseException>();
             AssertThat(() => parser.Parse("1024")).ThrowsExactlyException<ParseException>();
+        }
+
+        /// <summary>
+        /// Checks that we can parse 10 bit ints correctly.
+        /// </summary>
+        [Fact]
+        public static void Max11Test()
+        {
+            Parser<string> parser = Integer(11).ThenEnd();
+            AssertThat(Integer(11)).IsEquivalentTo(Integer(11L));
+            AssertThat(parser.Parse("0")).IsEqualTo("0");
+            AssertThat(parser.Parse("1")).IsEqualTo("1");
+            AssertThat(parser.Parse("2")).IsEqualTo("2");
+            AssertThat(parser.Parse("3")).IsEqualTo("3");
+            AssertThat(parser.Parse("4")).IsEqualTo("4");
+            AssertThat(parser.Parse("5")).IsEqualTo("5");
+            AssertThat(parser.Parse("6")).IsEqualTo("6");
+            AssertThat(parser.Parse("7")).IsEqualTo("7");
+            AssertThat(parser.Parse("8")).IsEqualTo("8");
+            AssertThat(parser.Parse("9")).IsEqualTo("9");
+            AssertThat(parser.Parse("10")).IsEqualTo("10");
+            AssertThat(parser.Parse("11")).IsEqualTo("11");
+            AssertThat(() => parser.Parse("04")).ThrowsExactlyException<ParseException>();
+            AssertThat(() => parser.Parse("-1")).ThrowsExactlyException<ParseException>();
+            AssertThat(() => parser.Parse("12")).ThrowsExactlyException<ParseException>();
         }
     }
 }
