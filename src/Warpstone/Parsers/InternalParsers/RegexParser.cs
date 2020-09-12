@@ -17,7 +17,7 @@ namespace Warpstone.Parsers.InternalParsers
         internal RegexParser(string pattern)
         {
             Pattern = pattern;
-            regex = new Regex(pattern);
+            regex = new Regex(pattern, RegexOptions.ExplicitCapture);
         }
 
         /// <summary>
