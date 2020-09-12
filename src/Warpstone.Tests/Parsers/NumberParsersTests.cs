@@ -147,6 +147,11 @@ namespace Warpstone.Tests.Parsers
         [InlineData("340282346638528859811704183484516925439")]
         [InlineData("-340282346638528859811704183484516925440")]
         [InlineData("-340282346638528859811704183484516925439")]
+        [InlineData("-1.5")]
+        [InlineData("1.5")]
+        [InlineData(".5")]
+        [InlineData("0.5")]
+        [InlineData(".254543634")]
         public static void Float32SuccessTest(string x)
         {
             Parser<string> parser = Float(float.MaxValue).ThenEnd();
@@ -161,6 +166,12 @@ namespace Warpstone.Tests.Parsers
         [InlineData("04")]
         [InlineData("340282346638528859811704183484516925441")]
         [InlineData("-340282346638528859811704183484516925441")]
+        [InlineData("..5")]
+        [InlineData("5.")]
+        [InlineData("5..5")]
+        [InlineData("2.1.2")]
+        [InlineData(".2.")]
+        [InlineData(".2545436.34")]
         public static void Float32FailTest(string x)
         {
             Parser<string> parser = Float(float.MaxValue).ThenEnd();
