@@ -42,7 +42,7 @@ namespace Warpstone
                     expectedString += "one of ";
                 }
 
-                expectedString += string.Join(", ", Expected.Select(x => string.IsNullOrEmpty(x) ? "EOF" : $"'{x}'").Distinct());
+                expectedString += string.Join(", ", Expected.Select(x => string.IsNullOrEmpty(x) ? "EOF" : x).Distinct());
                 expectedString += $" but found {Found}.";
                 return expectedString;
             }
