@@ -65,7 +65,7 @@ namespace Warpstone.Parsers
                 throw new ArgumentException("Must be greater than 0.", nameof(maxValue));
             }
 
-            return Regex(BuildPattern(maxValue.ToString(CultureInfo.InvariantCulture), true));
+            return Regex(BuildPattern(maxValue.ToString(CultureInfo.InvariantCulture), true) + @"(?!\d)");
         }
 
         /// <summary>
@@ -98,7 +98,7 @@ namespace Warpstone.Parsers
 
             string pattern = BuildPattern(maxValue.ToString(CultureInfo.InvariantCulture), true);
 
-            return Regex($@"(((-?{pattern})(\.[0-9]+)?)|(\.[0-9]+))");
+            return Regex($@"(((-?{pattern})(\.[0-9]+)?)|(\.[0-9]+))(?!\d)");
         }
 
         private static string BuildPattern(string number, bool isTop)
