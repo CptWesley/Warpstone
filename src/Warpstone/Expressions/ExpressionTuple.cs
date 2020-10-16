@@ -12,10 +12,16 @@ namespace Warpstone.Expressions
         /// <summary>
         /// Initializes a new instance of the <see cref="ExpressionTuple{TOperator, TExpression}"/> class.
         /// </summary>
+        /// <param name="preOperators">The pre operators.</param>
         /// <param name="expression">The expression.</param>
         /// <param name="postOperators">The post operators.</param>
-        public ExpressionTuple(TExpression expression, IEnumerable<OperatorTuple<TOperator>> postOperators)
-            => (Expression, PostOperators) = (expression, postOperators);
+        public ExpressionTuple(IEnumerable<OperatorTuple<TOperator>> preOperators, TExpression expression, IEnumerable<OperatorTuple<TOperator>> postOperators)
+            => (PreOperators, Expression, PostOperators) = (preOperators, expression, postOperators);
+
+        /// <summary>
+        /// Gets the post operators.
+        /// </summary>
+        public IEnumerable<OperatorTuple<TOperator>> PreOperators { get; }
 
         /// <summary>
         /// Gets the expression.

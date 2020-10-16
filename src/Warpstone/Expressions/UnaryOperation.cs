@@ -32,7 +32,7 @@ namespace Warpstone.Expressions
             {
                 if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]), out UnaryOperatorTransform<TOperator, TExpression> transformation))
                 {
-                    ReplaceExpression(list, index, transformation(GetOperator(list[index]), (TExpression)list[index - 1]));
+                    ReplaceExpression(list, index, transformation(GetOperator(list[index]), (TExpression)list[index - 1]), true);
                 }
                 else
                 {
@@ -44,23 +44,23 @@ namespace Warpstone.Expressions
         /// <inheritdoc/>
         internal override void UnfoldExpressionRight(List<object> list)
         {
-            int index = list.Count - 1;
-            while (index > 0)
+            int index = list.Count - 2;
+            while (index >= 0)
             {
                 if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]), out UnaryOperatorTransform<TOperator, TExpression> transformation))
                 {
-                    ReplaceExpression(list, index, transformation(GetOperator(list[index]), (TExpression)list[index - 1]));
+                    ReplaceExpression(list, index, transformation(GetOperator(list[index]), (TExpression)list[index + 1]), false);
                 }
 
                 index--;
             }
         }
 
-        private static void ReplaceExpression(List<object> list, int index, object value)
+        private static void ReplaceExpression(List<object> list, int index, object value, bool left)
         {
             list.RemoveAt(index);
             list.Insert(index, value);
-            list.RemoveAt(index - 1);
+            list.RemoveAt(index + (left ? -1 : 1));
         }
     }
 }

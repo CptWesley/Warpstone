@@ -33,6 +33,14 @@ namespace Warpstone.Expressions
     public delegate TExpression UnaryOperatorTransform<TOperator, TExpression>(TOperator @operator, TExpression e);
 
     /// <summary>
+    /// Delegate for operator transformations.
+    /// </summary>
+    /// <typeparam name="TExpression">The type of the expression.</typeparam>
+    /// <param name="e">The argument of the operator.</param>
+    /// <returns>The transformation which is applied.</returns>
+    public delegate TExpression UnaryOperatorTransform<TExpression>(TExpression e);
+
+    /// <summary>
     /// Base class for all expression patterns.
     /// </summary>
     /// <typeparam name="TOperator">The expression type.</typeparam>

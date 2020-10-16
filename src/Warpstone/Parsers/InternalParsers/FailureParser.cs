@@ -11,6 +11,6 @@ namespace Warpstone.Parsers.InternalParsers
     {
         /// <inheritdoc/>
         internal override ParseResult<T> TryParse(string input, int position)
-            => new ParseResult<T>(position, position, new ParseError(Array.Empty<string>(), string.Empty));
+            => new ParseResult<T>(position, position, new UnexpectedTokenError(Array.Empty<string>(), string.Empty));
     }
 }

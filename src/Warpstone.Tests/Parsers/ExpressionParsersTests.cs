@@ -22,8 +22,14 @@ namespace Warpstone.Tests.Parsers
         private static readonly Parser<Expression> Exp
             = BuildExpression(Num, new[]
             {
-                Post<string, Expression>(Operator("++"), (op, e) => new IncrExpression(e)),
-                Post<string, Expression>(Operator("--"), (op, e) => new IncrExpression(e)),
+                Pre<string, Expression>(
+                    (Operator("++"), (e) => new PreIncrExpression(e)),
+                    (Operator("--"), (e) => new PreDecrExpression(e))
+                ),
+                Post<string, Expression>(
+                    (Operator("++"), (e) => new PostIncrExpression(e)),
+                    (Operator("--"), (e) => new PostDecrExpression(e))
+                ),
                 RightToLeft<string, Expression>(
                     (Operator("^"), (l, r) => new PowExpression(l, r))
                 ),
@@ -113,17 +119,73 @@ namespace Warpstone.Tests.Parsers
         /// Checks that simple increments work correctly.
         /// </summary>
         [Fact]
-        public static void IncrSimple()
+        public static void PostIncrSimple()
             => AssertThat(Parse("5++"))
-            .IsEquivalentTo(new IncrExpression(new NumExpression(5)));
+            .IsEquivalentTo(new PostIncrExpression(new NumExpression(5)));
 
         /// <summary>
         /// Checks that simple increments work correctly.
         /// </summary>
         [Fact]
-        public static void IncrDoubleSimple()
+        public static void PostIncrDoubleSimple()
             => AssertThat(Parse("5++++"))
-            .IsEquivalentTo(new DecrExpression(new IncrExpression(new NumExpression(5))));
+            .IsEquivalentTo(new PostIncrExpression(new PostIncrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PostIncrDecrSimple()
+            => AssertThat(Parse("5++--"))
+            .IsEquivalentTo(new PostDecrExpression(new PostIncrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple decrements work correctly.
+        /// </summary>
+        [Fact]
+        public static void PreDecrSimple()
+            => AssertThat(Parse("--5"))
+            .IsEquivalentTo(new PreDecrExpression(new NumExpression(5)));
+
+        /// <summary>
+        /// Checks that simple decrements work correctly.
+        /// </summary>
+        [Fact]
+        public static void PreDecrDoubleSimple()
+            => AssertThat(Parse("----5"))
+            .IsEquivalentTo(new PreDecrExpression(new PreDecrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PreIncrDecrSimple()
+            => AssertThat(Parse("--++5"))
+            .IsEquivalentTo(new PreDecrExpression(new PreIncrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PreIncrPostDecrSimple()
+            => AssertThat(Parse("++5--"))
+            .IsEquivalentTo(new PostDecrExpression(new PreIncrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void MixedUnary()
+            => AssertThat(Parse("++--5--++"))
+            .IsEquivalentTo(new PostIncrExpression(new PostDecrExpression(new PreIncrExpression(new PreDecrExpression(new NumExpression(5))))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void UnaryInBinary()
+            => AssertThat(Parse("5 * ++--5--++ + 6--"))
+            .IsEquivalentTo(new AddExpression(new MulExpression(Parse("5"), Parse("++--5--++")), Parse("6--")));
 
         private static Parser<string> Operator(string c)
             => String(c).Trim();
@@ -196,17 +258,33 @@ namespace Warpstone.Tests.Parsers
             public Expression Expression { get; }
         }
 
-        private class IncrExpression : UnaryExpression
+        private class PreIncrExpression : UnaryExpression
         {
-            public IncrExpression(Expression expression)
+            public PreIncrExpression(Expression expression)
                 : base(expression)
             {
             }
         }
 
-        private class DecrExpression : UnaryExpression
+        private class PreDecrExpression : UnaryExpression
         {
-            public DecrExpression(Expression expression)
+            public PreDecrExpression(Expression expression)
+                : base(expression)
+            {
+            }
+        }
+
+        private class PostIncrExpression : UnaryExpression
+        {
+            public PostIncrExpression(Expression expression)
+                : base(expression)
+            {
+            }
+        }
+
+        private class PostDecrExpression : UnaryExpression
+        {
+            public PostDecrExpression(Expression expression)
                 : base(expression)
             {
             }
