@@ -1,4 +1,6 @@
-﻿namespace Warpstone.Parsers.InternalParsers
+﻿using System.Collections.Generic;
+
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// A parser which replaced the expected string with a given string.
@@ -11,11 +13,11 @@
         /// Initializes a new instance of the <see cref="ExpectedParser{T}"/> class.
         /// </summary>
         /// <param name="parser">The parser.</param>
-        /// <param name="name">The name.</param>
-        internal ExpectedParser(Parser<T> parser, string name)
+        /// <param name="names">The names.</param>
+        internal ExpectedParser(Parser<T> parser, IEnumerable<string> names)
         {
             Parser = parser;
-            Name = name;
+            Names = names;
         }
 
         /// <summary>
@@ -26,7 +28,7 @@
         /// <summary>
         /// Gets the name.
         /// </summary>
-        internal string Name { get; }
+        internal IEnumerable<string> Names { get; }
 
         /// <inheritdoc/>
         internal override ParseResult<T> TryParse(string input, int position)
@@ -37,7 +39,7 @@
                 return result;
             }
 
-            return new ParseResult<T>(position, result.Position, new UnexpectedTokenError(new string[] { Name }, GetFound(input, position)));
+            return new ParseResult<T>(position, result.Position, new UnexpectedTokenError(Names, GetFound(input, position)));
         }
     }
 }
