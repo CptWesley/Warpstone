@@ -22,6 +22,9 @@ namespace Warpstone.Tests.Parsers
         private static readonly Parser<Expression> Exp
             = BuildExpression(Num, new[]
             {
+                Post<string, Expression>(
+                    (Operator("[]"), (e) => new ArrayExpression(e))
+                ),
                 Pre<string, Expression>(
                     (Operator("++"), (e) => new PreIncrExpression(e)),
                     (Operator("--"), (e) => new PreDecrExpression(e))
@@ -187,6 +190,26 @@ namespace Warpstone.Tests.Parsers
             => AssertThat(Parse("5 * ++--5--++ + 6--"))
             .IsEquivalentTo(new AddExpression(new MulExpression(Parse("5"), Parse("++--5--++")), Parse("6--")));
 
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PostPriorityCorrect()
+            => AssertThat(Parse("5[]++"))
+            .IsEquivalentTo(new PostIncrExpression(new ArrayExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PostPriorityIncorrect()
+        {
+            ParseResult<Expression> result = Exp.ThenEnd().TryParse("5++[]");
+            AssertThat(result.Success).IsFalse();
+            AssertThat(result.Error).IsExactlyInstanceOf<UnexpectedTokenError>();
+            AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("expression");
+        }
+
         private static Parser<string> Operator(string c)
             => String(c).Trim();
 
@@ -285,6 +308,14 @@ namespace Warpstone.Tests.Parsers
         private class PostDecrExpression : UnaryExpression
         {
             public PostDecrExpression(Expression expression)
+                : base(expression)
+            {
+            }
+        }
+
+        private class ArrayExpression : UnaryExpression
+        {
+            public ArrayExpression(Expression expression)
                 : base(expression)
             {
             }

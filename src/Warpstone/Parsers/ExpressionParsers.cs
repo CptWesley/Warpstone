@@ -425,7 +425,8 @@ namespace Warpstone.Parsers
                 .Transform((pre, e, post) => new ExpressionTuple<TOperator, TExpression>(pre, e, post));
 
             return expParser.ThenAdd(Many(binOpParser.ThenAdd(expParser)))
-                .Transform((x, y) => UnfoldExpression(CreateList(x, y), operations));
+                .Transform((x, y) => UnfoldExpression(CreateList(x, y), operations))
+                .WithName("expression");
         }
 
         private static Operation<TOperator, TExpression> SingleOperation<TOperator, TExpression>(Associativity associativity, Parser<TOperator> op, BinaryOperatorTransform<TOperator, TExpression> transformation)
