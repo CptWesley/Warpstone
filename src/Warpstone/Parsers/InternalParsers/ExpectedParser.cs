@@ -37,7 +37,7 @@
                 return result;
             }
 
-            return new ParseResult<T>(position, result.Position, new ParseError(new string[] { Name }, GetFound(input, position)));
+            return new ParseResult<T>(position, result.Position, new UnexpectedTokenError(new string[] { Name }, GetFound(input, position)));
         }
     }
 }

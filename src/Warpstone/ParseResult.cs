@@ -12,7 +12,7 @@
         /// <param name="startPosition">The start position.</param>
         /// <param name="position">The position.</param>
         /// <param name="error">The parse error that occured.</param>
-        public ParseResult(int startPosition, int position, ParseError error)
+        public ParseResult(int startPosition, int position, IParseError error)
         {
             StartPosition = startPosition;
             Position = position;
@@ -57,6 +57,6 @@
         /// <summary>
         /// Gets the parse error.
         /// </summary>
-        public ParseError Error { get; }
+        public IParseError Error { get; }
     }
 }
