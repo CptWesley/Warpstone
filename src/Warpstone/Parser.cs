@@ -37,7 +37,7 @@ namespace Warpstone
                 return result.Value;
             }
 
-            throw new ParseException(result.Error.Message);
+            throw new ParseException(result.Error.GetMessage());
         }
 
         /// <summary>

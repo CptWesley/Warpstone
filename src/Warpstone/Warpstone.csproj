@@ -3,15 +3,15 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <CodeAnalysisRuleSet>../Ruleset.ruleset</CodeAnalysisRuleSet>
     <DocumentationFile>bin\$(AssemblyName).xml</DocumentationFile>
-	<Authors>Wesley Baartman</Authors>
+    <Authors>Wesley Baartman</Authors>
     <PackageProjectUrl>https://github.com/CptWesley/Warpstone</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CptWesley/Warpstone</RepositoryUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <Description>Parser combinator with a focus on elegance.</Description>
     <PackageTags>parser combinator language parsing parsercombinator</PackageTags>
-    <AssemblyVersion>1.0.2.0</AssemblyVersion>
-    <FileVersion>1.0.2.0</FileVersion>
-    <Version>1.0.2</Version>
+    <AssemblyVersion>$(Version)</AssemblyVersion>
+    <FileVersion>$(Version)</FileVersion>
+    <Version>1.0.4</Version>
     <Copyright></Copyright>
     <PackageIconUrl>https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo.png</PackageIconUrl>
   </PropertyGroup>
@@ -21,7 +21,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="3.3.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>

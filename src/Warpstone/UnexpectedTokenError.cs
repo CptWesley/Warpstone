@@ -6,14 +6,14 @@ namespace Warpstone
     /// <summary>
     /// Represents an error that occured during parsing.
     /// </summary>
-    public class ParseError
+    public class UnexpectedTokenError : IParseError
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ParseError"/> class.
+        /// Initializes a new instance of the <see cref="UnexpectedTokenError"/> class.
         /// </summary>
         /// <param name="expected">The expected characters.</param>
         /// <param name="found">The found character.</param>
-        public ParseError(IEnumerable<string> expected, string found)
+        public UnexpectedTokenError(IEnumerable<string> expected, string found)
         {
             Expected = expected;
             Found = found;
@@ -29,23 +29,18 @@ namespace Warpstone
         /// </summary>
         public string Found { get; }
 
-        /// <summary>
-        /// Gets the error message.
-        /// </summary>
-        public string Message
+        /// <inheritdoc/>
+        public string GetMessage()
         {
-            get
+            string expectedString = $"Expected ";
+            if (Expected.Count() > 1)
             {
-                string expectedString = $"Expected ";
-                if (Expected.Count() > 1)
-                {
-                    expectedString += "one of ";
-                }
-
-                expectedString += string.Join(", ", Expected.Select(x => string.IsNullOrEmpty(x) ? "EOF" : $"'{x}'").Distinct());
-                expectedString += $" but found {Found}.";
-                return expectedString;
+                expectedString += "one of ";
             }
+
+            expectedString += string.Join(", ", Expected.Select(x => string.IsNullOrEmpty(x) ? "EOF" : x).Distinct());
+            expectedString += $" but found {Found}.";
+            return expectedString;
         }
     }
 }
