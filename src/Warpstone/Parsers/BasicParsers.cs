@@ -410,7 +410,28 @@ namespace Warpstone.Parsers
         /// <param name="name">The name.</param>
         /// <returns>A parser that replaces the nested expected values with a given expected name.</returns>
         public static Parser<T> WithName<T>(this Parser<T> parser, string name)
-            => new ExpectedParser<T>(parser, name);
+            => parser.WithNames(new string[] { name });
+
+        /// <summary>
+        /// Creates a parser that replaces the nested expected values with given expected names.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <param name="names">The names.</param>
+        /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
+        public static Parser<T> WithNames<T>(this Parser<T> parser, IEnumerable<string> names)
+            => new ExpectedParser<T>(parser, names);
+
+        /// <summary>
+        /// Creates a parser that replaces the nested expected values with given expected names.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <param name="firstName">The first name.</param>
+        /// <param name="otherNames">The other names.</param>
+        /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
+        public static Parser<T> WithNames<T>(this Parser<T> parser, string firstName, params string[] otherNames)
+            => parser.WithNames(new string[] { firstName }.Concat(otherNames));
 
         private static Parser<T> InnerOr<T>(IEnumerable<Parser<T>> parsers)
         {

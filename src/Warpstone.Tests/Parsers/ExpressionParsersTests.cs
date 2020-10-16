@@ -20,15 +20,26 @@ namespace Warpstone.Tests.Parsers
         [SuppressMessage("Readability Rules", "SA1009", Justification = "Nicer to look at.")]
         [SuppressMessage("Readability Rules", "SA1111", Justification = "Nicer to look at.")]
         private static readonly Parser<Expression> Exp
-            = BinaryExpression(Num, new[]
+            = BuildExpression(Num, new[]
             {
-                RightToLeft<Expression, char>(
-                    (Operator('^'), (l, r) => new PowExpression(l, r))
+                Post<string, Expression>(
+                    (Operator("[]"), (e) => new ArrayExpression(e))
                 ),
-                LeftToRight<Expression, char>(Operator('*'), (l, r) => new MulExpression(l, r)),
-                LeftToRight<Expression, char>(
-                    (Operator('+'), (l, r) => new AddExpression(l, r)),
-                    (Operator('-'), (l, r) => new SubExpression(l, r))
+                Pre<string, Expression>(
+                    (Operator("++"), (e) => new PreIncrExpression(e)),
+                    (Operator("--"), (e) => new PreDecrExpression(e))
+                ),
+                Post<string, Expression>(
+                    (Operator("++"), (e) => new PostIncrExpression(e)),
+                    (Operator("--"), (e) => new PostDecrExpression(e))
+                ),
+                RightToLeft<string, Expression>(
+                    (Operator("^"), (l, r) => new PowExpression(l, r))
+                ),
+                LeftToRight<string, Expression>(Operator("*"), (l, r) => new MulExpression(l, r)),
+                LeftToRight<string, Expression>(
+                    (Operator("+"), (l, r) => new AddExpression(l, r)),
+                    (Operator("-"), (l, r) => new SubExpression(l, r))
                 ),
             });
 
@@ -107,8 +118,100 @@ namespace Warpstone.Tests.Parsers
             => AssertThat(Parse("3 + 2 * 6 + 1"))
             .IsEquivalentTo(new AddExpression(new AddExpression(new NumExpression(3), new MulExpression(new NumExpression(2), new NumExpression(6))), new NumExpression(1)));
 
-        private static Parser<char> Operator(char c)
-            => Char(c).Trim();
+        /// <summary>
+        /// Checks that simple increments work correctly.
+        /// </summary>
+        [Fact]
+        public static void PostIncrSimple()
+            => AssertThat(Parse("5++"))
+            .IsEquivalentTo(new PostIncrExpression(new NumExpression(5)));
+
+        /// <summary>
+        /// Checks that simple increments work correctly.
+        /// </summary>
+        [Fact]
+        public static void PostIncrDoubleSimple()
+            => AssertThat(Parse("5++++"))
+            .IsEquivalentTo(new PostIncrExpression(new PostIncrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PostIncrDecrSimple()
+            => AssertThat(Parse("5++--"))
+            .IsEquivalentTo(new PostDecrExpression(new PostIncrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple decrements work correctly.
+        /// </summary>
+        [Fact]
+        public static void PreDecrSimple()
+            => AssertThat(Parse("--5"))
+            .IsEquivalentTo(new PreDecrExpression(new NumExpression(5)));
+
+        /// <summary>
+        /// Checks that simple decrements work correctly.
+        /// </summary>
+        [Fact]
+        public static void PreDecrDoubleSimple()
+            => AssertThat(Parse("----5"))
+            .IsEquivalentTo(new PreDecrExpression(new PreDecrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PreIncrDecrSimple()
+            => AssertThat(Parse("--++5"))
+            .IsEquivalentTo(new PreDecrExpression(new PreIncrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PreIncrPostDecrSimple()
+            => AssertThat(Parse("++5--"))
+            .IsEquivalentTo(new PostDecrExpression(new PreIncrExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void MixedUnary()
+            => AssertThat(Parse("++--5--++"))
+            .IsEquivalentTo(new PostIncrExpression(new PostDecrExpression(new PreIncrExpression(new PreDecrExpression(new NumExpression(5))))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void UnaryInBinary()
+            => AssertThat(Parse("5 * ++--5--++ + 6--"))
+            .IsEquivalentTo(new AddExpression(new MulExpression(Parse("5"), Parse("++--5--++")), Parse("6--")));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PostPriorityCorrect()
+            => AssertThat(Parse("5[]++"))
+            .IsEquivalentTo(new PostIncrExpression(new ArrayExpression(new NumExpression(5))));
+
+        /// <summary>
+        /// Checks that simple unary operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void PostPriorityIncorrect()
+        {
+            ParseResult<Expression> result = Exp.ThenEnd().TryParse("5++[]");
+            AssertThat(result.Success).IsFalse();
+            AssertThat(result.Error).IsExactlyInstanceOf<UnexpectedTokenError>();
+            AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("expression");
+        }
+
+        private static Parser<string> Operator(string c)
+            => String(c).Trim();
 
         private static Expression Parse(string input)
             => Exp.ThenEnd().Parse(input);
@@ -166,6 +269,54 @@ namespace Warpstone.Tests.Parsers
         {
             public PowExpression(Expression left, Expression right)
                 : base(left, right)
+            {
+            }
+        }
+
+        private class UnaryExpression : Expression
+        {
+            public UnaryExpression(Expression expression)
+                => Expression = expression;
+
+            public Expression Expression { get; }
+        }
+
+        private class PreIncrExpression : UnaryExpression
+        {
+            public PreIncrExpression(Expression expression)
+                : base(expression)
+            {
+            }
+        }
+
+        private class PreDecrExpression : UnaryExpression
+        {
+            public PreDecrExpression(Expression expression)
+                : base(expression)
+            {
+            }
+        }
+
+        private class PostIncrExpression : UnaryExpression
+        {
+            public PostIncrExpression(Expression expression)
+                : base(expression)
+            {
+            }
+        }
+
+        private class PostDecrExpression : UnaryExpression
+        {
+            public PostDecrExpression(Expression expression)
+                : base(expression)
+            {
+            }
+        }
+
+        private class ArrayExpression : UnaryExpression
+        {
+            public ArrayExpression(Expression expression)
+                : base(expression)
             {
             }
         }
