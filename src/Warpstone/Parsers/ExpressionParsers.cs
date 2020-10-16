@@ -12,59 +12,173 @@ namespace Warpstone.Parsers
     /// </summary>
     public static class ExpressionParsers
     {
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="op">The operator.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Post<TOperator, TExpression>(Parser<TOperator> op, UnaryOperatorTransform<TOperator, TExpression> transformation)
             => SingleUnary(Associativity.Left, op, transformation);
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="op">The operator.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Post<TOperator, TExpression>(Parser<TOperator> op, UnaryOperatorTransform<TExpression> transformation)
             => Post(op, transformation.ExpandTransform<TOperator, TExpression>());
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Post<TOperator, TExpression>(IEnumerable<(Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)> transformations)
             => Post(transformations.ToDictionary(x => x.Item1, x => x.Item2));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Post<TOperator, TExpression>(IEnumerable<(Parser<TOperator>, UnaryOperatorTransform<TExpression>)> transformations)
             => Post(transformations.Select(x => x.ExpandTransform()));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="first">The first transformation.</param>
+        /// <param name="others">The other transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Post<TOperator, TExpression>((Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>) first, params (Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)[] others)
             => Post(others.Prepend(first));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="first">The first transformation.</param>
+        /// <param name="others">The other transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Post<TOperator, TExpression>((Parser<TOperator>, UnaryOperatorTransform<TExpression>) first, params (Parser<TOperator>, UnaryOperatorTransform<TExpression>)[] others)
             => Post(others.Prepend(first).Select(x => x.ExpandTransform()));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Post<TOperator, TExpression>(Dictionary<Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>> transformations)
             => new UnaryOperation<TOperator, TExpression>(Associativity.Left, transformations);
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Post<TOperator, TExpression>(Dictionary<Parser<TOperator>, UnaryOperatorTransform<TExpression>> transformations)
             => Post(transformations.ToDictionary(x => x.Key, x => x.Value.ExpandTransform<TOperator, TExpression>()));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="op">The operator.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Pre<TOperator, TExpression>(Parser<TOperator> op, UnaryOperatorTransform<TOperator, TExpression> transformation)
             => SingleUnary(Associativity.Right, op, transformation);
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="op">The operator.</param>
+        /// <param name="transformation">The transformation.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Pre<TOperator, TExpression>(Parser<TOperator> op, UnaryOperatorTransform<TExpression> transformation)
             => Pre(op, transformation.ExpandTransform<TOperator, TExpression>());
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Pre<TOperator, TExpression>(IEnumerable<(Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)> transformations)
             => Pre(transformations.ToDictionary(x => x.Item1, x => x.Item2));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Pre<TOperator, TExpression>(IEnumerable<(Parser<TOperator>, UnaryOperatorTransform<TExpression>)> transformations)
             => Pre(transformations.Select(x => x.ExpandTransform()));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="first">The first transformation.</param>
+        /// <param name="others">The other transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Pre<TOperator, TExpression>((Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>) first, params (Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)[] others)
             => Pre(others.Prepend(first));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="first">The first transformation.</param>
+        /// <param name="others">The other transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Pre<TOperator, TExpression>((Parser<TOperator>, UnaryOperatorTransform<TExpression>) first, params (Parser<TOperator>, UnaryOperatorTransform<TExpression>)[] others)
             => Pre(others.Prepend(first).Select(x => x.ExpandTransform()));
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Pre<TOperator, TExpression>(Dictionary<Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>> transformations)
             => new UnaryOperation<TOperator, TExpression>(Associativity.Right, transformations);
 
+        /// <summary>
+        /// Creates a unary operation.
+        /// </summary>
+        /// <typeparam name="TOperator">The type of the operator.</typeparam>
+        /// <typeparam name="TExpression">The type of the expression.</typeparam>
+        /// <param name="transformations">The transformations.</param>
+        /// <returns>A unary operation.</returns>
         public static Operation<TOperator, TExpression> Pre<TOperator, TExpression>(Dictionary<Parser<TOperator>, UnaryOperatorTransform<TExpression>> transformations)
             => Pre(transformations.ToDictionary(x => x.Key, x => x.Value.ExpandTransform<TOperator, TExpression>()));
-
-        private static Operation<TOperator, TExpression> SingleUnary<TOperator, TExpression>(Associativity associativity, Parser<TOperator> op, UnaryOperatorTransform<TOperator, TExpression> transformation)
-            => new UnaryOperation<TOperator, TExpression>(associativity, new Dictionary<Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>>
-            {
-                { op, transformation },
-            });
 
         /// <summary>
         /// Creates a left-to-right associative operation.
@@ -316,6 +430,12 @@ namespace Warpstone.Parsers
 
         private static Operation<TOperator, TExpression> SingleOperation<TOperator, TExpression>(Associativity associativity, Parser<TOperator> op, BinaryOperatorTransform<TOperator, TExpression> transformation)
             => new BinaryOperation<TOperator, TExpression>(associativity, new Dictionary<Parser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>>
+            {
+                { op, transformation },
+            });
+
+        private static Operation<TOperator, TExpression> SingleUnary<TOperator, TExpression>(Associativity associativity, Parser<TOperator> op, UnaryOperatorTransform<TOperator, TExpression> transformation)
+            => new UnaryOperation<TOperator, TExpression>(associativity, new Dictionary<Parser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>>
             {
                 { op, transformation },
             });
