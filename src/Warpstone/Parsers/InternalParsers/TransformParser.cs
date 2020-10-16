@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -32,18 +33,26 @@ namespace Warpstone.Parsers.InternalParsers
         internal Func<TInput, TOutput> Transformation { get; }
 
         /// <inheritdoc/>
+        [SuppressMessage("Microsoft.Design", "CA1031", Justification = "General exception catch needed for correct behaviour.")]
         internal override ParseResult<TOutput> TryParse(string input, int position)
         {
             ParseResult<TInput> result = Parser.TryParse(input, position);
             if (result.Success)
             {
-                TOutput value = Transformation(result.Value);
-                if (value is IParsed parsed && parsed.Position == null)
+                try
                 {
-                    parsed.Position = new SourcePosition(position, result.Position - position);
-                }
+                    TOutput value = Transformation(result.Value);
+                    if (value is IParsed parsed && parsed.Position == null)
+                    {
+                        parsed.Position = new SourcePosition(position, result.Position - position);
+                    }
 
-                return new ParseResult<TOutput>(value, position, result.Position);
+                    return new ParseResult<TOutput>(value, position, result.Position);
+                }
+                catch (Exception e)
+                {
+                    return new ParseResult<TOutput>(position, result.Position, new TransformationError(e));
+                }
             }
 
             return new ParseResult<TOutput>(position, result.Position, result.Error);

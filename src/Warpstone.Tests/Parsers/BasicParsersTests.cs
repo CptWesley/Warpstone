@@ -523,7 +523,7 @@ namespace Warpstone.Tests.Parsers
         {
             Parser<string> parser = Or(String("x").WithName("booboo"), String("z").WithName("bahbah"));
             ParseResult<string> result = parser.TryParse("y");
-            AssertThat(result.Error.Expected).ContainsExactly("booboo", "bahbah");
+            AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("booboo", "bahbah");
         }
 
         private class Parsed : IParsed

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Warpstone.Parsers.InternalParsers
@@ -46,9 +47,19 @@ namespace Warpstone.Parsers.InternalParsers
                 return secondResult;
             }
 
-            IEnumerable<string> newExpected = firstResult.Error.Expected.Concat(secondResult.Error.Expected);
+            IEnumerable<string> newExpected = Array.Empty<string>();
 
-            return new ParseResult<T>(position, secondResult.Position, new ParseError(newExpected, GetFound(input, position)));
+            if (firstResult.Error is UnexpectedTokenError t1)
+            {
+                newExpected = newExpected.Concat(t1.Expected);
+            }
+
+            if (secondResult.Error is UnexpectedTokenError t2)
+            {
+                newExpected = newExpected.Concat(t2.Expected);
+            }
+
+            return new ParseResult<T>(position, secondResult.Position, new UnexpectedTokenError(newExpected, GetFound(input, position)));
         }
     }
 }
