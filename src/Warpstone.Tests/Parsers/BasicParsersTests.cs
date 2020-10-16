@@ -1,4 +1,5 @@
-﻿using Xunit;
+﻿using System.Globalization;
+using Xunit;
 using static AssertNet.Assertions;
 using static Warpstone.Parsers.BasicParsers;
 
@@ -523,7 +524,19 @@ namespace Warpstone.Tests.Parsers
         {
             Parser<string> parser = Or(String("x").WithName("booboo"), String("z").WithName("bahbah"));
             ParseResult<string> result = parser.TryParse("y");
+            AssertThat(result.Error).IsInstanceOf<UnexpectedTokenError>();
             AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("booboo", "bahbah");
+        }
+
+        /// <summary>
+        /// Checks that transformation exceptions are handled correctly.
+        /// </summary>
+        [Fact]
+        public static void TransformationExceptionCorrect()
+        {
+            Parser<int> parser = String("x").Transform(x => int.Parse(x, CultureInfo.InvariantCulture));
+            ParseResult<int> result = parser.TryParse("x");
+            AssertThat(result.Error).IsInstanceOf<TransformationError>();
         }
 
         private class Parsed : IParsed
