@@ -537,6 +537,9 @@ namespace Warpstone.Tests.Parsers
             Parser<int> parser = String("x").Transform(x => int.Parse(x, CultureInfo.InvariantCulture));
             ParseResult<int> result = parser.TryParse("x");
             AssertThat(result.Error).IsInstanceOf<TransformationError>();
+            TransformationError error = result.Error as TransformationError;
+            AssertThat(error.Exception).IsNotNull();
+            AssertThat(error.GetMessage()).IsEqualTo(error.Exception.Message);
         }
 
         private class Parsed : IParsed
