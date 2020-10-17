@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <CodeAnalysisRuleSet>../Ruleset.ruleset</CodeAnalysisRuleSet>
-    <DocumentationFile>bin\$(AssemblyName).xml</DocumentationFile>
+    <DocumentationFile>bin/$(AssemblyName).xml</DocumentationFile>
     <Authors>Wesley Baartman</Authors>
     <PackageProjectUrl>https://github.com/CptWesley/Warpstone</PackageProjectUrl>
     <RepositoryUrl>https://github.com/CptWesley/Warpstone</RepositoryUrl>
@@ -18,8 +18,8 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <AdditionalFiles Include="..\stylecop.json" Link="stylecop.json" />
     <None Include="../../logo.png" Pack="true" Visible="false" PackagePath="" />
+    <AdditionalFiles Include="../stylecop.json" Link="stylecop.json" />
   </ItemGroup>
   
   <ItemGroup>
