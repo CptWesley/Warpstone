@@ -14,10 +14,12 @@
     <Version>1.0.6</Version>
     <Copyright></Copyright>
     <PackageIconUrl>https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo.png</PackageIconUrl>
+    <PackageIcon>logo.png</PackageIcon>
   </PropertyGroup>
   
   <ItemGroup>
     <AdditionalFiles Include="..\stylecop.json" Link="stylecop.json" />
+    <None Include="../../logo.png" Pack="true" Visible="false" PackagePath="" />
   </ItemGroup>
   
   <ItemGroup>
