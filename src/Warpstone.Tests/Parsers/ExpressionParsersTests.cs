@@ -210,6 +210,30 @@ namespace Warpstone.Tests.Parsers
             AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("expression");
         }
 
+        /// <summary>
+        /// Checks that covariant operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void CovariantUnaryOperators()
+        {
+            IParser<Expression> parser = BuildExpression<Expression, Expression>(Num, new[] { Post<NumExpression, Expression>(Operator("[]").Transform(x => new NumExpression(50)), (op, e) => new ArrayExpression(e)) }).ThenEnd();
+            IParseResult<Expression> result = parser.TryParse("2[]");
+            AssertThat(result.Success).IsTrue();
+            AssertThat(result.Value).IsEquivalentTo(new ArrayExpression(new NumExpression(2)));
+        }
+
+        /// <summary>
+        /// Checks that covariant operators work correctly.
+        /// </summary>
+        [Fact]
+        public static void CovariantBinaryOperators()
+        {
+            IParser<Expression> parser = BuildExpression<Expression, Expression>(Num, new[] { LeftToRight<NumExpression, Expression>(Operator("+").Transform(x => new NumExpression(50)), (op, l, r) => new AddExpression(l, r)) }).ThenEnd();
+            IParseResult<Expression> result = parser.TryParse("2+3");
+            AssertThat(result.Success).IsTrue();
+            AssertThat(result.Value).IsEquivalentTo(new AddExpression(new NumExpression(2), new NumExpression(3)));
+        }
+
         private static IParser<string> Operator(string c)
             => String(c).Trim();
 

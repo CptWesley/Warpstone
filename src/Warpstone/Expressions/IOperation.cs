@@ -45,7 +45,7 @@ namespace Warpstone.Expressions
     /// </summary>
     /// <typeparam name="TOperator">The expression type.</typeparam>
     /// <typeparam name="TExpression">The type of the operator.</typeparam>
-    public interface IOperation<out TOperator, out TExpression>
+    public interface IOperation<out TOperator, TExpression>
     {
         /// <summary>
         /// Gets the associativity.

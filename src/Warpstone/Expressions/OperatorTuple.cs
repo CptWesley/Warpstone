@@ -3,25 +3,24 @@
     /// <summary>
     /// Represents a tuple of an operator and its used parser.
     /// </summary>
-    /// <typeparam name="T">The type of operator.</typeparam>
-    public class OperatorTuple<T>
+    public class OperatorTuple
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="OperatorTuple{T}"/> class.
+        /// Initializes a new instance of the <see cref="OperatorTuple"/> class.
         /// </summary>
         /// <param name="parser">The parser.</param>
         /// <param name="operator">The operator.</param>
-        public OperatorTuple(IParser<T> parser, T @operator)
+        public OperatorTuple(IParser<object> parser, object @operator)
             => (Parser, Operator) = (parser, @operator);
 
         /// <summary>
         /// Gets the parser.
         /// </summary>
-        public IParser<T> Parser { get; }
+        public IParser<object> Parser { get; }
 
         /// <summary>
         /// Gets the operator.
         /// </summary>
-        public T Operator { get; }
+        public object Operator { get; }
     }
 }

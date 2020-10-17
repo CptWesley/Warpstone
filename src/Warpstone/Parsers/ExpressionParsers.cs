@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Warpstone.Expressions;
@@ -368,14 +369,14 @@ namespace Warpstone.Parsers
             List<IParser<(IParser<TOperator>, TOperator)>> postUnaryOperators = new List<IParser<(IParser<TOperator>, TOperator)>>();
             foreach (var operation in operations)
             {
-                if (operation is BinaryOperation<TOperator, TExpression> binaryOperation)
+                if (IsBinaryOperation(operation, out BinaryOperation<TOperator, TExpression> binaryOperation))
                 {
                     foreach (var transformation in binaryOperation.Transformations)
                     {
                         binaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, x)));
                     }
                 }
-                else if (operation is UnaryOperation<TOperator, TExpression> unaryOperation)
+                else if (IsUnaryOperation(operation, out UnaryOperation<TOperator, TExpression> unaryOperation))
                 {
                     if (operation.Associativity == Associativity.Right)
                     {
@@ -415,9 +416,9 @@ namespace Warpstone.Parsers
                 postUnaryOperatorParser = Or(postUnaryOperatorParser, postUnaryOperators[i]);
             }
 
-            IParser<OperatorTuple<TOperator>> binOpParser = binaryOperatorParser.Transform((x, y) => new OperatorTuple<TOperator>(x, y));
-            IParser<OperatorTuple<TOperator>> preOpParser = preUnaryOperatorParser.Transform((x, y) => new OperatorTuple<TOperator>(x, y));
-            IParser<OperatorTuple<TOperator>> postOpParser = postUnaryOperatorParser.Transform((x, y) => new OperatorTuple<TOperator>(x, y));
+            IParser<OperatorTuple> binOpParser = binaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
+            IParser<OperatorTuple> preOpParser = preUnaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
+            IParser<OperatorTuple> postOpParser = postUnaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
             IParser<ExpressionTuple<TOperator, TExpression>> expParser
                 = Many(preOpParser)
                 .ThenAdd(terminalParser)
@@ -427,6 +428,75 @@ namespace Warpstone.Parsers
             return expParser.ThenAdd(Many(binOpParser.ThenAdd(expParser)))
                 .Transform((x, y) => UnfoldExpression(CreateList(x, y), operations))
                 .WithName("expression");
+        }
+
+        private static string GetGenericlessTypeName(object obj)
+        {
+            string name = obj.GetType().Name;
+            int index = name.IndexOf('`');
+            return name.Substring(0, index);
+        }
+
+        private static bool IsBinaryOperation<TOperator, TExpression>(IOperation<TOperator, TExpression> operation, out BinaryOperation<TOperator, TExpression> binaryOperation)
+        {
+            if (operation is BinaryOperation<TOperator, TExpression> opAsBin)
+            {
+                binaryOperation = opAsBin;
+                return true;
+            }
+
+            if (GetGenericlessTypeName(operation) != nameof(BinaryOperation<object, object>))
+            {
+                binaryOperation = null;
+                return false;
+            }
+
+            IEnumerable<object> transformations = ((IEnumerable)operation.GetType().GetProperty(nameof(UnaryOperation<object, object>.Transformations)).GetValue(operation)).Cast<object>();
+            Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> dictionary = new Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>>();
+
+            foreach (object obj in transformations)
+            {
+                object key = obj.GetType().GetProperty(nameof(KeyValuePair<object, object>.Key)).GetValue(obj);
+                object value = obj.GetType().GetProperty(nameof(KeyValuePair<object, object>.Value)).GetValue(obj);
+                IParser<TOperator> operatorParser = (IParser<TOperator>)key;
+                Delegate @delegate = (Delegate)value;
+                BinaryOperatorTransform<TOperator, TExpression> transformation = (op, l, r) => (TExpression)@delegate.DynamicInvoke(op, l, r);
+                dictionary.Add(operatorParser, transformation);
+            }
+
+            binaryOperation = new BinaryOperation<TOperator, TExpression>(operation.Associativity, dictionary);
+            return true;
+        }
+
+        private static bool IsUnaryOperation<TOperator, TExpression>(IOperation<TOperator, TExpression> operation, out UnaryOperation<TOperator, TExpression> unaryOperation)
+        {
+            if (operation is UnaryOperation<TOperator, TExpression> opAsUn)
+            {
+                unaryOperation = opAsUn;
+                return true;
+            }
+
+            if (GetGenericlessTypeName(operation) != nameof(UnaryOperation<object, object>))
+            {
+                unaryOperation = null;
+                return false;
+            }
+
+            IEnumerable<object> transformations = ((IEnumerable)operation.GetType().GetProperty(nameof(UnaryOperation<object, object>.Transformations)).GetValue(operation)).Cast<object>();
+            Dictionary<IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>> dictionary = new Dictionary<IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>>();
+
+            foreach (object obj in transformations)
+            {
+                object key = obj.GetType().GetProperty(nameof(KeyValuePair<object, object>.Key)).GetValue(obj);
+                object value = obj.GetType().GetProperty(nameof(KeyValuePair<object, object>.Value)).GetValue(obj);
+                IParser<TOperator> operatorParser = (IParser<TOperator>)key;
+                Delegate @delegate = (Delegate)value;
+                UnaryOperatorTransform<TOperator, TExpression> transformation = (op, exp) => (TExpression)@delegate.DynamicInvoke(op, exp);
+                dictionary.Add(operatorParser, transformation);
+            }
+
+            unaryOperation = new UnaryOperation<TOperator, TExpression>(operation.Associativity, dictionary);
+            return true;
         }
 
         private static IOperation<TOperator, TExpression> SingleOperation<TOperator, TExpression>(Associativity associativity, IParser<TOperator> op, BinaryOperatorTransform<TOperator, TExpression> transformation)
@@ -441,13 +511,13 @@ namespace Warpstone.Parsers
                 { op, transformation },
             });
 
-        private static List<object> CreateList<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple<TOperator>, ExpressionTuple<TOperator, TExpression>)> tail)
+        private static List<object> CreateList<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple, ExpressionTuple<TOperator, TExpression>)> tail)
         {
             List<object> list = new List<object>();
             list.AddRange(head.PreOperators);
             list.Add(head.Expression);
             list.AddRange(head.PostOperators);
-            foreach ((OperatorTuple<TOperator> op, ExpressionTuple<TOperator, TExpression> exp) in tail)
+            foreach ((OperatorTuple op, ExpressionTuple<TOperator, TExpression> exp) in tail)
             {
                 list.Add(op);
                 list.AddRange(exp.PreOperators);
