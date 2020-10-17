@@ -13,13 +13,13 @@ namespace Warpstone.Tests.Parsers
     /// </summary>
     public static class ExpressionParsersTests
     {
-        private static readonly Parser<Expression> Num
-            = Regex("[0-9]+").Transform(x => new NumExpression(int.Parse(x, CultureInfo.InvariantCulture)) as Expression).Trim();
+        private static readonly IParser<NumExpression> Num
+            = Regex("[0-9]+").Transform(x => new NumExpression(int.Parse(x, CultureInfo.InvariantCulture))).Trim();
 
         [SuppressMessage("Readability Rules", "SA1118", Justification = "Nicer to look at.")]
         [SuppressMessage("Readability Rules", "SA1009", Justification = "Nicer to look at.")]
         [SuppressMessage("Readability Rules", "SA1111", Justification = "Nicer to look at.")]
-        private static readonly Parser<Expression> Exp
+        private static readonly IParser<Expression> Exp
             = BuildExpression(Num, new[]
             {
                 Post<string, Expression>(
@@ -204,13 +204,13 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void PostPriorityIncorrect()
         {
-            ParseResult<Expression> result = Exp.ThenEnd().TryParse("5++[]");
+            IParseResult<Expression> result = Exp.ThenEnd().TryParse("5++[]");
             AssertThat(result.Success).IsFalse();
             AssertThat(result.Error).IsExactlyInstanceOf<UnexpectedTokenError>();
             AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("expression");
         }
 
-        private static Parser<string> Operator(string c)
+        private static IParser<string> Operator(string c)
             => String(c).Trim();
 
         private static Expression Parse(string input)

@@ -10,6 +10,6 @@
         /// </summary>
         /// <param name="grammar">The grammar to create a parser for.</param>
         /// <returns>A parser for the given grammar.</returns>
-        Parser<AstNode> CreateParser(string grammar);
+        IParser<AstNode> CreateParser(string grammar);
     }
 }

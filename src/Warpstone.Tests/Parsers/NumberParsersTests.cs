@@ -16,7 +16,7 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void ByteTest()
         {
-            Parser<string> parser = Integer(8, false).ThenEnd();
+            IParser<string> parser = Integer(8, false).ThenEnd();
             AssertThat(parser.Parse("0")).IsEqualTo("0");
             AssertThat(parser.Parse("128")).IsEqualTo("128");
             AssertThat(parser.Parse("255")).IsEqualTo("255");
@@ -40,7 +40,7 @@ namespace Warpstone.Tests.Parsers
         [InlineData("202")]
         public static void IntSuccessTest(string x)
         {
-            Parser<string> parser = Integer(32, true).ThenEnd();
+            IParser<string> parser = Integer(32, true).ThenEnd();
             AssertThat(parser.Parse(x)).IsEqualTo(x);
         }
 
@@ -54,7 +54,7 @@ namespace Warpstone.Tests.Parsers
         [InlineData("-2147483649")]
         public static void IntFailTest(string x)
         {
-            Parser<string> parser = Integer(32, true).ThenEnd();
+            IParser<string> parser = Integer(32, true).ThenEnd();
             AssertThat(() => parser.Parse(x)).ThrowsExactlyException<ParseException>();
         }
 
@@ -64,7 +64,7 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void Max1023Test()
         {
-            Parser<string> parser = Integer(10, false).ThenEnd();
+            IParser<string> parser = Integer(10, false).ThenEnd();
             AssertThat(parser.Parse("0")).IsEqualTo("0");
             AssertThat(parser.Parse("128")).IsEqualTo("128");
             AssertThat(parser.Parse("255")).IsEqualTo("255");
@@ -85,7 +85,7 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void Max11Test()
         {
-            Parser<string> parser = Integer(11).ThenEnd();
+            IParser<string> parser = Integer(11).ThenEnd();
             AssertThat(parser.Parse("0")).IsEqualTo("0");
             AssertThat(parser.Parse("1")).IsEqualTo("1");
             AssertThat(parser.Parse("2")).IsEqualTo("2");
@@ -109,7 +109,7 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void Max11LongTest()
         {
-            Parser<string> parser = Integer(11L).ThenEnd();
+            IParser<string> parser = Integer(11L).ThenEnd();
             AssertThat(parser.Parse("0")).IsEqualTo("0");
             AssertThat(parser.Parse("1")).IsEqualTo("1");
             AssertThat(parser.Parse("2")).IsEqualTo("2");
@@ -154,7 +154,7 @@ namespace Warpstone.Tests.Parsers
         [InlineData(".254543634")]
         public static void Float32SuccessTest(string x)
         {
-            Parser<string> parser = Float(float.MaxValue).ThenEnd();
+            IParser<string> parser = Float(float.MaxValue).ThenEnd();
             AssertThat(parser.Parse(x)).IsEqualTo(x);
         }
 
@@ -174,7 +174,7 @@ namespace Warpstone.Tests.Parsers
         [InlineData(".2545436.34")]
         public static void Float32FailTest(string x)
         {
-            Parser<string> parser = Float(float.MaxValue).ThenEnd();
+            IParser<string> parser = Float(float.MaxValue).ThenEnd();
             AssertThat(() => parser.Parse(x)).ThrowsExactlyException<ParseException>();
         }
     }

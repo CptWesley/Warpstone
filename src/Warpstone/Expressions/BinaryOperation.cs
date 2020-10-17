@@ -7,7 +7,7 @@ namespace Warpstone.Expressions
     /// </summary>
     /// <typeparam name="TOperator">The type of the operator.</typeparam>
     /// <typeparam name="TExpression">The type of the expression.</typeparam>
-    /// <seealso cref="Operation{TOperator, TExpression}" />
+    /// <seealso cref="IOperation{TOperator, TExpression}" />
     public class BinaryOperation<TOperator, TExpression> : Operation<TOperator, TExpression>
     {
         /// <summary>
@@ -15,14 +15,14 @@ namespace Warpstone.Expressions
         /// </summary>
         /// <param name="associativity">The associativity.</param>
         /// <param name="transformations">The transformations.</param>
-        public BinaryOperation(Associativity associativity, Dictionary<Parser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> transformations)
+        public BinaryOperation(Associativity associativity, Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> transformations)
             : base(associativity)
             => Transformations = transformations;
 
         /// <summary>
         /// Gets the transformation.
         /// </summary>
-        public Dictionary<Parser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> Transformations { get; }
+        public Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> Transformations { get; }
 
         /// <inheritdoc/>
         internal override void UnfoldExpressionLeft(List<object> list)

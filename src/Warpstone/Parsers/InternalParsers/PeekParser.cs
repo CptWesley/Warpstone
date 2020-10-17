@@ -11,18 +11,18 @@
         /// Initializes a new instance of the <see cref="PeekParser{T}"/> class.
         /// </summary>
         /// <param name="parser">The parser.</param>
-        internal PeekParser(Parser<T> parser)
+        internal PeekParser(IParser<T> parser)
             => Parser = parser;
 
         /// <summary>
         /// Gets the parser.
         /// </summary>
-        internal Parser<T> Parser { get; }
+        internal IParser<T> Parser { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<T> TryParse(string input, int position)
+        public override IParseResult<T> TryParse(string input, int position)
         {
-            ParseResult<T> parseResult = Parser.TryParse(input, position);
+            IParseResult<T> parseResult = Parser.TryParse(input, position);
 
             if (parseResult.Success)
             {

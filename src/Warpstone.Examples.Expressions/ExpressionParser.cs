@@ -6,19 +6,19 @@ namespace Warpstone.Examples.Expressions
 {
     public static class ExpressionParser
     {
-        private static readonly Parser<Expression> Num
+        private static readonly IParser<Expression> Num
             = Regex("[0-9]+").Transform(x => new NumExpression(int.Parse(x)) as Expression).Trim();
 
-        private static readonly Parser<Expression> Parenthesized
+        private static readonly IParser<Expression> Parenthesized
             = Char('(')
             .Then(Lazy(() => Exp).Trim())
             .ThenSkip(Char(')'))
             .Trim();
 
-        private static readonly Parser<Expression> Atom
+        private static readonly IParser<Expression> Atom
             = Or(Parenthesized, Num).Trim();
 
-        private static readonly Parser<Expression> Exp
+        private static readonly IParser<Expression> Exp
             = BuildExpression(Atom, new[]
             {
                 RightToLeft<char, Expression>(
@@ -34,7 +34,7 @@ namespace Warpstone.Examples.Expressions
                 ),
             });
 
-        private static Parser<char> Operator(char c)
+        private static IParser<char> Operator(char c)
             => Char(c).Trim();
 
         public static Expression Parse(string input)
