@@ -15,13 +15,13 @@ namespace Warpstone.Expressions
         /// <param name="preOperators">The pre operators.</param>
         /// <param name="expression">The expression.</param>
         /// <param name="postOperators">The post operators.</param>
-        public ExpressionTuple(IEnumerable<OperatorTuple<TOperator>> preOperators, TExpression expression, IEnumerable<OperatorTuple<TOperator>> postOperators)
+        public ExpressionTuple(IEnumerable<OperatorTuple> preOperators, TExpression expression, IEnumerable<OperatorTuple> postOperators)
             => (PreOperators, Expression, PostOperators) = (preOperators, expression, postOperators);
 
         /// <summary>
         /// Gets the post operators.
         /// </summary>
-        public IEnumerable<OperatorTuple<TOperator>> PreOperators { get; }
+        public IEnumerable<OperatorTuple> PreOperators { get; }
 
         /// <summary>
         /// Gets the expression.
@@ -31,6 +31,6 @@ namespace Warpstone.Expressions
         /// <summary>
         /// Gets the post operators.
         /// </summary>
-        public IEnumerable<OperatorTuple<TOperator>> PostOperators { get; }
+        public IEnumerable<OperatorTuple> PostOperators { get; }
     }
 }
