@@ -13,12 +13,12 @@
     <FileVersion>$(Version)</FileVersion>
     <Version>1.0.6</Version>
     <Copyright></Copyright>
-    <PackageIconUrl>https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo.png</PackageIconUrl>
-    <PackageIcon>logo.png</PackageIcon>
+    <PackageIconUrl>https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo_128x128.png</PackageIconUrl>
+    <PackageIcon>logo_128x128.png</PackageIcon>
   </PropertyGroup>
   
   <ItemGroup>
-    <None Include="../../logo.png" Pack="true" Visible="false" PackagePath="" />
+    <None Include="../../logo_128x128.png" Pack="true" Visible="false" PackagePath="" />
     <AdditionalFiles Include="../stylecop.json" Link="stylecop.json" />
   </ItemGroup>
   
