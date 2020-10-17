@@ -393,33 +393,6 @@ namespace Warpstone.Parsers
                         }
                     }
                 }
-
-                /*
-                if (operation is BinaryOperation<TOperator, TExpression> binaryOperation)
-                {
-                    foreach (var transformation in binaryOperation.Transformations)
-                    {
-                        binaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, x)));
-                    }
-                }
-                else if (operation is UnaryOperation<TOperator, TExpression> unaryOperation)
-                {
-                    if (operation.Associativity == Associativity.Right)
-                    {
-                        foreach (var transformation in unaryOperation.Transformations)
-                        {
-                            preUnaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, x)));
-                        }
-                    }
-                    else
-                    {
-                        foreach (var transformation in unaryOperation.Transformations)
-                        {
-                            postUnaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, x)));
-                        }
-                    }
-                }
-                */
             }
 
             IParser<(IParser<TOperator>, TOperator)> binaryOperatorParser = new FailureParser<(IParser<TOperator>, TOperator)>();
