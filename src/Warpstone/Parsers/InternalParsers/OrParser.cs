@@ -16,7 +16,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// </summary>
         /// <param name="first">The first parser that's tried.</param>
         /// <param name="second">The second parser that's applied if the first one fails.</param>
-        internal OrParser(Parser<T> first, Parser<T> second)
+        internal OrParser(IParser<T> first, IParser<T> second)
         {
             First = first;
             Second = second;
@@ -25,15 +25,15 @@ namespace Warpstone.Parsers.InternalParsers
         /// <summary>
         /// Gets the first parser.
         /// </summary>
-        internal Parser<T> First { get; }
+        internal IParser<T> First { get; }
 
         /// <summary>
         /// Gets the second parser.
         /// </summary>
-        internal Parser<T> Second { get; }
+        internal IParser<T> Second { get; }
 
         /// <inheritdoc/>
-        internal override IParseResult<T> TryParse(string input, int position)
+        public override IParseResult<T> TryParse(string input, int position)
         {
             IParseResult<T> firstResult = First.TryParse(input, position);
             if (firstResult.Success)

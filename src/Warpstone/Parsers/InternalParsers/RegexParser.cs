@@ -26,7 +26,7 @@ namespace Warpstone.Parsers.InternalParsers
         internal string Pattern { get; }
 
         /// <inheritdoc/>
-        internal override IParseResult<string> TryParse(string input, int position)
+        public override IParseResult<string> TryParse(string input, int position)
         {
             Match match = regex.Match(input, position);
 

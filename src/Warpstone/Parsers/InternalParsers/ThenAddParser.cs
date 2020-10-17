@@ -13,7 +13,7 @@
         /// </summary>
         /// <param name="first">The first parser that's tried.</param>
         /// <param name="second">The second parser that's applied if the first one fails.</param>
-        internal ThenAddParser(Parser<T1> first, Parser<T2> second)
+        internal ThenAddParser(IParser<T1> first, IParser<T2> second)
         {
             First = first;
             Second = second;
@@ -22,15 +22,15 @@
         /// <summary>
         /// Gets the first parser.
         /// </summary>
-        internal Parser<T1> First { get; }
+        internal IParser<T1> First { get; }
 
         /// <summary>
         /// Gets the second parser.
         /// </summary>
-        internal Parser<T2> Second { get; }
+        internal IParser<T2> Second { get; }
 
         /// <inheritdoc/>
-        internal override IParseResult<(T1, T2)> TryParse(string input, int position)
+        public override IParseResult<(T1, T2)> TryParse(string input, int position)
         {
             IParseResult<T1> firstResult = First.TryParse(input, position);
             if (!firstResult.Success)

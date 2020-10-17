@@ -17,7 +17,7 @@ namespace Warpstone.Tests.Grammars
         [Fact]
         public static void SimpleSmokeTest()
         {
-            Parser<AstNode> parser = GrammarParser.CreateParser(@"
+            IParser<AstNode> parser = GrammarParser.CreateParser(@"
 <bool> ::= <true> | <false>
 <true> ::= ""true""
 <false> ::= ""false""
@@ -47,7 +47,7 @@ namespace Warpstone.Tests.Grammars
         [Fact]
         public static void PostalCodeNetherlands()
         {
-            Parser<AstNode> parser = GrammarParser.CreateParser(@"
+            IParser<AstNode> parser = GrammarParser.CreateParser(@"
 <postal> ::= <digit> <digit> <digit> <digit> <letter> <letter>
 <letter> ::= ""A"" | ""B"" | ""C"" | ""D"" | ""E"" | ""F"" | ""G"" | ""H"" | ""I"" | ""J"" | ""K"" | ""L"" | ""M"" | ""N"" | ""O"" | ""P"" | ""Q"" | ""R"" | ""S"" | ""T"" | ""U"" | ""V"" | ""W"" | ""X"" | ""Y"" | ""Z""
 <digit> ::= ""0"" | ""1"" | ""2"" | ""3"" | ""4"" | ""5"" | ""6"" | ""7"" | ""8"" | ""9""

@@ -16,7 +16,7 @@ namespace Warpstone.Parsers
         /// <param name="bits">The number of bits.</param>
         /// <param name="signed">Determines whether or not the number is signed or unsigned.</param>
         /// <returns>A parser parsing the given signed or unsigned integer.</returns>
-        public static Parser<string> Integer(int bits, bool signed)
+        public static IParser<string> Integer(int bits, bool signed)
         {
             if (signed)
             {
@@ -40,7 +40,7 @@ namespace Warpstone.Parsers
         /// <param name="maxValue">The maximum value.</param>
         /// <returns>A parser which parses an integer.</returns>
         /// <exception cref="ArgumentException">Must be greater than 0. - maxValue.</exception>
-        public static Parser<string> Integer(long maxValue)
+        public static IParser<string> Integer(long maxValue)
             => Integer(new BigInteger(maxValue));
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace Warpstone.Parsers
         /// <param name="maxValue">The maximum value.</param>
         /// <returns>A parser which parses an integer.</returns>
         /// <exception cref="ArgumentException">Must be greater than 0. - maxValue.</exception>
-        public static Parser<string> Integer(int maxValue)
+        public static IParser<string> Integer(int maxValue)
             => Integer(new BigInteger(maxValue));
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Warpstone.Parsers
         /// <param name="maxValue">The maximum value.</param>
         /// <returns>A parser which parses an integer.</returns>
         /// <exception cref="ArgumentException">Must be greater than 0. - maxValue.</exception>
-        public static Parser<string> Integer(BigInteger maxValue)
+        public static IParser<string> Integer(BigInteger maxValue)
         {
             if (maxValue < 0)
             {
@@ -73,7 +73,7 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <param name="maxValue">The maximum value.</param>
         /// <returns>A parser which parses a floating point value.</returns>
-        public static Parser<string> Float(float maxValue)
+        public static IParser<string> Float(float maxValue)
             => Float(new BigInteger(maxValue));
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <param name="maxValue">The maximum value.</param>
         /// <returns>A parser which parses a floating point value.</returns>
-        public static Parser<string> Float(double maxValue)
+        public static IParser<string> Float(double maxValue)
             => Float(new BigInteger(maxValue));
 
         /// <summary>
@@ -89,7 +89,7 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <param name="maxValue">The maximum value.</param>
         /// <returns>A parser which parses a floating point value.</returns>
-        public static Parser<string> Float(BigInteger maxValue)
+        public static IParser<string> Float(BigInteger maxValue)
         {
             if (maxValue < 0)
             {

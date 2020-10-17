@@ -37,7 +37,7 @@ namespace Warpstone
         /// <param name="input">The input.</param>
         /// <param name="position">The position.</param>
         /// <returns>The result of running the parser.</returns>
-        internal abstract IParseResult<TOutput> TryParse(string input, int position);
+        public abstract IParseResult<TOutput> TryParse(string input, int position);
 
         /// <summary>
         /// Gets the found characters.

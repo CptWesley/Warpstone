@@ -16,7 +16,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// </summary>
         /// <param name="parser">The wrapped parser.</param>
         /// <param name="transformation">The transformation applied to the result of the wrapped parser.</param>
-        internal TransformParser(Parser<TInput> parser, Func<TInput, TOutput> transformation)
+        internal TransformParser(IParser<TInput> parser, Func<TInput, TOutput> transformation)
         {
             Parser = parser;
             Transformation = transformation;
@@ -25,7 +25,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// <summary>
         /// Gets the wrapped parser.
         /// </summary>
-        internal Parser<TInput> Parser { get; }
+        internal IParser<TInput> Parser { get; }
 
         /// <summary>
         /// Gets the transformation applied to the result of the wrapped parser.
@@ -34,7 +34,7 @@ namespace Warpstone.Parsers.InternalParsers
 
         /// <inheritdoc/>
         [SuppressMessage("Microsoft.Design", "CA1031", Justification = "General exception catch needed for correct behaviour.")]
-        internal override IParseResult<TOutput> TryParse(string input, int position)
+        public override IParseResult<TOutput> TryParse(string input, int position)
         {
             IParseResult<TInput> result = Parser.TryParse(input, position);
             if (result.Success)

@@ -64,7 +64,7 @@ namespace Warpstone.Expressions
         /// </summary>
         /// <param name="o">The o.</param>
         /// <returns>The parser.</returns>
-        internal static Parser<TOperator> GetParser(object o)
+        internal static IParser<TOperator> GetParser(object o)
             => ((OperatorTuple<TOperator>)o).Parser;
 
         /// <summary>

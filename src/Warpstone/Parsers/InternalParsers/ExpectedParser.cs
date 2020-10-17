@@ -14,7 +14,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// </summary>
         /// <param name="parser">The parser.</param>
         /// <param name="names">The names.</param>
-        internal ExpectedParser(Parser<T> parser, IEnumerable<string> names)
+        internal ExpectedParser(IParser<T> parser, IEnumerable<string> names)
         {
             Parser = parser;
             Names = names;
@@ -23,7 +23,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// <summary>
         /// Gets the parser.
         /// </summary>
-        internal Parser<T> Parser { get; }
+        internal IParser<T> Parser { get; }
 
         /// <summary>
         /// Gets the name.
@@ -31,7 +31,7 @@ namespace Warpstone.Parsers.InternalParsers
         internal IEnumerable<string> Names { get; }
 
         /// <inheritdoc/>
-        internal override IParseResult<T> TryParse(string input, int position)
+        public override IParseResult<T> TryParse(string input, int position)
         {
             IParseResult<T> result = Parser.TryParse(input, position);
             if (result.Success)

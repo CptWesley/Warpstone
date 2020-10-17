@@ -14,7 +14,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// </summary>
         /// <param name="parser">The wrapped parser.</param>
         /// <param name="delimiter">The delimiter parser.</param>
-        internal OneOrMoreParser(Parser<T1> parser, Parser<T2> delimiter)
+        internal OneOrMoreParser(IParser<T1> parser, IParser<T2> delimiter)
         {
             Parser = parser;
             DelimiterParser = delimiter;
@@ -23,15 +23,15 @@ namespace Warpstone.Parsers.InternalParsers
         /// <summary>
         /// Gets the wrapped parser.
         /// </summary>
-        internal Parser<T1> Parser { get; }
+        internal IParser<T1> Parser { get; }
 
         /// <summary>
         /// Gets the delimiter parser.
         /// </summary>
-        internal Parser<T2> DelimiterParser { get; }
+        internal IParser<T2> DelimiterParser { get; }
 
         /// <inheritdoc/>
-        internal override IParseResult<IEnumerable<T1>> TryParse(string input, int position)
+        public override IParseResult<IEnumerable<T1>> TryParse(string input, int position)
         {
             List<T1> elements = new List<T1>();
             IParseResult<T1> result = Parser.TryParse(input, position);

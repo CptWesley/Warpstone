@@ -20,5 +20,13 @@
         /// <returns>The parsed result.</returns>
         /// <exception cref="ParseException">Thrown when the parser fails.</exception>
         TOutput Parse(string input);
+
+        /// <summary>
+        /// Parses the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="position">The position.</param>
+        /// <returns>The result of running the parser.</returns>
+        IParseResult<TOutput> TryParse(string input, int position);
     }
 }

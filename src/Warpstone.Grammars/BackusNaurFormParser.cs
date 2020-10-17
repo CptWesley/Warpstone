@@ -11,37 +11,37 @@ namespace Warpstone.Grammars
     /// <seealso cref="IGrammarParser" />
     public class BackusNaurFormParser : IGrammarParser
     {
-        private static readonly Parser<string> Spaces
+        private static readonly IParser<string> Spaces
             = Regex("[ \t]*");
 
-        private static readonly Parser<BnfTerm> Literal
+        private static readonly IParser<BnfTerm> Literal
             = Trim(Char('"').Then(Regex("[^\"]+\"").Transform(x => new BnfLiteral(x.Substring(0, x.Length - 1)) as BnfTerm)));
 
-        private static readonly Parser<BnfTerm> Symbol
+        private static readonly IParser<BnfTerm> Symbol
             = Trim(Char('<').Then(Regex("[a-zA-Z-]+").Transform(x => new BnfSymbol(x) as BnfTerm)).ThenSkip(Char('>')));
 
-        private static readonly Parser<BnfTerm> Term
+        private static readonly IParser<BnfTerm> Term
             = Or(Literal, Symbol);
 
-        private static readonly Parser<IEnumerable<BnfTerm>> Sequence
+        private static readonly IParser<IEnumerable<BnfTerm>> Sequence
             = OneOrMore(Term);
 
-        private static readonly Parser<IEnumerable<IEnumerable<BnfTerm>>> Expression
+        private static readonly IParser<IEnumerable<IEnumerable<BnfTerm>>> Expression
             = OneOrMore(Sequence, Char('|'));
 
-        private static readonly Parser<BnfRule> Rule
+        private static readonly IParser<BnfRule> Rule
             = Symbol.ThenSkip(String("::=")).ThenAdd(Expression)
             .Transform((s, e) => new BnfRule((BnfSymbol)s, e));
 
-        private static readonly Parser<IEnumerable<BnfRule>> Rules
+        private static readonly IParser<IEnumerable<BnfRule>> Rules
             = Many(Newline).Then(Many(Rule, OneOrMore(Newline))).ThenSkip(Many(Newline)).ThenEnd();
 
         /// <inheritdoc/>
-        public Parser<AstNode> CreateParser(string grammar)
+        public IParser<AstNode> CreateParser(string grammar)
         {
             BnfRule[] rules = Rules.Parse(grammar).ToArray();
-            Dictionary<string, Parser<AstNode>> map = new Dictionary<string, Parser<AstNode>>();
-            Parser<AstNode>[] parsers = new Parser<AstNode>[rules.Length];
+            Dictionary<string, IParser<AstNode>> map = new Dictionary<string, IParser<AstNode>>();
+            IParser<AstNode>[] parsers = new Parser<AstNode>[rules.Length];
 
             for (int i = 0; i < rules.Length; i++)
             {
@@ -58,10 +58,10 @@ namespace Warpstone.Grammars
             return parsers[0];
         }
 
-        private static Parser<AstNode> CreateParser(BnfRule rule, Dictionary<string, Parser<AstNode>> parsers)
+        private static IParser<AstNode> CreateParser(BnfRule rule, Dictionary<string, IParser<AstNode>> parsers)
             => CreateParser(rule.Symbol.Name, rule.Expression, parsers);
 
-        private static Parser<AstNode> CreateParser(string type, IEnumerable<IEnumerable<BnfTerm>> expression, Dictionary<string, Parser<AstNode>> parsers)
+        private static IParser<AstNode> CreateParser(string type, IEnumerable<IEnumerable<BnfTerm>> expression, Dictionary<string, IParser<AstNode>> parsers)
         {
             if (expression.Count() == 1)
             {
@@ -71,11 +71,11 @@ namespace Warpstone.Grammars
             return Or(CreateParser(type, expression.First(), parsers), CreateParser(type, expression.Skip(1), parsers));
         }
 
-        private static Parser<AstNode> CreateParser(string type, IEnumerable<BnfTerm> sequence, Dictionary<string, Parser<AstNode>> parsers)
+        private static IParser<AstNode> CreateParser(string type, IEnumerable<BnfTerm> sequence, Dictionary<string, IParser<AstNode>> parsers)
         {
-            IEnumerable<Parser<AstNode>> children = sequence.Select(x => CreateParser(x, parsers));
-            Parser<IEnumerable<AstNode>> result = children.First().Transform(x => new[] { x } as IEnumerable<AstNode>);
-            foreach (Parser<AstNode> child in children.Skip(1))
+            IEnumerable<IParser<AstNode>> children = sequence.Select(x => CreateParser(x, parsers));
+            IParser<IEnumerable<AstNode>> result = children.First().Transform(x => new[] { x } as IEnumerable<AstNode>);
+            foreach (IParser<AstNode> child in children.Skip(1))
             {
                 result = result.ThenAdd(child).Transform((l, e) => l.Append(e));
             }
@@ -83,7 +83,7 @@ namespace Warpstone.Grammars
             return result.Transform(x => new ObjectNode(type, x) as AstNode);
         }
 
-        private static Parser<AstNode> CreateParser(BnfTerm term, Dictionary<string, Parser<AstNode>> parsers)
+        private static IParser<AstNode> CreateParser(BnfTerm term, Dictionary<string, IParser<AstNode>> parsers)
         {
             if (term is BnfLiteral literal)
             {
@@ -94,7 +94,7 @@ namespace Warpstone.Grammars
             return parsers[symbol.Name];
         }
 
-        private static Parser<T> Trim<T>(Parser<T> parser)
+        private static IParser<T> Trim<T>(IParser<T> parser)
             => Spaces.Then(parser).ThenSkip(Spaces);
 
         private abstract class BnfTerm : IParsed
