@@ -6,14 +6,10 @@ namespace Warpstone
     /// Parser class for parsing textual input.
     /// </summary>
     /// <typeparam name="TOutput">The type of the output.</typeparam>
-    public abstract class Parser<TOutput>
+    public abstract class Parser<TOutput> : IParser<TOutput>
     {
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The result of running the parser.</returns>
-        public ParseResult<TOutput> TryParse(string input)
+        /// <inheritdoc/>
+        public IParseResult<TOutput> TryParse(string input)
         {
             if (input == null)
             {
@@ -23,15 +19,10 @@ namespace Warpstone
             return TryParse(input, 0);
         }
 
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The parsed result.</returns>
-        /// <exception cref="ParseException">Thrown when the parser fails.</exception>
+        /// <inheritdoc/>
         public TOutput Parse(string input)
         {
-            ParseResult<TOutput> result = TryParse(input);
+            IParseResult<TOutput> result = TryParse(input);
             if (result.Success)
             {
                 return result.Value;
@@ -46,7 +37,7 @@ namespace Warpstone
         /// <param name="input">The input.</param>
         /// <param name="position">The position.</param>
         /// <returns>The result of running the parser.</returns>
-        internal abstract ParseResult<TOutput> TryParse(string input, int position);
+        internal abstract IParseResult<TOutput> TryParse(string input, int position);
 
         /// <summary>
         /// Gets the found characters.

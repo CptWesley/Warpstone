@@ -204,7 +204,7 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void PostPriorityIncorrect()
         {
-            ParseResult<Expression> result = Exp.ThenEnd().TryParse("5++[]");
+            IParseResult<Expression> result = Exp.ThenEnd().TryParse("5++[]");
             AssertThat(result.Success).IsFalse();
             AssertThat(result.Error).IsExactlyInstanceOf<UnexpectedTokenError>();
             AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("expression");

@@ -8,7 +8,7 @@
     internal class VoidParser<T> : Parser<T>
     {
         /// <inheritdoc/>
-        internal override ParseResult<T> TryParse(string input, int position)
+        internal override IParseResult<T> TryParse(string input, int position)
             => new ParseResult<T>(default, position, position);
     }
 }

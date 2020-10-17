@@ -20,9 +20,9 @@
         internal Parser<T> Parser { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<T> TryParse(string input, int position)
+        internal override IParseResult<T> TryParse(string input, int position)
         {
-            ParseResult<T> parseResult = Parser.TryParse(input, position);
+            IParseResult<T> parseResult = Parser.TryParse(input, position);
 
             if (parseResult.Success)
             {

@@ -523,7 +523,7 @@ namespace Warpstone.Tests.Parsers
         public static void ExpectedParserCorrect()
         {
             Parser<string> parser = Or(String("x").WithName("booboo"), String("z").WithName("bahbah"));
-            ParseResult<string> result = parser.TryParse("y");
+            IParseResult<string> result = parser.TryParse("y");
             AssertThat(result.Error).IsInstanceOf<UnexpectedTokenError>();
             AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("booboo", "bahbah");
         }
@@ -535,7 +535,7 @@ namespace Warpstone.Tests.Parsers
         public static void TransformationExceptionCorrect()
         {
             Parser<int> parser = String("x").Transform(x => int.Parse(x, CultureInfo.InvariantCulture));
-            ParseResult<int> result = parser.TryParse("x");
+            IParseResult<int> result = parser.TryParse("x");
             AssertThat(result.Error).IsInstanceOf<TransformationError>();
             TransformationError error = result.Error as TransformationError;
             AssertThat(error.Exception).IsNotNull();

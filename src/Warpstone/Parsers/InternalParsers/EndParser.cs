@@ -7,7 +7,7 @@
     internal class EndParser : Parser<object>
     {
         /// <inheritdoc/>
-        internal override ParseResult<object> TryParse(string input, int position)
+        internal override IParseResult<object> TryParse(string input, int position)
         {
             if (position == input.Length)
             {

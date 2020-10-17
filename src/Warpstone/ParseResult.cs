@@ -4,7 +4,7 @@
     /// Object representing the parsing result.
     /// </summary>
     /// <typeparam name="T">The output type of the parse process.</typeparam>
-    public class ParseResult<T>
+    public class ParseResult<T> : IParseResult<T>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ParseResult{T}"/> class.
@@ -34,29 +34,19 @@
             Success = true;
         }
 
-        /// <summary>
-        /// Gets a value indicating whether the parsing was success.
-        /// </summary>
+        /// <inheritdoc/>
         public bool Success { get; }
 
-        /// <summary>
-        /// Gets the parsed value.
-        /// </summary>
+        /// <inheritdoc/>
         public T Value { get; }
 
-        /// <summary>
-        /// Gets the start position of the parser.
-        /// </summary>
+        /// <inheritdoc/>
         public int StartPosition { get; }
 
-        /// <summary>
-        /// Gets the position of the parser.
-        /// </summary>
+        /// <inheritdoc/>
         public int Position { get; }
 
-        /// <summary>
-        /// Gets the parse error.
-        /// </summary>
+        /// <inheritdoc/>
         public IParseError Error { get; }
     }
 }

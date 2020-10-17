@@ -31,9 +31,9 @@ namespace Warpstone.Parsers.InternalParsers
         internal IEnumerable<string> Names { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<T> TryParse(string input, int position)
+        internal override IParseResult<T> TryParse(string input, int position)
         {
-            ParseResult<T> result = Parser.TryParse(input, position);
+            IParseResult<T> result = Parser.TryParse(input, position);
             if (result.Success)
             {
                 return result;

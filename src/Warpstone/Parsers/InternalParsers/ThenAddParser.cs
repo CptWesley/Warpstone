@@ -30,15 +30,15 @@
         internal Parser<T2> Second { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<(T1, T2)> TryParse(string input, int position)
+        internal override IParseResult<(T1, T2)> TryParse(string input, int position)
         {
-            ParseResult<T1> firstResult = First.TryParse(input, position);
+            IParseResult<T1> firstResult = First.TryParse(input, position);
             if (!firstResult.Success)
             {
                 return new ParseResult<(T1, T2)>(position, firstResult.Position, firstResult.Error);
             }
 
-            ParseResult<T2> secondResult = Second.TryParse(input, firstResult.Position);
+            IParseResult<T2> secondResult = Second.TryParse(input, firstResult.Position);
             if (!secondResult.Success)
             {
                 return new ParseResult<(T1, T2)>(position, secondResult.Position, secondResult.Error);

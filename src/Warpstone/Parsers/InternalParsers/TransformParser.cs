@@ -34,9 +34,9 @@ namespace Warpstone.Parsers.InternalParsers
 
         /// <inheritdoc/>
         [SuppressMessage("Microsoft.Design", "CA1031", Justification = "General exception catch needed for correct behaviour.")]
-        internal override ParseResult<TOutput> TryParse(string input, int position)
+        internal override IParseResult<TOutput> TryParse(string input, int position)
         {
-            ParseResult<TInput> result = Parser.TryParse(input, position);
+            IParseResult<TInput> result = Parser.TryParse(input, position);
             if (result.Success)
             {
                 try

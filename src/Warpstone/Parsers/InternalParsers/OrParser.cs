@@ -33,15 +33,15 @@ namespace Warpstone.Parsers.InternalParsers
         internal Parser<T> Second { get; }
 
         /// <inheritdoc/>
-        internal override ParseResult<T> TryParse(string input, int position)
+        internal override IParseResult<T> TryParse(string input, int position)
         {
-            ParseResult<T> firstResult = First.TryParse(input, position);
+            IParseResult<T> firstResult = First.TryParse(input, position);
             if (firstResult.Success)
             {
                 return firstResult;
             }
 
-            ParseResult<T> secondResult = Second.TryParse(input, position);
+            IParseResult<T> secondResult = Second.TryParse(input, position);
             if (secondResult.Success)
             {
                 return secondResult;
