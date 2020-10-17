@@ -13,7 +13,7 @@ namespace Warpstone.Tests.Parsers
     /// </summary>
     public static class ExpressionParsersTests
     {
-        private static readonly IParser<Expression> Num
+        private static readonly IParser<NumExpression> Num
             = Regex("[0-9]+").Transform(x => new NumExpression(int.Parse(x, CultureInfo.InvariantCulture))).Trim();
 
         [SuppressMessage("Readability Rules", "SA1118", Justification = "Nicer to look at.")]

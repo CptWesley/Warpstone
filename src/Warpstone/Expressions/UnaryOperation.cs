@@ -7,7 +7,7 @@ namespace Warpstone.Expressions
     /// </summary>
     /// <typeparam name="TOperator">The type of the operator.</typeparam>
     /// <typeparam name="TExpression">The type of the expression.</typeparam>
-    /// <seealso cref="Operation{TOperator, TExpression}" />
+    /// <seealso cref="IOperation{TOperator, TExpression}" />
     public class UnaryOperation<TOperator, TExpression> : Operation<TOperator, TExpression>
     {
         /// <summary>
