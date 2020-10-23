@@ -37,8 +37,8 @@ namespace Warpstone.Expressions
         /// </summary>
         /// <param name="o">The o.</param>
         /// <returns>The parser.</returns>
-        internal static IParser<TOperator> GetParser(object o)
-            => (IParser<TOperator>)((OperatorTuple)o).Parser;
+        internal static IParser<object> GetParser(object o)
+            => ((OperatorTuple)o).Parser;
 
         /// <summary>
         /// Gets the operator from an object.
@@ -67,17 +67,5 @@ namespace Warpstone.Expressions
         /// </summary>
         /// <param name="list">The list of all expression parts.</param>
         internal abstract void UnfoldExpressionLeft(List<object> list);
-
-        private static string GetGenericlessTypeName(object obj)
-        {
-            string name = obj.GetType().Name;
-            int index = name.IndexOf('`');
-            if (index < 0)
-            {
-                return name;
-            }
-
-            return name.Substring(0, index);
-        }
     }
 }

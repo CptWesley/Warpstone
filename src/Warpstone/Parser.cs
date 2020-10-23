@@ -47,5 +47,5 @@ namespace Warpstone
         /// <returns>The found characters.</returns>
         protected string GetFound(string input, int position)
             => position < input?.Length ? $"'{input[position]}'" : "EOF";
-}
+    }
 }

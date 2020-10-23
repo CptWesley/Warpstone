@@ -85,7 +85,7 @@ namespace Warpstone.Parsers
         /// <param name="transformations">The transformations.</param>
         /// <returns>A unary operation.</returns>
         public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>(Dictionary<IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>> transformations)
-            => new UnaryOperation<TOperator, TExpression>(Associativity.Left, transformations);
+            => new UnaryOperation<TOperator, TExpression>(Associativity.Left, transformations.ToObjectParser());
 
         /// <summary>
         /// Creates a unary operation.
@@ -169,7 +169,7 @@ namespace Warpstone.Parsers
         /// <param name="transformations">The transformations.</param>
         /// <returns>A unary operation.</returns>
         public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>(Dictionary<IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>> transformations)
-            => new UnaryOperation<TOperator, TExpression>(Associativity.Right, transformations);
+            => new UnaryOperation<TOperator, TExpression>(Associativity.Right, transformations.ToObjectParser());
 
         /// <summary>
         /// Creates a unary operation.
@@ -253,7 +253,7 @@ namespace Warpstone.Parsers
         /// <param name="transformations">The transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
         public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> transformations)
-            => new BinaryOperation<TOperator, TExpression>(Associativity.Left, transformations);
+            => new BinaryOperation<TOperator, TExpression>(Associativity.Left, transformations.ToObjectParser());
 
         /// <summary>
         /// Creates a left-to-right associative operation.
@@ -337,7 +337,7 @@ namespace Warpstone.Parsers
         /// <param name="transformations">The transformations.</param>
         /// <returns>A right-to-left associative operation.</returns>
         public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> transformations)
-            => new BinaryOperation<TOperator, TExpression>(Associativity.Right, transformations);
+            => new BinaryOperation<TOperator, TExpression>(Associativity.Right, transformations.ToObjectParser());
 
         /// <summary>
         /// Creates a right-to-left associative operation.
@@ -364,16 +364,16 @@ namespace Warpstone.Parsers
                 throw new ArgumentNullException(nameof(operations));
             }
 
-            List<IParser<(IParser<TOperator>, TOperator)>> binaryOperators = new List<IParser<(IParser<TOperator>, TOperator)>>();
-            List<IParser<(IParser<TOperator>, TOperator)>> preUnaryOperators = new List<IParser<(IParser<TOperator>, TOperator)>>();
-            List<IParser<(IParser<TOperator>, TOperator)>> postUnaryOperators = new List<IParser<(IParser<TOperator>, TOperator)>>();
+            List<IParser<(IParser<object>, TOperator)>> binaryOperators = new List<IParser<(IParser<object>, TOperator)>>();
+            List<IParser<(IParser<object>, TOperator)>> preUnaryOperators = new List<IParser<(IParser<object>, TOperator)>>();
+            List<IParser<(IParser<object>, TOperator)>> postUnaryOperators = new List<IParser<(IParser<object>, TOperator)>>();
             foreach (var operation in operations)
             {
                 if (IsBinaryOperation(operation, out BinaryOperation<TOperator, TExpression> binaryOperation))
                 {
                     foreach (var transformation in binaryOperation.Transformations)
                     {
-                        binaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, x)));
+                        binaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, (TOperator)x)));
                     }
                 }
                 else if (IsUnaryOperation(operation, out UnaryOperation<TOperator, TExpression> unaryOperation))
@@ -382,43 +382,43 @@ namespace Warpstone.Parsers
                     {
                         foreach (var transformation in unaryOperation.Transformations)
                         {
-                            preUnaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, x)));
+                            preUnaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, (TOperator)x)));
                         }
                     }
                     else
                     {
                         foreach (var transformation in unaryOperation.Transformations)
                         {
-                            postUnaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, x)));
+                            postUnaryOperators.Add(transformation.Key.Transform(x => (transformation.Key, (TOperator)x)));
                         }
                     }
                 }
             }
 
-            IParser<(IParser<TOperator>, TOperator)> binaryOperatorParser = new FailureParser<(IParser<TOperator>, TOperator)>();
+            IParser<(IParser<object>, TOperator)> binaryOperatorParser = new FailureParser<(IParser<object>, TOperator)>();
 
             for (int i = 0; i < binaryOperators.Count; i++)
             {
                 binaryOperatorParser = Or(binaryOperatorParser, binaryOperators[i]);
             }
 
-            IParser<(IParser<TOperator>, TOperator)> preUnaryOperatorParser = new FailureParser<(IParser<TOperator>, TOperator)>();
+            IParser<(IParser<object>, TOperator)> preUnaryOperatorParser = new FailureParser<(IParser<object>, TOperator)>();
 
             for (int i = 0; i < preUnaryOperators.Count; i++)
             {
                 preUnaryOperatorParser = Or(preUnaryOperatorParser, preUnaryOperators[i]);
             }
 
-            IParser<(IParser<TOperator>, TOperator)> postUnaryOperatorParser = new FailureParser<(IParser<TOperator>, TOperator)>();
+            IParser<(IParser<object>, TOperator)> postUnaryOperatorParser = new FailureParser<(IParser<object>, TOperator)>();
 
             for (int i = 0; i < postUnaryOperators.Count; i++)
             {
                 postUnaryOperatorParser = Or(postUnaryOperatorParser, postUnaryOperators[i]);
             }
 
-            IParser<OperatorTuple> binOpParser = binaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
-            IParser<OperatorTuple> preOpParser = preUnaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
-            IParser<OperatorTuple> postOpParser = postUnaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
+            IParser<OperatorTuple> binOpParser = binaryOperatorParser.Transform((x, y) => new OperatorTuple(x, y));
+            IParser<OperatorTuple> preOpParser = preUnaryOperatorParser.Transform((x, y) => new OperatorTuple(x, y));
+            IParser<OperatorTuple> postOpParser = postUnaryOperatorParser.Transform((x, y) => new OperatorTuple(x, y));
             IParser<ExpressionTuple<TOperator, TExpression>> expParser
                 = Many(preOpParser)
                 .ThenAdd(terminalParser)
@@ -464,7 +464,7 @@ namespace Warpstone.Parsers
                 dictionary.Add(operatorParser, transformation);
             }
 
-            binaryOperation = new BinaryOperation<TOperator, TExpression>(operation.Associativity, dictionary);
+            binaryOperation = new BinaryOperation<TOperator, TExpression>(operation.Associativity, dictionary.ToObjectParser());
             return true;
         }
 
@@ -495,20 +495,20 @@ namespace Warpstone.Parsers
                 dictionary.Add(operatorParser, transformation);
             }
 
-            unaryOperation = new UnaryOperation<TOperator, TExpression>(operation.Associativity, dictionary);
+            unaryOperation = new UnaryOperation<TOperator, TExpression>(operation.Associativity, dictionary.ToObjectParser());
             return true;
         }
 
         private static IOperation<TOperator, TExpression> SingleOperation<TOperator, TExpression>(Associativity associativity, IParser<TOperator> op, BinaryOperatorTransform<TOperator, TExpression> transformation)
-            => new BinaryOperation<TOperator, TExpression>(associativity, new Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>>
+            => new BinaryOperation<TOperator, TExpression>(associativity, new Dictionary<IParser<object>, BinaryOperatorTransform<TOperator, TExpression>>
             {
-                { op, transformation },
+                { op as IParser<object>, transformation },
             });
 
         private static IOperation<TOperator, TExpression> SingleUnary<TOperator, TExpression>(Associativity associativity, IParser<TOperator> op, UnaryOperatorTransform<TOperator, TExpression> transformation)
-            => new UnaryOperation<TOperator, TExpression>(associativity, new Dictionary<IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>>
+            => new UnaryOperation<TOperator, TExpression>(associativity, new Dictionary<IParser<object>, UnaryOperatorTransform<TOperator, TExpression>>
             {
-                { op, transformation },
+                { op as IParser<object>, transformation },
             });
 
         private static List<object> CreateList<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple, ExpressionTuple<TOperator, TExpression>)> tail)
@@ -549,5 +549,11 @@ namespace Warpstone.Parsers
 
         private static (IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>) ExpandTransform<TOperator, TExpression>(this (IParser<TOperator> op, UnaryOperatorTransform<TExpression> transformation) pair)
             => (pair.op, (d, e) => pair.transformation(e));
+
+        private static Dictionary<IParser<object>, UnaryOperatorTransform<TOperator, TExpression>> ToObjectParser<TOperator, TExpression>(this Dictionary<IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>> dictionary)
+            => dictionary.ToDictionary(x => x.Key as IParser<object>, x => x.Value);
+
+        private static Dictionary<IParser<object>, BinaryOperatorTransform<TOperator, TExpression>> ToObjectParser<TOperator, TExpression>(this Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> dictionary)
+            => dictionary.ToDictionary(x => x.Key as IParser<object>, x => x.Value);
     }
 }

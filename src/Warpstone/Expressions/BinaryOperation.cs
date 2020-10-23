@@ -15,14 +15,14 @@ namespace Warpstone.Expressions
         /// </summary>
         /// <param name="associativity">The associativity.</param>
         /// <param name="transformations">The transformations.</param>
-        public BinaryOperation(Associativity associativity, Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> transformations)
+        public BinaryOperation(Associativity associativity, Dictionary<IParser<object>, BinaryOperatorTransform<TOperator, TExpression>> transformations)
             : base(associativity)
             => Transformations = transformations;
 
         /// <summary>
         /// Gets the transformation.
         /// </summary>
-        public Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> Transformations { get; }
+        public Dictionary<IParser<object>, BinaryOperatorTransform<TOperator, TExpression>> Transformations { get; }
 
         /// <inheritdoc/>
         internal override void UnfoldExpressionLeft(List<object> list)
