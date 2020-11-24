@@ -14,10 +14,18 @@ namespace Warpstone.Parsers.InternalParsers
         /// Initializes a new instance of the <see cref="RegexParser"/> class.
         /// </summary>
         /// <param name="pattern">The pattern.</param>
-        internal RegexParser(string pattern)
+        /// <param name="compiled">Indicates that the regex engine should be compiled.</param>
+        internal RegexParser(string pattern, bool compiled)
         {
             Pattern = pattern;
-            regex = new Regex(@"\G" + pattern, RegexOptions.ExplicitCapture);
+            RegexOptions options = RegexOptions.ExplicitCapture;
+
+            if (compiled)
+            {
+                options |= RegexOptions.Compiled;
+            }
+
+            regex = new Regex(@"\G" + pattern, options);
         }
 
         /// <summary>

@@ -24,7 +24,15 @@ namespace Warpstone.Parsers
         /// <param name="pattern">The pattern to match.</param>
         /// <returns>A parser matching a regular expression.</returns>
         public static IParser<string> Regex(string pattern)
-            => new RegexParser(pattern);
+            => new RegexParser(pattern, false);
+
+        /// <summary>
+        /// Creates a parser which matches a regular expression.
+        /// </summary>
+        /// <param name="pattern">The pattern to match.</param>
+        /// <returns>A parser matching a regular expression.</returns>
+        public static IParser<string> CompiledRegex(string pattern)
+            => new RegexParser(pattern, true);
 
         /// <summary>
         /// Creates a parser that parses a string.
