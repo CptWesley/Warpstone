@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Linq;
 using Warpstone.Parsers.InternalParsers;
 
@@ -24,7 +23,15 @@ namespace Warpstone.Parsers
         /// <param name="pattern">The pattern to match.</param>
         /// <returns>A parser matching a regular expression.</returns>
         public static IParser<string> Regex(string pattern)
-            => new RegexParser(pattern);
+            => new RegexParser(pattern, false);
+
+        /// <summary>
+        /// Creates a parser which matches a regular expression.
+        /// </summary>
+        /// <param name="pattern">The pattern to match.</param>
+        /// <returns>A parser matching a regular expression.</returns>
+        public static IParser<string> CompiledRegex(string pattern)
+            => new RegexParser(pattern, true);
 
         /// <summary>
         /// Creates a parser that parses a string.
@@ -32,7 +39,7 @@ namespace Warpstone.Parsers
         /// <param name="str">The string to parse.</param>
         /// <returns>A parser parsing a string.</returns>
         public static IParser<string> String(string str)
-            => Regex(System.Text.RegularExpressions.Regex.Escape(str));
+            => new StringParser(str);
 
         /// <summary>
         /// Creates a parser parsing the given character.
@@ -40,7 +47,7 @@ namespace Warpstone.Parsers
         /// <param name="c">The character to parse.</param>
         /// <returns>A parser parsing the given character.</returns>
         public static IParser<char> Char(char c)
-            => String(c.ToString(CultureInfo.InvariantCulture)).Transform(x => x[0]);
+            => new CharacterParser(c);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
