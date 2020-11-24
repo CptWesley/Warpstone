@@ -17,7 +17,7 @@ namespace Warpstone.Parsers.InternalParsers
         internal RegexParser(string pattern)
         {
             Pattern = pattern;
-            regex = new Regex(pattern, RegexOptions.ExplicitCapture);
+            regex = new Regex(@"\G" + pattern, RegexOptions.ExplicitCapture);
         }
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace Warpstone.Parsers.InternalParsers
         {
             Match match = regex.Match(input, position);
 
-            if (!match.Success || match.Index != position)
+            if (!match.Success)
             {
                 return new ParseResult<string>(position, position, new UnexpectedTokenError(new string[] { $"'{Pattern}'" }, GetFound(input, position)));
             }
