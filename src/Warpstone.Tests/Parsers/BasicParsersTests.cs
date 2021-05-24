@@ -529,6 +529,18 @@ namespace Warpstone.Tests.Parsers
         }
 
         /// <summary>
+        /// Checks that the expected parser works correctly.
+        /// </summary>
+        [Fact]
+        public static void StringComparisonCorrect()
+        {
+            IParser<string> parser = String("test-string", System.StringComparison.InvariantCultureIgnoreCase);
+            IParseResult<string> result = parser.TryParse("TeSt-StRiNg");
+            AssertThat(result.Success).IsTrue();
+            AssertThat(result.Value).IsSameAs("test-string");
+        }
+
+        /// <summary>
         /// Checks that transformation exceptions are handled correctly.
         /// </summary>
         [Fact]
