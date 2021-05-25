@@ -42,8 +42,8 @@ namespace Warpstone.Parsers
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A unary operation.</returns>
-        public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>(IEnumerable<(IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)> transformations)
-            => Post(transformations.ToDictionary(x => x.Item1, x => x.Item2));
+        public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>(IEnumerable<(IParser<TOperator> Op, UnaryOperatorTransform<TOperator, TExpression> Transformation)> transformations)
+            => Post(transformations.ToDictionary(x => x.Op, x => x.Transformation));
 
         /// <summary>
         /// Creates a unary operation.
@@ -52,7 +52,7 @@ namespace Warpstone.Parsers
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A unary operation.</returns>
-        public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>(IEnumerable<(IParser<TOperator>, UnaryOperatorTransform<TExpression>)> transformations)
+        public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>(IEnumerable<(IParser<TOperator> Op, UnaryOperatorTransform<TExpression> Transformation)> transformations)
             => Post(transformations.Select(x => x.ExpandTransform()));
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Warpstone.Parsers
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A unary operation.</returns>
-        public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>((IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>) first, params (IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)[] others)
+        public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>((IParser<TOperator> Op, UnaryOperatorTransform<TOperator, TExpression> Transformation) first, params (IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)[] others)
             => Post(others.Prepend(first));
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace Warpstone.Parsers
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A unary operation.</returns>
-        public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>((IParser<TOperator>, UnaryOperatorTransform<TExpression>) first, params (IParser<TOperator>, UnaryOperatorTransform<TExpression>)[] others)
+        public static IOperation<TOperator, TExpression> Post<TOperator, TExpression>((IParser<TOperator> Op, UnaryOperatorTransform<TExpression> Transformation) first, params (IParser<TOperator>, UnaryOperatorTransform<TExpression>)[] others)
             => Post(others.Prepend(first).Select(x => x.ExpandTransform()));
 
         /// <summary>
@@ -126,8 +126,8 @@ namespace Warpstone.Parsers
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A unary operation.</returns>
-        public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>(IEnumerable<(IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)> transformations)
-            => Pre(transformations.ToDictionary(x => x.Item1, x => x.Item2));
+        public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>(IEnumerable<(IParser<TOperator> Op, UnaryOperatorTransform<TOperator, TExpression> Transformation)> transformations)
+            => Pre(transformations.ToDictionary(x => x.Op, x => x.Transformation));
 
         /// <summary>
         /// Creates a unary operation.
@@ -136,7 +136,7 @@ namespace Warpstone.Parsers
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A unary operation.</returns>
-        public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>(IEnumerable<(IParser<TOperator>, UnaryOperatorTransform<TExpression>)> transformations)
+        public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>(IEnumerable<(IParser<TOperator> Op, UnaryOperatorTransform<TExpression> Transformation)> transformations)
             => Pre(transformations.Select(x => x.ExpandTransform()));
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace Warpstone.Parsers
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A unary operation.</returns>
-        public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>((IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>) first, params (IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)[] others)
+        public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>((IParser<TOperator> Op, UnaryOperatorTransform<TOperator, TExpression> Transformation) first, params (IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>)[] others)
             => Pre(others.Prepend(first));
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Warpstone.Parsers
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A unary operation.</returns>
-        public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>((IParser<TOperator>, UnaryOperatorTransform<TExpression>) first, params (IParser<TOperator>, UnaryOperatorTransform<TExpression>)[] others)
+        public static IOperation<TOperator, TExpression> Pre<TOperator, TExpression>((IParser<TOperator> Op, UnaryOperatorTransform<TExpression> Transformation) first, params (IParser<TOperator>, UnaryOperatorTransform<TExpression>)[] others)
             => Pre(others.Prepend(first).Select(x => x.ExpandTransform()));
 
         /// <summary>
@@ -210,8 +210,8 @@ namespace Warpstone.Parsers
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
-        public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(IEnumerable<(IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>)> transformations)
-            => LeftToRight(transformations.ToDictionary(x => x.Item1, x => x.Item2));
+        public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(IEnumerable<(IParser<TOperator> Op, BinaryOperatorTransform<TOperator, TExpression> Transformation)> transformations)
+            => LeftToRight(transformations.ToDictionary(x => x.Op, x => x.Transformation));
 
         /// <summary>
         /// Creates a left-to-right associative operation.
@@ -220,7 +220,7 @@ namespace Warpstone.Parsers
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
-        public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(IEnumerable<(IParser<TOperator>, BinaryOperatorTransform<TExpression>)> transformations)
+        public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>(IEnumerable<(IParser<TOperator> Op, BinaryOperatorTransform<TExpression> Transformation)> transformations)
             => LeftToRight(transformations.Select(x => x.ExpandTransform()));
 
         /// <summary>
@@ -231,7 +231,7 @@ namespace Warpstone.Parsers
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
-        public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>((IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>) first, params (IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>)[] others)
+        public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>((IParser<TOperator> Op, BinaryOperatorTransform<TOperator, TExpression> Transformation) first, params (IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>)[] others)
             => LeftToRight(others.Prepend(first));
 
         /// <summary>
@@ -242,7 +242,7 @@ namespace Warpstone.Parsers
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A left-to-right associative operation.</returns>
-        public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>((IParser<TOperator>, BinaryOperatorTransform<TExpression>) first, params (IParser<TOperator>, BinaryOperatorTransform<TExpression>)[] others)
+        public static IOperation<TOperator, TExpression> LeftToRight<TOperator, TExpression>((IParser<TOperator> Op, BinaryOperatorTransform<TExpression> Transformation) first, params (IParser<TOperator>, BinaryOperatorTransform<TExpression>)[] others)
             => LeftToRight(others.Prepend(first).Select(x => x.ExpandTransform()));
 
         /// <summary>
@@ -294,8 +294,8 @@ namespace Warpstone.Parsers
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A right-to-left associative operation.</returns>
-        public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(IEnumerable<(IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>)> transformations)
-            => RightToLeft(transformations.ToDictionary(x => x.Item1, x => x.Item2));
+        public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(IEnumerable<(IParser<TOperator> Op, BinaryOperatorTransform<TOperator, TExpression> Transformation)> transformations)
+            => RightToLeft(transformations.ToDictionary(x => x.Op, x => x.Transformation));
 
         /// <summary>
         /// Creates a right-to-left associative operation.
@@ -304,7 +304,7 @@ namespace Warpstone.Parsers
         /// <typeparam name="TExpression">The type of the expression.</typeparam>
         /// <param name="transformations">The transformations.</param>
         /// <returns>A right-to-left associative operation.</returns>
-        public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(IEnumerable<(IParser<TOperator>, BinaryOperatorTransform<TExpression>)> transformations)
+        public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>(IEnumerable<(IParser<TOperator> Op, BinaryOperatorTransform<TExpression> Transformation)> transformations)
             => RightToLeft(transformations.Select(x => x.ExpandTransform()));
 
         /// <summary>
@@ -315,7 +315,7 @@ namespace Warpstone.Parsers
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A right-to-left associative operation.</returns>
-        public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>((IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>) first, params (IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>)[] others)
+        public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>((IParser<TOperator> Op, BinaryOperatorTransform<TOperator, TExpression> Transformation) first, params (IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>)[] others)
             => RightToLeft(others.Prepend(first));
 
         /// <summary>
@@ -326,7 +326,7 @@ namespace Warpstone.Parsers
         /// <param name="first">The first transformation.</param>
         /// <param name="others">The other transformations.</param>
         /// <returns>A right-to-left associative operation.</returns>
-        public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>((IParser<TOperator>, BinaryOperatorTransform<TExpression>) first, params (IParser<TOperator>, BinaryOperatorTransform<TExpression>)[] others)
+        public static IOperation<TOperator, TExpression> RightToLeft<TOperator, TExpression>((IParser<TOperator> Op, BinaryOperatorTransform<TExpression> Transformation) first, params (IParser<TOperator>, BinaryOperatorTransform<TExpression>)[] others)
             => RightToLeft(others.Prepend(first).Select(x => x.ExpandTransform()));
 
         /// <summary>
@@ -511,7 +511,7 @@ namespace Warpstone.Parsers
                 { op, transformation },
             });
 
-        private static List<object> CreateList<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple, ExpressionTuple<TOperator, TExpression>)> tail)
+        private static List<object> CreateList<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple Op, ExpressionTuple<TOperator, TExpression> Exp)> tail)
         {
             List<object> list = new List<object>();
             list.AddRange(head.PreOperators);
@@ -541,13 +541,13 @@ namespace Warpstone.Parsers
         private static BinaryOperatorTransform<TOperator, TExpression> ExpandTransform<TOperator, TExpression>(this BinaryOperatorTransform<TExpression> transformation)
             => (d, l, r) => transformation(l, r);
 
-        private static (IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>) ExpandTransform<TOperator, TExpression>(this (IParser<TOperator> op, BinaryOperatorTransform<TExpression> transformation) pair)
-            => (pair.op, (d, l, r) => pair.transformation(l, r));
+        private static (IParser<TOperator> Op, BinaryOperatorTransform<TOperator, TExpression> Transformation) ExpandTransform<TOperator, TExpression>(this (IParser<TOperator> Op, BinaryOperatorTransform<TExpression> Transformation) pair)
+            => (pair.Op, (d, l, r) => pair.Transformation(l, r));
 
         private static UnaryOperatorTransform<TOperator, TExpression> ExpandTransform<TOperator, TExpression>(this UnaryOperatorTransform<TExpression> transformation)
             => (d, e) => transformation(e);
 
-        private static (IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>) ExpandTransform<TOperator, TExpression>(this (IParser<TOperator> op, UnaryOperatorTransform<TExpression> transformation) pair)
-            => (pair.op, (d, e) => pair.transformation(e));
+        private static (IParser<TOperator> Op, UnaryOperatorTransform<TOperator, TExpression> Transformation) ExpandTransform<TOperator, TExpression>(this (IParser<TOperator> Op, UnaryOperatorTransform<TExpression> Transformation) pair)
+            => (pair.Op, (d, e) => pair.Transformation(e));
     }
 }

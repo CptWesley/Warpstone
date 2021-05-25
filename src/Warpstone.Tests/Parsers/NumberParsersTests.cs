@@ -6,7 +6,7 @@ using static Warpstone.Parsers.NumberParsers;
 namespace Warpstone.Tests.Parsers
 {
     /// <summary>
-    /// Test class for the <see cref="Warpstone.Parsers.NumberParsers"/> class.
+    /// Test class for the <see cref="NumberParsers"/> class.
     /// </summary>
     public static class NumberParsersTests
     {

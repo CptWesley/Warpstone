@@ -3,7 +3,7 @@
     /// <summary>
     /// Parser that checks for the end of the input stream.
     /// </summary>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class EndParser : Parser<object>
     {
         /// <inheritdoc/>

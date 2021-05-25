@@ -4,7 +4,7 @@
     /// Parser that doesn't take any arguments and always succeeds.
     /// </summary>
     /// <typeparam name="T">The result type of the parser.</typeparam>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class VoidParser<T> : Parser<T>
     {
         /// <inheritdoc/>

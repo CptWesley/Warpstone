@@ -5,8 +5,8 @@
     /// </summary>
     /// <typeparam name="T1">The result type of the first parser.</typeparam>
     /// <typeparam name="T2">The result type of the second parser.</typeparam>
-    /// <seealso cref="Warpstone.Parser{T}" />
-    internal class ThenAddParser<T1, T2> : Parser<(T1, T2)>
+    /// <seealso cref="Parser{T}" />
+    internal class ThenAddParser<T1, T2> : Parser<(T1 First, T2 Second)>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ThenAddParser{T1, T2}"/> class.
@@ -30,7 +30,7 @@
         internal IParser<T2> Second { get; }
 
         /// <inheritdoc/>
-        public override IParseResult<(T1, T2)> TryParse(string input, int position)
+        public override IParseResult<(T1 First, T2 Second)> TryParse(string input, int position)
         {
             IParseResult<T1> firstResult = First.TryParse(input, position);
             if (!firstResult.Success)

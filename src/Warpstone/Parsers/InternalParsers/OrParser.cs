@@ -8,7 +8,7 @@ namespace Warpstone.Parsers.InternalParsers
     /// Parser that first applies the left parser and if it fails applies the right parser.
     /// </summary>
     /// <typeparam name="T">The parse result type of the parsers.</typeparam>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class OrParser<T> : Parser<T>
     {
         /// <summary>

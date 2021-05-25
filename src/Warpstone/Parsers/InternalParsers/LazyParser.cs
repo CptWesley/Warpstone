@@ -6,7 +6,7 @@ namespace Warpstone.Parsers.InternalParsers
     /// A parser that is lazily instantiated.
     /// </summary>
     /// <typeparam name="T">Result type of the given parser.</typeparam>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class LazyParser<T> : Parser<T>
     {
         /// <summary>

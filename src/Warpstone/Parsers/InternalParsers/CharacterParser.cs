@@ -3,7 +3,7 @@
     /// <summary>
     /// Parser which parser a given character.
     /// </summary>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class CharacterParser : Parser<char>
     {
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using static Warpstone.Parsers.BasicParsers;
 using static Warpstone.Parsers.CommonParsers;
@@ -30,7 +31,7 @@ namespace Warpstone.Grammars
             = OneOrMore(Sequence, Char('|'));
 
         private static readonly IParser<BnfRule> Rule
-            = Symbol.ThenSkip(String("::=")).ThenAdd(Expression)
+            = Symbol.ThenSkip(String("::=", StringComparison.InvariantCulture)).ThenAdd(Expression)
             .Transform((s, e) => new BnfRule((BnfSymbol)s, e));
 
         private static readonly IParser<IEnumerable<BnfRule>> Rules
@@ -87,7 +88,7 @@ namespace Warpstone.Grammars
         {
             if (term is BnfLiteral literal)
             {
-                return String(literal.Value).Transform(x => new StringNode(x) as AstNode);
+                return String(literal.Value, StringComparison.InvariantCulture).Transform(x => new StringNode(x) as AstNode);
             }
 
             BnfSymbol symbol = term as BnfSymbol;

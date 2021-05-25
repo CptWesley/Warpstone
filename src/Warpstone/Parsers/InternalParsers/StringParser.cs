@@ -5,7 +5,7 @@ namespace Warpstone.Parsers.InternalParsers
     /// <summary>
     /// Parser which parser a given string.
     /// </summary>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class StringParser : Parser<string>
     {
         /// <summary>

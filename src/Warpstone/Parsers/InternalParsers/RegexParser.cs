@@ -5,7 +5,7 @@ namespace Warpstone.Parsers.InternalParsers
     /// <summary>
     /// Parser which parser a given regular expression pattern.
     /// </summary>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class RegexParser : Parser<string>
     {
         private readonly Regex regex;

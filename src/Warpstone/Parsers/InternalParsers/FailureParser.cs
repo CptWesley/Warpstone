@@ -6,7 +6,7 @@ namespace Warpstone.Parsers.InternalParsers
     /// Parser that doesn't take any arguments and always fails.
     /// </summary>
     /// <typeparam name="T">The result type of the parser.</typeparam>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class FailureParser<T> : Parser<T>
     {
         /// <inheritdoc/>

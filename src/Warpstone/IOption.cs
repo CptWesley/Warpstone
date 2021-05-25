@@ -21,7 +21,7 @@
     /// Option class for existing values.
     /// </summary>
     /// <typeparam name="T">The type of value contained in the option.</typeparam>
-    /// <seealso cref="Warpstone.IOption{T}" />
+    /// <seealso cref="IOption{T}" />
     public class Some<T> : IOption<T>
     {
         /// <summary>
@@ -49,7 +49,7 @@
     /// Option class for non existing values.
     /// </summary>
     /// <typeparam name="T">The type of value contained in the option.</typeparam>
-    /// <seealso cref="Warpstone.IOption{T}" />
+    /// <seealso cref="IOption{T}" />
     public class None<T> : IOption<T>
     {
         /// <inheritdoc/>

@@ -8,7 +8,7 @@ namespace Warpstone.Parsers.InternalParsers
     /// </summary>
     /// <typeparam name="TInput">The type of the input.</typeparam>
     /// <typeparam name="TOutput">The type of the output.</typeparam>
-    /// <seealso cref="Warpstone.Parser{TOutput}" />
+    /// <seealso cref="Parser{TOutput}" />
     internal class TransformParser<TInput, TOutput> : Parser<TOutput>
     {
         /// <summary>

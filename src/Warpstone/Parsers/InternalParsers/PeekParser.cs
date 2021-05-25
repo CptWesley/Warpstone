@@ -4,7 +4,7 @@
     /// Parser that attempts a parse, but does not record it.
     /// </summary>
     /// <typeparam name="T">The result type of the parser.</typeparam>
-    /// <seealso cref="Warpstone.Parser{T}" />
+    /// <seealso cref="Parser{T}" />
     internal class PeekParser<T> : Parser<T>
     {
         /// <summary>
