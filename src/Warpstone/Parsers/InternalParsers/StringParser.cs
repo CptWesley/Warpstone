@@ -1,4 +1,6 @@
-﻿namespace Warpstone.Parsers.InternalParsers
+﻿using System;
+
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser which parser a given string.
@@ -10,13 +12,22 @@
         /// Initializes a new instance of the <see cref="StringParser"/> class.
         /// </summary>
         /// <param name="str">The string to look for.</param>
-        internal StringParser(string str)
-            => String = str;
+        /// <param name="stringComparison">The string comparison method to use.</param>
+        internal StringParser(string str, StringComparison? stringComparison = null)
+        {
+            String = str;
+            StringComparison = stringComparison;
+        }
 
         /// <summary>
         /// Gets the regular expression.
         /// </summary>
         internal string String { get; }
+
+        /// <summary>
+        /// Gets the string comparison method.
+        /// </summary>
+        internal StringComparison? StringComparison { get; }
 
         /// <inheritdoc/>
         public override IParseResult<string> TryParse(string input, int position)
@@ -36,15 +47,22 @@
                 return false;
             }
 
-            for (int i = 0; i < String.Length; i++)
+            if (StringComparison.HasValue)
             {
-                if (String[i] != input[position + i])
-                {
-                    return false;
-                }
+                return String.Equals(input.Substring(position, String.Length), StringComparison.Value);
             }
+            else
+            {
+                for (int i = 0; i < String.Length; i++)
+                {
+                    if (String[i] != input[position + i])
+                    {
+                        return false;
+                    }
+                }
 
-            return true;
+                return true;
+            }
         }
     }
 }
