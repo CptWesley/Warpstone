@@ -21,21 +21,21 @@ namespace Warpstone.Examples.Expressions
         private static readonly IParser<Expression> Exp
             = BuildExpression(Atom, new[]
             {
-                RightToLeft<char, Expression>(
+                RightToLeft<string, Expression>(
                     (Operator('^'), (l, r) => new PowExpression(l, r))
                 ),
-                LeftToRight<char, Expression>(
+                LeftToRight<string, Expression>(
                     (Operator('*'), (l, r) => new MulExpression(l, r)),
                     (Operator('/'), (l, r) => new DivExpression(l, r))
                 ),
-                LeftToRight<char, Expression>(
+                LeftToRight<string, Expression>(
                     (Operator('+'), (l, r) => new AddExpression(l, r)),
                     (Operator('-'), (l, r) => new SubExpression(l, r))
                 ),
             });
 
-        private static IParser<char> Operator(char c)
-            => Char(c).Trim();
+        private static IParser<string> Operator(char c)
+            => Char(c).Transform(x => x.ToString()).Trim();
 
         public static Expression Parse(string input)
             => Exp.ThenEnd().Parse(input);
