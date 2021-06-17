@@ -15,6 +15,7 @@
     <Copyright></Copyright>
     <PackageIconUrl>https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo_128x128.png</PackageIconUrl>
     <PackageIcon>logo_128x128.png</PackageIcon>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
   
   <ItemGroup>

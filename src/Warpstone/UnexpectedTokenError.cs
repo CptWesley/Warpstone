@@ -6,14 +6,16 @@ namespace Warpstone
     /// <summary>
     /// Represents an error that occured during parsing.
     /// </summary>
-    public class UnexpectedTokenError : IParseError
+    public class UnexpectedTokenError : ParseError
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="UnexpectedTokenError"/> class.
         /// </summary>
+        /// <param name="position">The start position.</param>
         /// <param name="expected">The expected characters.</param>
         /// <param name="found">The found character.</param>
-        public UnexpectedTokenError(IEnumerable<string> expected, string found)
+        public UnexpectedTokenError(SourcePosition position, IEnumerable<string> expected, string found)
+            : base(position)
         {
             Expected = expected;
             Found = found;
@@ -30,7 +32,7 @@ namespace Warpstone
         public string Found { get; }
 
         /// <inheritdoc/>
-        public string GetMessage()
+        protected override string GetSimpleMessage()
         {
             string expectedString = $"Expected ";
             if (Expected.Count() > 1)

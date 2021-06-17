@@ -44,14 +44,14 @@ namespace Warpstone.Parsers.InternalParsers
                     TOutput value = Transformation(result.Value);
                     if (value is IParsed parsed && parsed.Position == null)
                     {
-                        parsed.Position = new SourcePosition(position, result.Position - position);
+                        parsed.Position = new SourcePosition(position, result.Position - 1);
                     }
 
                     return new ParseResult<TOutput>(value, position, result.Position);
                 }
                 catch (Exception e)
                 {
-                    return new ParseResult<TOutput>(position, result.Position, new TransformationError(e));
+                    return new ParseResult<TOutput>(position, result.Position, new TransformationError(new SourcePosition(position, result.Position), e));
                 }
             }
 

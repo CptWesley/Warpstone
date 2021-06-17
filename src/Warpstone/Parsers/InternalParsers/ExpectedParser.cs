@@ -39,7 +39,7 @@ namespace Warpstone.Parsers.InternalParsers
                 return result;
             }
 
-            return new ParseResult<T>(position, result.Position, new UnexpectedTokenError(Names, GetFound(input, position)));
+            return new ParseResult<T>(position, result.Position, new UnexpectedTokenError(result.Error.Position, Names, GetFound(input, position)));
         }
     }
 }

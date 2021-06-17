@@ -16,7 +16,14 @@ namespace Warpstone
                 throw new ArgumentNullException(nameof(input));
             }
 
-            return TryParse(input, 0);
+            IParseResult<TOutput> result = TryParse(input, 0);
+
+            if (!result.Success)
+            {
+                result.Error.Position.Upgrade(input);
+            }
+
+            return result;
         }
 
         /// <inheritdoc/>

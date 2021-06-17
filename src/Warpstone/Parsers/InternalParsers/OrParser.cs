@@ -59,7 +59,12 @@ namespace Warpstone.Parsers.InternalParsers
                 newExpected = newExpected.Concat(t2.Expected);
             }
 
-            return new ParseResult<T>(position, secondResult.Position, new UnexpectedTokenError(newExpected, GetFound(input, position)));
+            if (firstResult.Position > secondResult.Position)
+            {
+                return new ParseResult<T>(position, firstResult.Position, new UnexpectedTokenError(firstResult.Error.Position, newExpected, GetFound(input, firstResult.Error.Position.Start)));
+            }
+
+            return new ParseResult<T>(position, secondResult.Position, new UnexpectedTokenError(secondResult.Error.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)));
         }
     }
 }

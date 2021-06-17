@@ -35,13 +35,13 @@
             IParseResult<T1> firstResult = First.TryParse(input, position);
             if (!firstResult.Success)
             {
-                return new ParseResult<(T1, T2)>(position, firstResult.Position, firstResult.Error);
+                return new ParseResult<(T1, T2)>(firstResult.StartPosition, firstResult.Position, firstResult.Error);
             }
 
             IParseResult<T2> secondResult = Second.TryParse(input, firstResult.Position);
             if (!secondResult.Success)
             {
-                return new ParseResult<(T1, T2)>(position, secondResult.Position, secondResult.Error);
+                return new ParseResult<(T1, T2)>(secondResult.StartPosition, secondResult.Position, secondResult.Error);
             }
 
             return new ParseResult<(T1, T2)>((firstResult.Value, secondResult.Value), position, secondResult.Position);

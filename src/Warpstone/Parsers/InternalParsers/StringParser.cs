@@ -34,7 +34,7 @@ namespace Warpstone.Parsers.InternalParsers
         {
             if (!StringAtIndex(input, position))
             {
-                return new ParseResult<string>(position, position, new UnexpectedTokenError(new string[] { $"'{String}'" }, GetFound(input, position)));
+                return new ParseResult<string>(position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"'{String}'" }, GetFound(input, position)));
             }
 
             return new ParseResult<string>(String, position, position + String.Length);

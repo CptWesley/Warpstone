@@ -23,7 +23,7 @@
         {
             if (position >= input.Length || input[position] != Character)
             {
-                return new ParseResult<char>(position, position, new UnexpectedTokenError(new string[] { $"'{Character}'" }, GetFound(input, position)));
+                return new ParseResult<char>(position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"'{Character}'" }, GetFound(input, position)));
             }
 
             return new ParseResult<char>(Character, position, position + 1);
