@@ -48,13 +48,12 @@ namespace Warpstone.Parsers.InternalParsers
             }
 
             IEnumerable<string> newExpected = Array.Empty<string>();
-
-            if (firstResult.Error is UnexpectedTokenError t1)
+            if (firstResult.Error is UnexpectedTokenError t1 && firstResult.Position >= secondResult.Position)
             {
                 newExpected = newExpected.Concat(t1.Expected);
             }
 
-            if (secondResult.Error is UnexpectedTokenError t2)
+            if (secondResult.Error is UnexpectedTokenError t2 && firstResult.Position <= secondResult.Position)
             {
                 newExpected = newExpected.Concat(t2.Expected);
             }

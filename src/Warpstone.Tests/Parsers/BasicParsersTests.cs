@@ -551,7 +551,7 @@ namespace Warpstone.Tests.Parsers
             AssertThat(result.Error).IsInstanceOf<TransformationError>();
             TransformationError error = result.Error as TransformationError;
             AssertThat(error.Exception).IsNotNull();
-            AssertThat(error.GetMessage()).IsEqualTo(error.Exception.Message + " At 1:0-1.");
+            AssertThat(error.GetMessage()).IsEqualTo(error.Exception.Message + " At 1:1.");
         }
 
         private class Parsed : IParsed

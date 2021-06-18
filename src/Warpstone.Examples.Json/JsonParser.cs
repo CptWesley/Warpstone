@@ -39,7 +39,7 @@ namespace Warpstone.Examples.Json
 
         private static readonly IParser<KeyValuePair<JsonString, JsonValue>> Field
             = OptionalWhitespaces
-            .Then(String.Transform(x => x))
+            .Then(String)
             .ThenSkip(OptionalWhitespaces)
             .ThenSkip(Char(':'))
             .ThenSkip(OptionalWhitespaces)
@@ -47,7 +47,7 @@ namespace Warpstone.Examples.Json
             .Transform((x, y) => new KeyValuePair<JsonString, JsonValue>(x, y));
 
         private static readonly IParser<JsonObject> Object
-            = Char('{').Then(Many(Field, Char(','))).ThenSkip(Char('}'))
+            = Char('{').Then(Many(Field, Char(','), Char('}')))
             .Transform(x => new JsonObject(x.ToImmutableArray()));
 
         private static readonly IParser<JsonValue> Json
