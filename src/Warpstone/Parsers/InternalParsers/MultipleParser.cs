@@ -7,17 +7,18 @@ namespace Warpstone.Parsers.InternalParsers
     /// </summary>
     /// <typeparam name="T1">The result type of the wrapped parser.</typeparam>
     /// <typeparam name="T2">The result type of the delimiter parser.</typeparam>
-    internal class MultipleParser<T1, T2> : Parser<IList<T1>>
+    /// <typeparam name="T3">The result type of the terminator parser.</typeparam>
+    internal class MultipleParser<T1, T2, T3> : Parser<IList<T1>>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MultipleParser{T1, T2}"/> class.
+        /// Initializes a new instance of the <see cref="MultipleParser{T1, T2, T3}"/> class.
         /// </summary>
         /// <param name="parser">The wrapped parser.</param>
         /// <param name="delimiter">The delimiter parser.</param>
         /// <param name="min">The minimum number of parsed items.</param>
         /// <param name="max">The maximum number of parsed items.</param>
         /// <param name="terminator">The terminator parser.</param>
-        internal MultipleParser(IParser<T1> parser, IParser<T2> delimiter, IParser<T2> terminator, ulong min, ulong max)
+        internal MultipleParser(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator, ulong min, ulong max)
         {
             Parser = parser;
             DelimiterParser = delimiter;
@@ -39,7 +40,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// <summary>
         /// Gets the terminator parser.
         /// </summary>
-        internal IParser<T2> TerminatorParser { get; }
+        internal IParser<T3> TerminatorParser { get; }
 
         /// <summary>
         /// Gets the minimum number of parsed items.
@@ -112,7 +113,7 @@ namespace Warpstone.Parsers.InternalParsers
                 elements.Add(result.Value);
             }
 
-            IParseResult<T2> terminatorResult = TerminatorParser.TryParse(input, newPosition);
+            IParseResult<T3> terminatorResult = TerminatorParser.TryParse(input, newPosition);
             if (!terminatorResult.Success)
             {
                 if (error == null)

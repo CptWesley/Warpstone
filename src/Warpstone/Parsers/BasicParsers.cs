@@ -85,12 +85,13 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="T1">The type of results collected.</typeparam>
         /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <typeparam name="T3">The type of the terminator.</typeparam>
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <param name="count">The exact number of matches.</param>
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int count, IParser<T2> terminator)
+        public static IParser<IList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, int count, IParser<T3> terminator)
             => Multiple(parser, delimiter, count, count, terminator);
 
         /// <summary>
@@ -109,7 +110,7 @@ namespace Warpstone.Parsers
         /// Creates a parser applying the given parser multiple times and collects all results.
         /// </summary>
         /// <typeparam name="T1">The type of results collected.</typeparam>
-        /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <typeparam name="T2">The type of the terminator.</typeparam>
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <param name="min">The minimum number of matches.</param>
         /// <param name="max">The maximum number of matches.</param>
@@ -134,13 +135,14 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="T1">The type of results collected.</typeparam>
         /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <typeparam name="T3">The type of the terminator.</typeparam>
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <param name="min">The minimum number of matches.</param>
         /// <param name="max">The maximum number of matches.</param>
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int min, int max, IParser<T2> terminator)
+        public static IParser<IList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, int min, int max, IParser<T3> terminator)
         {
             if (min < 0)
             {
@@ -195,12 +197,13 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="T1">The type of results collected.</typeparam>
         /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <typeparam name="T3">The type of the terminator.</typeparam>
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <param name="count">The exact number of matches.</param>
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong count, IParser<T2> terminator)
+        public static IParser<IList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, ulong count, IParser<T3> terminator)
             => Multiple(parser, delimiter, count, count, terminator);
 
         /// <summary>
@@ -219,7 +222,7 @@ namespace Warpstone.Parsers
         /// Creates a parser applying the given parser multiple times and collects all results.
         /// </summary>
         /// <typeparam name="T1">The type of results collected.</typeparam>
-        /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <typeparam name="T2">The type of the terminator.</typeparam>
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <param name="min">The minimum number of matches.</param>
         /// <param name="max">The maximum number of matches.</param>
@@ -244,20 +247,21 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="T1">The type of results collected.</typeparam>
         /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <typeparam name="T3">The type of the terminator.</typeparam>
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <param name="min">The minimum number of matches.</param>
         /// <param name="max">The maximum number of matches.</param>
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max, IParser<T2> terminator)
+        public static IParser<IList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max, IParser<T3> terminator)
         {
             if (max < min)
             {
                 throw new ArgumentException($"Value of '{nameof(max)}' needs to be larger than or equal to value of '{nameof(min)}'.", nameof(max));
             }
 
-            return new MultipleParser<T1, T2>(parser, delimiter, terminator, min, max);
+            return new MultipleParser<T1, T2, T3>(parser, delimiter, terminator, min, max);
         }
 
         /// <summary>
@@ -287,11 +291,12 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="T1">The type of results collected.</typeparam>
         /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <typeparam name="T3">The type of the terminator.</typeparam>
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IList<T1>> Many<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, IParser<T2> terminator)
+        public static IParser<IList<T1>> Many<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator)
               => Multiple(parser, delimiter, 0, ulong.MaxValue, terminator);
 
         /// <summary>
@@ -319,11 +324,12 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="T1">The type of results collected.</typeparam>
         /// <typeparam name="T2">The type of delimiters.</typeparam>
+        /// <typeparam name="T3">The type of the terminator.</typeparam>
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
-        public static IParser<IList<T1>> OneOrMore<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, IParser<T2> terminator)
+        public static IParser<IList<T1>> OneOrMore<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator)
             => Multiple(parser, delimiter, 1, ulong.MaxValue, terminator);
 
         /// <summary>
