@@ -541,6 +541,49 @@ namespace Warpstone.Tests.Parsers
         }
 
         /// <summary>
+        /// Checks that the unary not parser works correctly.
+        /// </summary>
+        [Fact]
+        public static void UnaryNotTest()
+        {
+            IParser<string> parser = Not(String("test"), "test");
+            IParseResult<string> result1 = parser.TryParse("test string");
+            AssertThat(result1.Success).IsFalse();
+            IParseResult<string> result2 = parser.TryParse("other string");
+            AssertThat(result2.Success).IsTrue();
+        }
+
+        /// <summary>
+        /// Checks that the binary not parser works correctly.
+        /// </summary>
+        [Fact]
+        public static void BinaryNotTest()
+        {
+            IParser<string> identifier = Not(Or(String("if"), String("while"), String("for")), CompiledRegex("[a-zA-Z_][a-zA-Z0-9_]*"), "a keyword");
+            AssertThat(identifier.TryParse("while warpstone parser").Success).IsFalse();
+            AssertThat(identifier.TryParse("for warpstone parser").Success).IsFalse();
+            AssertThat(identifier.TryParse("if warpstone parser").Success).IsFalse();
+
+            AssertThat(identifier.TryParse("the warpstone parser").Success).IsTrue();
+            AssertThat(identifier.TryParse("fOr warpstone parser").Success).IsTrue();
+        }
+
+        /// <summary>
+        /// Checks that the binary not parser works correctly.
+        /// </summary>
+        [Fact]
+        public static void ExceptTest()
+        {
+            IParser<string> identifier = CompiledRegex("[a-zA-Z_][a-zA-Z0-9_]*").Except(Or(String("if"), String("while"), String("for")), "a keyword");
+            AssertThat(identifier.TryParse("while warpstone parser").Success).IsFalse();
+            AssertThat(identifier.TryParse("for warpstone parser").Success).IsFalse();
+            AssertThat(identifier.TryParse("if warpstone parser").Success).IsFalse();
+
+            AssertThat(identifier.TryParse("the warpstone parser").Success).IsTrue();
+            AssertThat(identifier.TryParse("fOr warpstone parser").Success).IsTrue();
+        }
+
+        /// <summary>
         /// Checks that transformation exceptions are handled correctly.
         /// </summary>
         [Fact]
