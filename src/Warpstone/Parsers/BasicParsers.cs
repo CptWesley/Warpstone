@@ -368,7 +368,7 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="T1">The result type of condition the parser.</typeparam>
         /// <typeparam name="T2">The result type of the nested parser.</typeparam>
-        /// <param name="condition">The condition parser. If this parser fails, the nested parser is executed. The entire parser fails othersie</param>
+        /// <param name="condition">The condition parser. If this parser fails, the nested parser is executed. The entire parser fails otherwise.</param>
         /// <param name="then">The nested parser. This parser is executed if the condition does not hold.</param>
         /// <returns>A parser trying the given parser, running the nested parser if the condition fails, or failing if the condition succeeds.</returns>
         public static IParser<T2> Not<T1, T2>(IParser<T1> condition, IParser<T2> then)
@@ -380,9 +380,8 @@ namespace Warpstone.Parsers
         /// <typeparam name="T1">The result type of condition the parser.</typeparam>
         /// <typeparam name="T2">The result type of the nested parser.</typeparam>
         /// <param name="then">The nested parser. This parser is executed if the condition does not hold.</param>
-        /// <param name="condition">The condition parser. If this parser fails, the nested parser is executed. The entire parser fails othersie</param>
+        /// <param name="condition">The condition parser. If this parser fails, the nested parser is executed. The entire parser fails otherwise.</param>
         /// <returns>A parser trying the given parser, running the nested parser if the condition fails, or failing if the condition succeeds.</returns>
-
         public static IParser<T2> Except<T1, T2>(this IParser<T2> then, IParser<T1> condition)
             => Not(condition, then);
 
