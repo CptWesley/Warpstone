@@ -12,12 +12,10 @@
         /// </summary>
         /// <param name="condition">The condition that must hold for in order to continue parsing.</param>
         /// <param name="parser">The parser that produces the value this parser returns.</param>
-        /// <param name="conditionDescription">The description of the condition to use in error messages.</param>
-        internal BinaryNotParser(IParser<T1> condition, IParser<T2> parser, string conditionDescription)
+        internal BinaryNotParser(IParser<T1> condition, IParser<T2> parser)
         {
             Condition = condition;
             Parser = parser;
-            ConditionDescription = conditionDescription;
         }
 
         /// <summary>
@@ -30,11 +28,6 @@
         /// </summary>
         internal IParser<T2> Parser { get; }
 
-        /// <summary>
-        /// Gets the description to use in error messages.
-        /// </summary>
-        internal string ConditionDescription { get; }
-
         /// <inheritdoc/>
         public override IParseResult<T2> TryParse(string input, int position)
         {
@@ -42,7 +35,7 @@
 
             if (conditionResult.Success)
             {
-                return new ParseResult<T2>(position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"not {ConditionDescription}" }, ConditionDescription));
+                return new ParseResult<T2>(position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { "<not>" }, GetFound(input, position)));
             }
 
             return Parser.TryParse(input, position);

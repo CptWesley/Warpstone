@@ -546,7 +546,7 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void UnaryNotTest()
         {
-            IParser<string> parser = Not(String("test"), "test");
+            IParser<string> parser = Not(String("test")).WithName("test");
             IParseResult<string> result1 = parser.TryParse("test string");
             AssertThat(result1.Success).IsFalse();
             IParseResult<string> result2 = parser.TryParse("other string");
@@ -559,7 +559,7 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void BinaryNotTest()
         {
-            IParser<string> identifier = Not(Or(String("if"), String("while"), String("for")), CompiledRegex("[a-zA-Z_][a-zA-Z0-9_]*"), "a keyword");
+            IParser<string> identifier = Not(Or(String("if"), String("while"), String("for")), CompiledRegex("[a-zA-Z_][a-zA-Z0-9_]*")).WithName("a keyword");
             AssertThat(identifier.TryParse("while warpstone parser").Success).IsFalse();
             AssertThat(identifier.TryParse("for warpstone parser").Success).IsFalse();
             AssertThat(identifier.TryParse("if warpstone parser").Success).IsFalse();
@@ -574,7 +574,7 @@ namespace Warpstone.Tests.Parsers
         [Fact]
         public static void ExceptTest()
         {
-            IParser<string> identifier = CompiledRegex("[a-zA-Z_][a-zA-Z0-9_]*").Except(Or(String("if"), String("while"), String("for")), "a keyword");
+            IParser<string> identifier = CompiledRegex("[a-zA-Z_][a-zA-Z0-9_]*").Except(Or(String("if"), String("while"), String("for"))).WithName("a keyword");
             AssertThat(identifier.TryParse("while warpstone parser").Success).IsFalse();
             AssertThat(identifier.TryParse("for warpstone parser").Success).IsFalse();
             AssertThat(identifier.TryParse("if warpstone parser").Success).IsFalse();
