@@ -361,7 +361,7 @@ namespace Warpstone.Parsers
         /// <param name="not">The parser which, if it succeeds, causes the returned parser to fail.</param>
         /// <returns>A parser trying the given parser, and failing if it succeeds.</returns>
         public static IParser<T> Not<T>(IParser<T> not)
-            => Not(not, new VoidParser<T>());
+            => new NotParser<T>(not);
 
         /// <summary>
         /// Creates a parser that parses the nested parser if the condition parser fails.
@@ -372,7 +372,7 @@ namespace Warpstone.Parsers
         /// <param name="then">The nested parser. This parser is executed if the condition does not hold.</param>
         /// <returns>A parser trying the given parser, running the nested parser if the condition fails, or failing if the condition succeeds.</returns>
         public static IParser<T2> Not<T1, T2>(IParser<T1> condition, IParser<T2> then)
-            => new BinaryNotParser<T1, T2>(condition, then);
+            => Not(condition, then);
 
         /// <summary>
         /// Creates a parser that parses the given parser, except if the condition holds, in which case it fails.
