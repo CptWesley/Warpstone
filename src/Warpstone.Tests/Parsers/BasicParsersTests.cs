@@ -557,21 +557,6 @@ namespace Warpstone.Tests.Parsers
         /// Checks that the binary not parser works correctly.
         /// </summary>
         [Fact]
-        public static void BinaryNotTest()
-        {
-            IParser<string> identifier = Not(Or(String("if"), String("while"), String("for")), CompiledRegex("[a-zA-Z_][a-zA-Z0-9_]*")).WithName("a keyword");
-            AssertThat(identifier.TryParse("while warpstone parser").Success).IsFalse();
-            AssertThat(identifier.TryParse("for warpstone parser").Success).IsFalse();
-            AssertThat(identifier.TryParse("if warpstone parser").Success).IsFalse();
-
-            AssertThat(identifier.TryParse("the warpstone parser").Success).IsTrue();
-            AssertThat(identifier.TryParse("fOr warpstone parser").Success).IsTrue();
-        }
-
-        /// <summary>
-        /// Checks that the binary not parser works correctly.
-        /// </summary>
-        [Fact]
         public static void ExceptTest()
         {
             IParser<string> identifier = CompiledRegex("[a-zA-Z_][a-zA-Z0-9_]*").Except(Or(String("if"), String("while"), String("for"))).WithName("a keyword");
