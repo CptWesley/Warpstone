@@ -355,6 +355,26 @@ namespace Warpstone.Parsers
             => InnerOr(parsers.Prepend(second).Prepend(first));
 
         /// <summary>
+        /// Creates a parser that fails if the specified parser succeeds.
+        /// </summary>
+        /// <typeparam name="T">The result type of the parser that should fail.</typeparam>
+        /// <param name="not">The parser which, if it succeeds, causes the returned parser to fail.</param>
+        /// <returns>A parser trying the given parser, and failing if it succeeds.</returns>
+        public static IParser<T> Not<T>(IParser<T> not)
+            => new NotParser<T>(not);
+
+        /// <summary>
+        /// Creates a parser that parses the given parser, except if the exclusion parser succeedds, in which case it fails.
+        /// </summary>
+        /// <typeparam name="T1">The result type of condition the parser.</typeparam>
+        /// <typeparam name="T2">The result type of the nested parser.</typeparam>
+        /// <param name="parser">The nested parser. This parser is executed if exclusion parser fails.</param>
+        /// <param name="exclusion">The exclusion parser. If this parser succeeds, the expression fails. Otherwise, the value from the nested parser is produced.</param>
+        /// <returns>A parser trying the given parser, running the nested parser if the condition fails, or failing if the condition succeeds.</returns>
+        public static IParser<T2> Except<T1, T2>(this IParser<T2> parser, IParser<T1> exclusion)
+            => Not(exclusion).Then(parser);
+
+        /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
         /// </summary>
         /// <typeparam name="TInput">The result type of the given input parser.</typeparam>
