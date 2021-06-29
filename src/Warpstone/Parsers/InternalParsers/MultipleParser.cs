@@ -124,7 +124,7 @@ namespace Warpstone.Parsers.InternalParsers
                 return new ParseResult<IList<T1>>(errorStartPos, errorEndPos, error);
             }
 
-            return new ParseResult<IList<T1>>(elements, position, newPosition);
+            return new ParseResult<IList<T1>>(elements, position, terminatorResult.Position);
         }
     }
 }
