@@ -1,4 +1,8 @@
-﻿namespace Warpstone.Parsers.InternalParsers
+﻿using System;
+using System.Collections.Generic;
+using Warpstone.Internal;
+
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// A Parser applying two parsers and retaining both results.
@@ -45,6 +49,26 @@
             }
 
             return new ParseResult<(T1, T2)>((firstResult.Value, secondResult.Value), position, secondResult.Position);
+        }
+
+        /// <inheritdoc/>
+        public override void FillSyntaxHighlightingGraph(Dictionary<object, HighlightingNode> graph)
+        {
+            if (graph.ContainsKey(this))
+            {
+                return;
+            }
+
+            graph.Add(this, new HighlightingNode(string.Empty, Highlight.None, new object[] { First, Second }));
+            First.FillSyntaxHighlightingGraph(graph);
+            Second.FillSyntaxHighlightingGraph(graph);
+        }
+
+        public override string ToRegex2(Dictionary<object, string> names)
+        {
+            string name = $"a{GetHashCode()}";
+            Dictionary<object, string> copy = names.Modify(this, name);
+            return $"(?<{name}>{First.ToRegex(copy)}{Second.ToRegex(copy)})";
         }
     }
 }

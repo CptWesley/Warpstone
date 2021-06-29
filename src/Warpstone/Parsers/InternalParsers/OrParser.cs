@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Warpstone.Internal;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -64,6 +65,26 @@ namespace Warpstone.Parsers.InternalParsers
             }
 
             return new ParseResult<T>(position, secondResult.Position, new UnexpectedTokenError(secondResult.Error.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)));
+        }
+
+        /// <inheritdoc/>
+        public override void FillSyntaxHighlightingGraph(Dictionary<object, HighlightingNode> graph)
+        {
+            if (graph.ContainsKey(this))
+            {
+                return;
+            }
+
+            graph.Add(this, new HighlightingNode(string.Empty, Highlight.None, new object[] { First, Second }));
+            First.FillSyntaxHighlightingGraph(graph);
+            Second.FillSyntaxHighlightingGraph(graph);
+        }
+
+        public override string ToRegex2(Dictionary<object, string> names)
+        {
+            string name = $"o{GetHashCode()}";
+            Dictionary<object, string> copy = names.Modify(this, name);
+            return $"(?<{name}>{First.ToRegex(copy)}|{Second.ToRegex(copy)})";
         }
     }
 }

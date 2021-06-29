@@ -1,4 +1,8 @@
-﻿namespace Warpstone.Parsers.InternalParsers
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser which parser a given character.
@@ -28,5 +32,19 @@
 
             return new ParseResult<char>(Character, position, position + 1);
         }
+
+        /// <inheritdoc/>
+        public override void FillSyntaxHighlightingGraph(Dictionary<object, HighlightingNode> graph)
+        {
+            if (graph.ContainsKey(this))
+            {
+                return;
+            }
+
+            graph.Add(this, new HighlightingNode(Regex.Escape(Character.ToString()), Highlight.None, Array.Empty<object>()));
+        }
+
+        public override string ToRegex2(Dictionary<object, string> names)
+            => Regex.Escape(Character.ToString());
     }
 }

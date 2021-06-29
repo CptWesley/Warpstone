@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Warpstone.Parsers.InternalParsers
@@ -57,5 +58,20 @@ namespace Warpstone.Parsers.InternalParsers
 
             return new ParseResult<TOutput>(position, result.Position, result.Error);
         }
+
+        /// <inheritdoc/>
+        public override void FillSyntaxHighlightingGraph(Dictionary<object, HighlightingNode> graph)
+        {
+            if (graph.ContainsKey(this))
+            {
+                return;
+            }
+
+            graph.Add(this, new HighlightingNode(string.Empty, Highlight.None, new object[] { Parser }));
+            Parser.FillSyntaxHighlightingGraph(graph);
+        }
+
+        public override string ToRegex2(Dictionary<object, string> names)
+            => Parser.ToRegex(names);
     }
 }

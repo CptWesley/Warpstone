@@ -41,5 +41,20 @@ namespace Warpstone.Parsers.InternalParsers
 
             return new ParseResult<T>(position, result.Position, new UnexpectedTokenError(result.Error.Position, Names, GetFound(input, position)));
         }
+
+        /// <inheritdoc/>
+        public override void FillSyntaxHighlightingGraph(Dictionary<object, HighlightingNode> graph)
+        {
+            if (graph.ContainsKey(this))
+            {
+                return;
+            }
+
+            graph.Add(this, new HighlightingNode(string.Empty, Highlight.None, new object[] { Parser }));
+            Parser.FillSyntaxHighlightingGraph(graph);
+        }
+
+        public override string ToRegex2(Dictionary<object, string> names)
+            => Parser.ToRegex(names);
     }
 }

@@ -694,6 +694,9 @@ namespace Warpstone.Parsers
         public static IParser<T> WithNames<T>(this IParser<T> parser, string firstName, params string[] otherNames)
             => parser.WithNames(new string[] { firstName }.Concat(otherNames));
 
+        public static IParser<T> Highlight<T>(this IParser<T> parser, Highlight highlight)
+            => new HighlightParser<T>(parser, highlight);
+
         private static IParser<T> InnerOr<T>(IEnumerable<IParser<T>> parsers)
         {
             if (parsers.Count() == 1)

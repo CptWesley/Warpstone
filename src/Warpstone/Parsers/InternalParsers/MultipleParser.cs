@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Warpstone.Internal;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -126,5 +128,50 @@ namespace Warpstone.Parsers.InternalParsers
 
             return new ParseResult<IList<T1>>(elements, position, newPosition);
         }
+
+        /// <inheritdoc/>
+        public override void FillSyntaxHighlightingGraph(Dictionary<object, HighlightingNode> graph)
+        {
+            if (graph.ContainsKey(this))
+            {
+                return;
+            }
+
+            graph.Add(this, new HighlightingNode(string.Empty, Highlight.None, new object[] { Parser, DelimiterParser, TerminatorParser }));
+            Parser.FillSyntaxHighlightingGraph(graph);
+            DelimiterParser.FillSyntaxHighlightingGraph(graph);
+            TerminatorParser.FillSyntaxHighlightingGraph(graph);
+        }
+
+        public override string ToRegex2(Dictionary<object, string> names)
+        {
+            string name = $"m{GetHashCode()}";
+            string tail;
+
+            if (Min == 0 && Max == ulong.MaxValue)
+            {
+                tail = "*";
+            }
+            else if (Min == 1 && Max == ulong.MaxValue)
+            {
+                tail = "+";
+            }
+            else if (Max == ulong.MaxValue)
+            {
+                tail = $"{{{Min},}}";
+            }
+            else if (Min == Max)
+            {
+                tail = $"{{{Min}}}";
+            }
+            else
+            {
+                tail = $"{{{Min},{Max}}}";
+            }
+
+            return $"(?<{name}>({Parser.ToRegex(names.Modify(this, name))}){tail})";
+        }
+
+
     }
 }

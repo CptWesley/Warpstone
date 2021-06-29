@@ -1,4 +1,6 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -45,5 +47,19 @@ namespace Warpstone.Parsers.InternalParsers
 
             return new ParseResult<string>(match.Value, match.Index, match.Index + match.Length);
         }
+
+        /// <inheritdoc/>
+        public override void FillSyntaxHighlightingGraph(Dictionary<object, HighlightingNode> graph)
+        {
+            if (graph.ContainsKey(this))
+            {
+                return;
+            }
+
+            graph.Add(this, new HighlightingNode(Pattern, Highlight.None, Array.Empty<object>()));
+        }
+
+        public override string ToRegex2(Dictionary<object, string> names)
+            => Pattern;
     }
 }
