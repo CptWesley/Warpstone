@@ -55,7 +55,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// <inheritdoc/>
         public override IParseResult<IList<T1>> TryParse(string input, int position)
         {
-            IParseError error = null;
+            IParseError? error = null;
             int errorStartPos = -1;
             int errorEndPos = -1;
             IList<T1> elements = new List<T1>();
@@ -69,7 +69,7 @@ namespace Warpstone.Parsers.InternalParsers
                 }
 
                 newPosition = result.Position;
-                elements.Add(result.Value);
+                elements.Add(result.Value!);
 
                 if (i < Min - 1)
                 {
@@ -110,7 +110,7 @@ namespace Warpstone.Parsers.InternalParsers
                 }
 
                 newPosition = result.Position;
-                elements.Add(result.Value);
+                elements.Add(result.Value!);
             }
 
             IParseResult<T3> terminatorResult = TerminatorParser.TryParse(input, newPosition);

@@ -25,14 +25,14 @@ namespace Warpstone.Expressions
         public Dictionary<IParser<TOperator>, BinaryOperatorTransform<TOperator, TExpression>> Transformations { get; }
 
         /// <inheritdoc/>
-        internal override void UnfoldExpressionLeft(List<object> list)
+        internal override void UnfoldExpressionLeft(List<object?> list)
         {
             int index = 0;
             while (index < list.Count)
             {
-                if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]), out BinaryOperatorTransform<TOperator, TExpression> transformation))
+                if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]!), out BinaryOperatorTransform<TOperator, TExpression> transformation))
                 {
-                    ReplaceExpression(list, index, transformation(GetOperator(list[index]), (TExpression)list[index - 1], (TExpression)list[index + 1]));
+                    ReplaceExpression(list, index, transformation(GetOperator(list[index]!), (TExpression)list[index - 1]!, (TExpression)list[index + 1]!));
                 }
                 else
                 {
@@ -42,25 +42,25 @@ namespace Warpstone.Expressions
         }
 
         /// <inheritdoc/>
-        internal override void UnfoldExpressionRight(List<object> list)
+        internal override void UnfoldExpressionRight(List<object?> list)
         {
             int index = list.Count - 1;
             while (index > 0)
             {
-                if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]), out BinaryOperatorTransform<TOperator, TExpression> transformation))
+                if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]!), out BinaryOperatorTransform<TOperator, TExpression> transformation))
                 {
-                    ReplaceExpression(list, index, transformation(GetOperator(list[index]), (TExpression)list[index - 1], (TExpression)list[index + 1]));
+                    ReplaceExpression(list, index, transformation(GetOperator(list[index]!), (TExpression)list[index - 1]!, (TExpression)list[index + 1]!));
                 }
 
                 index--;
             }
         }
 
-        private static void ReplaceExpression(List<object> list, int index, TExpression value)
+        private static void ReplaceExpression(List<object?> list, int index, TExpression value)
         {
             list.RemoveAt(index + 1);
             list.RemoveAt(index);
-            list.Insert(index, value);
+            list.Insert(index, value!);
             list.RemoveAt(index - 1);
         }
     }

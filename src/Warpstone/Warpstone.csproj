@@ -11,11 +11,12 @@
     <PackageTags>parser combinator language parsing parsercombinator</PackageTags>
     <AssemblyVersion>$(Version)</AssemblyVersion>
     <FileVersion>$(Version)</FileVersion>
-    <Version>1.0.8.2-preview2</Version>
+    <Version>1.0.8.2-preview3</Version>
     <Copyright></Copyright>
     <PackageIconUrl>https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo_128x128.png</PackageIconUrl>
     <PackageIcon>logo_128x128.png</PackageIcon>
     <LangVersion>9</LangVersion>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
   
   <ItemGroup>

@@ -25,14 +25,14 @@ namespace Warpstone.Expressions
         public Dictionary<IParser<TOperator>, UnaryOperatorTransform<TOperator, TExpression>> Transformations { get; }
 
         /// <inheritdoc/>
-        internal override void UnfoldExpressionLeft(List<object> list)
+        internal override void UnfoldExpressionLeft(List<object?> list)
         {
             int index = 0;
             while (index < list.Count)
             {
-                if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]), out UnaryOperatorTransform<TOperator, TExpression> transformation))
+                if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]!), out UnaryOperatorTransform<TOperator, TExpression> transformation))
                 {
-                    ReplaceExpression(list, index, transformation(GetOperator(list[index]), (TExpression)list[index - 1]), true);
+                    ReplaceExpression(list, index, transformation(GetOperator(list[index]!), (TExpression)list[index - 1]!), true);
                 }
                 else
                 {
@@ -42,21 +42,21 @@ namespace Warpstone.Expressions
         }
 
         /// <inheritdoc/>
-        internal override void UnfoldExpressionRight(List<object> list)
+        internal override void UnfoldExpressionRight(List<object?> list)
         {
             int index = list.Count - 2;
             while (index >= 0)
             {
-                if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]), out UnaryOperatorTransform<TOperator, TExpression> transformation))
+                if (IsOperator(list[index]) && Transformations.TryGetValue(GetParser(list[index]!), out UnaryOperatorTransform<TOperator, TExpression> transformation))
                 {
-                    ReplaceExpression(list, index, transformation(GetOperator(list[index]), (TExpression)list[index + 1]), false);
+                    ReplaceExpression(list, index, transformation(GetOperator(list[index]!), (TExpression)list[index + 1]!), false);
                 }
 
                 index--;
             }
         }
 
-        private static void ReplaceExpression(List<object> list, int index, object value, bool left)
+        private static void ReplaceExpression(List<object?> list, int index, object? value, bool left)
         {
             list.RemoveAt(index);
             list.Insert(index, value);

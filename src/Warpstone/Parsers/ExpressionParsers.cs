@@ -416,9 +416,9 @@ namespace Warpstone.Parsers
                 postUnaryOperatorParser = Or(postUnaryOperatorParser, postUnaryOperators[i]);
             }
 
-            IParser<OperatorTuple> binOpParser = binaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
-            IParser<OperatorTuple> preOpParser = preUnaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
-            IParser<OperatorTuple> postOpParser = postUnaryOperatorParser.Transform((x, y) => new OperatorTuple(x as IParser<object>, y));
+            IParser<OperatorTuple> binOpParser = binaryOperatorParser.Transform((x, y) => new OperatorTuple((x as IParser<object>)!, y!));
+            IParser<OperatorTuple> preOpParser = preUnaryOperatorParser.Transform((x, y) => new OperatorTuple((x as IParser<object>)!, y!));
+            IParser<OperatorTuple> postOpParser = postUnaryOperatorParser.Transform((x, y) => new OperatorTuple((x as IParser<object>)!, y!));
             IParser<ExpressionTuple<TOperator, TExpression>> expParser
                 = Many(preOpParser)
                 .ThenAdd(terminalParser)
@@ -447,7 +447,7 @@ namespace Warpstone.Parsers
 
             if (GetGenericlessTypeName(operation) != nameof(BinaryOperation<object, object>))
             {
-                binaryOperation = null;
+                binaryOperation = null!;
                 return false;
             }
 
@@ -478,7 +478,7 @@ namespace Warpstone.Parsers
 
             if (GetGenericlessTypeName(operation) != nameof(UnaryOperation<object, object>))
             {
-                unaryOperation = null;
+                unaryOperation = null!;
                 return false;
             }
 
@@ -511,31 +511,31 @@ namespace Warpstone.Parsers
                 { op, transformation },
             });
 
-        private static List<object> CreateList<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple Op, ExpressionTuple<TOperator, TExpression> Exp)> tail)
+        private static List<object?> CreateList<TOperator, TExpression>(ExpressionTuple<TOperator, TExpression> head, IEnumerable<(OperatorTuple Op, ExpressionTuple<TOperator, TExpression> Exp)> tail)
         {
-            List<object> list = new List<object>();
+            List<object?> list = new List<object?>();
             list.AddRange(head.PreOperators);
-            list.Add(head.Expression);
+            list.Add(head.Expression!);
             list.AddRange(head.PostOperators);
             foreach ((OperatorTuple op, ExpressionTuple<TOperator, TExpression> exp) in tail)
             {
                 list.Add(op);
                 list.AddRange(exp.PreOperators);
-                list.Add(exp.Expression);
+                list.Add(exp.Expression!);
                 list.AddRange(exp.PostOperators);
             }
 
             return list;
         }
 
-        private static TExpression UnfoldExpression<TOperator, TExpression>(List<object> list, IEnumerable<IOperation<TOperator, TExpression>> operations)
+        private static TExpression UnfoldExpression<TOperator, TExpression>(List<object?> list, IEnumerable<IOperation<TOperator, TExpression>> operations)
         {
             foreach (IOperation<TOperator, TExpression> operation in operations)
             {
                 operation.UnfoldExpression(list);
             }
 
-            return (TExpression)list[0];
+            return (TExpression)list[0]!;
         }
 
         private static BinaryOperatorTransform<TOperator, TExpression> ExpandTransform<TOperator, TExpression>(this BinaryOperatorTransform<TExpression> transformation)

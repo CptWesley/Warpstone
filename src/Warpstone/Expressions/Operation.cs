@@ -20,7 +20,7 @@ namespace Warpstone.Expressions
         public Associativity Associativity { get; }
 
         /// <inheritdoc/>
-        public void UnfoldExpression(List<object> list)
+        public void UnfoldExpression(List<object?> list)
         {
             if (Associativity == Associativity.Left)
             {
@@ -53,31 +53,19 @@ namespace Warpstone.Expressions
         /// </summary>
         /// <param name="o">The object.</param>
         /// <returns><c>true</c> if the specified object is an operator; otherwise, <c>false</c>.</returns>
-        internal static bool IsOperator(object o)
+        internal static bool IsOperator(object? o)
             => o is OperatorTuple;
 
         /// <summary>
         /// Unfolds the expression right-to-left.
         /// </summary>
         /// <param name="list">The list of all expression parts.</param>
-        internal abstract void UnfoldExpressionRight(List<object> list);
+        internal abstract void UnfoldExpressionRight(List<object?> list);
 
         /// <summary>
         /// Unfolds the expression left-to-right.
         /// </summary>
         /// <param name="list">The list of all expression parts.</param>
-        internal abstract void UnfoldExpressionLeft(List<object> list);
-
-        private static string GetGenericlessTypeName(object obj)
-        {
-            string name = obj.GetType().Name;
-            int index = name.IndexOf('`');
-            if (index < 0)
-            {
-                return name;
-            }
-
-            return name.Substring(0, index);
-        }
+        internal abstract void UnfoldExpressionLeft(List<object?> list);
     }
 }

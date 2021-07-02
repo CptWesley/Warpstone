@@ -12,7 +12,7 @@
         /// <param name="startPosition">The start position.</param>
         /// <param name="position">The position.</param>
         /// <param name="error">The parse error that occured.</param>
-        public ParseResult(int startPosition, int position, IParseError error)
+        public ParseResult(int startPosition, int position, IParseError? error)
         {
             StartPosition = startPosition;
             Position = position;
@@ -26,7 +26,7 @@
         /// <param name="value">The value.</param>
         /// <param name="startPosition">The start position of the parser.</param>
         /// <param name="position">The position of the parser.</param>
-        public ParseResult(T value, int startPosition, int position)
+        public ParseResult(T? value, int startPosition, int position)
         {
             Value = value;
             StartPosition = startPosition;
@@ -38,7 +38,7 @@
         public bool Success { get; }
 
         /// <inheritdoc/>
-        public T Value { get; }
+        public T? Value { get; }
 
         /// <inheritdoc/>
         public int StartPosition { get; }
@@ -47,6 +47,6 @@
         public int Position { get; }
 
         /// <inheritdoc/>
-        public IParseError Error { get; }
+        public IParseError? Error { get; }
     }
 }

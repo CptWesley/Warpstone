@@ -17,7 +17,7 @@ namespace Warpstone
         /// <summary>
         /// Gets the parsed value.
         /// </summary>
-        T Value { get; }
+        T? Value { get; }
 
         /// <summary>
         /// Gets the start position of the parser.
@@ -32,6 +32,6 @@ namespace Warpstone
         /// <summary>
         /// Gets the parse error.
         /// </summary>
-        IParseError Error { get; }
+        IParseError? Error { get; }
     }
 }

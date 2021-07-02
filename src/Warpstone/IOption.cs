@@ -56,7 +56,7 @@
         public bool HasValue => false;
 
         /// <inheritdoc/>
-        public T Value => default;
+        public T Value => default!;
 
         /// <summary>
         /// Deconstructs this instance.

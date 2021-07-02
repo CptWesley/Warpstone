@@ -56,6 +56,6 @@ namespace Warpstone.Expressions
         /// Unfolds the expression.
         /// </summary>
         /// <param name="list">The list.</param>
-        void UnfoldExpression(List<object> list);
+        void UnfoldExpression(List<object?> list);
     }
 }
