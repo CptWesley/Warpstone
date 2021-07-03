@@ -396,6 +396,17 @@ namespace Warpstone.Parsers
         /// <typeparam name="TInput">The result type of the given input parser.</typeparam>
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
+        /// <param name="output">The result of the transformation.</param>
+        /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
+        public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, TOutput output)
+            => new TransformParser<TInput, TOutput>(parser, x => output);
+
+        /// <summary>
+        /// Creates a parser that first applies the given parser and then applies a transformation on its result.
+        /// </summary>
+        /// <typeparam name="TInput">The result type of the given input parser.</typeparam>
+        /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
+        /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
         public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, Func<TInput, TOutput> transformation)
