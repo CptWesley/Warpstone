@@ -23,6 +23,14 @@ namespace Warpstone.Parsers.InternalParsers
 
         /// <inheritdoc/>
         public override IParseResult<T> TryParse(string input, int position)
-            => Parser.Value.TryParse(input, position);
+        {
+            IParseResult<T> result = Parser.Value.TryParse(input, position);
+            if (result.Success)
+            {
+                return new ParseResult<T>(this, result.Value, result.StartPosition, result.Position, new[] { result });
+            }
+
+            return new ParseResult<T>(this, result.StartPosition, result.Position, result.Error, new[] { result });
+        }
     }
 }

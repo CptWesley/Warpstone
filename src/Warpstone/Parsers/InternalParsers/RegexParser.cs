@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -40,10 +41,10 @@ namespace Warpstone.Parsers.InternalParsers
 
             if (!match.Success)
             {
-                return new ParseResult<string>(position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"'{Pattern}'" }, GetFound(input, position)));
+                return new ParseResult<string>(this, position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"'{Pattern}'" }, GetFound(input, position)), Array.Empty<IParseResult<object>>());
             }
 
-            return new ParseResult<string>(match.Value, match.Index, match.Index + match.Length);
+            return new ParseResult<string>(this, match.Value, match.Index, match.Index + match.Length, Array.Empty<IParseResult>());
         }
     }
 }

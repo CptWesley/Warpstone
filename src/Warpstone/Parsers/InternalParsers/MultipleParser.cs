@@ -59,13 +59,15 @@ namespace Warpstone.Parsers.InternalParsers
             int errorStartPos = -1;
             int errorEndPos = -1;
             IList<T1> elements = new List<T1>();
+            List<IParseResult> trace = new List<IParseResult>();
             int newPosition = position;
             for (ulong i = 0; i < Min; i++)
             {
                 IParseResult<T1> result = Parser.TryParse(input, newPosition);
+                trace.Add(result);
                 if (!result.Success)
                 {
-                    return new ParseResult<IList<T1>>(newPosition, result.Position, result.Error);
+                    return new ParseResult<IList<T1>>(this, newPosition, result.Position, result.Error, trace);
                 }
 
                 newPosition = result.Position;
@@ -74,9 +76,10 @@ namespace Warpstone.Parsers.InternalParsers
                 if (i < Min - 1)
                 {
                     IParseResult<T2> delimiterResult = DelimiterParser.TryParse(input, newPosition);
+                    trace.Add(delimiterResult);
                     if (!delimiterResult.Success)
                     {
-                        return new ParseResult<IList<T1>>(newPosition, result.Position, delimiterResult.Error);
+                        return new ParseResult<IList<T1>>(this, newPosition, result.Position, delimiterResult.Error, trace);
                     }
 
                     newPosition = delimiterResult.Position;
@@ -86,9 +89,10 @@ namespace Warpstone.Parsers.InternalParsers
             for (ulong i = 0; i < Max - Min; i++)
             {
                 int tempPos = newPosition;
+                IParseResult<T2>? delimiterResult = null;
                 if (i != 0 || Min > 0)
                 {
-                    IParseResult<T2> delimiterResult = DelimiterParser.TryParse(input, tempPos);
+                    delimiterResult = DelimiterParser.TryParse(input, tempPos);
                     if (!delimiterResult.Success)
                     {
                         error = delimiterResult.Error;
@@ -111,20 +115,28 @@ namespace Warpstone.Parsers.InternalParsers
 
                 newPosition = result.Position;
                 elements.Add(result.Value!);
+
+                if (delimiterResult != null)
+                {
+                    trace.Add(delimiterResult);
+                }
+
+                trace.Add(result);
             }
 
             IParseResult<T3> terminatorResult = TerminatorParser.TryParse(input, newPosition);
+            trace.Add(terminatorResult);
             if (!terminatorResult.Success)
             {
                 if (error == null)
                 {
-                    return new ParseResult<IList<T1>>(terminatorResult.StartPosition, terminatorResult.Position, terminatorResult.Error);
+                    return new ParseResult<IList<T1>>(this, terminatorResult.StartPosition, terminatorResult.Position, terminatorResult.Error, trace);
                 }
 
-                return new ParseResult<IList<T1>>(errorStartPos, errorEndPos, error);
+                return new ParseResult<IList<T1>>(this, errorStartPos, errorEndPos, error, trace);
             }
 
-            return new ParseResult<IList<T1>>(elements, position, terminatorResult.Position);
+            return new ParseResult<IList<T1>>(this, elements, position, terminatorResult.Position, trace);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Warpstone.Parsers.InternalParsers
+﻿using System;
+
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser that doesn't take any arguments and always succeeds.
@@ -9,6 +11,6 @@
     {
         /// <inheritdoc/>
         public override IParseResult<T> TryParse(string input, int position)
-            => new ParseResult<T>(default, position, position);
+            => new ParseResult<T>(this, default, position, position, Array.Empty<IParseResult>());
     }
 }

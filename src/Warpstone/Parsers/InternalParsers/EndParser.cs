@@ -1,4 +1,6 @@
-﻿namespace Warpstone.Parsers.InternalParsers
+﻿using System;
+
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser that checks for the end of the input stream.
@@ -11,10 +13,10 @@
         {
             if (position == input.Length)
             {
-                return new ParseResult<object>(default, position, position);
+                return new ParseResult<object>(this, default, position, position, Array.Empty<IParseResult<object>>());
             }
 
-            return new ParseResult<object>(position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { string.Empty }, GetFound(input, position)));
+            return new ParseResult<object>(this, position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { string.Empty }, GetFound(input, position)), Array.Empty<IParseResult>());
         }
     }
 }

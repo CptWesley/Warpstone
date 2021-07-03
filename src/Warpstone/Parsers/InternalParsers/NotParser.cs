@@ -28,10 +28,10 @@
 
             if (conditionResult.Success)
             {
-                return new ParseResult<T>(position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { "<not>" }, GetFound(input, position)));
+                return new ParseResult<T>(this, position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { "<not>" }, GetFound(input, position)), new[] { conditionResult });
             }
 
-            return new ParseResult<T>(default, position, position);
+            return new ParseResult<T>(this, default, position, position, new[] { conditionResult });
         }
     }
 }

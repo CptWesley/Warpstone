@@ -47,15 +47,15 @@ namespace Warpstone.Parsers.InternalParsers
                         parsed.Position = new SourcePosition(position, result.Position - 1);
                     }
 
-                    return new ParseResult<TOutput>(value, position, result.Position);
+                    return new ParseResult<TOutput>(this, value, position, result.Position, new[] { result });
                 }
                 catch (Exception e)
                 {
-                    return new ParseResult<TOutput>(position, result.Position, new TransformationError(new SourcePosition(position, result.Position - 1), e));
+                    return new ParseResult<TOutput>(this, position, result.Position, new TransformationError(new SourcePosition(position, result.Position - 1), e), new[] { result });
                 }
             }
 
-            return new ParseResult<TOutput>(position, result.Position, result.Error);
+            return new ParseResult<TOutput>(this, position, result.Position, result.Error, new[] { result });
         }
     }
 }

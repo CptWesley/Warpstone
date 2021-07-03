@@ -1,4 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
 
 namespace Warpstone
 {
@@ -6,8 +6,28 @@ namespace Warpstone
     /// Object representing the parsing result.
     /// </summary>
     /// <typeparam name="T">The output type of the parse process.</typeparam>
-    [SuppressMessage("Microsoft.Naming", "CA1716", Justification = "Deemed easier to understand for users.")]
-    public interface IParseResult<out T>
+    public interface IParseResult<out T> : IParseResult
+    {
+        /// <summary>
+        /// Gets a value indicating whether the parsing was success.
+        /// </summary>
+        new bool Success { get; }
+
+        /// <summary>
+        /// Gets the parsed value.
+        /// </summary>
+        new T? Value { get; }
+
+        /// <summary>
+        /// Gets the parser that produced this result.
+        /// </summary>
+        new IParser<T> Parser { get; }
+    }
+
+    /// <summary>
+    /// Object representing the parsing result.
+    /// </summary>
+    public interface IParseResult
     {
         /// <summary>
         /// Gets a value indicating whether the parsing was success.
@@ -17,7 +37,7 @@ namespace Warpstone
         /// <summary>
         /// Gets the parsed value.
         /// </summary>
-        T? Value { get; }
+        object? Value { get; }
 
         /// <summary>
         /// Gets the start position of the parser.
@@ -33,5 +53,15 @@ namespace Warpstone
         /// Gets the parse error.
         /// </summary>
         IParseError? Error { get; }
+
+        /// <summary>
+        /// Gets the parser that produced this result.
+        /// </summary>
+        IParser Parser { get; }
+
+        /// <summary>
+        /// Gets the inner results when.
+        /// </summary>
+        IEnumerable<IParseResult> InnerResults { get; }
     }
 }

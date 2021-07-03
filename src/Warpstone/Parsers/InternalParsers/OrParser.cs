@@ -38,13 +38,13 @@ namespace Warpstone.Parsers.InternalParsers
             IParseResult<T> firstResult = First.TryParse(input, position);
             if (firstResult.Success)
             {
-                return firstResult;
+                return new ParseResult<T>(this, firstResult.Value!, position, firstResult.Position, new[] { firstResult });
             }
 
             IParseResult<T> secondResult = Second.TryParse(input, position);
             if (secondResult.Success)
             {
-                return secondResult;
+                return new ParseResult<T>(this, secondResult.Value!, position, secondResult.Position, new[] { firstResult, secondResult });
             }
 
             IEnumerable<string> newExpected = Array.Empty<string>();
@@ -60,10 +60,10 @@ namespace Warpstone.Parsers.InternalParsers
 
             if (firstResult.Position > secondResult.Position)
             {
-                return new ParseResult<T>(position, firstResult.Position, new UnexpectedTokenError(firstResult.Error.Position, newExpected, GetFound(input, firstResult.Error.Position.Start)));
+                return new ParseResult<T>(this, position, firstResult.Position, new UnexpectedTokenError(firstResult.Error!.Position, newExpected, GetFound(input, firstResult.Error.Position.Start)), new[] { firstResult, secondResult });
             }
 
-            return new ParseResult<T>(position, secondResult.Position, new UnexpectedTokenError(secondResult.Error.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)));
+            return new ParseResult<T>(this, position, secondResult.Position, new UnexpectedTokenError(secondResult.Error!.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)), new[] { firstResult, secondResult });
         }
     }
 }

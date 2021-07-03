@@ -20,7 +20,7 @@ namespace Warpstone
 
             if (!result.Success)
             {
-                result.Error.Position.Upgrade(input);
+                result.Error!.Position.Upgrade(input);
             }
 
             return result;
@@ -32,10 +32,10 @@ namespace Warpstone
             IParseResult<TOutput> result = TryParse(input);
             if (result.Success)
             {
-                return result.Value;
+                return result.Value!;
             }
 
-            throw new ParseException(result.Error.GetMessage());
+            throw new ParseException(result.Error!.GetMessage());
         }
 
         /// <summary>
@@ -46,6 +46,18 @@ namespace Warpstone
         /// <returns>The result of running the parser.</returns>
         public abstract IParseResult<TOutput> TryParse(string input, int position);
 
+        /// <inheritdoc/>
+        IParseResult IParser.TryParse(string input)
+            => TryParse(input);
+
+        /// <inheritdoc/>
+        object? IParser.Parse(string input)
+            => Parse(input);
+
+        /// <inheritdoc/>
+        IParseResult IParser.TryParse(string input, int position)
+            => TryParse(input, position);
+
         /// <summary>
         /// Gets the found characters.
         /// </summary>
@@ -54,5 +66,5 @@ namespace Warpstone
         /// <returns>The found characters.</returns>
         protected string GetFound(string input, int position)
             => position < input?.Length ? $"'{input[position]}'" : "EOF";
-}
+    }
 }

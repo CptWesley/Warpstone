@@ -1,4 +1,6 @@
-﻿namespace Warpstone.Parsers.InternalParsers
+﻿using System;
+
+namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser which parser a given character.
@@ -23,10 +25,10 @@
         {
             if (position >= input.Length || input[position] != Character)
             {
-                return new ParseResult<char>(position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"'{Character}'" }, GetFound(input, position)));
+                return new ParseResult<char>(this, position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"'{Character}'" }, GetFound(input, position)), Array.Empty<IParseResult>());
             }
 
-            return new ParseResult<char>(Character, position, position + 1);
+            return new ParseResult<char>(this, Character, position, position + 1, Array.Empty<IParseResult>());
         }
     }
 }
