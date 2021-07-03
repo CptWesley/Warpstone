@@ -18,6 +18,22 @@ namespace Warpstone.Parsers
         public static readonly IParser<object> End = new EndParser();
 
         /// <summary>
+        /// Creates a parser that always succeeds.
+        /// </summary>
+        /// <typeparam name="T">The return type of the parser.</typeparam>
+        /// <returns>A parser that always succeeds.</returns>
+        public static IParser<T> Pass<T>()
+            => new VoidParser<T>();
+
+        /// <summary>
+        /// Creates a parser that always fails.
+        /// </summary>
+        /// <typeparam name="T">The return type of the parser.</typeparam>
+        /// <returns>A parser that always fails.</returns>
+        public static IParser<T> Fail<T>()
+            => new FailureParser<T>();
+
+        /// <summary>
         /// Creates a parser which matches a regular expression.
         /// </summary>
         /// <param name="pattern">The pattern to match.</param>
