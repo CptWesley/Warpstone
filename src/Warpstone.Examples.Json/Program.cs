@@ -12,13 +12,17 @@ namespace Warpstone.Examples.Json
     ""name"": ""NullContainer"",
     ""body"": ""This is the first paragraph\nThis is the second paragraph"",
     ""inner"": {
-        ""numVal"": 42
+        ""numVal"": 42,
         ""boolVal"": true
     }
 }");
         }
 
         public static void Parse(string input)
-            => Console.WriteLine(JsonParser.Parse(input));
+        {
+            var res = JsonParser.Parse(input);
+            Console.WriteLine(res.Position);
+            Console.WriteLine(res);
+        }
     }
 }

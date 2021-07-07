@@ -46,5 +46,16 @@ namespace Warpstone.Parsers.InternalParsers
 
             return new ParseResult<string>(this, match.Value, input, match.Index, match.Index + match.Length, Array.Empty<IParseResult>());
         }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"Regex(\"{Regex.Escape(Pattern)}\")";
+        }
     }
 }

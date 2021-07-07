@@ -58,5 +58,12 @@ namespace Warpstone
         /// Gets the inner results when.
         /// </summary>
         IEnumerable<IParseResult> InnerResults { get; }
+
+        /// <summary>
+        /// Converts to string.
+        /// </summary>
+        /// <param name="depth">The depth.</param>
+        /// <returns>A <see cref="string" /> that represents this instance.</returns>
+        string ToString(int depth);
     }
 }

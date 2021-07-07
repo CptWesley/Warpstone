@@ -53,8 +53,8 @@ namespace Warpstone.Examples.Json
         private static readonly IParser<JsonValue> Json
             = OptionalWhitespaces.Then(Or<JsonValue>(Array, Object, String, Null, Double, Int, Boolean)).ThenSkip(OptionalWhitespaces);
 
-        public static JsonValue Parse(string input)
-            => Json.ThenEnd().Parse(input);
+        public static IParseResult<JsonValue> Parse(string input)
+            => Json.ThenEnd().TryParse(input);
 
         private static IParser<string> Concat<T>(this IParser<IEnumerable<T>> chars)
             => chars.Transform(x => string.Join(string.Empty, x));

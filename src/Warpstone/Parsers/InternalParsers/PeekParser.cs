@@ -31,5 +31,16 @@
 
             return new ParseResult<T>(this, input, position, parseResult.Position.End, parseResult.Error, new[] { parseResult });
         }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"Peek({Parser.ToString(depth - 1)})";
+        }
     }
 }

@@ -138,5 +138,16 @@ namespace Warpstone.Parsers.InternalParsers
 
             return new ParseResult<IList<T1>>(this, elements, input, position, terminatorResult.Position.End, trace);
         }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"Multiple({Parser.ToString(depth - 1)}, {DelimiterParser.ToString(depth - 1)}, {TerminatorParser.ToString(depth - 1)})";
+        }
     }
 }

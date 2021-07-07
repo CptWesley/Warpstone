@@ -47,5 +47,16 @@ namespace Warpstone.Parsers.InternalParsers
 
             return new ParseResult<T>(this, input, result.Position.Start, result.Position.End, result.Error, new[] { result });
         }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"Expected({Parser.ToString(depth - 1)})";
+        }
     }
 }

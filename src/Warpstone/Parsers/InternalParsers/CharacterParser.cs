@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -25,10 +26,21 @@ namespace Warpstone.Parsers.InternalParsers
         {
             if (position >= input.Length || input[position] != Character)
             {
-                return new ParseResult<char>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { $"'{Character}'" }, GetFound(input, position)), Array.Empty<IParseResult>());
+                return new ParseResult<char>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { $"'{Regex.Escape(Character.ToString())}'" }, GetFound(input, position)), Array.Empty<IParseResult>());
             }
 
             return new ParseResult<char>(this, Character, input, position, position + 1, Array.Empty<IParseResult>());
+        }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"Character('{Regex.Escape(Character.ToString())}')";
         }
     }
 }

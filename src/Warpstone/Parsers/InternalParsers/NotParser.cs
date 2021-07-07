@@ -33,5 +33,16 @@
 
             return new ParseResult<T>(this, default, input, position, position, new[] { conditionResult });
         }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"Not({Parser.ToString(depth - 1)})";
+        }
     }
 }

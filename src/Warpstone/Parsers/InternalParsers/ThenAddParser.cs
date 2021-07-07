@@ -46,5 +46,16 @@
 
             return new ParseResult<(T1, T2)>(this, (firstResult.Value!, secondResult.Value!), input, position, secondResult.Position.End, new IParseResult[] { firstResult, secondResult });
         }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"Then({First.ToString(depth - 1)}, {Second.ToString(depth - 1)})";
+        }
     }
 }

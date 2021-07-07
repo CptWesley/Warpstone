@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.RegularExpressions;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -38,6 +39,17 @@ namespace Warpstone.Parsers.InternalParsers
             }
 
             return new ParseResult<string>(this, String, input, position, position + String.Length, Array.Empty<IParseResult>());
+        }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"String(\"{Regex.Escape(String)}\")";
         }
 
         private bool StringAtIndex(string input, int position)

@@ -69,5 +69,20 @@ namespace Warpstone
 
         /// <inheritdoc/>
         IParser IParseResult.Parser => Parser;
+
+        /// <inheritdoc/>
+        public override string ToString()
+            => ToString(2);
+
+        /// <inheritdoc/>
+        public string ToString(int depth)
+        {
+            if (Success)
+            {
+                return $"Value from {Parser.ToString(depth)} at {Position}: {Value!}";
+            }
+
+            return $"Error from {Parser.ToString(depth)} at {Position}: {Error!.GetMessage()}";
+        }
     }
 }

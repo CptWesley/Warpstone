@@ -18,5 +18,16 @@ namespace Warpstone.Parsers.InternalParsers
 
             return new ParseResult<object>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { string.Empty }, GetFound(input, position)), Array.Empty<IParseResult>());
         }
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"EOF()";
+        }
     }
 }

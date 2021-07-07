@@ -12,5 +12,16 @@ namespace Warpstone.Parsers.InternalParsers
         /// <inheritdoc/>
         public override IParseResult<T> TryParse(string input, int position)
             => new ParseResult<T>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), Array.Empty<string>(), string.Empty), Array.Empty<IParseResult>());
+
+        /// <inheritdoc/>
+        public override string ToString(int depth)
+        {
+            if (depth < 0)
+            {
+                return "...";
+            }
+
+            return $"Failure()";
+        }
     }
 }

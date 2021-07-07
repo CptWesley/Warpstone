@@ -40,6 +40,13 @@ namespace Warpstone
         public abstract IParseResult<TOutput> TryParse(string input, int position);
 
         /// <inheritdoc/>
+        public abstract string ToString(int depth);
+
+        /// <inheritdoc/>
+        public override string ToString()
+            => ToString(4);
+
+        /// <inheritdoc/>
         IParseResult IParser.TryParse(string input)
             => TryParse(input);
 
