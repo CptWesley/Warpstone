@@ -38,32 +38,32 @@ namespace Warpstone.Parsers.InternalParsers
             IParseResult<T> firstResult = First.TryParse(input, position);
             if (firstResult.Success)
             {
-                return new ParseResult<T>(this, firstResult.Value!, position, firstResult.Position, new[] { firstResult });
+                return new ParseResult<T>(this, firstResult.Value!, input, position, firstResult.Position.End, new[] { firstResult });
             }
 
             IParseResult<T> secondResult = Second.TryParse(input, position);
             if (secondResult.Success)
             {
-                return new ParseResult<T>(this, secondResult.Value!, position, secondResult.Position, new[] { firstResult, secondResult });
+                return new ParseResult<T>(this, secondResult.Value!, input, position, secondResult.Position.End, new[] { firstResult, secondResult });
             }
 
             IEnumerable<string> newExpected = Array.Empty<string>();
-            if (firstResult.Error is UnexpectedTokenError t1 && firstResult.Position >= secondResult.Position)
+            if (firstResult.Error is UnexpectedTokenError t1 && firstResult.Position.End >= secondResult.Position.End)
             {
                 newExpected = newExpected.Concat(t1.Expected);
             }
 
-            if (secondResult.Error is UnexpectedTokenError t2 && firstResult.Position <= secondResult.Position)
+            if (secondResult.Error is UnexpectedTokenError t2 && firstResult.Position.End <= secondResult.Position.End)
             {
                 newExpected = newExpected.Concat(t2.Expected);
             }
 
-            if (firstResult.Position > secondResult.Position)
+            if (firstResult.Position.End > secondResult.Position.End)
             {
-                return new ParseResult<T>(this, position, firstResult.Position, new UnexpectedTokenError(firstResult.Error!.Position, newExpected, GetFound(input, firstResult.Error.Position.Start)), new[] { firstResult, secondResult });
+                return new ParseResult<T>(this, input, position, firstResult.Position.End, new UnexpectedTokenError(firstResult.Error!.Position, newExpected, GetFound(input, firstResult.Error.Position.Start)), new[] { firstResult, secondResult });
             }
 
-            return new ParseResult<T>(this, position, secondResult.Position, new UnexpectedTokenError(secondResult.Error!.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)), new[] { firstResult, secondResult });
+            return new ParseResult<T>(this, input, position, secondResult.Position.End, new UnexpectedTokenError(secondResult.Error!.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)), new[] { firstResult, secondResult });
         }
     }
 }

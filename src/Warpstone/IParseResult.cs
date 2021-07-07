@@ -40,14 +40,9 @@ namespace Warpstone
         object? Value { get; }
 
         /// <summary>
-        /// Gets the start position of the parser.
+        /// Gets the position of the parse result.
         /// </summary>
-        int StartPosition { get; }
-
-        /// <summary>
-        /// Gets the position of the parser.
-        /// </summary>
-        int Position { get; }
+        SourcePosition Position { get; }
 
         /// <summary>
         /// Gets the parse error.

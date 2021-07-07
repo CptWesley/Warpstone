@@ -44,18 +44,18 @@ namespace Warpstone.Parsers.InternalParsers
                     TOutput value = Transformation(result.Value!);
                     if (value is IParsed parsed && parsed.Position is null)
                     {
-                        parsed.Position = new SourcePosition(position, result.Position - 1);
+                        parsed.Position = new SourcePosition(input, position, result.Position.End - 1);
                     }
 
-                    return new ParseResult<TOutput>(this, value, position, result.Position, new[] { result });
+                    return new ParseResult<TOutput>(this, value, input, position, result.Position.End, new[] { result });
                 }
                 catch (Exception e)
                 {
-                    return new ParseResult<TOutput>(this, position, result.Position, new TransformationError(new SourcePosition(position, result.Position - 1), e), new[] { result });
+                    return new ParseResult<TOutput>(this, input, position, result.Position.End, new TransformationError(new SourcePosition(input, position, result.Position.End - 1), e), new[] { result });
                 }
             }
 
-            return new ParseResult<TOutput>(this, position, result.Position, result.Error, new[] { result });
+            return new ParseResult<TOutput>(this, input, position, result.Position.End, result.Error, new[] { result });
         }
     }
 }

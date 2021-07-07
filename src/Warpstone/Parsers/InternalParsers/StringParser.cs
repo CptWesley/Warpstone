@@ -34,10 +34,10 @@ namespace Warpstone.Parsers.InternalParsers
         {
             if (!StringAtIndex(input, position))
             {
-                return new ParseResult<string>(this, position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"'{String}'" }, GetFound(input, position)), Array.Empty<IParseResult>());
+                return new ParseResult<string>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { $"'{String}'" }, GetFound(input, position)), Array.Empty<IParseResult>());
             }
 
-            return new ParseResult<string>(this, String, position, position + String.Length, Array.Empty<IParseResult>());
+            return new ParseResult<string>(this, String, input, position, position + String.Length, Array.Empty<IParseResult>());
         }
 
         private bool StringAtIndex(string input, int position)

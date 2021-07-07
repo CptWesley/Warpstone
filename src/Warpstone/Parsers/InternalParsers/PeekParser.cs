@@ -26,10 +26,10 @@
 
             if (parseResult.Success)
             {
-                return new ParseResult<T>(this, parseResult.Value, position, position, new[] { parseResult });
+                return new ParseResult<T>(this, parseResult.Value, input, position, position, new[] { parseResult });
             }
 
-            return new ParseResult<T>(this, position, parseResult.Position, parseResult.Error, new[] { parseResult });
+            return new ParseResult<T>(this, input, position, parseResult.Position.End, parseResult.Error, new[] { parseResult });
         }
     }
 }

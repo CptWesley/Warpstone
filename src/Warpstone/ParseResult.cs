@@ -12,18 +12,18 @@ namespace Warpstone
         /// Initializes a new instance of the <see cref="ParseResult{T}"/> class.
         /// </summary>
         /// <param name="parser">The parser that produced the result.</param>
+        /// <param name="input">The input text.</param>
         /// <param name="startPosition">The start position.</param>
         /// <param name="position">The position.</param>
         /// <param name="error">The parse error that occured.</param>
         /// <param name="innerResults">The inner results that lead to this result.</param>
-        public ParseResult(IParser<T> parser, int startPosition, int position, IParseError? error, IEnumerable<IParseResult> innerResults)
+        public ParseResult(IParser<T> parser, string input, int startPosition, int position, IParseError? error, IEnumerable<IParseResult> innerResults)
         {
-            StartPosition = startPosition;
-            Position = position;
             Error = error;
             Success = false;
             InnerResults = innerResults;
             Parser = parser;
+            Position = new SourcePosition(input, startPosition, position);
         }
 
         /// <summary>
@@ -31,17 +31,17 @@ namespace Warpstone
         /// </summary>
         /// <param name="parser">The parser that produced the result.</param>
         /// <param name="value">The value.</param>
+        /// <param name="input">The input text.</param>
         /// <param name="startPosition">The start position of the parser.</param>
         /// <param name="position">The position of the parser.</param>
         /// <param name="innerResults">The inner results that lead to this result.</param>
-        public ParseResult(IParser<T> parser, T? value, int startPosition, int position, IEnumerable<IParseResult> innerResults)
+        public ParseResult(IParser<T> parser, T? value, string input, int startPosition, int position, IEnumerable<IParseResult> innerResults)
         {
             Value = value;
-            StartPosition = startPosition;
-            Position = position;
             Success = true;
             InnerResults = innerResults;
             Parser = parser;
+            Position = new SourcePosition(input, startPosition, position);
         }
 
         /// <inheritdoc/>
@@ -50,11 +50,10 @@ namespace Warpstone
         /// <inheritdoc/>
         public T? Value { get; }
 
-        /// <inheritdoc/>
-        public int StartPosition { get; }
-
-        /// <inheritdoc/>
-        public int Position { get; }
+        /// <summary>
+        /// Gets the position of the parse result.
+        /// </summary>
+        public SourcePosition Position { get; }
 
         /// <inheritdoc/>
         public IParseError? Error { get; }

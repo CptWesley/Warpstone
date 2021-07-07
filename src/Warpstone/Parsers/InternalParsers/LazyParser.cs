@@ -27,10 +27,10 @@ namespace Warpstone.Parsers.InternalParsers
             IParseResult<T> result = Parser.Value.TryParse(input, position);
             if (result.Success)
             {
-                return new ParseResult<T>(this, result.Value, result.StartPosition, result.Position, new[] { result });
+                return new ParseResult<T>(this, result.Value, input, result.Position.Start, result.Position.End, new[] { result });
             }
 
-            return new ParseResult<T>(this, result.StartPosition, result.Position, result.Error, new[] { result });
+            return new ParseResult<T>(this, input, result.Position.Start, result.Position.End, result.Error, new[] { result });
         }
     }
 }

@@ -7,16 +7,29 @@ namespace Warpstone
     /// </summary>
     public class SourcePosition : IEquatable<SourcePosition>
     {
+        private bool upgraded = false;
+        private int startLine = -1;
+        private int endLine = -1;
+        private int startLinePosition = -1;
+        private int endLinePosition = -1;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="SourcePosition"/> class.
         /// </summary>
+        /// <param name="input">The input text.</param>
         /// <param name="start">The start.</param>
         /// <param name="end">The end.</param>
-        public SourcePosition(int start, int end)
+        public SourcePosition(string input, int start, int end)
         {
+            Input = input;
             Start = start;
             End = end;
         }
+
+        /// <summary>
+        /// Gets the input.
+        /// </summary>
+        public string Input { get; }
 
         /// <summary>
         /// Gets the start position.
@@ -31,27 +44,50 @@ namespace Warpstone
         /// <summary>
         /// Gets the start line.
         /// </summary>
-        public int StartLine { get; private set; } = -1;
+        public int StartLine
+        {
+            get
+            {
+                Upgrade();
+                return startLine;
+            }
+        }
 
         /// <summary>
         /// Gets the end line.
         /// </summary>
-        public int EndLine { get; private set; } = -1;
+        public int EndLine
+        {
+            get
+            {
+                Upgrade();
+                return endLine;
+            }
+        }
 
         /// <summary>
         /// Gets the start line position.
         /// </summary>
-        public int StartLinePosition { get; private set; } = -1;
+        public int StartLinePosition
+        {
+            get
+            {
+                Upgrade();
+                return startLinePosition;
+            }
+        }
 
         /// <summary>
         /// Gets the end line position.
         /// </summary>
-        public int EndLinePosition { get; private set; } = -1;
-
-        /// <summary>
-        /// Gets a value indicating whether this <see cref="SourcePosition"/> is detailed.
-        /// </summary>
-        public bool Upgraded { get; private set; } = false;
+        public int EndLinePosition
+        {
+            get
+            {
+                Upgrade();
+                return endLinePosition;
+            }
+        }
 
         /// <summary>
         /// Gets the length of the parsed part in the source.
@@ -99,12 +135,32 @@ namespace Warpstone
         public override int GetHashCode()
             => Start * Length;
 
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            if (StartLine == EndLine)
+            {
+                if (StartLinePosition == EndLinePosition)
+                {
+                    return $"{StartLine}:{StartLinePosition}";
+                }
+
+                return $"{StartLine}:{StartLinePosition}-{EndLinePosition}";
+            }
+
+            return $"{StartLine}:{StartLinePosition}-{EndLine}:{EndLinePosition}";
+        }
+
         /// <summary>
         /// Fills the source position with more detailed information.
         /// </summary>
-        /// <param name="input">The input.</param>
-        public void Upgrade(string input)
+        private void Upgrade()
         {
+            if (upgraded)
+            {
+                return;
+            }
+
             int startLine = 0;
             int startLinePosition = 0;
             int endLine = 0;
@@ -114,9 +170,9 @@ namespace Warpstone
             int line = 1;
             int linePosition = 0;
 
-            for (int i = 0; i < input.Length; i++)
+            for (int i = 0; i < Input.Length; i++)
             {
-                char c = input[i];
+                char c = Input[i];
                 linePosition++;
 
                 if (startCountdown == 0)
@@ -141,7 +197,7 @@ namespace Warpstone
                     case '\n':
                         line++;
                         linePosition = 0;
-                        if (i + 1 < input.Length && input[i + 1] == '\r')
+                        if (i + 1 < Input.Length && Input[i + 1] == '\r')
                         {
                             startCountdown--;
                             endCountdown--;
@@ -152,7 +208,7 @@ namespace Warpstone
                     case '\r':
                         line++;
                         linePosition = 0;
-                        if (i + 1 < input.Length && input[i + 1] == '\n')
+                        if (i + 1 < Input.Length && Input[i + 1] == '\n')
                         {
                             startCountdown--;
                             endCountdown--;
@@ -168,26 +224,11 @@ namespace Warpstone
                 endCountdown--;
             }
 
-            StartLine = startLine;
-            StartLinePosition = startLinePosition;
-            EndLine = endLine;
-            EndLinePosition = endLinePosition;
-        }
-
-        /// <inheritdoc/>
-        public override string ToString()
-        {
-            if (StartLine == EndLine)
-            {
-                if (StartLinePosition == EndLinePosition)
-                {
-                    return $"{StartLine}:{StartLinePosition}";
-                }
-
-                return $"{StartLine}:{StartLinePosition}-{EndLinePosition}";
-            }
-
-            return $"{StartLine}:{StartLinePosition}-{EndLine}:{EndLinePosition}";
+            this.startLine = startLine;
+            this.startLinePosition = startLinePosition;
+            this.endLine = endLine;
+            this.endLinePosition = endLinePosition;
+            upgraded = true;
         }
     }
 }

@@ -41,10 +41,10 @@ namespace Warpstone.Parsers.InternalParsers
 
             if (!match.Success)
             {
-                return new ParseResult<string>(this, position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { $"'{Pattern}'" }, GetFound(input, position)), Array.Empty<IParseResult<object>>());
+                return new ParseResult<string>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { $"'{Pattern}'" }, GetFound(input, position)), Array.Empty<IParseResult<object>>());
             }
 
-            return new ParseResult<string>(this, match.Value, match.Index, match.Index + match.Length, Array.Empty<IParseResult>());
+            return new ParseResult<string>(this, match.Value, input, match.Index, match.Index + match.Length, Array.Empty<IParseResult>());
         }
     }
 }

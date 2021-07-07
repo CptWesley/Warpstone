@@ -67,10 +67,10 @@ namespace Warpstone.Parsers.InternalParsers
                 trace.Add(result);
                 if (!result.Success)
                 {
-                    return new ParseResult<IList<T1>>(this, newPosition, result.Position, result.Error, trace);
+                    return new ParseResult<IList<T1>>(this, input, newPosition, result.Position.End, result.Error, trace);
                 }
 
-                newPosition = result.Position;
+                newPosition = result.Position.End;
                 elements.Add(result.Value!);
 
                 if (i < Min - 1)
@@ -79,10 +79,10 @@ namespace Warpstone.Parsers.InternalParsers
                     trace.Add(delimiterResult);
                     if (!delimiterResult.Success)
                     {
-                        return new ParseResult<IList<T1>>(this, newPosition, result.Position, delimiterResult.Error, trace);
+                        return new ParseResult<IList<T1>>(this, input, newPosition, result.Position.End, delimiterResult.Error, trace);
                     }
 
-                    newPosition = delimiterResult.Position;
+                    newPosition = delimiterResult.Position.End;
                 }
             }
 
@@ -96,24 +96,24 @@ namespace Warpstone.Parsers.InternalParsers
                     if (!delimiterResult.Success)
                     {
                         error = delimiterResult.Error;
-                        errorStartPos = delimiterResult.StartPosition;
-                        errorEndPos = delimiterResult.Position;
+                        errorStartPos = delimiterResult.Position.Start;
+                        errorEndPos = delimiterResult.Position.End;
                         break;
                     }
 
-                    tempPos = delimiterResult.Position;
+                    tempPos = delimiterResult.Position.End;
                 }
 
                 IParseResult<T1> result = Parser.TryParse(input, tempPos);
                 if (!result.Success)
                 {
                     error = result.Error;
-                    errorStartPos = result.StartPosition;
-                    errorEndPos = result.Position;
+                    errorStartPos = result.Position.Start;
+                    errorEndPos = result.Position.End;
                     break;
                 }
 
-                newPosition = result.Position;
+                newPosition = result.Position.End;
                 elements.Add(result.Value!);
 
                 if (delimiterResult != null)
@@ -130,13 +130,13 @@ namespace Warpstone.Parsers.InternalParsers
             {
                 if (error == null)
                 {
-                    return new ParseResult<IList<T1>>(this, terminatorResult.StartPosition, terminatorResult.Position, terminatorResult.Error, trace);
+                    return new ParseResult<IList<T1>>(this, input, terminatorResult.Position.Start, terminatorResult.Position.End, terminatorResult.Error, trace);
                 }
 
-                return new ParseResult<IList<T1>>(this, errorStartPos, errorEndPos, error, trace);
+                return new ParseResult<IList<T1>>(this, input, errorStartPos, errorEndPos, error, trace);
             }
 
-            return new ParseResult<IList<T1>>(this, elements, position, terminatorResult.Position, trace);
+            return new ParseResult<IList<T1>>(this, elements, input, position, terminatorResult.Position.End, trace);
         }
     }
 }

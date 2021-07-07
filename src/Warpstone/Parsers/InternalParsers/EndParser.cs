@@ -13,10 +13,10 @@ namespace Warpstone.Parsers.InternalParsers
         {
             if (position == input.Length)
             {
-                return new ParseResult<object>(this, default, position, position, Array.Empty<IParseResult<object>>());
+                return new ParseResult<object>(this, default, input, position, position, Array.Empty<IParseResult<object>>());
             }
 
-            return new ParseResult<object>(this, position, position, new UnexpectedTokenError(new SourcePosition(position, position), new string[] { string.Empty }, GetFound(input, position)), Array.Empty<IParseResult>());
+            return new ParseResult<object>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { string.Empty }, GetFound(input, position)), Array.Empty<IParseResult>());
         }
     }
 }
