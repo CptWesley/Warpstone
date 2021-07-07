@@ -33,7 +33,7 @@
     /// <summary>
     /// Parser interface for parsing textual input.
     /// </summary>
-    public interface IParser
+    public interface IParser : IBoundedToString
     {
         /// <summary>
         /// Parses the specified input.
@@ -57,12 +57,5 @@
         /// <param name="position">The position.</param>
         /// <returns>The result of running the parser.</returns>
         IParseResult TryParse(string input, int position);
-
-        /// <summary>
-        /// Converts to string.
-        /// </summary>
-        /// <param name="depth">The depth.</param>
-        /// <returns>A <see cref="string" /> that represents this instance.</returns>
-        string ToString(int depth);
     }
 }
