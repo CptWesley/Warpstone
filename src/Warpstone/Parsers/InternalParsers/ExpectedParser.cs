@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -13,11 +14,11 @@ namespace Warpstone.Parsers.InternalParsers
         /// Initializes a new instance of the <see cref="ExpectedParser{T}"/> class.
         /// </summary>
         /// <param name="parser">The parser.</param>
-        /// <param name="names">The names.</param>
-        internal ExpectedParser(IParser<T> parser, IEnumerable<string> names)
+        /// <param name="transform">The transformation applied to the list of names.</param>
+        internal ExpectedParser(IParser<T> parser, Func<IEnumerable<string>, IEnumerable<string>> transform)
         {
             Parser = parser;
-            Names = names;
+            Transform = transform;
         }
 
         /// <summary>
@@ -28,7 +29,7 @@ namespace Warpstone.Parsers.InternalParsers
         /// <summary>
         /// Gets the name.
         /// </summary>
-        internal IEnumerable<string> Names { get; }
+        internal Func<IEnumerable<string>, IEnumerable<string>> Transform { get; }
 
         /// <inheritdoc/>
         public override IParseResult<T> TryParse(string input, int position)
@@ -39,7 +40,12 @@ namespace Warpstone.Parsers.InternalParsers
                 return new ParseResult<T>(this, result.Value, input, result.Position.Start, result.Position.End, new[] { result });
             }
 
-            return new ParseResult<T>(this, input, result.Position.Start, result.Position.End, new UnexpectedTokenError(result.Error!.Position, Names, GetFound(input, position)), new[] { result });
+            if (result.Error is UnexpectedTokenError ute)
+            {
+                return new ParseResult<T>(this, input, result.Position.Start, result.Position.End, new UnexpectedTokenError(result.Error!.Position, Transform(ute.Expected), GetFound(input, position)), new[] { result });
+            }
+
+            return new ParseResult<T>(this, input, result.Position.Start, result.Position.End, result.Error, new[] { result });
         }
     }
 }

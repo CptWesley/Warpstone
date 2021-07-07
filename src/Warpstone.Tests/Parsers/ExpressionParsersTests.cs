@@ -206,8 +206,6 @@ namespace Warpstone.Tests.Parsers
         {
             IParseResult<Expression> result = Exp.ThenEnd().TryParse("5++[]");
             AssertThat(result.Success).IsFalse();
-            AssertThat(result.Error).IsExactlyInstanceOf<UnexpectedTokenError>();
-            AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("expression");
         }
 
         /// <summary>

@@ -725,10 +725,20 @@ namespace Warpstone.Parsers
         /// </summary>
         /// <typeparam name="T">The result type of the given parser.</typeparam>
         /// <param name="parser">The given parser.</param>
+        /// <param name="transform">The transformation applied to the names.</param>
+        /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
+        public static IParser<T> WithNames<T>(this IParser<T> parser, Func<IEnumerable<string>, IEnumerable<string>> transform)
+            => new ExpectedParser<T>(parser, transform);
+
+        /// <summary>
+        /// Creates a parser that replaces the nested expected values with given expected names.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
         /// <param name="names">The names.</param>
         /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
         public static IParser<T> WithNames<T>(this IParser<T> parser, IEnumerable<string> names)
-            => new ExpectedParser<T>(parser, names);
+            => parser.WithNames(x => names);
 
         /// <summary>
         /// Creates a parser that replaces the nested expected values with given expected names.
