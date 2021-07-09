@@ -44,7 +44,7 @@
                 return new ParseResult<(T1, T2)>(this, input, secondResult.Position.Start, secondResult.Position.End, secondResult.Error, new IParseResult[] { firstResult, secondResult });
             }
 
-            return new ParseResult<(T1, T2)>(this, (firstResult.Value!, secondResult.Value!), input, position, secondResult.Position.End, new IParseResult[] { firstResult, secondResult });
+            return new ParseResult<(T1, T2)>(this, (firstResult.Value!, secondResult.Value!), input, firstResult.Position.Start, secondResult.Position.End, new IParseResult[] { firstResult, secondResult });
         }
 
         /// <inheritdoc/>

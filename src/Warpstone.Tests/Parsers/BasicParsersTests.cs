@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Linq;
 using Xunit;
 using static AssertNet.Assertions;
 using static Warpstone.Parsers.BasicParsers;
@@ -580,6 +581,32 @@ namespace Warpstone.Tests.Parsers
             TransformationError error = result.Error as TransformationError;
             AssertThat(error.Exception).IsNotNull();
             AssertThat(error.GetMessage()).IsEqualTo(error.Exception.Message + " At 1:1.");
+        }
+
+        /// <summary>
+        /// Checks that position is correct.
+        /// </summary>
+        [Fact]
+        public static void PositionCorrect()
+        {
+            IParser<string> parser = Regex("\\s*").Then(String("hello"));
+            SourcePosition pos1 = parser.TryParse("hello").Position;
+            AssertThat(pos1.Start).IsEqualTo(0);
+            AssertThat(pos1.End).IsEqualTo(5);
+            AssertThat(pos1.StartLine).IsEqualTo(1);
+            AssertThat(pos1.StartLinePosition).IsEqualTo(1);
+            AssertThat(pos1.EndLine).IsEqualTo(1);
+            AssertThat(pos1.EndLinePosition).IsEqualTo(5);
+
+            SourcePosition pos2 = parser.TryParse(@"
+   
+hello").Position;
+            AssertThat(pos2.Start).IsEqualTo(0);
+            AssertThat(pos2.End).IsEqualTo(12);
+            AssertThat(pos2.StartLine).IsEqualTo(1);
+            AssertThat(pos2.StartLinePosition).IsEqualTo(1);
+            AssertThat(pos2.EndLine).IsEqualTo(3);
+            AssertThat(pos2.EndLinePosition).IsEqualTo(5);
         }
 
         private class Parsed : IParsed

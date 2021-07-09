@@ -175,13 +175,13 @@ namespace Warpstone
                 char c = Input[i];
                 linePosition++;
 
-                if (startCountdown == 0)
+                if (startCountdown <= 0)
                 {
                     startLinePosition = linePosition;
                     startLine = line;
                 }
 
-                if (endCountdown == 0)
+                if (endCountdown <= 1)
                 {
                     endLinePosition = linePosition;
                     endLine = line;
