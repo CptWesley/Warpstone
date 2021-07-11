@@ -35,16 +35,16 @@
             IParseResult<T1> firstResult = First.TryParse(input, position);
             if (!firstResult.Success)
             {
-                return new ParseResult<(T1, T2)>(this, input, firstResult.Position.Start, firstResult.Position.End, firstResult.Error, new[] { firstResult });
+                return new ParseResult<(T1, T2)>(this, input, position, firstResult.Position.End, firstResult.Error, new[] { firstResult });
             }
 
             IParseResult<T2> secondResult = Second.TryParse(input, firstResult.Position.End);
             if (!secondResult.Success)
             {
-                return new ParseResult<(T1, T2)>(this, input, secondResult.Position.Start, secondResult.Position.End, secondResult.Error, new IParseResult[] { firstResult, secondResult });
+                return new ParseResult<(T1, T2)>(this, input, position, secondResult.Position.End, secondResult.Error, new IParseResult[] { firstResult, secondResult });
             }
 
-            return new ParseResult<(T1, T2)>(this, (firstResult.Value!, secondResult.Value!), input, firstResult.Position.Start, secondResult.Position.End, new IParseResult[] { firstResult, secondResult });
+            return new ParseResult<(T1, T2)>(this, (firstResult.Value!, secondResult.Value!), input, position, secondResult.Position.End, new IParseResult[] { firstResult, secondResult });
         }
 
         /// <inheritdoc/>
