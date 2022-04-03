@@ -5,16 +5,12 @@ namespace Warpstone
     /// <summary>
     /// Position of a parsed element in the source code.
     /// </summary>
-    public class SourcePosition : IEquatable<SourcePosition>
+    public struct SourcePosition : IEquatable<SourcePosition>
     {
-        private bool upgraded = false;
-        private int startLine = -1;
-        private int endLine = -1;
-        private int startLinePosition = -1;
-        private int endLinePosition = -1;
+        private UpgradedSourcePosition? upgraded;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="SourcePosition"/> class.
+        /// Initializes a new instance of the <see cref="SourcePosition"/> struct.
         /// </summary>
         /// <param name="input">The input text.</param>
         /// <param name="start">The start.</param>
@@ -24,6 +20,8 @@ namespace Warpstone
             Input = input;
             Start = start;
             End = end;
+
+            upgraded = null;
         }
 
         /// <summary>
@@ -49,7 +47,7 @@ namespace Warpstone
             get
             {
                 Upgrade();
-                return startLine;
+                return upgraded!.Value.StartLine;
             }
         }
 
@@ -61,7 +59,7 @@ namespace Warpstone
             get
             {
                 Upgrade();
-                return endLine;
+                return upgraded!.Value.EndLine;
             }
         }
 
@@ -73,7 +71,7 @@ namespace Warpstone
             get
             {
                 Upgrade();
-                return startLinePosition;
+                return upgraded!.Value.StartLinePosition;
             }
         }
 
@@ -85,7 +83,7 @@ namespace Warpstone
             get
             {
                 Upgrade();
-                return endLinePosition;
+                return upgraded!.Value.EndLinePosition;
             }
         }
 
@@ -103,14 +101,7 @@ namespace Warpstone
         /// The result of the operator.
         /// </returns>
         public static bool operator ==(SourcePosition left, SourcePosition right)
-        {
-            if (left is null)
-            {
-                return right is null;
-            }
-
-            return left.Equals(right);
-        }
+            => left.Equals(right);
 
         /// <summary>
         /// Implements the operator !=.
@@ -129,7 +120,7 @@ namespace Warpstone
 
         /// <inheritdoc/>
         public bool Equals(SourcePosition other)
-            => !(other is null) && Start == other.Start && Length == other.Length;
+            => Start == other.Start && Length == other.Length;
 
         /// <inheritdoc/>
         public override int GetHashCode()
@@ -156,7 +147,7 @@ namespace Warpstone
         /// </summary>
         private void Upgrade()
         {
-            if (upgraded)
+            if (upgraded.HasValue)
             {
                 return;
             }
@@ -224,11 +215,23 @@ namespace Warpstone
                 endCountdown--;
             }
 
-            this.startLine = startLine;
-            this.startLinePosition = startLinePosition;
-            this.endLine = endLine;
-            this.endLinePosition = endLinePosition;
-            upgraded = true;
+            upgraded = new UpgradedSourcePosition(startLine, End, startLinePosition, endLinePosition);
+        }
+
+        private struct UpgradedSourcePosition
+        {
+            public readonly int StartLine;
+            public readonly int EndLine;
+            public readonly int StartLinePosition;
+            public readonly int EndLinePosition;
+
+            public UpgradedSourcePosition(int startLine, int endLine, int startLinePosition, int endLinePosition)
+            {
+                StartLine = startLine;
+                EndLine = endLine;
+                StartLinePosition = startLinePosition;
+                EndLinePosition = endLinePosition;
+            }
         }
     }
 }
