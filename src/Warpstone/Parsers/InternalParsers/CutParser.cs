@@ -1,17 +1,16 @@
 ﻿namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
-    /// A parser which parses a given parser, if the specified condition holds.
-    /// The output of this parser should not be directly consumed.
+    /// A parser which doesn't allow backtracking out of the given inner parser.
     /// </summary>
     /// <typeparam name="T">The result type of the nested parser.</typeparam>
-    internal class NotParser<T> : Parser<T>
+    internal class CutParser<T> : Parser<T>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NotParser{T} "/> class.
+        /// Initializes a new instance of the <see cref="CutParser{T} "/> class.
         /// </summary>
         /// <param name="parser">The parser that produces the value this parser returns.</param>
-        internal NotParser(IParser<T> parser)
+        internal CutParser(IParser<T> parser)
         {
             Parser = parser;
         }
@@ -24,14 +23,15 @@
         /// <inheritdoc/>
         public override IParseResult<T> TryParse(string input, int position)
         {
-            IParseResult<T> conditionResult = Parser.TryParse(input, position);
+            IParseResult<T> innerResult = Parser.TryParse(input, position);
 
-            if (conditionResult.Success)
+            if (innerResult.Success)
             {
-                return new ParseResult<T>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), true, new string[] { "<not>" }, GetFound(input, position)), new[] { conditionResult });
+                return new ParseResult<T>(this, innerResult.Value!, input, position, innerResult.Position.End, new[] { innerResult });
             }
 
-            return new ParseResult<T>(this, default, input, position, position, new[] { conditionResult });
+            IParseError error = innerResult.Error!.DisallowBacktracking();
+            return new ParseResult<T>(this, input, position, position, error, new[] { innerResult });
         }
 
         /// <inheritdoc/>
@@ -42,7 +42,7 @@
                 return "...";
             }
 
-            return $"Not({Parser.ToString(depth - 1)})";
+            return $"Cut({Parser.ToString(depth - 1)})";
         }
     }
 }

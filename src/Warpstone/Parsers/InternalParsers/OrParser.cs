@@ -40,6 +40,10 @@ namespace Warpstone.Parsers.InternalParsers
             {
                 return new ParseResult<T>(this, firstResult.Value!, input, position, firstResult.Position.End, new[] { firstResult });
             }
+            else if (!firstResult.Error!.AllowBacktracking)
+            {
+                return new ParseResult<T>(this, input, position, firstResult.Position.End, firstResult.Error, new[] { firstResult });
+            }
 
             IParseResult<T> secondResult = Second.TryParse(input, position);
             if (secondResult.Success)
@@ -60,10 +64,10 @@ namespace Warpstone.Parsers.InternalParsers
 
             if (firstResult.Position.End > secondResult.Position.End)
             {
-                return new ParseResult<T>(this, input, position, firstResult.Position.End, new UnexpectedTokenError(firstResult.Error!.Position, newExpected, GetFound(input, firstResult.Error.Position.Start)), new[] { firstResult, secondResult });
+                return new ParseResult<T>(this, input, position, firstResult.Position.End, new UnexpectedTokenError(firstResult.Error!.Position, firstResult.Error!.AllowBacktracking, newExpected, GetFound(input, firstResult.Error.Position.Start)), new[] { firstResult, secondResult });
             }
 
-            return new ParseResult<T>(this, input, position, secondResult.Position.End, new UnexpectedTokenError(secondResult.Error!.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)), new[] { firstResult, secondResult });
+            return new ParseResult<T>(this, input, position, secondResult.Position.End, new UnexpectedTokenError(secondResult.Error!.Position, secondResult.Error!.AllowBacktracking, newExpected, GetFound(input, secondResult.Error.Position.Start)), new[] { firstResult, secondResult });
         }
 
         /// <inheritdoc/>

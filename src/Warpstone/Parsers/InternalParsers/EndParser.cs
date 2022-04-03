@@ -16,7 +16,7 @@ namespace Warpstone.Parsers.InternalParsers
                 return new ParseResult<object>(this, default, input, position, position, Array.Empty<IParseResult<object>>());
             }
 
-            return new ParseResult<object>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { string.Empty }, GetFound(input, position)), Array.Empty<IParseResult>());
+            return new ParseResult<object>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), true, new string[] { string.Empty }, GetFound(input, position)), Array.Empty<IParseResult>());
         }
 
         /// <inheritdoc/>

@@ -42,7 +42,7 @@ namespace Warpstone.Parsers.InternalParsers
 
             if (result.Error is UnexpectedTokenError ute)
             {
-                return new ParseResult<T>(this, input, result.Position.Start, result.Position.End, new UnexpectedTokenError(result.Error!.Position, Transform(ute.Expected), GetFound(input, position)), new[] { result });
+                return new ParseResult<T>(this, input, result.Position.Start, result.Position.End, new UnexpectedTokenError(result.Error!.Position, result.Error!.AllowBacktracking, Transform(ute.Expected), GetFound(input, position)), new[] { result });
             }
 
             return new ParseResult<T>(this, input, result.Position.Start, result.Position.End, result.Error, new[] { result });

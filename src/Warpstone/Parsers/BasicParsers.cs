@@ -751,6 +751,15 @@ namespace Warpstone.Parsers
         public static IParser<T> WithNames<T>(this IParser<T> parser, string firstName, params string[] otherNames)
             => parser.WithNames(new string[] { firstName }.Concat(otherNames));
 
+        /// <summary>
+        /// Creates a new parser that can't backtrack if the result failed.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser that doesn't allow backtracking its errors.</returns>
+        public static IParser<T> DontBacktrack<T>(IParser<T> parser)
+            => new CutParser<T>(parser);
+
         private static IParser<T> InnerOr<T>(IEnumerable<IParser<T>> parsers)
         {
             if (parsers.Count() == 1)

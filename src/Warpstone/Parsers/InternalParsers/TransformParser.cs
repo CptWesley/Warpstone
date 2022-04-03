@@ -51,7 +51,7 @@ namespace Warpstone.Parsers.InternalParsers
                 }
                 catch (Exception e)
                 {
-                    return new ParseResult<TOutput>(this, input, position, result.Position.End, new TransformationError(new SourcePosition(input, position, result.Position.End - 1), e), new[] { result });
+                    return new ParseResult<TOutput>(this, input, position, result.Position.End, new TransformationError(new SourcePosition(input, position, result.Position.End - 1), true, e), new[] { result });
                 }
             }
 

@@ -26,7 +26,7 @@ namespace Warpstone.Parsers.InternalParsers
         {
             if (position >= input.Length || input[position] != Character)
             {
-                return new ParseResult<char>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { $"'{Regex.Escape(Character.ToString())}'" }, GetFound(input, position)), Array.Empty<IParseResult>());
+                return new ParseResult<char>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), true, new string[] { $"'{Regex.Escape(Character.ToString())}'" }, GetFound(input, position)), Array.Empty<IParseResult>());
             }
 
             return new ParseResult<char>(this, Character, input, position, position + 1, Array.Empty<IParseResult>());
