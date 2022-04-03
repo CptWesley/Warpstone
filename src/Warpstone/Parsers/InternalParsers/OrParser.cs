@@ -33,18 +33,18 @@ namespace Warpstone.Parsers.InternalParsers
         internal IParser<T> Second { get; }
 
         /// <inheritdoc/>
-        public override IParseResult<T> TryParse(string input, int position)
+        public override IParseResult<T> TryParse(string input, int position, bool collectTraces)
         {
-            IParseResult<T> firstResult = First.TryParse(input, position);
+            IParseResult<T> firstResult = First.TryParse(input, position, collectTraces);
             if (firstResult.Success)
             {
-                return new ParseResult<T>(this, firstResult.Value!, input, position, firstResult.Position.End, new[] { firstResult });
+                return new ParseResult<T>(this, firstResult.Value!, input, position, firstResult.Position.End, collectTraces ? new[] { firstResult } : EmptyResults);
             }
 
-            IParseResult<T> secondResult = Second.TryParse(input, position);
+            IParseResult<T> secondResult = Second.TryParse(input, position, collectTraces);
             if (secondResult.Success)
             {
-                return new ParseResult<T>(this, secondResult.Value!, input, position, secondResult.Position.End, new[] { firstResult, secondResult });
+                return new ParseResult<T>(this, secondResult.Value!, input, position, secondResult.Position.End, collectTraces ? new[] { firstResult, secondResult } : EmptyResults);
             }
 
             IEnumerable<string> newExpected = Array.Empty<string>();
@@ -60,10 +60,10 @@ namespace Warpstone.Parsers.InternalParsers
 
             if (firstResult.Position.End > secondResult.Position.End)
             {
-                return new ParseResult<T>(this, input, position, firstResult.Position.End, new UnexpectedTokenError(firstResult.Error!.Position, newExpected, GetFound(input, firstResult.Error.Position.Start)), new[] { firstResult, secondResult });
+                return new ParseResult<T>(this, input, position, firstResult.Position.End, new UnexpectedTokenError(firstResult.Error!.Position, newExpected, GetFound(input, firstResult.Error.Position.Start)), collectTraces ? new[] { firstResult, secondResult } : EmptyResults);
             }
 
-            return new ParseResult<T>(this, input, position, secondResult.Position.End, new UnexpectedTokenError(secondResult.Error!.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)), new[] { firstResult, secondResult });
+            return new ParseResult<T>(this, input, position, secondResult.Position.End, new UnexpectedTokenError(secondResult.Error!.Position, newExpected, GetFound(input, secondResult.Error.Position.Start)), collectTraces ? new[] { firstResult, secondResult } : EmptyResults);
         }
 
         /// <inheritdoc/>

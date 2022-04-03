@@ -34,25 +34,25 @@ internal class TryParser<TIn, TOut> : Parser<TOut>
     public Func<IParseResult<TIn>, TOut> ResultTransformation { get; }
 
     /// <inheritdoc/>
-    public override IParseResult<TOut> TryParse(string input, int position)
+    public override IParseResult<TOut> TryParse(string input, int position, bool collectTraces)
     {
-        IParseResult<TIn> inner = Parser.TryParse(input, position);
+        IParseResult<TIn> inner = Parser.TryParse(input, position, collectTraces);
         string name = Parser.ToString(10);
         TOut outValue = ResultTransformation(inner);
 
         int endPosition = inner.Position.End;
         if (!inner.Success)
         {
-            IParseResult<string> recovery = RecoveryParser.TryParse(input, position);
+            IParseResult<string> recovery = RecoveryParser.TryParse(input, position, collectTraces);
             if (recovery.Success)
             {
                 endPosition = recovery.Position.End;
             }
 
-            return new ParseResult<TOut>(this, outValue, input, position, endPosition, new IParseResult[] { inner, recovery });
+            return new ParseResult<TOut>(this, outValue, input, position, endPosition, collectTraces ? new IParseResult[] { inner, recovery } : EmptyResults);
         }
 
-        return new ParseResult<TOut>(this, outValue, input, position, endPosition, new IParseResult[] { inner });
+        return new ParseResult<TOut>(this, outValue, input, position, endPosition, collectTraces ? new[] { inner } : EmptyResults);
     }
 
     /// <inheritdoc/>

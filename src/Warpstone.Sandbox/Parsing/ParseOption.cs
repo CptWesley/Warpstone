@@ -23,7 +23,7 @@ public record ParseSome<T>(T Result) : ParseOption<T>
 {
     /// <inheritdoc/>
     public override string ToString()
-        => Result is null ? "<null>" : Result.ToString();
+        => Result is null ? "<null>" : Result.ToString()!;
 }
 
 /// <summary>

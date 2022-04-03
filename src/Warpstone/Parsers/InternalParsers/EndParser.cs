@@ -9,7 +9,7 @@ namespace Warpstone.Parsers.InternalParsers
     internal class EndParser : Parser<object>
     {
         /// <inheritdoc/>
-        public override IParseResult<object> TryParse(string input, int position)
+        public override IParseResult<object> TryParse(string input, int position, bool collectTraces)
         {
             if (position == input.Length)
             {

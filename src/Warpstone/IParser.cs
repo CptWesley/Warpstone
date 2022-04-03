@@ -25,9 +25,27 @@
         /// Parses the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="position">The position.</param>
+        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
         /// <returns>The result of running the parser.</returns>
-        new IParseResult<TOutput> TryParse(string input, int position);
+        new IParseResult<TOutput> TryParse(string input, bool collectTrace);
+
+        /// <summary>
+        /// Parses the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
+        /// <returns>The parsed result.</returns>
+        /// <exception cref="ParseException">Thrown when the parser fails.</exception>
+        new TOutput Parse(string input, bool collectTrace);
+
+        /// <summary>
+        /// Parses the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="position">The position.</param>
+        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
+        /// <returns>The result of running the parser.</returns>
+        new IParseResult<TOutput> TryParse(string input, int position, bool collectTrace);
     }
 
     /// <summary>
@@ -54,8 +72,26 @@
         /// Parses the specified input.
         /// </summary>
         /// <param name="input">The input.</param>
-        /// <param name="position">The position.</param>
+        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
         /// <returns>The result of running the parser.</returns>
-        IParseResult TryParse(string input, int position);
+        IParseResult TryParse(string input, bool collectTrace);
+
+        /// <summary>
+        /// Parses the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
+        /// <returns>The parsed result.</returns>
+        /// <exception cref="ParseException">Thrown when the parser fails.</exception>
+        object? Parse(string input, bool collectTrace);
+
+        /// <summary>
+        /// Parses the specified input.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="position">The position.</param>
+        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
+        /// <returns>The result of running the parser.</returns>
+        IParseResult TryParse(string input, int position, bool collectTrace);
     }
 }

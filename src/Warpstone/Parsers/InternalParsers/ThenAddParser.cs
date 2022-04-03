@@ -30,21 +30,21 @@
         internal IParser<T2> Second { get; }
 
         /// <inheritdoc/>
-        public override IParseResult<(T1 First, T2 Second)> TryParse(string input, int position)
+        public override IParseResult<(T1 First, T2 Second)> TryParse(string input, int position, bool collectTraces)
         {
-            IParseResult<T1> firstResult = First.TryParse(input, position);
+            IParseResult<T1> firstResult = First.TryParse(input, position, collectTraces);
             if (!firstResult.Success)
             {
-                return new ParseResult<(T1, T2)>(this, input, position, firstResult.Position.End, firstResult.Error, new[] { firstResult });
+                return new ParseResult<(T1, T2)>(this, input, position, firstResult.Position.End, firstResult.Error, collectTraces ? new[] { firstResult } : EmptyResults);
             }
 
-            IParseResult<T2> secondResult = Second.TryParse(input, firstResult.Position.End);
+            IParseResult<T2> secondResult = Second.TryParse(input, firstResult.Position.End, collectTraces);
             if (!secondResult.Success)
             {
-                return new ParseResult<(T1, T2)>(this, input, position, secondResult.Position.End, secondResult.Error, new IParseResult[] { firstResult, secondResult });
+                return new ParseResult<(T1, T2)>(this, input, position, secondResult.Position.End, secondResult.Error, collectTraces ? new IParseResult[] { firstResult, secondResult } : EmptyResults);
             }
 
-            return new ParseResult<(T1, T2)>(this, (firstResult.Value!, secondResult.Value!), input, position, secondResult.Position.End, new IParseResult[] { firstResult, secondResult });
+            return new ParseResult<(T1, T2)>(this, (firstResult.Value!, secondResult.Value!), input, position, secondResult.Position.End, collectTraces ? new IParseResult[] { firstResult, secondResult } : EmptyResults);
         }
 
         /// <inheritdoc/>

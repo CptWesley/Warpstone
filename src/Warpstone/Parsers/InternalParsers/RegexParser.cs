@@ -1,5 +1,4 @@
-﻿using System;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 
 namespace Warpstone.Parsers.InternalParsers
 {
@@ -35,16 +34,16 @@ namespace Warpstone.Parsers.InternalParsers
         internal string Pattern { get; }
 
         /// <inheritdoc/>
-        public override IParseResult<string> TryParse(string input, int position)
+        public override IParseResult<string> TryParse(string input, int position, bool collectTraces)
         {
             Match match = regex.Match(input, position);
 
             if (!match.Success || match.Index != position)
             {
-                return new ParseResult<string>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { $"'{Pattern}'" }, GetFound(input, position)), Array.Empty<IParseResult<object>>());
+                return new ParseResult<string>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { $"'{Pattern}'" }, GetFound(input, position)), EmptyResults);
             }
 
-            return new ParseResult<string>(this, match.Value, input, position, match.Index + match.Length, Array.Empty<IParseResult>());
+            return new ParseResult<string>(this, match.Value, input, position, match.Index + match.Length, EmptyResults);
         }
 
         /// <inheritdoc/>

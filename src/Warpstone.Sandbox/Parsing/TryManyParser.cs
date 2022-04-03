@@ -45,29 +45,29 @@ internal class TryManyParser<TElement> : Parser<IList<ParseOption<TElement>>>
     public IParser<string> RecoveryParser { get; }
 
     /// <inheritdoc/>
-    public override IParseResult<IList<ParseOption<TElement>>> TryParse(string input, int position)
+    public override IParseResult<IList<ParseOption<TElement>>> TryParse(string input, int position, bool collectTraces)
     {
         List<IParseResult> results = new List<IParseResult>();
-        IParseResult<string> prefix = Prefix.TryParse(input, position);
+        IParseResult<string> prefix = Prefix.TryParse(input, position, collectTraces);
         results.Add(prefix);
         int endPosition = prefix.Position.End;
 
         if (!prefix.Success)
         {
-            return new ParseResult<IList<ParseOption<TElement>>>(this, input, position, endPosition, prefix.Error!, results);
+            return new ParseResult<IList<ParseOption<TElement>>>(this, input, position, endPosition, prefix.Error!, collectTraces ? results : EmptyResults);
         }
 
         List<ParseOption<TElement>> values = new List<ParseOption<TElement>>();
 
-        IParseResult<string> directSuffix = Suffix.TryParse(input, endPosition);
+        IParseResult<string> directSuffix = Suffix.TryParse(input, endPosition, collectTraces);
         if (directSuffix.Success)
         {
             endPosition = directSuffix.Position.End;
             results.Add(directSuffix);
-            return new ParseResult<IList<ParseOption<TElement>>>(this, values, input, position, endPosition, results);
+            return new ParseResult<IList<ParseOption<TElement>>>(this, values, input, position, endPosition, collectTraces ? results : EmptyResults);
         }
 
-        IParseResult<TElement> first = Element.TryParse(input, endPosition);
+        IParseResult<TElement> first = Element.TryParse(input, endPosition, collectTraces);
         endPosition = first.Position.End;
         results.Add(first);
         if (first.Success)
@@ -77,18 +77,18 @@ internal class TryManyParser<TElement> : Parser<IList<ParseOption<TElement>>>
         else
         {
             values.Add(new ParseNone<TElement>(first.Error!));
-            IParseResult<string> firstRecovery = RecoveryParser.TryParse(input, endPosition);
+            IParseResult<string> firstRecovery = RecoveryParser.TryParse(input, endPosition, collectTraces);
             endPosition = firstRecovery.Position.End;
         }
 
         while (true)
         {
-            IParseResult<string> suffix = Suffix.TryParse(input, endPosition);
+            IParseResult<string> suffix = Suffix.TryParse(input, endPosition, collectTraces);
             if (suffix.Success)
             {
                 endPosition = suffix.Position.End;
                 results.Add(suffix);
-                return new ParseResult<IList<ParseOption<TElement>>>(this, values, input, position, endPosition, results);
+                return new ParseResult<IList<ParseOption<TElement>>>(this, values, input, position, endPosition, collectTraces ? results : EmptyResults);
             }
 
             if (endPosition >= input.Length)
@@ -97,21 +97,21 @@ internal class TryManyParser<TElement> : Parser<IList<ParseOption<TElement>>>
                 expected.UnionWith(GetExpected(Delimiter));
                 expected.UnionWith(GetExpected(Suffix));
 
-                return new ParseResult<IList<ParseOption<TElement>>>(this, input, position, endPosition, new UnexpectedTokenError(new SourcePosition(input, endPosition, endPosition), expected, GetFound(input, endPosition)), results);
+                return new ParseResult<IList<ParseOption<TElement>>>(this, input, position, endPosition, new UnexpectedTokenError(new SourcePosition(input, endPosition, endPosition), expected, GetFound(input, endPosition)), collectTraces ? results : EmptyResults);
             }
 
-            IParseResult<string> delimiter = Delimiter.TryParse(input, endPosition);
+            IParseResult<string> delimiter = Delimiter.TryParse(input, endPosition, collectTraces);
             endPosition = delimiter.Position.End;
             results.Add(delimiter);
             if (!delimiter.Success)
             {
                 values.Add(new ParseNone<TElement>(delimiter.Error!));
-                IParseResult<string> delimiterRecovery = RecoveryParser.TryParse(input, endPosition);
+                IParseResult<string> delimiterRecovery = RecoveryParser.TryParse(input, endPosition, collectTraces);
                 endPosition = delimiterRecovery.Position.End;
                 continue;
             }
 
-            IParseResult<TElement> element = Element.TryParse(input, endPosition);
+            IParseResult<TElement> element = Element.TryParse(input, endPosition, collectTraces);
             endPosition = element.Position.End;
             results.Add(element);
             if (first.Success)
@@ -121,7 +121,7 @@ internal class TryManyParser<TElement> : Parser<IList<ParseOption<TElement>>>
             else
             {
                 values.Add(new ParseNone<TElement>(element.Error!));
-                IParseResult<string> elementRecovery = RecoveryParser.TryParse(input, endPosition);
+                IParseResult<string> elementRecovery = RecoveryParser.TryParse(input, endPosition, collectTraces);
                 endPosition = elementRecovery.Position.End;
             }
         }
@@ -140,7 +140,7 @@ internal class TryManyParser<TElement> : Parser<IList<ParseOption<TElement>>>
 
     private IEnumerable<string> GetExpected(IParser parser)
     {
-        IParseResult result = Element.TryParse(string.Empty, 0);
+        IParseResult result = Element.TryParse(string.Empty, 0, false);
         if (!result.Success && result.Error is UnexpectedTokenError error)
         {
             return error.Expected;

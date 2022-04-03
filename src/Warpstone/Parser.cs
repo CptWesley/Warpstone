@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Warpstone
 {
@@ -8,21 +9,34 @@ namespace Warpstone
     /// <typeparam name="TOutput">The type of the output.</typeparam>
     public abstract class Parser<TOutput> : IParser<TOutput>
     {
+        /// <summary>
+        /// An empty set of results.
+        /// </summary>
+        protected static readonly IEnumerable<IParseResult> EmptyResults = Array.Empty<IParseResult>();
+
         /// <inheritdoc/>
         public IParseResult<TOutput> TryParse(string input)
+            => TryParse(input, false);
+
+        /// <inheritdoc/>
+        public TOutput Parse(string input)
+            => Parse(input, false);
+
+        /// <inheritdoc/>
+        public IParseResult<TOutput> TryParse(string input, bool collectTrace)
         {
             if (input == null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
 
-            return TryParse(input, 0);
+            return TryParse(input, 0, collectTrace);
         }
 
         /// <inheritdoc/>
-        public TOutput Parse(string input)
+        public TOutput Parse(string input, bool collectTrace)
         {
-            IParseResult<TOutput> result = TryParse(input);
+            IParseResult<TOutput> result = TryParse(input, collectTrace);
             if (result.Success)
             {
                 return result.Value!;
@@ -31,13 +45,8 @@ namespace Warpstone
             throw new ParseException(result.Error!.GetMessage());
         }
 
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="position">The position.</param>
-        /// <returns>The result of running the parser.</returns>
-        public abstract IParseResult<TOutput> TryParse(string input, int position);
+        /// <inheritdoc/>
+        public abstract IParseResult<TOutput> TryParse(string input, int position, bool collectTrace);
 
         /// <inheritdoc/>
         public abstract string ToString(int depth);
@@ -55,8 +64,16 @@ namespace Warpstone
             => Parse(input);
 
         /// <inheritdoc/>
-        IParseResult IParser.TryParse(string input, int position)
-            => TryParse(input, position);
+        IParseResult IParser.TryParse(string input, bool collectTrace)
+            => TryParse(input, collectTrace);
+
+        /// <inheritdoc/>
+        object? IParser.Parse(string input, bool collectTrace)
+            => Parse(input, collectTrace);
+
+        /// <inheritdoc/>
+        IParseResult IParser.TryParse(string input, int position, bool collectTrace)
+            => TryParse(input, position, collectTrace);
 
         /// <summary>
         /// Gets the found characters.
