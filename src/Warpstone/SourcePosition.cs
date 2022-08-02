@@ -215,7 +215,7 @@ namespace Warpstone
                 endCountdown--;
             }
 
-            upgraded = new UpgradedSourcePosition(startLine, End, startLinePosition, endLinePosition);
+            upgraded = new UpgradedSourcePosition(startLine, endLine, startLinePosition, endLinePosition);
         }
 
         private struct UpgradedSourcePosition
