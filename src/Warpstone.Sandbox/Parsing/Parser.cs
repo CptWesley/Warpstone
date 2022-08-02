@@ -13,9 +13,9 @@ namespace ClausewitzLsp.Core.Parsing;
 public static class Parser
 {
     private static readonly IParser<string> Recovery = CompiledRegex(@"[^\s{}=]*");
-    private static readonly IParser<string> OpeningBracket = CompiledRegex(@"\{").WithName("'{'");
-    private static readonly IParser<string> ClosingBracket = CompiledRegex(@"\}").WithName("'}'");
-    private static readonly IParser<string> Period = CompiledRegex(@"\.").WithName("'.'");
+    private static readonly IParser<char> OpeningBracket = Char('{');
+    private static readonly IParser<char> ClosingBracket = Char('}');
+    private static readonly IParser<char> Period = Char('.');
     private static readonly IParser<string> NaturalNumber = CompiledRegex(@"\d+(?!\w)").WithName("number");
 
     /// <summary>
@@ -65,9 +65,9 @@ public static class Parser
     /// Provides a parser that parses a string.
     /// </summary>
     public static readonly IParser<ParseStringExpr> String
-        = CompiledRegex("\"")
+        = Char('"')
         .Then(CompiledRegex("[^\"]*"))
-        .ThenSkip(CompiledRegex("\""))
+        .ThenSkip(Char('"'))
         .Transform(x => new ParseStringExpr(x)).WithName("string");
 
     /// <summary>
@@ -116,7 +116,7 @@ public static class Parser
     /// Provides a parser that parses an object.
     /// </summary>
     public static readonly IParser<ParseObjectExpr> Object
-        = new TryManyParser<ParseExpr>(OpeningBracket.ThenSkip(OptionalLayout), Lazy(() => Expr!), MandatoryLayout, OptionalLayout.ThenSkip(ClosingBracket), Recovery)
+        = new TryManyParser<ParseExpr>(OpeningBracket.Then(OptionalLayout), Lazy(() => Expr!), MandatoryLayout, OptionalLayout.ThenSkip(ClosingBracket), Recovery)
         .Transform(x => new ParseObjectExpr(x));
 
     /// <summary>
@@ -148,7 +148,7 @@ public static class Parser
     public static ParseFileExpr ParseFile(string fileName, string fileContent)
     {
         IParser<ParseFileExpr> parser = File(fileName);
-        return parser.Parse(fileContent);
+        return parser.Parse(fileContent, true);
     }
 
     /// <summary>
