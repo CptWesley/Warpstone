@@ -599,11 +599,9 @@ namespace Warpstone.Tests.Parsers
             AssertThat(pos1.EndLine).IsEqualTo(1);
             AssertThat(pos1.EndLinePosition).IsEqualTo(5);
 
-            SourcePosition pos2 = parser.TryParse(@"
-   
-hello").Position;
+            SourcePosition pos2 = parser.TryParse("\n \t\nhello").Position;
             AssertThat(pos2.Start).IsEqualTo(0);
-            AssertThat(pos2.End).IsEqualTo(12);
+            AssertThat(pos2.End).IsEqualTo(9);
             AssertThat(pos2.StartLine).IsEqualTo(1);
             AssertThat(pos2.StartLinePosition).IsEqualTo(1);
             AssertThat(pos2.EndLine).IsEqualTo(3);
