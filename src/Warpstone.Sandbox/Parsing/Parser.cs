@@ -148,7 +148,7 @@ public static class Parser
     public static ParseFileExpr ParseFile(string fileName, string fileContent)
     {
         IParser<ParseFileExpr> parser = File(fileName);
-        return parser.Parse(fileContent, true);
+        return parser.Parse(fileContent);
     }
 
     /// <summary>
