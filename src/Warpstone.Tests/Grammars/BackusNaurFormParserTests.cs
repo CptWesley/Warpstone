@@ -26,18 +26,21 @@ namespace Warpstone.Tests.Grammars
             string input = @"true";
             AstNode node = parser.Parse(input);
             AssertThat(node).IsExactlyInstanceOf<ObjectNode>();
-            ObjectNode obj = node as ObjectNode;
-            AssertThat(obj.Type).IsEqualTo("bool");
+            ObjectNode? obj = node as ObjectNode;
+            AssertThat(obj).IsNotNull();
+            AssertThat(obj!.Type).IsEqualTo("bool");
             AssertThat(obj.Children).HasSize(1);
             AstNode child = obj.Children[0];
             AssertThat(child).IsExactlyInstanceOf<ObjectNode>();
-            ObjectNode childObj = child as ObjectNode;
-            AssertThat(childObj.Type).IsEqualTo("true");
+            ObjectNode? childObj = child as ObjectNode;
+            AssertThat(childObj!.Type).IsEqualTo("true");
+            AssertThat(childObj).IsNotNull();
             AssertThat(childObj.Children).HasSize(1);
             AstNode innerChild = childObj.Children[0];
             AssertThat(innerChild).IsExactlyInstanceOf<StringNode>();
-            StringNode innerChildStr = innerChild as StringNode;
-            AssertThat(innerChildStr.Value).IsEqualTo("true");
+            StringNode? innerChildStr = innerChild as StringNode;
+            AssertThat(innerChildStr).IsNotNull();
+            AssertThat(innerChildStr!.Value).IsEqualTo("true");
             AssertThat(node.ToString()).IsEqualTo(@"bool(true(""true""))");
         }
 

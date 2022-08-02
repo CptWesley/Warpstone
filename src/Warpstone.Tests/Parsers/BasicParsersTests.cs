@@ -525,8 +525,8 @@ namespace Warpstone.Tests.Parsers
         {
             IParser<string> parser = Or(String("x").WithName("booboo"), String("z").WithName("bahbah"));
             IParseResult<string> result = parser.TryParse("y");
-            AssertThat(result.Error).IsInstanceOf<UnexpectedTokenError>();
-            AssertThat(((UnexpectedTokenError)result.Error).Expected).ContainsExactly("booboo", "bahbah");
+            AssertThat(result.Error).IsNotNull().IsInstanceOf<UnexpectedTokenError>();
+            AssertThat(((UnexpectedTokenError)result.Error!).Expected).ContainsExactly("booboo", "bahbah");
         }
 
         /// <summary>
@@ -578,8 +578,9 @@ namespace Warpstone.Tests.Parsers
             IParser<int> parser = String("x").Transform(x => int.Parse(x, CultureInfo.InvariantCulture));
             IParseResult<int> result = parser.TryParse("x");
             AssertThat(result.Error).IsInstanceOf<TransformationError>();
-            TransformationError error = result.Error as TransformationError;
-            AssertThat(error.Exception).IsNotNull();
+            TransformationError? error = result.Error as TransformationError;
+            AssertThat(error).IsNotNull();
+            AssertThat(error!.Exception).IsNotNull();
             AssertThat(error.GetMessage()).IsEqualTo(error.Exception.Message + " At 1:1.");
         }
 
