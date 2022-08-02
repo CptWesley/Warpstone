@@ -34,28 +34,28 @@ namespace Warpstone.Parsers.InternalParsers
 
         /// <inheritdoc/>
         [SuppressMessage("Microsoft.Design", "CA1031", Justification = "General exception catch needed for correct behaviour.")]
-        public override IParseResult<TOutput> TryParse(string input, int position)
+        public override IParseResult<TOutput> TryParse(string input, int position, bool collectTraces)
         {
-            IParseResult<TInput> result = Parser.TryParse(input, position);
+            IParseResult<TInput> result = Parser.TryParse(input, position, collectTraces);
             if (result.Success)
             {
                 try
                 {
                     TOutput value = Transformation(result.Value!);
-                    if (value is IParsed parsed && parsed.Position is null)
+                    if (value is IParsed parsed && parsed.Position == default)
                     {
                         parsed.Position = new SourcePosition(input, position, result.Position.End - 1);
                     }
 
-                    return new ParseResult<TOutput>(this, value, input, position, result.Position.End, new[] { result });
+                    return new ParseResult<TOutput>(this, value, input, position, result.Position.End, collectTraces ? new[] { result } : EmptyResults);
                 }
                 catch (Exception e)
                 {
-                    return new ParseResult<TOutput>(this, input, position, result.Position.End, new TransformationError(new SourcePosition(input, position, result.Position.End - 1), e), new[] { result });
+                    return new ParseResult<TOutput>(this, input, position, result.Position.End, new TransformationError(new SourcePosition(input, position, result.Position.End - 1), e), collectTraces ? new[] { result } : EmptyResults);
                 }
             }
 
-            return new ParseResult<TOutput>(this, input, position, result.Position.End, result.Error, new[] { result });
+            return new ParseResult<TOutput>(this, input, position, result.Position.End, result.Error, collectTraces ? new[] { result } : EmptyResults);
         }
 
         /// <inheritdoc/>

@@ -53,7 +53,7 @@ namespace Warpstone.Parsers.InternalParsers
         internal ulong Max { get; }
 
         /// <inheritdoc/>
-        public override IParseResult<IList<T1>> TryParse(string input, int position)
+        public override IParseResult<IList<T1>> TryParse(string input, int position, bool collectTraces)
         {
             IParseError? error = null;
             int errorStartPos = -1;
@@ -63,11 +63,11 @@ namespace Warpstone.Parsers.InternalParsers
             int newPosition = position;
             for (ulong i = 0; i < Min; i++)
             {
-                IParseResult<T1> result = Parser.TryParse(input, newPosition);
+                IParseResult<T1> result = Parser.TryParse(input, newPosition, collectTraces);
                 trace.Add(result);
                 if (!result.Success)
                 {
-                    return new ParseResult<IList<T1>>(this, input, newPosition, result.Position.End, result.Error, trace);
+                    return new ParseResult<IList<T1>>(this, input, newPosition, result.Position.End, result.Error, collectTraces ? trace : EmptyResults);
                 }
 
                 newPosition = result.Position.End;
@@ -75,11 +75,11 @@ namespace Warpstone.Parsers.InternalParsers
 
                 if (i < Min - 1)
                 {
-                    IParseResult<T2> delimiterResult = DelimiterParser.TryParse(input, newPosition);
+                    IParseResult<T2> delimiterResult = DelimiterParser.TryParse(input, newPosition, collectTraces);
                     trace.Add(delimiterResult);
                     if (!delimiterResult.Success)
                     {
-                        return new ParseResult<IList<T1>>(this, input, newPosition, result.Position.End, delimiterResult.Error, trace);
+                        return new ParseResult<IList<T1>>(this, input, newPosition, result.Position.End, delimiterResult.Error, collectTraces ? trace : EmptyResults);
                     }
 
                     newPosition = delimiterResult.Position.End;
@@ -92,7 +92,7 @@ namespace Warpstone.Parsers.InternalParsers
                 IParseResult<T2>? delimiterResult = null;
                 if (i != 0 || Min > 0)
                 {
-                    delimiterResult = DelimiterParser.TryParse(input, tempPos);
+                    delimiterResult = DelimiterParser.TryParse(input, tempPos, collectTraces);
                     if (!delimiterResult.Success)
                     {
                         error = delimiterResult.Error;
@@ -104,7 +104,7 @@ namespace Warpstone.Parsers.InternalParsers
                     tempPos = delimiterResult.Position.End;
                 }
 
-                IParseResult<T1> result = Parser.TryParse(input, tempPos);
+                IParseResult<T1> result = Parser.TryParse(input, tempPos, collectTraces);
                 if (!result.Success)
                 {
                     error = result.Error;
@@ -124,19 +124,19 @@ namespace Warpstone.Parsers.InternalParsers
                 trace.Add(result);
             }
 
-            IParseResult<T3> terminatorResult = TerminatorParser.TryParse(input, newPosition);
+            IParseResult<T3> terminatorResult = TerminatorParser.TryParse(input, newPosition, collectTraces);
             trace.Add(terminatorResult);
             if (!terminatorResult.Success)
             {
                 if (error == null)
                 {
-                    return new ParseResult<IList<T1>>(this, input, terminatorResult.Position.Start, terminatorResult.Position.End, terminatorResult.Error, trace);
+                    return new ParseResult<IList<T1>>(this, input, terminatorResult.Position.Start, terminatorResult.Position.End, terminatorResult.Error, collectTraces ? trace : EmptyResults);
                 }
 
-                return new ParseResult<IList<T1>>(this, input, errorStartPos, errorEndPos, error, trace);
+                return new ParseResult<IList<T1>>(this, input, errorStartPos, errorEndPos, error, collectTraces ? trace : EmptyResults);
             }
 
-            return new ParseResult<IList<T1>>(this, elements, input, position, terminatorResult.Position.End, trace);
+            return new ParseResult<IList<T1>>(this, elements, input, position, terminatorResult.Position.End, collectTraces ? trace : EmptyResults);
         }
 
         /// <inheritdoc/>

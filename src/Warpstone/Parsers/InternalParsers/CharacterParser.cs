@@ -22,7 +22,7 @@ namespace Warpstone.Parsers.InternalParsers
         internal char Character { get; }
 
         /// <inheritdoc/>
-        public override IParseResult<char> TryParse(string input, int position)
+        public override IParseResult<char> TryParse(string input, int position, bool collectTraces)
         {
             if (position >= input.Length || input[position] != Character)
             {

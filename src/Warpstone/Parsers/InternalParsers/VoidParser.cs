@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Warpstone.Parsers.InternalParsers
+﻿namespace Warpstone.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser that doesn't take any arguments and always succeeds.
@@ -10,8 +8,8 @@ namespace Warpstone.Parsers.InternalParsers
     internal class VoidParser<T> : Parser<T>
     {
         /// <inheritdoc/>
-        public override IParseResult<T> TryParse(string input, int position)
-            => new ParseResult<T>(this, default, input, position, position, Array.Empty<IParseResult>());
+        public override IParseResult<T> TryParse(string input, int position, bool collectTraces)
+            => new ParseResult<T>(this, default, input, position, position, EmptyResults);
 
         /// <inheritdoc/>
         public override string ToString(int depth)

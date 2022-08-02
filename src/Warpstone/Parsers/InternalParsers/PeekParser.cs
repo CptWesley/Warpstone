@@ -20,16 +20,16 @@
         internal IParser<T> Parser { get; }
 
         /// <inheritdoc/>
-        public override IParseResult<T> TryParse(string input, int position)
+        public override IParseResult<T> TryParse(string input, int position, bool collectTraces)
         {
-            IParseResult<T> parseResult = Parser.TryParse(input, position);
+            IParseResult<T> parseResult = Parser.TryParse(input, position, collectTraces);
 
             if (parseResult.Success)
             {
-                return new ParseResult<T>(this, parseResult.Value, input, position, position, new[] { parseResult });
+                return new ParseResult<T>(this, parseResult.Value, input, position, position, collectTraces ? new[] { parseResult } : EmptyResults);
             }
 
-            return new ParseResult<T>(this, input, position, parseResult.Position.End, parseResult.Error, new[] { parseResult });
+            return new ParseResult<T>(this, input, position, parseResult.Position.End, parseResult.Error, collectTraces ? new[] { parseResult } : EmptyResults);
         }
 
         /// <inheritdoc/>

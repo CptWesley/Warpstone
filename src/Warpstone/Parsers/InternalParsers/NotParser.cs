@@ -22,16 +22,16 @@
         internal IParser<T> Parser { get; }
 
         /// <inheritdoc/>
-        public override IParseResult<T> TryParse(string input, int position)
+        public override IParseResult<T> TryParse(string input, int position, bool collectTraces)
         {
-            IParseResult<T> conditionResult = Parser.TryParse(input, position);
+            IParseResult<T> conditionResult = Parser.TryParse(input, position, collectTraces);
 
             if (conditionResult.Success)
             {
-                return new ParseResult<T>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { "<not>" }, GetFound(input, position)), new[] { conditionResult });
+                return new ParseResult<T>(this, input, position, position, new UnexpectedTokenError(new SourcePosition(input, position, position), new string[] { "<not>" }, GetFound(input, position)), collectTraces ? new[] { conditionResult } : EmptyResults);
             }
 
-            return new ParseResult<T>(this, default, input, position, position, new[] { conditionResult });
+            return new ParseResult<T>(this, default, input, position, position, collectTraces ? new[] { conditionResult } : EmptyResults);
         }
 
         /// <inheritdoc/>
