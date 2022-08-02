@@ -23,7 +23,7 @@ namespace Warpstone.Parsers
         /// <typeparam name="T">The return type of the parser.</typeparam>
         /// <returns>A parser that always succeeds.</returns>
         public static IParser<T> Pass<T>()
-            => new VoidParser<T>();
+            => VoidParser<T>.Instance;
 
         /// <summary>
         /// Creates a parser that always fails.
@@ -84,7 +84,7 @@ namespace Warpstone.Parsers
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, int count, IParser<T2> terminator)
-            => Multiple(parser, new VoidParser<T2>(), count, terminator);
+            => Multiple(parser, VoidParser<T2>.Instance, count, terminator);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -94,7 +94,7 @@ namespace Warpstone.Parsers
         /// <param name="count">The exact number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T>> Multiple<T>(IParser<T> parser, int count)
-            => Multiple(parser, count, new VoidParser<object>());
+            => Multiple(parser, count, VoidParser<object>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -120,7 +120,7 @@ namespace Warpstone.Parsers
         /// <param name="count">The exact number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int count)
-            => Multiple(parser, delimiter, count, new VoidParser<T2>());
+            => Multiple(parser, delimiter, count, VoidParser<T2>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -133,7 +133,7 @@ namespace Warpstone.Parsers
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, int min, int max, IParser<T2> terminator)
-            => Multiple(parser, new VoidParser<T2>(), min, max, terminator);
+            => Multiple(parser, VoidParser<T2>.Instance, min, max, terminator);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -144,7 +144,7 @@ namespace Warpstone.Parsers
         /// <param name="max">The maximum number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T>> Multiple<T>(IParser<T> parser, int min, int max)
-            => Multiple(parser, min, max, new VoidParser<object>());
+            => Multiple(parser, min, max, VoidParser<object>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -184,7 +184,7 @@ namespace Warpstone.Parsers
         /// <param name="max">The maximum number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int min, int max)
-            => Multiple(parser, delimiter, min, max, new VoidParser<T2>());
+            => Multiple(parser, delimiter, min, max, VoidParser<T2>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -196,7 +196,7 @@ namespace Warpstone.Parsers
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, ulong count, IParser<T2> terminator)
-            => Multiple(parser, new VoidParser<T2>(), count, terminator);
+            => Multiple(parser, VoidParser<T2>.Instance, count, terminator);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -206,7 +206,7 @@ namespace Warpstone.Parsers
         /// <param name="count">The exact number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T>> Multiple<T>(IParser<T> parser, ulong count)
-            => Multiple(parser, count, new VoidParser<object>());
+            => Multiple(parser, count, VoidParser<object>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -232,7 +232,7 @@ namespace Warpstone.Parsers
         /// <param name="count">The exact number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong count)
-            => Multiple(parser, delimiter, count, new VoidParser<T2>());
+            => Multiple(parser, delimiter, count, VoidParser<T2>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -245,7 +245,7 @@ namespace Warpstone.Parsers
         /// <param name="terminator">The terminator indicating the end of the sequence.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, ulong min, ulong max, IParser<T2> terminator)
-            => Multiple(parser, new VoidParser<T2>(), min, max, terminator);
+            => Multiple(parser, VoidParser<T2>.Instance, min, max, terminator);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -256,7 +256,7 @@ namespace Warpstone.Parsers
         /// <param name="max">The maximum number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T>> Multiple<T>(IParser<T> parser, ulong min, ulong max)
-            => Multiple(parser, min, max, new VoidParser<object>());
+            => Multiple(parser, min, max, VoidParser<object>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -291,7 +291,7 @@ namespace Warpstone.Parsers
         /// <param name="max">The maximum number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max)
-            => Multiple(parser, delimiter, min, max, new VoidParser<T2>());
+            => Multiple(parser, delimiter, min, max, VoidParser<T2>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -300,7 +300,7 @@ namespace Warpstone.Parsers
         /// <param name="parser">The parser to apply multiple times.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T>> Many<T>(IParser<T> parser)
-            => Many(parser, new VoidParser<object>());
+            => Many(parser, VoidParser<object>.Instance);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -324,7 +324,7 @@ namespace Warpstone.Parsers
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
         public static IParser<IList<T1>> Many<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
-              => Multiple(parser, delimiter, 0, ulong.MaxValue, new VoidParser<T2>());
+              => Multiple(parser, delimiter, 0, ulong.MaxValue, VoidParser<T2>.Instance);
 
         /// <summary>
         /// Creates a parser which applies the given parser at least once and collects all results.
@@ -333,7 +333,7 @@ namespace Warpstone.Parsers
         /// <param name="parser">The given parser.</param>
         /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
         public static IParser<IList<T>> OneOrMore<T>(IParser<T> parser)
-            => OneOrMore(parser, new VoidParser<object>());
+            => OneOrMore(parser, VoidParser<object>.Instance);
 
         /// <summary>
         /// Creates a parser which applies the given parser at least once and collects all results.
@@ -357,7 +357,7 @@ namespace Warpstone.Parsers
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
         public static IParser<IList<T1>> OneOrMore<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
-            => Multiple(parser, delimiter, 1, ulong.MaxValue, new VoidParser<T2>());
+            => Multiple(parser, delimiter, 1, ulong.MaxValue, VoidParser<T2>.Instance);
 
         /// <summary>
         /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
@@ -690,7 +690,7 @@ namespace Warpstone.Parsers
         /// <param name="value">The value to always return from the parser.</param>
         /// <returns>A parser always returning the object.</returns>
         public static IParser<T> Create<T>(T value)
-            => new VoidParser<T>().Transform(x => value);
+            => VoidParser<T>.Instance.Transform(x => value);
 
         /// <summary>
         /// Creates a parser that applies the given parser and then expects the input stream to end.
