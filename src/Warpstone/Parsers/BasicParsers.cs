@@ -771,5 +771,72 @@ namespace Warpstone.Parsers
         /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
         public static IParser<T> WithNames<T>(this IParser<T> parser, string firstName, params string[] otherNames)
             => parser.WithNames(new string[] { firstName }.Concat(otherNames));
+
+        /// <summary>
+        /// Creates a parser that attempts to parse something and if it fails attempt to recover.
+        /// </summary>
+        /// <typeparam name="TIn">The input type.</typeparam>
+        /// <typeparam name="TOut">The output type.</typeparam>
+        /// <param name="parser">The parser to try and use.</param>
+        /// <param name="recoveryParser">The parser to use for recovery.</param>
+        /// <param name="resultTransformation">The transformation to apply to the result.</param>
+        /// <returns>A parsers that attempts to parse or recovers.</returns>
+        public static IParser<TOut> Try<TIn, TOut>(IParser<TIn> parser, IParser<string> recoveryParser, Func<IParseResult<TIn>, TOut> resultTransformation)
+            => new TryParser<TIn, TOut>(parser, recoveryParser, resultTransformation);
+
+        /// <summary>
+        /// Creates a parser that attempts to parse something and if it fails attempt to recover.
+        /// </summary>
+        /// <typeparam name="TIn">The input type.</typeparam>
+        /// <typeparam name="TOut">The output type.</typeparam>
+        /// <param name="parser">The parser to try and use.</param>
+        /// <param name="recoveryParser">The parser to use for recovery.</param>
+        /// <param name="successTransformation">The transformation to apply to the succesful result.</param>
+        /// <param name="failureTransformation">The transformation to apply to the failure result.</param>
+        /// <returns>A parsers that attempts to parse or recovers.</returns>
+        public static IParser<TOut> Try<TIn, TOut>(IParser<TIn> parser, IParser<string> recoveryParser, Func<TIn, TOut> successTransformation, Func<IParseError, TOut> failureTransformation)
+            => Try(parser, recoveryParser, result =>
+            {
+                if (result.Success)
+                {
+                    return successTransformation(result.Value!);
+                }
+
+                return failureTransformation(result.Error!);
+            });
+
+        /// <summary>
+        /// Creates a parser that attempts to parse something and if it fails attempt to recover.
+        /// </summary>
+        /// <typeparam name="T">The output type.</typeparam>
+        /// <param name="parser">The parser to try and use.</param>
+        /// <param name="recoveryParser">The parser to use for recovery.</param>
+        /// <param name="failureTransformation">The transformation to apply to the failure result.</param>
+        /// <returns>A parsers that attempts to parse or recovers.</returns>
+        public static IParser<T> Try<T>(IParser<T> parser, IParser<string> recoveryParser, Func<IParseError, T> failureTransformation)
+            => Try(parser, recoveryParser, value => value, error => failureTransformation(error));
+
+        /// <summary>
+        /// Creates a parser that attempts to parse something and if it fails attempt to recover.
+        /// </summary>
+        /// <typeparam name="T">The output type.</typeparam>
+        /// <param name="parser">The parser to try and use.</param>
+        /// <param name="recoveryParser">The parser to use for recovery.</param>
+        /// <returns>A parser that attempts to parse or recovers.</returns>
+        public static IParser<ParseOption<T>> Try<T>(IParser<T> parser, IParser<string> recoveryParser)
+            => Try(parser, recoveryParser, value => new ParseSome<T>(value) as ParseOption<T>, error => new ParseNone<T>(error) as ParseOption<T>);
+
+        /// <summary>
+        /// Creates a parser that attempts to parse a collection of elements.
+        /// </summary>
+        /// <typeparam name="T">The type of the elements.</typeparam>
+        /// <param name="prefix">The prefix parser.</param>
+        /// <param name="element">The element parser.</param>
+        /// <param name="delimiter">The delimiter parser.</param>
+        /// <param name="suffix">The suffix parser.</param>
+        /// <param name="recovery">The recovery parser.</param>
+        /// <returns>A parser that attempts to parse a collection of items.</returns>
+        public static IParser<IList<ParseOption<T>>> TryMany<T>(IParser<string> prefix, IParser<T> element, IParser<string> delimiter, IParser<string> suffix, IParser<string> recovery)
+            => new TryManyParser<T>(prefix, element, delimiter, suffix, recovery);
     }
 }
