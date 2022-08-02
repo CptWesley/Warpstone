@@ -363,12 +363,33 @@ namespace Warpstone.Parsers
         /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
         /// </summary>
         /// <typeparam name="T">The type of results of the given parsers.</typeparam>
-        /// <param name="first">The first parser to try.</param>
-        /// <param name="second">The second parser to try.</param>
-        /// <param name="parsers">The other parsers to try.</param>
+        /// <param name="parsers">The parsers to try.</param>
         /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
-        public static IParser<T> Or<T>(IParser<T> first, IParser<T> second, params IParser<T>[] parsers)
-            => InnerOr(parsers.Prepend(second).Prepend(first));
+        public static IParser<T> Or<T>(params IParser<T>[] parsers)
+            => Or((IEnumerable<IParser<T>>)parsers);
+
+        /// <summary>
+        /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
+        /// </summary>
+        /// <typeparam name="T">The type of results of the given parsers.</typeparam>
+        /// <param name="parsers">The parsers to try.</param>
+        /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
+        public static IParser<T> Or<T>(IEnumerable<IParser<T>> parsers)
+        {
+            if (parsers.Count() == 0)
+            {
+                return VoidParser<T>.Instance;
+            }
+
+            IParser<T> result = parsers.First();
+
+            foreach (IParser<T> parser in parsers.Skip(1))
+            {
+                result = new OrParser<T>(result, parser);
+            }
+
+            return result;
+        }
 
         /// <summary>
         /// Creates a parser that fails if the specified parser succeeds.
@@ -750,15 +771,5 @@ namespace Warpstone.Parsers
         /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
         public static IParser<T> WithNames<T>(this IParser<T> parser, string firstName, params string[] otherNames)
             => parser.WithNames(new string[] { firstName }.Concat(otherNames));
-
-        private static IParser<T> InnerOr<T>(IEnumerable<IParser<T>> parsers)
-        {
-            if (parsers.Count() == 1)
-            {
-                return parsers.First();
-            }
-
-            return new OrParser<T>(parsers.First(), InnerOr(parsers.Skip(1)));
-        }
     }
 }
