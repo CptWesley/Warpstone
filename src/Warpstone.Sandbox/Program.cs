@@ -1,101 +1,98 @@
 ﻿using System.Text;
 using Warpstone.Parsers;
 
+using static Warpstone.Parsers.BasicParsers;
+
 namespace Warpstone.Sandbox;
 
 public static class Program
 {
+    private static readonly IParser<string> Integer = Regex(@"0|-?[1-9][0-9]*");
+    private static readonly IParser<string> Layout = Regex(@"(\s+)|(\/\*[\s\S]*?\*\/)|(\/\/.*)");
+
+    private static readonly IParser<Exp> E5 = Char('(').ThenSkip(Layout).Then(Lazy(() => E0!)).ThenSkip(Layout).ThenSkip(Char('('));
+
+    private static readonly IParser<Exp> Number = Integer.Transform(x => new NumExp(int.Parse(x)));
+    private static readonly IParser<Exp> E4 = Or(Number, E5);
+
+    private static readonly IParser<Exp> IncrementPostfix = E4.ThenSkip(Layout).ThenSkip(String("++")).Transform(x => new IncrementPostfixExp(x));
+    private static readonly IParser<Exp> DecrementPostfix = E4.ThenSkip(Layout).ThenSkip(String("--")).Transform(x => new DecrementPostfixExp(x));
+    private static readonly IParser<Exp> E3 = Or(IncrementPostfix, DecrementPostfix, E4);
+
+    private static readonly IParser<Exp> Minus = Char('-').ThenSkip(Layout).Then(E3).Transform(x => new MinusExp(x));
+    private static readonly IParser<Exp> IncrementPrefix = String("++").ThenSkip(Layout).Then(E3).Transform(x => new IncrementPrefixExp(x));
+    private static readonly IParser<Exp> DecrementPrefix = String("--").ThenSkip(Layout).Then(E3).Transform(x => new DecrementPrefixExp(x));
+    private static readonly IParser<Exp> E2 = Or(Minus, IncrementPrefix, DecrementPrefix, E3);
+
+    private static readonly IParser<Exp> Mul = Lazy(() => E1!).ThenSkip(Layout).ThenSkip(Char('*')).ThenSkip(Layout).ThenAdd(E2).Transform((l, r) => new MulExp(l, r));
+    private static readonly IParser<Exp> Div = Lazy(() => E1!).ThenSkip(Layout).ThenSkip(Char('/')).ThenSkip(Layout).ThenAdd(E2).Transform((l, r) => new DivExp(l, r));
+    private static readonly IParser<Exp> E1 = Or(Mul, Div, E2);
+
+    private static readonly IParser<Exp> Add = Lazy(() => E0!).ThenSkip(Layout).ThenSkip(Char('+')).ThenSkip(Layout).ThenAdd(E1).Transform((l, r) => new AddExp(l, r));
+    private static readonly IParser<Exp> Sub = Lazy(() => E0!).ThenSkip(Layout).ThenSkip(Char('-')).ThenSkip(Layout).ThenAdd(E1).Transform((l, r) => new SubExp(l, r));
+    private static readonly IParser<Exp> E0 = Or(Add, Sub, E1);
+
     public static void Main(string[] args)
     {
         Console.WriteLine("Hello World!");
 
-        IParser<string> num = new RegexParser(@"0|-?[1-9][0-9]*", true);
-
-        IParser<(string, string)> all = new SeqParser<string, string>(num, new EndParser());
-
-        IParser<string> rec = null!;
-        rec = new LazyParser<string>(() => rec);
-
-        //Console.WriteLine(all.Parse("42x", 0, 2));
-        //Console.WriteLine(rec.Parse(""));
-        GenerateClass();
+        ParseUnit<Exp> unit = new ParseUnit<Exp>("42 + 3 * 2", E0);
+        unit.Parse();
+        Console.WriteLine(unit.Result);
     }
 
-    private static void GenerateClass()
+    private abstract record Exp(int Precedence)
     {
-        StringBuilder sb = new StringBuilder();
-        sb.AppendLine("namespace Warpstone.Parsers;");
-        sb.AppendLine();
-        
-        for (int count = 2; count <= 16; count++)
+        protected string InnerExpToString(Exp innerExp)
         {
-            IEnumerable<int> range = Enumerable.Range(1, count);
-            string tupleString = $"({string.Join(", ", range.Select(x => $"T{x} Value{x}"))})";
-            string shortString = string.Join(", ", range.Select(x => $"T{x}"));
-            sb.AppendLine("/// <summary>")
-                .AppendLine("/// Represents a parser which sequentially applies a sequence of parsers and retains all results.")
-                .AppendLine("/// </summary>");
-
-            foreach (int i in range)
+            if (innerExp.Precedence < Precedence)
             {
-                sb.AppendLine($"/// <typeparam name=\"T{i}\">The result type of the {ToOrdinal(i)} parser.</typeparam>");
+                return $"({innerExp})";
             }
 
-            sb.AppendLine("/// <seealso cref=\"Parser{T}\" />")
-                .Append("public sealed class SeqParser<")
-                .Append(shortString)
-                .AppendLine(">")
-                .AppendLine($"\t: BaseSeqParser<{tupleString}>")
-                .AppendLine("{")
-                .AppendLine("\t/// <summary>")
-                .AppendLine($"\t/// Initializes a new instance of the <see cref=\"SeqParser{{{shortString}}}\"/> class.")
-                .AppendLine("\t/// </summary>");
-
-            foreach (int i in range)
-            {
-                sb.AppendLine($"\t/// <param name=\"{ToOrdinal(i)}\">The result type of the {ToOrdinal(i)} parser.</param>");
-            }
-
-            string constructorArgs = string.Join(", ", range.Select(x => $"IParser<T{x}> {ToOrdinal(x)}"));
-
-            sb.AppendLine($"\tpublic SeqParser({constructorArgs})")
-                .AppendLine($"\t\t: base({string.Join(", ", range.Select(ToOrdinal))})")
-                .AppendLine("\t{")
-                .AppendLine("\t}")
-                .AppendLine();
-
-            sb.AppendLine("\t/// <inheritdoc/>")
-                .AppendLine("\t[MethodImpl(MethodImplOptions.AggressiveInlining)]")
-                .AppendLine($"\tprotected sealed override {tupleString} CreateValue(object?[] values)")
-                .AppendLine($"\t\t=> ({string.Join(", ", range.Select(x => $"(T{x})values[{x - 1}]!"))});");
-
-            sb.AppendLine("}")
-                .AppendLine();
+            return innerExp.ToString();
         }
-
-
-        Console.WriteLine(sb);
     }
 
-    public static string ToOrdinal(int num)
-        => num switch
-        {
-            1 => "first",
-            2 => "second",
-            3 => "third",
-            4 => "fourth",
-            5 => "fifth",
-            6 => "sixth",
-            7 => "seventh",
-            8 => "eighth",
-            9 => "nineth",
-            10 => "tenth",
-            11 => "eleventh",
-            12 => "twelfth",
-            13 => "thirteenth",
-            14 => "fourteenth",
-            15 => "fifteenth",
-            16 => "sixteenth",
-            _ => throw new Exception()
-        };
+    private sealed record NumExp(int Value) : Exp(4)
+    {
+        public sealed override string ToString()
+            => Value.ToString();
+    }
+
+    private abstract record BinOp(int Precedence, string Operator, Exp Left, Exp Right) : Exp(Precedence)
+    {
+        public sealed override string ToString()
+            => $"{InnerExpToString(Left)} {Operator} {InnerExpToString(Right)}";
+    }
+
+    private abstract record PrefixOp(int Precedence, string Operator, Exp Exp) : Exp(Precedence)
+    {
+        public sealed override string ToString()
+            => $"{Operator}{InnerExpToString(Exp)}";
+    }
+
+    private abstract record PostfixOp(int Precedence, string Operator, Exp Exp) : Exp(Precedence)
+    {
+        public sealed override string ToString()
+            => $"{InnerExpToString(Exp)}{Operator}";
+    }
+
+    private record AddExp(Exp Left, Exp Right) : BinOp(0, "+", Left, Right);
+
+    private record SubExp(Exp Left, Exp Right) : BinOp(0, "-", Left, Right);
+
+    private record MulExp(Exp Left, Exp Right) : BinOp(1, "*", Left, Right);
+
+    private record DivExp(Exp Left, Exp Right) : BinOp(1, "/", Left, Right);
+
+    private record MinusExp(Exp Exp) : PrefixOp(2, "-", Exp);
+
+    private record IncrementPrefixExp(Exp Exp) : PrefixOp(2, "++", Exp);
+
+    private record DecrementPrefixExp(Exp Exp) : PrefixOp(2, "--", Exp);
+
+    private record IncrementPostfixExp(Exp Exp) : PrefixOp(3, "++", Exp);
+
+    private record DecrementPostfixExp(Exp Exp) : PrefixOp(3, "--", Exp);
 }

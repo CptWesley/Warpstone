@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace Warpstone.Parsers;
-/*
+
 /// <summary>
 /// Static class providing simple parsers.
 /// </summary>
@@ -16,6 +16,7 @@ public static class BasicParsers
     /// </summary>
     public static readonly IParser<string> End = new EndParser();
 
+    /*
     /// <summary>
     /// Creates a parser that always succeeds.
     /// </summary>
@@ -31,6 +32,7 @@ public static class BasicParsers
     /// <returns>A parser that always fails.</returns>
     public static IParser<T> Fail<T>()
         => new FailureParser<T>();
+    */
 
     /// <summary>
     /// Creates a parser which matches a regular expression.
@@ -74,6 +76,7 @@ public static class BasicParsers
     public static IParser<char> Char(char c)
         => new CharParser(c);
 
+    /*
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
     /// </summary>
@@ -358,6 +361,7 @@ public static class BasicParsers
     /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
     public static IParser<IList<T1>> OneOrMore<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
         => Multiple(parser, delimiter, 1, ulong.MaxValue, VoidParser<T2>.Instance);
+    */
 
     /// <summary>
     /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
@@ -375,22 +379,9 @@ public static class BasicParsers
     /// <param name="parsers">The parsers to try.</param>
     /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
     public static IParser<T> Or<T>(IEnumerable<IParser<T>> parsers)
-    {
-        if (parsers.Count() == 0)
-        {
-            return VoidParser<T>.Instance;
-        }
+        => new FirstParser<T>(parsers);
 
-        IParser<T> result = parsers.First();
-
-        foreach (IParser<T> parser in parsers.Skip(1))
-        {
-            result = new OrParser<T>(result, parser);
-        }
-
-        return result;
-    }
-
+    /*
     /// <summary>
     /// Creates a parser that fails if the specified parser succeeds.
     /// </summary>
@@ -410,6 +401,7 @@ public static class BasicParsers
     /// <returns>A parser trying the given parser, running the nested parser if the condition fails, or failing if the condition succeeds.</returns>
     public static IParser<T2> Except<T1, T2>(this IParser<T2> parser, IParser<T1> exclusion)
         => Not(exclusion).Then(parser);
+    */
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -547,7 +539,7 @@ public static class BasicParsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second)> ThenAdd<T1, T2>(this IParser<T1> first, IParser<T2> second)
-        => new ThenAddParser<T1, T2>(first, second);
+        => new SeqParser<T1, T2>(first, second);
 
     /// <summary>
     /// Creates a parser that applies two parsers and combines the results.
@@ -664,6 +656,7 @@ public static class BasicParsers
     public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, IParser<T2> second)
         => first.ThenAdd(second).Transform((l, r) => l);
 
+    /*
     /// <summary>
     /// Creates a parser that applies the given parser but does not consume the input.
     /// </summary>
@@ -672,6 +665,7 @@ public static class BasicParsers
     /// <returns>A parser applying the given parser that does not consume the input.</returns>
     public static IParser<T> Peek<T>(IParser<T> parser)
         => new PeekParser<T>(parser);
+    */
 
     /// <summary>
     /// Creates a parser that applies a parser and then applies a different parser depending on the result.
@@ -685,6 +679,7 @@ public static class BasicParsers
     public static IParser<TBranches> If<TCondition, TBranches>(IParser<TCondition> conditionParser, IParser<TBranches> thenParser, IParser<TBranches> elseParser)
         => Or(conditionParser.Then(thenParser), elseParser);
 
+    /*
     /// <summary>
     /// Creates a parser that tries to parse something, but still proceeds if it fails.
     /// </summary>
@@ -712,6 +707,7 @@ public static class BasicParsers
     /// <returns>A parser always returning the object.</returns>
     public static IParser<T> Create<T>(T value)
         => VoidParser<T>.Instance.Transform(x => value);
+    */
 
     /// <summary>
     /// Creates a parser that applies the given parser and then expects the input stream to end.
@@ -731,6 +727,7 @@ public static class BasicParsers
     public static IParser<T> Lazy<T>(Func<IParser<T>> parser)
         => new LazyParser<T>(parser);
 
+    /*
     /// <summary>
     /// Creates a parser that replaces the nested expected values with a given expected name.
     /// </summary>
@@ -838,5 +835,5 @@ public static class BasicParsers
     /// <returns>A parser that attempts to parse a collection of items.</returns>
     public static IParser<IList<ParseOption<T>>> TryMany<T>(IParser<string> prefix, IParser<T> element, IParser<string> delimiter, IParser<string> suffix, IParser<string> recovery)
         => new TryManyParser<T>(prefix, element, delimiter, suffix, recovery);
+    */
 }
-*/
