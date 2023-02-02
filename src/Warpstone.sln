@@ -5,15 +5,9 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone", "Warpstone\Warpstone.csproj", "{5F8EFC87-E8A4-464E-909A-C001203A7603}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Examples.Json", "Warpstone.Examples.Json\Warpstone.Examples.Json.csproj", "{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Examples.Expressions", "Warpstone.Examples.Expressions\Warpstone.Examples.Expressions.csproj", "{052BBEBD-11BE-4316-94F8-261DDD0D77A3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Tests", "Warpstone.Tests\Warpstone.Tests.csproj", "{A81E1B83-5552-40F4-BEFC-F4F180F7484D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Grammars", "Warpstone.Grammars\Warpstone.Grammars.csproj", "{FA1723CE-13CA-4052-952D-B66B17F3A440}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone.Sandbox", "Warpstone.Sandbox\Warpstone.Sandbox.csproj", "{20492752-93BB-4472-A20D-AB32E10C485C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Sandbox", "Warpstone.Sandbox\Warpstone.Sandbox.csproj", "{20492752-93BB-4472-A20D-AB32E10C485C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,22 +19,10 @@ Global
 		{5F8EFC87-E8A4-464E-909A-C001203A7603}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5F8EFC87-E8A4-464E-909A-C001203A7603}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5F8EFC87-E8A4-464E-909A-C001203A7603}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A3FDF5EC-C2CD-4A85-8021-CBEC5E470B7E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{052BBEBD-11BE-4316-94F8-261DDD0D77A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{052BBEBD-11BE-4316-94F8-261DDD0D77A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{052BBEBD-11BE-4316-94F8-261DDD0D77A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{052BBEBD-11BE-4316-94F8-261DDD0D77A3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Release|Any CPU.Build.0 = Release|Any CPU
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Release|Any CPU.ActiveCfg = Release|Any CPU

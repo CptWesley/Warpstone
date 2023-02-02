@@ -1,87 +1,84 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
-namespace Warpstone
+namespace Warpstone;
+
+/// <summary>
+/// Parser class for parsing textual input.
+/// </summary>
+/// <typeparam name="TOutput">The type of the output.</typeparam>
+public abstract class Parser<TOutput> : IParser<TOutput>
 {
     /// <summary>
-    /// Parser class for parsing textual input.
+    /// An empty set of results.
     /// </summary>
-    /// <typeparam name="TOutput">The type of the output.</typeparam>
-    public abstract class Parser<TOutput> : IParser<TOutput>
+    protected static readonly IEnumerable<IParseResult> EmptyResults = Array.Empty<IParseResult>();
+
+    /// <inheritdoc/>
+    public Type OutputType => typeof(TOutput);
+
+    /// <inheritdoc/>
+    public string ToString(int depth)
     {
-        /// <summary>
-        /// An empty set of results.
-        /// </summary>
-        protected static readonly IEnumerable<IParseResult> EmptyResults = Array.Empty<IParseResult>();
-
-        /// <inheritdoc/>
-        public IParseResult<TOutput> TryParse(string input)
-            => TryParse(input, false);
-
-        /// <inheritdoc/>
-        public TOutput Parse(string input)
-            => Parse(input, false);
-
-        /// <inheritdoc/>
-        public IParseResult<TOutput> TryParse(string input, bool collectTrace)
+        if (depth < 0)
         {
-            if (input == null)
-            {
-                throw new ArgumentNullException(nameof(input));
-            }
-
-            return TryParse(input, 0, collectTrace);
+            return "...";
         }
 
-        /// <inheritdoc/>
-        public TOutput Parse(string input, bool collectTrace)
-        {
-            IParseResult<TOutput> result = TryParse(input, collectTrace);
-            if (result.Success)
-            {
-                return result.Value!;
-            }
-
-            throw new ParseException(result.Error!.GetMessage());
-        }
-
-        /// <inheritdoc/>
-        public abstract IParseResult<TOutput> TryParse(string input, int position, bool collectTrace);
-
-        /// <inheritdoc/>
-        public abstract string ToString(int depth);
-
-        /// <inheritdoc/>
-        public override string ToString()
-            => ToString(4);
-
-        /// <inheritdoc/>
-        IParseResult IParser.TryParse(string input)
-            => TryParse(input);
-
-        /// <inheritdoc/>
-        object? IParser.Parse(string input)
-            => Parse(input);
-
-        /// <inheritdoc/>
-        IParseResult IParser.TryParse(string input, bool collectTrace)
-            => TryParse(input, collectTrace);
-
-        /// <inheritdoc/>
-        object? IParser.Parse(string input, bool collectTrace)
-            => Parse(input, collectTrace);
-
-        /// <inheritdoc/>
-        IParseResult IParser.TryParse(string input, int position, bool collectTrace)
-            => TryParse(input, position, collectTrace);
-
-        /// <summary>
-        /// Gets the found characters.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="position">The position.</param>
-        /// <returns>The found characters.</returns>
-        protected string GetFound(string input, int position)
-            => position < input?.Length ? $"'{input[position]}'" : "EOF";
+        return InternalToString(depth);
     }
+
+    /// <inheritdoc/>
+    public sealed override string ToString()
+        => ToString(4);
+
+    /// <inheritdoc/>
+    public IParseResult<TOutput> TryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        if (memoTable.TryGet(position, this, out IParseResult<TOutput>? prevResult))
+        {
+            return prevResult;
+        }
+
+        memoTable.Set(position, this, new ParseResult<TOutput>(this, new UnboundedRecursionError(new SourcePosition(input, position, position)), EmptyResults));
+
+        IParseResult<TOutput> internalResult = InternalTryMatch(input, position, maxLength, memoTable, cancellationToken);
+        memoTable.Set(position, this, internalResult);
+        return internalResult;
+    }
+
+    /// <inheritdoc/>
+    IParseResult IParser.TryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken)
+        => TryMatch(input, position, maxLength, memoTable, cancellationToken);
+
+    /// <summary>
+    /// Gets the found characters.
+    /// </summary>
+    /// <param name="input">The input.</param>
+    /// <param name="position">The position.</param>
+    /// <returns>The found characters.</returns>
+    protected string GetFound(string input, int position)
+        => position < input?.Length ? $"'{input[position]}'" : "EOF";
+
+    /// <summary>
+    /// Provides a stringified version of the parser without depth checks.
+    /// </summary>
+    /// <param name="depth">The maximum depth to explore.</param>
+    /// <returns>The stringified version of the parser.</returns>
+    protected abstract string InternalToString(int depth);
+
+    /// <summary>
+    /// Attempts to match the current parser at the given <paramref name="position"/> without any checks.
+    /// </summary>
+    /// <param name="input">The input string.</param>
+    /// <param name="position">The position to match.</param>
+    /// <param name="maxLength">The maximum length of the match.</param>
+    /// <param name="memoTable">The memo table.</param>
+    /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
+    /// <returns>The found parse result.</returns>
+    protected abstract IParseResult<TOutput> InternalTryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken);
 }

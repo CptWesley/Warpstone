@@ -1,97 +1,44 @@
-﻿namespace Warpstone
+﻿using System;
+using System.Threading;
+
+namespace Warpstone;
+
+/// <summary>
+/// Parser interface for parsing textual input.
+/// </summary>
+/// <typeparam name="TOutput">The type of the output.</typeparam>
+public interface IParser<out TOutput> : IParser
 {
     /// <summary>
-    /// Parser interface for parsing textual input.
+    /// Attempts to match the current parser at the given <paramref name="position"/>.
     /// </summary>
-    /// <typeparam name="TOutput">The type of the output.</typeparam>
-    public interface IParser<out TOutput> : IParser
-    {
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The result of running the parser.</returns>
-        new IParseResult<TOutput> TryParse(string input);
+    /// <param name="input">The input string.</param>
+    /// <param name="position">The position to match.</param>
+    /// <param name="maxLength">The maximum length of the match.</param>
+    /// <param name="memoTable">The memo table.</param>
+    /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
+    /// <returns>The found parse result.</returns>
+    new IParseResult<TOutput> TryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken);
+}
 
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The parsed result.</returns>
-        /// <exception cref="ParseException">Thrown when the parser fails.</exception>
-        new TOutput Parse(string input);
-
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
-        /// <returns>The result of running the parser.</returns>
-        new IParseResult<TOutput> TryParse(string input, bool collectTrace);
-
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
-        /// <returns>The parsed result.</returns>
-        /// <exception cref="ParseException">Thrown when the parser fails.</exception>
-        new TOutput Parse(string input, bool collectTrace);
-
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="position">The position.</param>
-        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
-        /// <returns>The result of running the parser.</returns>
-        new IParseResult<TOutput> TryParse(string input, int position, bool collectTrace);
-    }
+/// <summary>
+/// Parser interface for parsing textual input.
+/// </summary>
+public interface IParser : IBoundedToString
+{
+    /// <summary>
+    /// Gets the output type of the parser.
+    /// </summary>
+    Type OutputType { get; }
 
     /// <summary>
-    /// Parser interface for parsing textual input.
+    /// Attempts to match the current parser at the given <paramref name="position"/>.
     /// </summary>
-    public interface IParser : IBoundedToString
-    {
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The result of running the parser.</returns>
-        IParseResult TryParse(string input);
-
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The parsed result.</returns>
-        /// <exception cref="ParseException">Thrown when the parser fails.</exception>
-        object? Parse(string input);
-
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
-        /// <returns>The result of running the parser.</returns>
-        IParseResult TryParse(string input, bool collectTrace);
-
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
-        /// <returns>The parsed result.</returns>
-        /// <exception cref="ParseException">Thrown when the parser fails.</exception>
-        object? Parse(string input, bool collectTrace);
-
-        /// <summary>
-        /// Parses the specified input.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="position">The position.</param>
-        /// <param name="collectTrace">Indicates whether or not we collect a trace.</param>
-        /// <returns>The result of running the parser.</returns>
-        IParseResult TryParse(string input, int position, bool collectTrace);
-    }
+    /// <param name="input">The input string.</param>
+    /// <param name="position">The position to match.</param>
+    /// <param name="maxLength">The maximum length of the match.</param>
+    /// <param name="memoTable">The memo table.</param>
+    /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
+    /// <returns>The found parse result.</returns>
+    IParseResult TryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken);
 }

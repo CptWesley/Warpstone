@@ -11,11 +11,11 @@
 		<PackageTags>parser combinator language parsing parsercombinator</PackageTags>
 		<AssemblyVersion>$(Version)</AssemblyVersion>
 		<FileVersion>$(Version)</FileVersion>
-		<Version>1.1-preview5</Version>
+		<Version>2.0-preview1</Version>
 		<Copyright></Copyright>
 		<PackageIconUrl>https://raw.githubusercontent.com/CptWesley/Warpstone/master/logo_128x128.png</PackageIconUrl>
 		<PackageIcon>logo_128x128.png</PackageIcon>
-		<LangVersion>10</LangVersion>
+		<LangVersion>11</LangVersion>
 		<Nullable>enable</Nullable>
 		<EnableNETAnalyzers>true</EnableNETAnalyzers>
 	</PropertyGroup>
@@ -26,12 +26,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="BackwardsCompatibleFeatures" Version="2.1.0" />
 		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
 			<PrivateAssets>all</PrivateAssets>
-		</PackageReference>
-		<PackageReference Include="BackwardsCompatibleRecords" Version="1.0.0">
-			<PrivateAssets>all</PrivateAssets>
-			<IncludeAssets>compile</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 </Project>
