@@ -17,7 +17,7 @@ public class LrStack<TOut> : ILrStack<TOut>
     {
         Parser = parser;
         Seed = seed;
-        Head = new Head<TOut>(parser);
+        Finished = false;
     }
 
     /// <inheritdoc/>
@@ -35,12 +35,12 @@ public class LrStack<TOut> : ILrStack<TOut>
         get => Seed;
         set
         {
-            if (value is IParseResult<TOut> typedValue)
+            if (value is not IParseResult<TOut> typedValue)
             {
-                Seed = typedValue;
+                throw new InvalidOperationException("Incorrect result type.");
             }
 
-            throw new InvalidOperationException("Incorrect result type.");
+            Seed = typedValue;
         }
     }
 
@@ -48,40 +48,40 @@ public class LrStack<TOut> : ILrStack<TOut>
     IParseResult IReadOnlyLrStack.Seed => Seed;
 
     /// <inheritdoc/>
-    public IHead<TOut> Head { get; }
+    public IHead<TOut>? Head { get; set; }
 
     /// <inheritdoc/>
-    IReadOnlyHead IReadOnlyLrStack.Head => Head;
+    IReadOnlyHead? IReadOnlyLrStack.Head => Head;
 
     /// <inheritdoc/>
-    IHead ILrStack.Head => Head;
+    IHead? ILrStack.Head
+    {
+        get => Head;
+        set
+        {
+            if (value is not IHead<TOut> typedValue)
+            {
+                throw new InvalidOperationException("Incorrect result type.");
+            }
+
+            Head = typedValue;
+        }
+    }
 
     /// <inheritdoc/>
-    IReadOnlyHead<TOut> IReadOnlyLrStack<TOut>.Head => Head;
+    IReadOnlyHead<TOut>? IReadOnlyLrStack<TOut>.Head => Head;
 
     /// <inheritdoc/>
-    public ILrStack<TOut>? Next { get; set; }
+    public ILrStack? Next { get; set; }
 
     /// <inheritdoc/>
     IReadOnlyLrStack? IReadOnlyLrStack.Next => Next;
 
     /// <inheritdoc/>
-    IReadOnlyLrStack<TOut>? IReadOnlyLrStack<TOut>.Next => Next;
+    public bool Finished { get; set; }
 
     /// <inheritdoc/>
-    ILrStack? ILrStack.Next
-    {
-        get => Next;
-        set
-        {
-            if (value is ILrStack<TOut> typedValue)
-            {
-                Next = typedValue;
-            }
-
-            throw new InvalidOperationException("Incorrect result type.");
-        }
-    }
+    bool IReadOnlyLrStack.Finished => Finished;
 
 
     /// <summary>
