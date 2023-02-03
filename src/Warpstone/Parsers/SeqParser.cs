@@ -33,12 +33,12 @@ public class SeqParser<T1, T2> : Parser<(T1 First, T2 Second)>
     public IParser<T2> Second { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<(T1 First, T2 Second)> InternalTryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken)
+    protected override IParseResult<(T1 First, T2 Second)> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
     {
         int curPosition = position;
         int curMaxLength = maxLength;
 
-        IParseResult<T1> firstResult = First.TryMatch(input, curPosition, curMaxLength, memoTable, cancellationToken);
+        IParseResult<T1> firstResult = First.TryMatch(input, curPosition, curMaxLength, parseUnit, cancellationToken);
         if (!firstResult.Success)
         {
             return new ParseResult<(T1, T2)>(this, firstResult.Error, new[] { firstResult });
@@ -47,7 +47,7 @@ public class SeqParser<T1, T2> : Parser<(T1 First, T2 Second)>
         curPosition += firstResult.Length;
         curMaxLength -= firstResult.Length;
 
-        IParseResult<T2> secondResult = Second.TryMatch(input, curPosition, curMaxLength, memoTable, cancellationToken);
+        IParseResult<T2> secondResult = Second.TryMatch(input, curPosition, curMaxLength, parseUnit, cancellationToken);
         if (!secondResult.Success)
         {
             return new ParseResult<(T1, T2)>(this, secondResult.Error, new IParseResult[] { firstResult, secondResult });

@@ -23,9 +23,9 @@ public class LazyParser<T> : Parser<T>
     public Lazy<IParser<T>> Parser { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<T> InternalTryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken)
+    protected override IParseResult<T> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
     {
-        IParseResult<T> result = Parser.Value.TryMatch(input, position, maxLength, memoTable, cancellationToken);
+        IParseResult<T> result = Parser.Value.TryMatch(input, position, maxLength, parseUnit, cancellationToken);
         if (result.Success)
         {
             return new ParseResult<T>(this, result.Value, input, result.Start, result.Length, new[] { result });

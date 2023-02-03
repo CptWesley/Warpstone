@@ -15,10 +15,10 @@ public interface IParser<out TOutput> : IParser
     /// <param name="input">The input string.</param>
     /// <param name="position">The position to match.</param>
     /// <param name="maxLength">The maximum length of the match.</param>
-    /// <param name="memoTable">The memo table.</param>
+    /// <param name="parseUnit">The parse unit.</param>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
-    new IParseResult<TOutput> TryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken);
+    new IParseResult<TOutput> TryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -37,8 +37,8 @@ public interface IParser : IBoundedToString
     /// <param name="input">The input string.</param>
     /// <param name="position">The position to match.</param>
     /// <param name="maxLength">The maximum length of the match.</param>
-    /// <param name="memoTable">The memo table.</param>
+    /// <param name="parseUnit">The parse unit.</param>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
-    IParseResult TryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken);
+    IParseResult TryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken);
 }

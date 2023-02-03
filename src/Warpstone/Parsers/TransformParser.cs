@@ -34,9 +34,9 @@ public class TransformParser<TIn, TOut> : Parser<TOut>
 
     /// <inheritdoc/>
     [SuppressMessage("Microsoft.Design", "CA1031", Justification = "General exception catch needed for correct behaviour.")]
-    protected override IParseResult<TOut> InternalTryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken)
+    protected override IParseResult<TOut> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
     {
-        IParseResult<TIn> result = Parser.TryMatch(input, position, maxLength, memoTable, cancellationToken);
+        IParseResult<TIn> result = Parser.TryMatch(input, position, maxLength, parseUnit, cancellationToken);
 
         if (!result.Success)
         {

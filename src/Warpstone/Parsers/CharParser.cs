@@ -21,7 +21,7 @@ public class CharParser : Parser<char>
     public char Character { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<char> InternalTryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken)
+    protected override IParseResult<char> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
     {
         if (maxLength <= 0 || position >= input.Length || input[position] != Character)
         {

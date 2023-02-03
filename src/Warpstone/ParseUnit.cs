@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Warpstone.ParsingState;
 
 namespace Warpstone;
 
@@ -177,7 +178,7 @@ public class ParseUnit<TOutput> : IParseUnit<TOutput>
     [MemberNotNull(nameof(Result))]
     private IParseResult<TOutput> ParseInternal(CancellationToken cancellationToken)
     {
-        Result = Parser.TryMatch(Input, StartingPosition, MaxLength, memoTable, cancellationToken);
+        Result = Parser.TryMatch(Input, StartingPosition, MaxLength, this, cancellationToken);
         Finished = true;
         return Result;
     }

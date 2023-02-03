@@ -28,7 +28,7 @@ public class StringParser : Parser<string>
     public StringComparison StringComparison { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<string> InternalTryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken)
+    protected override IParseResult<string> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
     {
         if (maxLength < String.Length || string.Compare(input, position, String, 0, String.Length, StringComparison) != 0)
         {

@@ -8,7 +8,7 @@ namespace Warpstone.Parsers;
 public class EndParser : Parser<string>
 {
     /// <inheritdoc/>
-    protected override IParseResult<string> InternalTryMatch(string input, int position, int maxLength, IMemoTable memoTable, CancellationToken cancellationToken)
+    protected override IParseResult<string> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
     {
         if (maxLength <= 0)
         {
