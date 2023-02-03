@@ -193,8 +193,8 @@ public static class ParserExtensions
     public static async Task<IParseResult<TOutput>> TryParseAsync<TOutput>(this IParser<TOutput> parser, string input, int startPosition, int maxLength, CancellationToken cancellationToken)
     {
         ParseUnit<TOutput> unit = new ParseUnit<TOutput>(input, startPosition, maxLength, parser);
-        await unit.ParseAsync(cancellationToken).ConfigureAwait(false);
-        return unit.Result;
+        IParseResult<TOutput> result = await unit.ParseAsync(cancellationToken).ConfigureAwait(false);
+        return result;
     }
 
     /// <summary>

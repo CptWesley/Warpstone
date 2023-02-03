@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -10,12 +9,10 @@ namespace Warpstone;
 /// </summary>
 /// <typeparam name="TOutput">The output type of the parsing operation.</typeparam>
 [SuppressMessage("Design", "CA1001", Justification = "Parse unit instances are not expected to be created in large numbers, we can rely on GC.")]
-public class ParseUnit<TOutput>
+public class ParseUnit<TOutput> : IParseUnit<TOutput>
 {
     private readonly SemaphoreSlim lck = new SemaphoreSlim(1);
     private readonly MemoTable memoTable = new MemoTable();
-
-    private IParseResult<TOutput>? result;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParseUnit{TOutput}"/> class.
@@ -50,59 +47,42 @@ public class ParseUnit<TOutput>
         lck.Dispose();
     }
 
-    /// <summary>
-    /// Gets the input of this <see cref="ParseUnit{TOutput}"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public string Input { get; }
 
-    /// <summary>
-    /// Gets the starting position of this <see cref="ParseUnit{TOutput}"/> in the <see cref="Input"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public int StartingPosition { get; }
 
-    /// <summary>
-    /// Gets the maximum search length of this <see cref="ParseUnit{TOutput}"/> in the <see cref="Input"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public int MaxLength { get; }
 
-    /// <summary>
-    /// Gets the top-most parser used by this <see cref="ParseUnit{TOutput}"/>.
-    /// </summary>
+    /// <inheritdoc/>
     public IParser<TOutput> Parser { get; }
 
-    /// <summary>
-    /// Gets the <see cref="MemoTable"/> used by this <see cref="ParseUnit{TOutput}"/>.
-    /// </summary>
+    /// <inheritdoc/>
+    IParser IParseUnit.Parser => Parser;
+
+    /// <inheritdoc/>
     public IReadOnlyMemoTable MemoTable => memoTable;
 
     /// <summary>
     /// Gets a value indicating whether or not the parsing unit has finished parsing.
     /// </summary>
-    [MemberNotNullWhen(true, nameof(result))]
+    [MemberNotNullWhen(true, nameof(Result))]
     public bool Finished { get; private set; }
 
-    /// <summary>
-    /// Gets the result match from this memo table instance.
-    /// </summary>
-    public IParseResult<TOutput> Result
-    {
-        get
-        {
-            Parse();
-            return result;
-        }
-    }
+    /// <inheritdoc/>
+    public IParseResult<TOutput>? Result { get; private set; }
 
-    /// <summary>
-    /// Tries to get the result from this <see cref="ParseUnit{TOutput}"/>.
-    /// </summary>
-    /// <param name="result">The found <see cref="IParseResult{T}"/>.</param>
-    /// <returns><c>true</c> if a result was found, <c>false</c> otherwise.</returns>
+    /// <inheritdoc/>
+    IParseResult? IParseUnit.Result => Result;
+
+    /// <inheritdoc/>
     public bool TryGetResult([NotNullWhen(true)] out IParseResult<TOutput>? result)
     {
-        if (Finished && this.result is not null)
+        if (Finished && Result is not null)
         {
-            result = this.result;
+            result = Result;
             return true;
         }
 
@@ -110,16 +90,19 @@ public class ParseUnit<TOutput>
         return false;
     }
 
-    /// <summary>
-    /// Performs the parsing of the input provided to this <see cref="ParseUnit{TOutput}"/> instance synchronously.
-    /// </summary>
-    /// <param name="cancellationToken">The token used for cancelling the operation.</param>
-    [MemberNotNull(nameof(result))]
-    public void Parse(CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    public bool TryGetResult([NotNullWhen(true)] out IParseResult? result)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    /// <inheritdoc/>
+    [MemberNotNull(nameof(Result))]
+    public IParseResult<TOutput> Parse(CancellationToken cancellationToken)
     {
         if (Finished)
         {
-            return;
+            return Result;
         }
 
         lck.Wait();
@@ -128,10 +111,10 @@ public class ParseUnit<TOutput>
         {
             if (Finished)
             {
-                return;
+                return Result;
             }
 
-            ParseInternal(cancellationToken);
+            return ParseInternal(cancellationToken);
         }
         finally
         {
@@ -139,35 +122,39 @@ public class ParseUnit<TOutput>
         }
     }
 
-    /// <summary>
-    /// Performs the parsing of the input provided to this <see cref="ParseUnit{TOutput}"/> instance synchronously.
-    /// </summary>
-    [MemberNotNull(nameof(result))]
-    public void Parse()
+    /// <inheritdoc/>
+    [MemberNotNull(nameof(Result))]
+    IParseResult IParseUnit.Parse(CancellationToken cancellationToken)
+        => Parse(cancellationToken);
+
+    /// <inheritdoc/>
+    [MemberNotNull(nameof(Result))]
+    public IParseResult<TOutput> Parse()
         => Parse(CancellationToken.None);
 
-    /// <summary>
-    /// Performs the parsing of the input provided to this <see cref="ParseUnit{TOutput}"/> instance aynschronously.
-    /// </summary>
-    /// <param name="cancellationToken">The token used for cancelling the operation.</param>
-    /// <returns>The task executing the parsing.</returns>
-    public async Task ParseAsync(CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    [MemberNotNull(nameof(Result))]
+    IParseResult IParseUnit.Parse()
+        => Parse();
+
+    /// <inheritdoc/>
+    public async Task<IParseResult<TOutput>> ParseAsync(CancellationToken cancellationToken)
     {
         if (Finished)
         {
-            return;
+            return Result;
         }
 
-        await lck.WaitAsync().ConfigureAwait(false);
+        await lck.WaitAsync(cancellationToken).ConfigureAwait(false);
 
         try
         {
             if (Finished)
             {
-                return;
+                return Result;
             }
 
-            ParseInternal(cancellationToken);
+            return ParseInternal(cancellationToken);
         }
         finally
         {
@@ -175,16 +162,23 @@ public class ParseUnit<TOutput>
         }
     }
 
-    /// <summary>
-    /// Performs the parsing of the input provided to this <see cref="ParseUnit{TOutput}"/> instance aynschronously.
-    /// </summary>
-    /// <returns>The task executing the parsing.</returns>
-    public Task ParseAsync()
+    /// <inheritdoc/>
+    Task<IParseResult> IParseUnit.ParseAsync(CancellationToken cancellationToken)
+        => ParseAsync(cancellationToken).ContinueWith(x => x.Result as IParseResult);
+
+    /// <inheritdoc/>
+    public Task<IParseResult<TOutput>> ParseAsync()
         => ParseAsync(CancellationToken.None);
 
-    private void ParseInternal(CancellationToken cancellationToken)
+    /// <inheritdoc/>
+    Task<IParseResult> IParseUnit.ParseAsync()
+        => ParseAsync().ContinueWith(x => x.Result as IParseResult);
+
+    [MemberNotNull(nameof(Result))]
+    private IParseResult<TOutput> ParseInternal(CancellationToken cancellationToken)
     {
-        result = Parser.TryMatch(Input, StartingPosition, MaxLength, memoTable, cancellationToken);
+        Result = Parser.TryMatch(Input, StartingPosition, MaxLength, memoTable, cancellationToken);
         Finished = true;
+        return Result;
     }
 }
