@@ -16,5 +16,5 @@ public class UnboundedRecursionError : ParseError
 
     /// <inheritdoc/>
     protected override string GetSimpleMessage()
-        => "Encountered unbounded recursion.";
+        => $"Encountered unbounded recursion. At {Position}.";
 }
