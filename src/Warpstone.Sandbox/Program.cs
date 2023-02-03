@@ -35,7 +35,10 @@ public static class Program
     public static void Main(string[] args)
     {
         Console.WriteLine("Hello World!");
-        Console.WriteLine(E0.Parse("42 + 3 * 2"));
+
+        ParseUnit<Exp> unit = new ParseUnit<Exp>("42 + 3 * 2", E0);
+        unit.Parse();
+        Console.WriteLine(unit.Result);
     }
 
     private abstract record Exp(int Precedence)

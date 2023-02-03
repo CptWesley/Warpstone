@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using Warpstone.ParsingState;
 
 namespace Warpstone;
 
@@ -70,23 +69,4 @@ public abstract class Parser<TOutput> : IParser<TOutput>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
     protected abstract IParseResult<TOutput> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken);
-
-    private IParseResult<TOutput> ApplyRule(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
-    {
-        // Parse units should always have writeable memo tables inside them.
-        // This cast is a hacky way of hiding the writeable part to the exposed API.
-        IMemoTable memoTable = (IMemoTable)parseUnit.MemoTable;
-
-        if (memoTable.TryGet(position, this, out ILrStack<TOutput>? prevResult))
-        {
-            return prevResult.Seed;
-        }
-
-        ILrStack<TOutput> lr = LrStack<TOutput>.Create(this, parseUnit.Input, position);
-        memoTable.Set(position, lr);
-
-        IParseResult<TOutput> internalResult = InternalTryMatch(parseUnit, position, maxLength, cancellationToken);
-        lr.Seed = internalResult;
-        return internalResult;
-    }
 }
