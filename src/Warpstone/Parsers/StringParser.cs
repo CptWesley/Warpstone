@@ -28,8 +28,9 @@ public class StringParser : Parser<string>
     public StringComparison StringComparison { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<string> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
+    protected override IParseResult<string> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
     {
+        string input = parseUnit.Input;
         if (maxLength < String.Length || string.Compare(input, position, String, 0, String.Length, StringComparison) != 0)
         {
             return new ParseResult<string>(this, new UnexpectedTokenError(new SourcePosition(input, position, 1), new string[] { $"'{String}'" }, GetFound(input, position)), EmptyResults);

@@ -178,7 +178,7 @@ public class ParseUnit<TOutput> : IParseUnit<TOutput>
     [MemberNotNull(nameof(Result))]
     private IParseResult<TOutput> ParseInternal(CancellationToken cancellationToken)
     {
-        Result = Parser.TryMatch(Input, StartingPosition, MaxLength, this, cancellationToken);
+        Result = Parser.TryMatch(this, StartingPosition, MaxLength, cancellationToken);
         Finished = true;
         return Result;
     }

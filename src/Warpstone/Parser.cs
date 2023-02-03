@@ -35,30 +35,15 @@ public abstract class Parser<TOutput> : IParser<TOutput>
         => ToString(4);
 
     /// <inheritdoc/>
-    public IParseResult<TOutput> TryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
+    public IParseResult<TOutput> TryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-
-        // Parse units should always have writeable memo tables inside them.
-        // This cast is a hacky way of hiding the writeable part to the exposed API.
-        IMemoTable memoTable = (IMemoTable)parseUnit.MemoTable;
-
-        if (memoTable.TryGet(position, this, out ILrStack<TOutput>? prevResult))
-        {
-            return prevResult.Seed;
-        }
-
-        ILrStack<TOutput> lr = LrStack<TOutput>.Create(this, input, position);
-        memoTable.Set(position, lr);
-
-        IParseResult<TOutput> internalResult = InternalTryMatch(input, position, maxLength, parseUnit, cancellationToken);
-        lr.Seed = internalResult;
-        return internalResult;
+        return ApplyRule(parseUnit, position, maxLength, cancellationToken);
     }
 
     /// <inheritdoc/>
-    IParseResult IParser.TryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
-        => TryMatch(input, position, maxLength, parseUnit, cancellationToken);
+    IParseResult IParser.TryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+        => TryMatch(parseUnit, position, maxLength, cancellationToken);
 
     /// <summary>
     /// Gets the found characters.
@@ -79,11 +64,29 @@ public abstract class Parser<TOutput> : IParser<TOutput>
     /// <summary>
     /// Attempts to match the current parser at the given <paramref name="position"/> without any checks.
     /// </summary>
-    /// <param name="input">The input string.</param>
+    /// <param name="parseUnit">The parse unit.</param>
     /// <param name="position">The position to match.</param>
     /// <param name="maxLength">The maximum length of the match.</param>
-    /// <param name="parseUnit">The parse unit.</param>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
-    protected abstract IParseResult<TOutput> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken);
+    protected abstract IParseResult<TOutput> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken);
+
+    private IParseResult<TOutput> ApplyRule(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    {
+        // Parse units should always have writeable memo tables inside them.
+        // This cast is a hacky way of hiding the writeable part to the exposed API.
+        IMemoTable memoTable = (IMemoTable)parseUnit.MemoTable;
+
+        if (memoTable.TryGet(position, this, out ILrStack<TOutput>? prevResult))
+        {
+            return prevResult.Seed;
+        }
+
+        ILrStack<TOutput> lr = LrStack<TOutput>.Create(this, parseUnit.Input, position);
+        memoTable.Set(position, lr);
+
+        IParseResult<TOutput> internalResult = InternalTryMatch(parseUnit, position, maxLength, cancellationToken);
+        lr.Seed = internalResult;
+        return internalResult;
+    }
 }

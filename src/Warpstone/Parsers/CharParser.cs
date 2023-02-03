@@ -21,8 +21,9 @@ public class CharParser : Parser<char>
     public char Character { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<char> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
+    protected override IParseResult<char> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
     {
+        string input = parseUnit.Input;
         if (maxLength <= 0 || position >= input.Length || input[position] != Character)
         {
             return new ParseResult<char>(this, new UnexpectedTokenError(new SourcePosition(input, position, 1), new string[] { $"'{Regex.Escape(Character.ToString())}'" }, GetFound(input, position)), EmptyResults);

@@ -24,18 +24,18 @@ public class FirstParser<T> : Parser<T>
     public IReadOnlyList<IParser<T>> Parsers { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<T> InternalTryMatch(string input, int position, int maxLength, IParseUnit parseUnit, CancellationToken cancellationToken)
+    protected override IParseResult<T> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
     {
         List<IParseResult> innerResults = new List<IParseResult>();
 
         foreach (IParser<T> parser in Parsers)
         {
-            IParseResult<T> result = parser.TryMatch(input, position, maxLength, parseUnit, cancellationToken);
+            IParseResult<T> result = parser.TryMatch(parseUnit, position, maxLength, cancellationToken);
             innerResults.Add(result);
 
             if (result.Success)
             {
-                return new ParseResult<T>(this, result.Value, input, position, result.Length, innerResults);
+                return new ParseResult<T>(this, result.Value, parseUnit.Input, position, result.Length, innerResults);
             }
         }
 
