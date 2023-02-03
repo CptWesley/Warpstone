@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Warpstone.ParseState;
 
 namespace Warpstone;
 
@@ -12,7 +13,7 @@ namespace Warpstone;
 public class ParseUnit<TOutput> : IParseUnit<TOutput>
 {
     private readonly SemaphoreSlim lck = new SemaphoreSlim(1);
-    private readonly MemoTable memoTable = new MemoTable();
+    private readonly IParseState state;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParseUnit{TOutput}"/> class.
@@ -27,6 +28,7 @@ public class ParseUnit<TOutput> : IParseUnit<TOutput>
         StartingPosition = startingPosition;
         MaxLength = maxLength;
         Parser = parser;
+        state = new ParseState.ParseState(this);
     }
 
     /// <summary>
@@ -63,7 +65,7 @@ public class ParseUnit<TOutput> : IParseUnit<TOutput>
     IParser IParseUnit.Parser => Parser;
 
     /// <inheritdoc/>
-    public IReadOnlyMemoTable MemoTable => memoTable;
+    public IReadOnlyParseState State => state;
 
     /// <summary>
     /// Gets a value indicating whether or not the parsing unit has finished parsing.
@@ -177,7 +179,7 @@ public class ParseUnit<TOutput> : IParseUnit<TOutput>
     [MemberNotNull(nameof(Result))]
     private IParseResult<TOutput> ParseInternal(CancellationToken cancellationToken)
     {
-        Result = Parser.TryMatch(this, StartingPosition, MaxLength, cancellationToken);
+        Result = Parser.TryMatch(state, StartingPosition, MaxLength, cancellationToken);
         Finished = true;
         return Result;
     }

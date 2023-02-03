@@ -1,4 +1,5 @@
 ﻿using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
 
@@ -8,9 +9,9 @@ namespace Warpstone.Parsers;
 public class EndParser : Parser<string>
 {
     /// <inheritdoc/>
-    protected override IParseResult<string> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    protected override IParseResult<string> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
-        string input = parseUnit.Input;
+        string input = state.Unit.Input;
         if (maxLength <= 0)
         {
             return new ParseResult<string>(this, string.Empty, input, position, 0, EmptyResults);

@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
 
@@ -33,12 +34,12 @@ public class SeqParser<T1, T2> : Parser<(T1 First, T2 Second)>
     public IParser<T2> Second { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<(T1 First, T2 Second)> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    protected override IParseResult<(T1 First, T2 Second)> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
         int curPosition = position;
         int curMaxLength = maxLength;
 
-        IParseResult<T1> firstResult = First.TryMatch(parseUnit, curPosition, curMaxLength, cancellationToken);
+        IParseResult<T1> firstResult = First.TryMatch(state, curPosition, curMaxLength, cancellationToken);
         if (!firstResult.Success)
         {
             return new ParseResult<(T1, T2)>(this, firstResult.Error, new[] { firstResult });
@@ -47,7 +48,7 @@ public class SeqParser<T1, T2> : Parser<(T1 First, T2 Second)>
         curPosition += firstResult.Length;
         curMaxLength -= firstResult.Length;
 
-        IParseResult<T2> secondResult = Second.TryMatch(parseUnit, curPosition, curMaxLength, cancellationToken);
+        IParseResult<T2> secondResult = Second.TryMatch(state, curPosition, curMaxLength, cancellationToken);
         if (!secondResult.Success)
         {
             return new ParseResult<(T1, T2)>(this, secondResult.Error, new IParseResult[] { firstResult, secondResult });
@@ -55,7 +56,7 @@ public class SeqParser<T1, T2> : Parser<(T1 First, T2 Second)>
 
         curPosition += secondResult.Length;
 
-        return new ParseResult<(T1, T2)>(this, (firstResult.Value, secondResult.Value), parseUnit.Input, position, curPosition - position, new IParseResult[] { firstResult, secondResult });
+        return new ParseResult<(T1, T2)>(this, (firstResult.Value, secondResult.Value), state.Unit.Input, position, curPosition - position, new IParseResult[] { firstResult, secondResult });
     }
 
     /// <inheritdoc/>

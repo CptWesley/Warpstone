@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone;
 
@@ -12,12 +13,12 @@ public interface IParser<out TOutput> : IParser
     /// <summary>
     /// Attempts to match the current parser at the given <paramref name="position"/>.
     /// </summary>
-    /// <param name="parseUnit">The parse unit.</param>
+    /// <param name="state">The current parse state.</param>
     /// <param name="position">The position to match.</param>
     /// <param name="maxLength">The maximum length of the match.</param>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
-    new IParseResult<TOutput> TryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken);
+    new IParseResult<TOutput> TryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -33,10 +34,10 @@ public interface IParser : IBoundedToString
     /// <summary>
     /// Attempts to match the current parser at the given <paramref name="position"/>.
     /// </summary>
-    /// <param name="parseUnit">The parse unit.</param>
+    /// <param name="state">The current parse state.</param>
     /// <param name="position">The position to match.</param>
     /// <param name="maxLength">The maximum length of the match.</param>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
-    IParseResult TryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken);
+    IParseResult TryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken);
 }

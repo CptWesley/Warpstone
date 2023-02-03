@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
 
@@ -23,12 +24,12 @@ public class LazyParser<T> : Parser<T>
     public Lazy<IParser<T>> Parser { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<T> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    protected override IParseResult<T> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
-        IParseResult<T> result = Parser.Value.TryMatch(parseUnit, position, maxLength, cancellationToken);
+        IParseResult<T> result = Parser.Value.TryMatch(state, position, maxLength, cancellationToken);
         if (result.Success)
         {
-            return new ParseResult<T>(this, result.Value, parseUnit.Input, result.Start, result.Length, new[] { result });
+            return new ParseResult<T>(this, result.Value, state.Unit.Input, result.Start, result.Length, new[] { result });
         }
 
         return new ParseResult<T>(this, result.Error, new[] { result });

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
 
@@ -24,18 +25,18 @@ public class FirstParser<T> : Parser<T>
     public IReadOnlyList<IParser<T>> Parsers { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<T> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    protected override IParseResult<T> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
         List<IParseResult> innerResults = new List<IParseResult>();
 
         foreach (IParser<T> parser in Parsers)
         {
-            IParseResult<T> result = parser.TryMatch(parseUnit, position, maxLength, cancellationToken);
+            IParseResult<T> result = parser.TryMatch(state, position, maxLength, cancellationToken);
             innerResults.Add(result);
 
             if (result.Success)
             {
-                return new ParseResult<T>(this, result.Value, parseUnit.Input, position, result.Length, innerResults);
+                return new ParseResult<T>(this, result.Value, state.Unit.Input, position, result.Length, innerResults);
             }
         }
 

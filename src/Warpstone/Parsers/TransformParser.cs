@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
 
@@ -34,10 +35,10 @@ public class TransformParser<TIn, TOut> : Parser<TOut>
 
     /// <inheritdoc/>
     [SuppressMessage("Microsoft.Design", "CA1031", Justification = "General exception catch needed for correct behaviour.")]
-    protected override IParseResult<TOut> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    protected override IParseResult<TOut> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
-        string input = parseUnit.Input;
-        IParseResult<TIn> result = Parser.TryMatch(parseUnit, position, maxLength, cancellationToken);
+        string input = state.Unit.Input;
+        IParseResult<TIn> result = Parser.TryMatch(state, position, maxLength, cancellationToken);
 
         if (!result.Success)
         {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone;
 
@@ -34,15 +35,28 @@ public abstract class Parser<TOutput> : IParser<TOutput>
         => ToString(4);
 
     /// <inheritdoc/>
-    public IParseResult<TOutput> TryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    public IParseResult<TOutput> TryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        return ApplyRule(parseUnit, position, maxLength, cancellationToken);
+
+        IMemoTable memoTable = state.MemoTable;
+        string input = state.Unit.Input;
+
+        if (memoTable.TryGet(position, this, out IParseResult<TOutput>? prevResult))
+        {
+            return prevResult;
+        }
+
+        memoTable.Set(position, this, new ParseResult<TOutput>(this, new UnboundedRecursionError(new SourcePosition(input, position, position)), EmptyResults));
+
+        IParseResult<TOutput> internalResult = InternalTryMatch(state, position, maxLength, cancellationToken);
+        memoTable.Set(position, this, internalResult);
+        return internalResult;
     }
 
     /// <inheritdoc/>
-    IParseResult IParser.TryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
-        => TryMatch(parseUnit, position, maxLength, cancellationToken);
+    IParseResult IParser.TryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
+        => TryMatch(state, position, maxLength, cancellationToken);
 
     /// <summary>
     /// Gets the found characters.
@@ -63,10 +77,10 @@ public abstract class Parser<TOutput> : IParser<TOutput>
     /// <summary>
     /// Attempts to match the current parser at the given <paramref name="position"/> without any checks.
     /// </summary>
-    /// <param name="parseUnit">The parse unit.</param>
+    /// <param name="state">The current parse state.</param>
     /// <param name="position">The position to match.</param>
     /// <param name="maxLength">The maximum length of the match.</param>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
-    protected abstract IParseResult<TOutput> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken);
+    protected abstract IParseResult<TOutput> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken);
 }

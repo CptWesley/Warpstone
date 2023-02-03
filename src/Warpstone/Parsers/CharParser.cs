@@ -1,5 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
 
@@ -21,9 +22,9 @@ public class CharParser : Parser<char>
     public char Character { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<char> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    protected override IParseResult<char> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
-        string input = parseUnit.Input;
+        string input = state.Unit.Input;
         if (maxLength <= 0 || position >= input.Length || input[position] != Character)
         {
             return new ParseResult<char>(this, new UnexpectedTokenError(new SourcePosition(input, position, 1), new string[] { $"'{Regex.Escape(Character.ToString())}'" }, GetFound(input, position)), EmptyResults);

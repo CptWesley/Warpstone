@@ -1,4 +1,4 @@
-﻿namespace Warpstone;
+﻿namespace Warpstone.ParseState;
 
 /// <summary>
 /// Provides a read-only interface for memory tables.

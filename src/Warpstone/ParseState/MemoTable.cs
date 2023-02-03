@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
-namespace Warpstone;
+namespace Warpstone.ParseState;
 
 /// <summary>
 /// Represents a memo table in the packrat algorithm.

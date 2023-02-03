@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Warpstone.ParseState;
 
 namespace Warpstone;
 
@@ -30,9 +31,9 @@ public interface IParseUnit
     public IParser Parser { get; }
 
     /// <summary>
-    /// Gets the <see cref="MemoTable"/> used by this <see cref="IParseUnit"/>.
+    /// Gets a read-only access version of the current parse state.
     /// </summary>
-    public IReadOnlyMemoTable MemoTable { get; }
+    public IReadOnlyParseState State { get; }
 
     /// <summary>
     /// Gets a value indicating whether or not the parsing unit has finished parsing.

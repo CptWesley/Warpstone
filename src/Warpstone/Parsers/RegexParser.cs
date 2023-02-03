@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
 
@@ -37,9 +38,9 @@ public class RegexParser : Parser<string>
     public Regex Regex { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<string> InternalTryMatch(IParseUnit parseUnit, int position, int maxLength, CancellationToken cancellationToken)
+    protected override IParseResult<string> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
-        string input = parseUnit.Input;
+        string input = state.Unit.Input;
         Match match = Regex.Match(input, position, maxLength);
 
         if (!match.Success || match.Index != position)
