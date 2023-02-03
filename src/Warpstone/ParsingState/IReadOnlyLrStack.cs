@@ -18,17 +18,12 @@ public interface IReadOnlyLrStack
     /// <summary>
     /// Gets the head instance.
     /// </summary>
-    public IReadOnlyHead? Head { get; }
+    public IReadOnlyHead Head { get; }
 
     /// <summary>
     /// Gets the next instance.
     /// </summary>
     public IReadOnlyLrStack? Next { get; }
-
-    /// <summary>
-    /// Gets a value indicating whether or not this LR stack is a finished value.
-    /// </summary>
-    public bool Finished { get; }
 }
 
 /// <summary>
@@ -50,5 +45,10 @@ public interface IReadOnlyLrStack<out TOut> : IReadOnlyLrStack
     /// <summary>
     /// Gets the head instance.
     /// </summary>
-    public new IReadOnlyHead<TOut>? Head { get; }
+    public new IReadOnlyHead<TOut> Head { get; }
+
+    /// <summary>
+    /// Gets the next instance.
+    /// </summary>
+    public new IReadOnlyLrStack<TOut>? Next { get; }
 }

@@ -11,19 +11,14 @@ public interface ILrStack : IReadOnlyLrStack
     public new IParseResult Seed { get; set; }
 
     /// <summary>
-    /// Gets or sets the head instance.
+    /// Gets the head instance.
     /// </summary>
-    public new IHead? Head { get; set; }
+    public new IHead Head { get; }
 
     /// <summary>
     /// Gets or sets the next instance.
     /// </summary>
     public new ILrStack? Next { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether or not this LR stack is a finished value.
-    /// </summary>
-    public new bool Finished { get; set; }
 }
 
 /// <summary>
@@ -38,7 +33,12 @@ public interface ILrStack<TOut> : ILrStack, IReadOnlyLrStack<TOut>
     public new IParseResult<TOut> Seed { get; set; }
 
     /// <summary>
-    /// Gets or sets the head instance.
+    /// Gets the head instance.
     /// </summary>
-    public new IHead<TOut>? Head { get; set; }
+    public new IHead<TOut> Head { get; }
+
+    /// <summary>
+    /// Gets or sets the next instance.
+    /// </summary>
+    public new ILrStack<TOut>? Next { get; set; }
 }

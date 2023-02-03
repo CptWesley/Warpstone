@@ -17,7 +17,7 @@ public class LrStack<TOut> : ILrStack<TOut>
     {
         Parser = parser;
         Seed = seed;
-        Finished = false;
+        Head = new Head<TOut>(parser);
     }
 
     /// <inheritdoc/>
@@ -35,12 +35,12 @@ public class LrStack<TOut> : ILrStack<TOut>
         get => Seed;
         set
         {
-            if (value is not IParseResult<TOut> typedValue)
+            if (value is IParseResult<TOut> typedValue)
             {
-                throw new InvalidOperationException("Incorrect result type.");
+                Seed = typedValue;
             }
 
-            Seed = typedValue;
+            throw new InvalidOperationException("Incorrect result type.");
         }
     }
 
@@ -48,40 +48,40 @@ public class LrStack<TOut> : ILrStack<TOut>
     IParseResult IReadOnlyLrStack.Seed => Seed;
 
     /// <inheritdoc/>
-    public IHead<TOut>? Head { get; set; }
+    public IHead<TOut> Head { get; }
 
     /// <inheritdoc/>
-    IReadOnlyHead? IReadOnlyLrStack.Head => Head;
+    IReadOnlyHead IReadOnlyLrStack.Head => Head;
 
     /// <inheritdoc/>
-    IHead? ILrStack.Head
-    {
-        get => Head;
-        set
-        {
-            if (value is not IHead<TOut> typedValue)
-            {
-                throw new InvalidOperationException("Incorrect result type.");
-            }
-
-            Head = typedValue;
-        }
-    }
+    IHead ILrStack.Head => Head;
 
     /// <inheritdoc/>
-    IReadOnlyHead<TOut>? IReadOnlyLrStack<TOut>.Head => Head;
+    IReadOnlyHead<TOut> IReadOnlyLrStack<TOut>.Head => Head;
 
     /// <inheritdoc/>
-    public ILrStack? Next { get; set; }
+    public ILrStack<TOut>? Next { get; set; }
 
     /// <inheritdoc/>
     IReadOnlyLrStack? IReadOnlyLrStack.Next => Next;
 
     /// <inheritdoc/>
-    public bool Finished { get; set; }
+    IReadOnlyLrStack<TOut>? IReadOnlyLrStack<TOut>.Next => Next;
 
     /// <inheritdoc/>
-    bool IReadOnlyLrStack.Finished => Finished;
+    ILrStack? ILrStack.Next
+    {
+        get => Next;
+        set
+        {
+            if (value is ILrStack<TOut> typedValue)
+            {
+                Next = typedValue;
+            }
+
+            throw new InvalidOperationException("Incorrect result type.");
+        }
+    }
 
 
     /// <summary>
