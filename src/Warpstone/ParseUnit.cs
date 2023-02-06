@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
+using Warpstone.Parsers.Internal;
 using Warpstone.ParseState;
 
 namespace Warpstone;
@@ -179,7 +180,7 @@ public class ParseUnit<TOutput> : IParseUnit<TOutput>
     [MemberNotNull(nameof(Result))]
     private IParseResult<TOutput> ParseInternal(CancellationToken cancellationToken)
     {
-        Result = Parser.TryMatch(state, StartingPosition, MaxLength, cancellationToken);
+        Result = Packrat.ApplyRule(Parser, state, StartingPosition, MaxLength, cancellationToken);
         Finished = true;
         return Result;
     }

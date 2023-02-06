@@ -38,7 +38,7 @@ public class RegexParser : Parser<string>
     public Regex Regex { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<string> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
+    public override IParseResult<string> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken)
     {
         string input = state.Unit.Input;
         Match match = Regex.Match(input, position, maxLength);

@@ -1,5 +1,4 @@
-﻿using System.Text.RegularExpressions;
-using System.Threading;
+﻿using System.Threading;
 using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
@@ -34,29 +33,21 @@ public class SeqParser<T1, T2> : Parser<(T1 First, T2 Second)>
     public IParser<T2> Second { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<(T1 First, T2 Second)> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
+    public override IParseResult<(T1 First, T2 Second)> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken)
     {
-        int curPosition = position;
-        int curMaxLength = maxLength;
-
-        IParseResult<T1> firstResult = First.TryMatch(state, curPosition, curMaxLength, cancellationToken);
+        IParseResult<T1> firstResult = recurse.Apply(First, state, position, maxLength, cancellationToken);
         if (!firstResult.Success)
         {
             return new ParseResult<(T1, T2)>(this, firstResult.Error, new[] { firstResult });
         }
 
-        curPosition += firstResult.Length;
-        curMaxLength -= firstResult.Length;
-
-        IParseResult<T2> secondResult = Second.TryMatch(state, curPosition, curMaxLength, cancellationToken);
+        IParseResult<T2> secondResult = recurse.Apply(Second, state, firstResult.End, maxLength - firstResult.Length, cancellationToken);
         if (!secondResult.Success)
         {
             return new ParseResult<(T1, T2)>(this, secondResult.Error, new IParseResult[] { firstResult, secondResult });
         }
 
-        curPosition += secondResult.Length;
-
-        return new ParseResult<(T1, T2)>(this, (firstResult.Value, secondResult.Value), state.Unit.Input, position, curPosition - position, new IParseResult[] { firstResult, secondResult });
+        return new ParseResult<(T1, T2)>(this, (firstResult.Value, secondResult.Value), state.Unit.Input, position, secondResult.End - position, new IParseResult[] { firstResult, secondResult });
     }
 
     /// <inheritdoc/>

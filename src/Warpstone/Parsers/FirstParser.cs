@@ -25,13 +25,13 @@ public class FirstParser<T> : Parser<T>
     public IReadOnlyList<IParser<T>> Parsers { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<T> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
+    public override IParseResult<T> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken)
     {
         List<IParseResult> innerResults = new List<IParseResult>();
 
         foreach (IParser<T> parser in Parsers)
         {
-            IParseResult<T> result = parser.TryMatch(state, position, maxLength, cancellationToken);
+            IParseResult<T> result = recurse.Apply(parser, state, position, maxLength, cancellationToken);
             innerResults.Add(result);
 
             if (result.Success)

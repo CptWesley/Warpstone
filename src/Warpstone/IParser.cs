@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using Warpstone.Parsers;
 using Warpstone.ParseState;
 
 namespace Warpstone;
@@ -11,14 +12,15 @@ namespace Warpstone;
 public interface IParser<out TOutput> : IParser
 {
     /// <summary>
-    /// Attempts to match the current parser at the given <paramref name="position"/>.
+    /// Attempts to match the current parser at the given <paramref name="position"/> without any checks.
     /// </summary>
     /// <param name="state">The current parse state.</param>
     /// <param name="position">The position to match.</param>
-    /// <param name="maxLength">The maximum length of the match.</param>
+    /// <param name="maxLength">The maximum length that the match can be.</param>
+    /// <param name="recurse">The recursion function which should be used for obtaining result of inner parsers.</param>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
-    new IParseResult<TOutput> TryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken);
+    public new IParseResult<TOutput> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -29,15 +31,16 @@ public interface IParser : IBoundedToString
     /// <summary>
     /// Gets the output type of the parser.
     /// </summary>
-    Type OutputType { get; }
+    public Type OutputType { get; }
 
     /// <summary>
-    /// Attempts to match the current parser at the given <paramref name="position"/>.
+    /// Attempts to match the current parser at the given <paramref name="position"/> without any checks.
     /// </summary>
     /// <param name="state">The current parse state.</param>
     /// <param name="position">The position to match.</param>
-    /// <param name="maxLength">The maximum length of the match.</param>
+    /// <param name="maxLength">The maximum length that the match can be.</param>
+    /// <param name="recurse">The recursion function which should be used for obtaining result of inner parsers.</param>
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
-    IParseResult TryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken);
+    public IParseResult Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken);
 }

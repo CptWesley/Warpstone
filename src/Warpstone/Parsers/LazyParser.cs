@@ -24,9 +24,9 @@ public class LazyParser<T> : Parser<T>
     public Lazy<IParser<T>> Parser { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<T> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
+    public override IParseResult<T> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken)
     {
-        IParseResult<T> result = Parser.Value.TryMatch(state, position, maxLength, cancellationToken);
+        IParseResult<T> result = recurse.Apply(Parser.Value, state, position, maxLength, cancellationToken);
         if (result.Success)
         {
             return new ParseResult<T>(this, result.Value, state.Unit.Input, result.Start, result.Length, new[] { result });

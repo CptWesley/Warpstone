@@ -10,8 +10,10 @@ public interface IParseState : IReadOnlyParseState
     /// </summary>
     public new IMemoTable MemoTable { get; }
 
+    /*
     /// <summary>
     /// Gets or sets the current position in the parse unit.
     /// </summary>
     public new int Position { get; set; }
+    */
 }

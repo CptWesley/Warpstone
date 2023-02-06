@@ -29,7 +29,7 @@ public class StringParser : Parser<string>
     public StringComparison StringComparison { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<string> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
+    public override IParseResult<string> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken)
     {
         string input = state.Unit.Input;
         if (maxLength < String.Length || string.Compare(input, position, String, 0, String.Length, StringComparison) != 0)

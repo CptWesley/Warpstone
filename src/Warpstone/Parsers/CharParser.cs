@@ -22,7 +22,7 @@ public class CharParser : Parser<char>
     public char Character { get; }
 
     /// <inheritdoc/>
-    protected override IParseResult<char> InternalTryMatch(IParseState state, int position, int maxLength, CancellationToken cancellationToken)
+    public override IParseResult<char> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken)
     {
         string input = state.Unit.Input;
         if (maxLength <= 0 || position >= input.Length || input[position] != Character)
@@ -30,6 +30,7 @@ public class CharParser : Parser<char>
             return new ParseResult<char>(this, new UnexpectedTokenError(new SourcePosition(input, position, 1), new string[] { $"'{Regex.Escape(Character.ToString())}'" }, GetFound(input, position)), EmptyResults);
         }
 
+        //state.Position = position + 1;
         return new ParseResult<char>(this, Character, input, position, 1, EmptyResults);
     }
 
