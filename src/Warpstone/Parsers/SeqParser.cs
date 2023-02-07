@@ -45,7 +45,7 @@ public class SeqParser<T1, T2> : Parser<(T1 First, T2 Second)>
         IParseResult<T2> secondResult = recurse.Apply(Second, state, firstResult.End, maxLength - firstResult.Length, cancellationToken);
         if (!secondResult.Success)
         {
-            Console.WriteLine(">>>>   " +secondResult.Error.GetMessage());
+            //Console.WriteLine(">>>>   " +secondResult.Error.GetMessage());
             //return new ParseResult<(T1, T2)>(this, secondResult.Error, new IParseResult[] { firstResult, secondResult });
             return new ParseResult<(T1, T2)>(this, new UnexpectedTokenError(new SourcePosition(state.Unit.Input, position, 0), new string[] { $"'bla'" }, GetFound(state.Unit.Input, position)), new IParseResult[] { firstResult, secondResult });
         }

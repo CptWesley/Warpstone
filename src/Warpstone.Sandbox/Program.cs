@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using Warpstone.Parsers;
 
 using static Warpstone.Parsers.BasicParsers;
@@ -41,11 +42,15 @@ public static class Program
     public static void Main(string[] args)
     {
         Console.WriteLine("Hello World!");
-
-        ParseUnit<Exp> unit = new ParseUnit<Exp>("45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3)", E0);
+        string input1 = "45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3)";
+        string input = string.Join(" * ", Enumerable.Repeat(input1, 1));
+        ParseUnit<Exp> unit = new ParseUnit<Exp>(input, E0);
         //ParseUnit<Exp> unit = new ParseUnit<Exp>("(22)", E0);
+        Stopwatch sw = Stopwatch.StartNew();
         unit.Parse();
+        sw.Stop();
         Console.WriteLine(unit.Result);
+        Console.WriteLine(sw.ElapsedMilliseconds);
         
         //ParseExpr("12+34");
         //ParseExpr("12+34+56");
