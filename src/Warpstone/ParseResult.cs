@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Warpstone;
@@ -15,14 +14,14 @@ public class ParseResult<T> : IParseResult<T>
     /// </summary>
     /// <param name="parser">The parser that produced the result.</param>
     /// <param name="error">The parse error that occured.</param>
-    /// <param name="innerResults">The inner results that lead to this result.</param>
-    public ParseResult(IParser<T> parser, IParseError error, IEnumerable<IParseResult> innerResults)
+    /// <param name="next">The position in the input where the parser has to continue.</param>
+    public ParseResult(IParser<T> parser, IParseError error, int next)
     {
         Error = error;
         Success = false;
-        InnerResults = innerResults;
         Parser = parser;
         Position = error.Position;
+        Next = next;
     }
 
     /// <summary>
@@ -30,17 +29,15 @@ public class ParseResult<T> : IParseResult<T>
     /// </summary>
     /// <param name="parser">The parser that produced the result.</param>
     /// <param name="value">The value.</param>
-    /// <param name="input">The input text.</param>
-    /// <param name="startPosition">The start position of the parser.</param>
-    /// <param name="length">The length of the result.</param>
-    /// <param name="innerResults">The inner results that lead to this result.</param>
-    public ParseResult(IParser<T> parser, T? value, string input, int startPosition, int length, IEnumerable<IParseResult> innerResults)
+    /// <param name="position">The position of the result in the input.</param>
+    /// <param name="next">The position in the input where the parser has to continue.</param>
+    public ParseResult(IParser<T> parser, T? value, SourcePosition position, int next)
     {
         Value = value;
         Success = true;
-        InnerResults = innerResults;
         Parser = parser;
-        Position = new SourcePosition(input, startPosition, length);
+        Position = position;
+        Next = next;
     }
 
     /// <inheritdoc/>
@@ -83,9 +80,6 @@ public class ParseResult<T> : IParseResult<T>
     public IParseError? Error { get; }
 
     /// <inheritdoc/>
-    public IEnumerable<IParseResult> InnerResults { get; }
-
-    /// <inheritdoc/>
     public IParser<T> Parser { get; }
 
     /// <inheritdoc/>
@@ -93,6 +87,9 @@ public class ParseResult<T> : IParseResult<T>
 
     /// <inheritdoc/>
     IParser IParseResult.Parser => Parser;
+
+    /// <inheritdoc/>
+    public int Next { get; }
 
     /// <inheritdoc/>
     public override string ToString()

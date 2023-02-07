@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Warpstone;
@@ -71,6 +70,11 @@ public interface IParseResult : IBoundedToString
     public int End { get; }
 
     /// <summary>
+    /// Gets the next position for the parser.
+    /// </summary>
+    public int Next { get; }
+
+    /// <summary>
     /// Gets the length of the result.
     /// </summary>
     public int Length { get; }
@@ -84,11 +88,6 @@ public interface IParseResult : IBoundedToString
     /// Gets the parser that produced this result.
     /// </summary>
     IParser Parser { get; }
-
-    /// <summary>
-    /// Gets the inner results when.
-    /// </summary>
-    IEnumerable<IParseResult> InnerResults { get; }
 
     /// <summary>
     /// Gets the output type of the parser.

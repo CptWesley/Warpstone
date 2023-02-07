@@ -27,6 +27,12 @@ public interface IReadOnlyMemoTable
     /// <typeparam name="TOutput">The type of the parsed output.</typeparam>
     public bool TryGet<TOutput>(int position, IParser<TOutput> parser, [NotNullWhen(true)] out IParseResult<TOutput>? parseResult);
 
+    /// <summary>
+    /// Gets the value of the 'growing' flag.
+    /// </summary>
+    /// <param name="position">The position in the input.</param>
+    /// <param name="parser">The parser used at the given position.</param>
+    /// <returns><c>true</c> if the flag was set, <c>false</c> otherwise.</returns>
     public bool IsGrowing(int position, IParser parser);
 
     /// <summary>

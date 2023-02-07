@@ -36,11 +36,11 @@ public class FirstParser<T> : Parser<T>
 
             if (result.Success)
             {
-                return new ParseResult<T>(this, result.Value, state.Unit.Input, position, result.Length, innerResults);
+                return new ParseResult<T>(this, result.Value, result.Position, result.Next);
             }
         }
 
-        return new ParseResult<T>(this, new ErrorCollection(innerResults.Select(x => x.Error)!), innerResults);
+        return new ParseResult<T>(this, new ErrorCollection(innerResults.Select(x => x.Error)!), position);
     }
 
     /// <inheritdoc/>

@@ -29,10 +29,10 @@ public class LazyParser<T> : Parser<T>
         IParseResult<T> result = recurse.Apply(Parser.Value, state, position, maxLength, cancellationToken);
         if (result.Success)
         {
-            return new ParseResult<T>(this, result.Value, state.Unit.Input, result.Start, result.Length, new[] { result });
+            return new ParseResult<T>(this, result.Value, result.Position, result.Next);
         }
 
-        return new ParseResult<T>(this, result.Error, new[] { result });
+        return new ParseResult<T>(this, result.Error, position);
     }
 
     /// <inheritdoc/>

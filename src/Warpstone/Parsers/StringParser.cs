@@ -34,10 +34,10 @@ public class StringParser : Parser<string>
         string input = state.Unit.Input;
         if (maxLength < String.Length || string.Compare(input, position, String, 0, String.Length, StringComparison) != 0)
         {
-            return new ParseResult<string>(this, new UnexpectedTokenError(new SourcePosition(input, position, 0), new string[] { $"'{String}'" }, GetFound(input, position)), EmptyResults);
+            return new ParseResult<string>(this, new UnexpectedTokenError(new SourcePosition(input, position, 0), new string[] { $"'{String}'" }, GetFound(input, position, String.Length)), position);
         }
 
-        return new ParseResult<string>(this, String, input, position, String.Length, EmptyResults);
+        return new ParseResult<string>(this, String, new SourcePosition(input, position, String.Length), position + String.Length);
     }
 
     /// <inheritdoc/>

@@ -27,11 +27,10 @@ public class CharParser : Parser<char>
         string input = state.Unit.Input;
         if (maxLength <= 0 || position >= input.Length || input[position] != Character)
         {
-            return new ParseResult<char>(this, new UnexpectedTokenError(new SourcePosition(input, position, 0), new string[] { $"'{Regex.Escape(Character.ToString())}'" }, GetFound(input, position)), EmptyResults);
+            return new ParseResult<char>(this, new UnexpectedTokenError(new SourcePosition(input, position, 1), new string[] { $"'{Regex.Escape(Character.ToString())}'" }, GetFound(input, position, 1)), position);
         }
 
-        //state.Position = position + 1;
-        return new ParseResult<char>(this, Character, input, position, 1, EmptyResults);
+        return new ParseResult<char>(this, Character, new SourcePosition(input, position, 1), position + 1);
     }
 
     /// <inheritdoc/>

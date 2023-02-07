@@ -34,15 +34,11 @@ internal class GrowthRecursion : IRecursionParser
     /// <inheritdoc/>
     public IParseResult<T> Apply<T>(IParser<T> parser, IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
-        //Console.WriteLine($"At {position} grow/applying {parser}");
-
         if (GrowthPosition == position && !Limits.Contains(parser))
         {
-            //Console.WriteLine($"At {position} growing {parser}");
             return Packrat.ApplyRuleGrow(parser, GrowthPosition, Limits, state, position, maxLength, cancellationToken);
         }
 
-        //Console.WriteLine($"At {position} applying {parser}");
         return Packrat.ApplyRule(parser, state, position, maxLength, cancellationToken);
     }
 }

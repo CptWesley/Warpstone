@@ -36,14 +36,14 @@ public static class Program
 
 
     private static readonly IParser<string> Digit = Or(String('0'), String('1'), String('2'), String('3'), String('4'), String('5'), String('6'), String('7'), String('8'), String('9')).WithName("DIGIT");
-    private static readonly IParser<string> Num = Or(Lazy(() => Num).ThenAdd(Digit).Transform((x, y) => x + y), Digit).WithName("Num");
-    private static readonly IParser<string> Expr = Or(Lazy(() => Expr).ThenAdd(String('+')).ThenAdd(Num).Transform((x, y, z) => x + y + z), Num).WithName("Expr");
+    private static readonly IParser<string> Num = Or(Lazy(() => Num!).ThenAdd(Digit).Transform((x, y) => x + y), Digit).WithName("Num");
+    private static readonly IParser<string> Expr = Or(Lazy(() => Expr!).ThenAdd(String('+')).ThenAdd(Num).Transform((x, y, z) => x + y + z), Num).WithName("Expr");
 
     public static void Main(string[] args)
     {
         Console.WriteLine("Hello World!");
         string input1 = "45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3)";
-        string input = string.Join(" * ", Enumerable.Repeat(input1, 1));
+        string input = string.Join(" * ", Enumerable.Repeat(input1, 10));
         ParseUnit<Exp> unit = new ParseUnit<Exp>(input, E0);
         //ParseUnit<Exp> unit = new ParseUnit<Exp>("(22)", E0);
         Stopwatch sw = Stopwatch.StartNew();

@@ -21,7 +21,6 @@ internal class RegularRecursion : IRecursionParser
     /// <inheritdoc/>
     public IParseResult<T> Apply<T>(IParser<T> parser, IParseState state, int position, int maxLength, CancellationToken cancellationToken)
     {
-        //Console.WriteLine($"At {position} applying {parser}");
         return Packrat.ApplyRule(parser, state, position, maxLength, cancellationToken);
     }
 }

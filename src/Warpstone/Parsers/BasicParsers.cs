@@ -63,8 +63,7 @@ public static class BasicParsers
     /// <summary>
     /// Creates a parser that parses a string, using the specified string comparison method.
     /// </summary>
-    /// <param name="str">The string to parse.</param>
-    /// <param name="stringComparison">The string comparison method to use.</param>
+    /// <param name="c">The character to parse.</param>
     /// <returns>A parser parsing a string.</returns>
     public static IParser<string> String(char c)
         => String(c.ToString());

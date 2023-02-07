@@ -42,7 +42,7 @@ public class TransformParser<TIn, TOut> : Parser<TOut>
 
         if (!result.Success)
         {
-            return new ParseResult<TOut>(this, result.Error, new[] { result });
+            return new ParseResult<TOut>(this, result.Error, position);
         }
 
         try
@@ -53,11 +53,11 @@ public class TransformParser<TIn, TOut> : Parser<TOut>
                 parsed.Position = result.Position;
             }
 
-            return new ParseResult<TOut>(this, value, input, position, result.Length, new[] { result });
+            return new ParseResult<TOut>(this, value, result.Position, result.Next);
         }
         catch (Exception e)
         {
-            return new ParseResult<TOut>(this, new TransformationError(new SourcePosition(input, position, 0), e), new[] { result });
+            return new ParseResult<TOut>(this, new TransformationError(new SourcePosition(input, position, 0), e), position);
         }
     }
 

@@ -14,10 +14,10 @@ public class EndParser : Parser<string>
         string input = state.Unit.Input;
         if (maxLength <= 0)
         {
-            return new ParseResult<string>(this, string.Empty, input, position, 0, EmptyResults);
+            return new ParseResult<string>(this, string.Empty, new SourcePosition(input, position, 0), position);
         }
 
-        return new ParseResult<string>(this, new UnexpectedTokenError(new SourcePosition(input, position, 0), new string[] { string.Empty }, GetFound(input, position)), EmptyResults);
+        return new ParseResult<string>(this, new UnexpectedTokenError(new SourcePosition(input, position, 1), new string[] { string.Empty }, GetFound(input, position, 1)), position);
     }
 
     /// <inheritdoc/>

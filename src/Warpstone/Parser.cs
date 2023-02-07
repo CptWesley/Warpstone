@@ -47,9 +47,20 @@ public abstract class Parser<TOutput> : IParser<TOutput>
     /// </summary>
     /// <param name="input">The input.</param>
     /// <param name="position">The position.</param>
+    /// <param name="length">The length to retrieve.</param>
     /// <returns>The found characters.</returns>
-    protected string GetFound(string input, int position)
-        => position < input?.Length ? $"'{input[position]}'" : "EOF";
+    protected string GetFound(string input, int position, int length)
+    {
+        if (length == 1)
+        {
+            return position < input?.Length ? $"'{input[position]}'" : "EOF";
+        }
+
+        int remainingLength = Math.Min(input.Length - position, length);
+        string found = input.Substring(position, remainingLength);
+
+        return $"\"{found}\"";
+    }
 
     /// <summary>
     /// Provides a stringified version of the parser without depth checks.
