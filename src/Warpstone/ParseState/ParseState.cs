@@ -21,18 +21,5 @@ internal class ParseState : IParseState
     IReadOnlyMemoTable IReadOnlyParseState.MemoTable => MemoTable;
 
     /// <inheritdoc/>
-    public int Position { get; set; }
-
-    /*
-    /// <inheritdoc/>
-    int IReadOnlyParseState.Position => Position;
-    */
-
-    /// <inheritdoc/>
     public IParseUnit Unit { get; }
-
-    /*
-    /// <inheritdoc/>
-    public int RemainingCharacters => Unit.StartingPosition + Unit.MaxLength - Position;
-    */
 }
