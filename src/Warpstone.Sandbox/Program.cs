@@ -43,7 +43,7 @@ public static class Program
     {
         Console.WriteLine("Hello World!");
         string input1 = "45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3)";
-        string input = string.Join(" * ", Enumerable.Repeat(input1, 10));
+        string input = string.Join(" * ", Enumerable.Repeat(input1, 100));
         ParseUnit<Exp> unit = new ParseUnit<Exp>(input, E0);
         //ParseUnit<Exp> unit = new ParseUnit<Exp>("(22)", E0);
         Stopwatch sw = Stopwatch.StartNew();
@@ -51,6 +51,10 @@ public static class Program
         sw.Stop();
         Console.WriteLine(unit.Result);
         Console.WriteLine(sw.ElapsedMilliseconds);
+
+        IParser<string>? z = null;
+        z = Lazy(() => z!);
+        Console.WriteLine(z.Parse("2423"));
         
         //ParseExpr("12+34");
         //ParseExpr("12+34+56");
