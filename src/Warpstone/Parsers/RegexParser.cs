@@ -59,6 +59,14 @@ public class RegexParser : Parser<string>
     }
 
     /// <inheritdoc/>
+    public override bool Equals(object? obj)
+        => obj is RegexParser other && other.Pattern == Pattern;
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+        => (4329052, Pattern).GetHashCode();
+
+    /// <inheritdoc/>
     protected override string InternalToString(int depth)
         => $"Regex(\"{Regex.Escape(Pattern)}\")";
 }

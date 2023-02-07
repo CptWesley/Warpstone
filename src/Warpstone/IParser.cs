@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Warpstone.Parsers;
 using Warpstone.ParseState;
@@ -34,6 +35,16 @@ public interface IParser : IBoundedToString
     public Type OutputType { get; }
 
     /// <summary>
+    /// Gets a list of all parsers that can be invoked by this parser.
+    /// </summary>
+    public IReadOnlyList<IParser> SubParsers { get; }
+
+    /// <summary>
+    /// Gets a value indicating whether or not this parser is terminal.
+    /// </summary>
+    public bool IsTerminal { get; }
+
+    /// <summary>
     /// Attempts to match the current parser at the given <paramref name="position"/> without any checks.
     /// </summary>
     /// <param name="state">The current parse state.</param>
@@ -43,4 +54,12 @@ public interface IParser : IBoundedToString
     /// <param name="cancellationToken">The cancellation token used to cancel the parsing task.</param>
     /// <returns>The found parse result.</returns>
     public IParseResult Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Gets a graph representation of this <see cref="IParser"/> instance in the DOT language.
+    /// The DOT language is used by the Graphviz graph rendering engine.
+    /// More information can be found here: <see href="https://graphviz.org/"/>.
+    /// </summary>
+    /// <returns>A graph representation of this instance in the DOT language.</returns>
+    public string ToDotGraph();
 }

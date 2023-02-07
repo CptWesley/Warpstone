@@ -41,7 +41,12 @@ public static class Program
 
     public static void Main(string[] args)
     {
-        Console.WriteLine("Hello World!");
+        ParseArithmetic();
+        SimpleGraph();
+    }
+
+    private static void ParseArithmetic()
+    {
         string input1 = "45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3)";
         string input = string.Join(" * ", Enumerable.Repeat(input1, 100));
         ParseUnit<Exp> unit = new ParseUnit<Exp>(input, E0);
@@ -52,6 +57,22 @@ public static class Program
         Console.WriteLine(unit.Result.Value);
         Console.WriteLine(unit.Result.Value?.ToString() == input);
         Console.WriteLine(sw.ElapsedMilliseconds);
+    }
+
+
+
+    private static void SimpleGraph()
+    {
+        IParser<string> num = Integer.WithName("integer");
+        IParser<string> exp = null!;
+        IParser<string> add = Lazy(() => exp).ThenAdd(String('+')).ThenAdd(Lazy(() => exp)).Transform((x, y, z) => x + y + z);
+        IParser<string> sub = Lazy(() => exp).ThenAdd(String('-')).ThenAdd(Lazy(() => exp)).Transform((x, y, z) => x + y + z);
+        exp = Or(add, sub, num);
+
+        Console.WriteLine(exp.Parse("23+3533-32+12-3"));
+        //Console.WriteLine(exp.ToDotGraph());
+        //Console.WriteLine(Expr.ToDotGraph());
+        Console.WriteLine(E0.ToDotGraph());
     }
 
     private abstract record Exp(int Precedence)

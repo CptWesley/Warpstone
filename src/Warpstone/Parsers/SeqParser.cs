@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading;
+﻿using System.Threading;
 using Warpstone.ParseState;
 
 namespace Warpstone.Parsers;
@@ -18,6 +17,7 @@ public class SeqParser<T1, T2> : Parser<(T1 First, T2 Second)>
     /// <param name="first">The first parser that's tried.</param>
     /// <param name="second">The second parser that's applied if the first one fails.</param>
     public SeqParser(IParser<T1> first, IParser<T2> second)
+        : base(first, second)
     {
         First = first;
         Second = second;

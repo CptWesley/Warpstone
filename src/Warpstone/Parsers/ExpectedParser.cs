@@ -15,6 +15,7 @@ public class ExpectedParser<T> : Parser<T>
     /// <param name="parser">The wrapped parser.</param>
     /// <param name="expected">The overriden expectation string.</param>
     public ExpectedParser(IParser<T> parser, string expected)
+        : base(parser)
     {
         Parser = parser;
         Expected = expected;
@@ -47,6 +48,14 @@ public class ExpectedParser<T> : Parser<T>
 
         return new ParseResult<T>(this, result.Error, result.Next);
     }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+        => obj is ExpectedParser<T> other && other.Expected == Expected;
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+        => (820175, Expected).GetHashCode();
 
     /// <inheritdoc/>
     protected override string InternalToString(int depth)

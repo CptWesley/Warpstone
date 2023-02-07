@@ -18,6 +18,7 @@ public class TransformParser<TIn, TOut> : Parser<TOut>
     /// <param name="parser">The wrapped parser.</param>
     /// <param name="transformation">The transformation applied to the result of the wrapped parser.</param>
     public TransformParser(IParser<TIn> parser, Func<TIn, TOut> transformation)
+        : base(parser)
     {
         Parser = parser;
         Transformation = transformation;

@@ -21,6 +21,14 @@ public class EndParser : Parser<string>
     }
 
     /// <inheritdoc/>
+    public override bool Equals(object? obj)
+        => obj is EndParser;
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+        => 9237671646.GetHashCode();
+
+    /// <inheritdoc/>
     protected override string InternalToString(int depth)
         => "EOF()";
 }

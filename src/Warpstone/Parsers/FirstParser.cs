@@ -17,19 +17,16 @@ public class FirstParser<T> : Parser<T>
     /// </summary>
     /// <param name="parsers">The parsers to try.</param>
     public FirstParser(IEnumerable<IParser<T>> parsers)
-        => Parsers = parsers.ToList();
-
-    /// <summary>
-    /// Gets the parsers that will be applied.
-    /// </summary>
-    public IReadOnlyList<IParser<T>> Parsers { get; }
+        : base(parsers)
+    {
+    }
 
     /// <inheritdoc/>
     public override IParseResult<T> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken)
     {
         List<IParseResult> innerResults = new List<IParseResult>();
 
-        foreach (IParser<T> parser in Parsers)
+        foreach (IParser<T> parser in SubParsers)
         {
             IParseResult<T> result = recurse.Apply(parser, state, position, maxLength, cancellationToken);
             innerResults.Add(result);
@@ -45,5 +42,5 @@ public class FirstParser<T> : Parser<T>
 
     /// <inheritdoc/>
     protected override string InternalToString(int depth)
-        => $"Or({string.Join(", ", Parsers.Select(x => x.ToString(depth - 1)))})";
+        => $"Or({string.Join(", ", SubParsers.Select(x => x.ToString(depth - 1)))})";
 }

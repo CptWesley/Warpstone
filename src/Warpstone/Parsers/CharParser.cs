@@ -34,6 +34,14 @@ public class CharParser : Parser<char>
     }
 
     /// <inheritdoc/>
+    public override bool Equals(object? obj)
+        => obj is CharParser other && other.Character == Character;
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+        => (876134, Character).GetHashCode();
+
+    /// <inheritdoc/>
     protected override string InternalToString(int depth)
         => $"Character('{Regex.Escape(Character.ToString())}')";
 }

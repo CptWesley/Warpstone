@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using Warpstone.ParseState;
 
@@ -11,6 +12,8 @@ namespace Warpstone.Parsers;
 /// <seealso cref="Parser{T}" />
 public class LazyParser<T> : Parser<T>
 {
+    private IReadOnlyList<IParser>? subParsers;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
     /// </summary>
@@ -24,6 +27,20 @@ public class LazyParser<T> : Parser<T>
     public Lazy<IParser<T>> Parser { get; }
 
     /// <inheritdoc/>
+    public override IReadOnlyList<IParser> SubParsers
+    {
+        get
+        {
+            if (subParsers is null)
+            {
+                subParsers = new List<IParser>() { Parser.Value };
+            }
+
+            return subParsers;
+        }
+    }
+
+    /// <inheritdoc/>
     public override IParseResult<T> Eval(IParseState state, int position, int maxLength, IRecursionParser recurse, CancellationToken cancellationToken)
     {
         IParseResult<T> result = recurse.Apply(Parser.Value, state, position, maxLength, cancellationToken);
@@ -34,6 +51,14 @@ public class LazyParser<T> : Parser<T>
 
         return new ParseResult<T>(this, result.Error, position);
     }
+
+    /// <inheritdoc/>
+    public override bool Equals(object? obj)
+        => obj is LazyParser<T> other && other.Parser.Value == Parser.Value;
+
+    /// <inheritdoc/>
+    public override int GetHashCode()
+        => (3425423, Parser.Value).GetHashCode();
 
     /// <inheritdoc/>
     protected override string InternalToString(int depth)
