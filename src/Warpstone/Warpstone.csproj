@@ -26,7 +26,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="BackwardsCompatibleFeatures" Version="2.1.0" />
+		<PackageReference Include="BackwardsCompatibleFeatures" Version="2.1.0">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>compile</IncludeAssets>
+		</PackageReference>
 		<PackageReference Include="StyleCop.Analyzers" Version="1.2.0-beta.435">
 			<PrivateAssets>all</PrivateAssets>
 		</PackageReference>
