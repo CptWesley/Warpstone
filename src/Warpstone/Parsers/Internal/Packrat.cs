@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using Warpstone.ParseState;
 
@@ -13,8 +12,6 @@ namespace Warpstone.Parsers.Internal;
 /// </summary>
 internal static class Packrat
 {
-    private static readonly IEnumerable<IParseResult> EmptyResults = Array.Empty<IParseResult>();
-
     /// <summary>
     /// Performs the "ApplyRule" function as described in the paper.
     /// </summary>
@@ -57,6 +54,31 @@ internal static class Packrat
         return prev;
     }
 
+    /// <summary>
+    /// Applies a parser in the growing step.
+    /// </summary>
+    /// <typeparam name="TOutput">The type of the result.</typeparam>
+    /// <param name="parser">The parser being applied.</param>
+    /// <param name="growthRecursion">The recursive parsing function.</param>
+    /// <param name="state">The current parse state.</param>
+    /// <param name="position">The current parsing position.</param>
+    /// <param name="maxLength">The number of remaining tokens in the input stream to be considered.</param>
+    /// <param name="cancellationToken">The token used for cancelling the parsing operation.</param>
+    /// <returns>The found result.</returns>
+    public static IParseResult<TOutput> ApplyRuleGrow<TOutput>(IParser<TOutput> parser, GrowthRecursion growthRecursion, IParseState state, int position, int maxLength, CancellationToken cancellationToken)
+    {
+        growthRecursion.Limits.Add(parser);
+        IParseResult<TOutput> ans = parser.Eval(state, position, maxLength, growthRecursion, cancellationToken);
+
+        if (state.MemoTable.TryGet(growthRecursion.GrowthPosition, parser, out IParseResult<TOutput>? m) && (!ans.Success || ans.End <= m.End))
+        {
+            return m;
+        }
+
+        state.MemoTable.Set(growthRecursion.GrowthPosition, parser, ans);
+        return ans;
+    }
+
     private static IParseResult<TOutput> GrowLR<TOutput>(IParser<TOutput> parser, int growthPosition, IParseResult<TOutput> best, IParseState state, int maxLength, CancellationToken cancellationToken)
     {
         int oldPosition = growthPosition;
@@ -65,7 +87,8 @@ internal static class Packrat
         {
             HashSet<IParser> limits = new HashSet<IParser> { parser };
 
-            IParseResult<TOutput> ans = EvalGrow(parser, growthPosition, limits, state, growthPosition, maxLength, cancellationToken);
+            IRecursionParser recursion = new GrowthRecursion(growthPosition, limits);
+            IParseResult<TOutput> ans = parser.Eval(state, growthPosition, maxLength, recursion, cancellationToken);
 
             if (!ans.Success || ans.End <= oldPosition)
             {
@@ -79,25 +102,5 @@ internal static class Packrat
         }
 
         return best;
-    }
-
-    private static IParseResult<TOutput> EvalGrow<TOutput>(IParser<TOutput> parser, int growthPosition, ISet<IParser> limits, IParseState state, int position, int maxLength, CancellationToken cancellationToken)
-    {
-        IRecursionParser recursion = new GrowthRecursion(growthPosition, limits);
-        return parser.Eval(state, position, maxLength, recursion, cancellationToken);
-    }
-
-    public static IParseResult<TOutput> ApplyRuleGrow<TOutput>(IParser<TOutput> parser, int growthPosition, ISet<IParser> limits, IParseState state, int position, int maxLength, CancellationToken cancellationToken)
-    {
-        limits.Add(parser);
-        IParseResult<TOutput> ans = EvalGrow(parser, growthPosition, limits, state, position, maxLength, cancellationToken);
-
-        if (state.MemoTable.TryGet(growthPosition, parser, out IParseResult<TOutput>? m) && (!ans.Success || ans.End <= m.End))
-        {
-            return m;
-        }
-
-        state.MemoTable.Set(growthPosition, parser, ans);
-        return ans;
     }
 }

@@ -49,23 +49,9 @@ public static class Program
         Stopwatch sw = Stopwatch.StartNew();
         unit.Parse();
         sw.Stop();
-        Console.WriteLine(unit.Result);
+        Console.WriteLine(unit.Result.Value);
+        Console.WriteLine(unit.Result.Value?.ToString() == input);
         Console.WriteLine(sw.ElapsedMilliseconds);
-
-        IParser<string>? z = null;
-        z = Lazy(() => z!);
-        Console.WriteLine(z.Parse("2423"));
-        
-        //ParseExpr("12+34");
-        //ParseExpr("12+34+56");
-    }
-
-    private static void ParseExpr(string expr)
-    {
-        ParseUnit<string> unit = new ParseUnit<string>(expr, Expr);
-        unit.Parse();
-        Console.WriteLine(unit.Result);
-        Console.WriteLine();
     }
 
     private abstract record Exp(int Precedence)

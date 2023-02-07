@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using Warpstone.ParseState;
 
@@ -36,7 +35,7 @@ internal class GrowthRecursion : IRecursionParser
     {
         if (GrowthPosition == position && !Limits.Contains(parser))
         {
-            return Packrat.ApplyRuleGrow(parser, GrowthPosition, Limits, state, position, maxLength, cancellationToken);
+            return Packrat.ApplyRuleGrow(parser, this, state, position, maxLength, cancellationToken);
         }
 
         return Packrat.ApplyRule(parser, state, position, maxLength, cancellationToken);
