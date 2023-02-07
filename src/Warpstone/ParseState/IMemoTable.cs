@@ -13,4 +13,6 @@ public interface IMemoTable : IReadOnlyMemoTable
     /// <param name="result">The found parsing result.</param>
     /// <returns><c>true</c> if the insertion overrode a previous value, <c>false</c> otherwise.</returns>
     public bool Set(int position, IParser parser, IParseResult result);
+
+    public void SetGrowing(int position, IParser parser, bool growing);
 }

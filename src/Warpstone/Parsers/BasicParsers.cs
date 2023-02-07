@@ -61,6 +61,15 @@ public static class BasicParsers
         => new StringParser(str, stringComparison);
 
     /// <summary>
+    /// Creates a parser that parses a string, using the specified string comparison method.
+    /// </summary>
+    /// <param name="str">The string to parse.</param>
+    /// <param name="stringComparison">The string comparison method to use.</param>
+    /// <returns>A parser parsing a string.</returns>
+    public static IParser<string> String(char c)
+        => String(c.ToString());
+
+    /// <summary>
     /// Creates a parser that parses a string.
     /// </summary>
     /// <param name="str">The string to parse.</param>
@@ -726,6 +735,16 @@ public static class BasicParsers
     /// <returns>A parser that lazily applies a given parser.</returns>
     public static IParser<T> Lazy<T>(Func<IParser<T>> parser)
         => new LazyParser<T>(parser);
+
+    /// <summary>
+    /// Creates a parser that replaces the nested expected values with a given expected name.
+    /// </summary>
+    /// <typeparam name="T">The result type of the given parser.</typeparam>
+    /// <param name="parser">The given parser.</param>
+    /// <param name="name">The name.</param>
+    /// <returns>A parser that replaces the nested expected values with a given expected name.</returns>
+    public static IParser<T> WithName<T>(this IParser<T> parser, string name)
+        => new ExpectedParser<T>(parser, name);
 
     /*
     /// <summary>

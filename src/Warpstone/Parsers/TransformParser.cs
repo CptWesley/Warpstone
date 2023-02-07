@@ -50,18 +50,18 @@ public class TransformParser<TIn, TOut> : Parser<TOut>
             TOut value = Transformation(result.Value!);
             if (value is IParsed parsed && parsed.Position == default!)
             {
-                parsed.Position = new SourcePosition(input, position, result.Position.End - 1);
+                parsed.Position = result.Position;
             }
 
-            return new ParseResult<TOut>(this, value, input, position, result.Position.End, new[] { result });
+            return new ParseResult<TOut>(this, value, input, position, result.Length, new[] { result });
         }
         catch (Exception e)
         {
-            return new ParseResult<TOut>(this, new TransformationError(new SourcePosition(input, position, result.Position.End - 1), e), new[] { result });
+            return new ParseResult<TOut>(this, new TransformationError(new SourcePosition(input, position, 0), e), new[] { result });
         }
     }
 
     /// <inheritdoc/>
     protected override string InternalToString(int depth)
-        => $"Transform({Parser.ToString(depth - 1)}, {Transformation})";
+        => $"Transform({Parser.ToString(depth - 1)})";
 }

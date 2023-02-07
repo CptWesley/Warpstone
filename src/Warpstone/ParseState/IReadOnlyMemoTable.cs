@@ -27,6 +27,8 @@ public interface IReadOnlyMemoTable
     /// <typeparam name="TOutput">The type of the parsed output.</typeparam>
     public bool TryGet<TOutput>(int position, IParser<TOutput> parser, [NotNullWhen(true)] out IParseResult<TOutput>? parseResult);
 
+    public bool IsGrowing(int position, IParser parser);
+
     /// <summary>
     /// Gets all parsers used at a given position.
     /// </summary>

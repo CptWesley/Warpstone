@@ -8,9 +8,9 @@ namespace Warpstone.Sandbox;
 public static class Program
 {
     private static readonly IParser<string> Integer = Regex(@"0|-?[1-9][0-9]*");
-    private static readonly IParser<string> Layout = Regex(@"(\s+)|(\/\*[\s\S]*?\*\/)|(\/\/.*)");
+    private static readonly IParser<string> Layout = Regex(@"(\s*)|(\/\*[\s\S]*?\*\/)|(\/\/.*)");
 
-    private static readonly IParser<Exp> E5 = Char('(').ThenSkip(Layout).Then(Lazy(() => E0!)).ThenSkip(Layout).ThenSkip(Char('('));
+    private static readonly IParser<Exp> E5 = Char('(').ThenSkip(Layout).Then(Lazy(() => E0!)).ThenSkip(Layout).ThenSkip(Char(')'));
 
     private static readonly IParser<Exp> Number = Integer.Transform(x => new NumExp(int.Parse(x)));
     private static readonly IParser<Exp> E4 = Or(Number, E5);
@@ -32,13 +32,31 @@ public static class Program
     private static readonly IParser<Exp> Sub = Lazy(() => E0!).ThenSkip(Layout).ThenSkip(Char('-')).ThenSkip(Layout).ThenAdd(E1).Transform((l, r) => new SubExp(l, r));
     private static readonly IParser<Exp> E0 = Or(Add, Sub, E1);
 
+
+
+    private static readonly IParser<string> Digit = Or(String('0'), String('1'), String('2'), String('3'), String('4'), String('5'), String('6'), String('7'), String('8'), String('9')).WithName("DIGIT");
+    private static readonly IParser<string> Num = Or(Lazy(() => Num).ThenAdd(Digit).Transform((x, y) => x + y), Digit).WithName("Num");
+    private static readonly IParser<string> Expr = Or(Lazy(() => Expr).ThenAdd(String('+')).ThenAdd(Num).Transform((x, y, z) => x + y + z), Num).WithName("Expr");
+
     public static void Main(string[] args)
     {
         Console.WriteLine("Hello World!");
 
-        ParseUnit<Exp> unit = new ParseUnit<Exp>("42 + 3 * 2", E0);
+        ParseUnit<Exp> unit = new ParseUnit<Exp>("45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3) + 45 + 3 * 72 + (54 - 2) * -(60 / 3)", E0);
+        //ParseUnit<Exp> unit = new ParseUnit<Exp>("(22)", E0);
         unit.Parse();
         Console.WriteLine(unit.Result);
+        
+        //ParseExpr("12+34");
+        //ParseExpr("12+34+56");
+    }
+
+    private static void ParseExpr(string expr)
+    {
+        ParseUnit<string> unit = new ParseUnit<string>(expr, Expr);
+        unit.Parse();
+        Console.WriteLine(unit.Result);
+        Console.WriteLine();
     }
 
     private abstract record Exp(int Precedence)

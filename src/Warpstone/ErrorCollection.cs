@@ -18,9 +18,8 @@ public class ErrorCollection : IParseError
         Errors = errors.ToList();
 
         int minStart = Errors.Min(x => x.Position.Start);
-        int maxEnd = Errors.Max(x => x.Position.End);
         string input = Errors.First().Position.Input;
-        Position = new SourcePosition(input, minStart, maxEnd);
+        Position = new SourcePosition(input, minStart, 0);
     }
 
     /// <summary>

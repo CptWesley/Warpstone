@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
+using System.Text;
+using Warpstone.Parsers;
 
 namespace Warpstone.ParseState;
 
@@ -13,6 +16,7 @@ public class MemoTable : IMemoTable
     private static readonly IReadOnlyDictionary<IParser, IParseResult> EmptyMatches = new Dictionary<IParser, IParseResult>();
     private readonly object lck = new object();
     private readonly Dictionary<int, Dictionary<IParser, IParseResult>> table = new Dictionary<int, Dictionary<IParser, IParseResult>>();
+    private readonly Dictionary<int, HashSet<IParser>> growing = new Dictionary<int, HashSet<IParser>>();
 
     /// <inheritdoc/>
     public bool Set(int position, IParser parser, IParseResult result)
@@ -30,18 +34,26 @@ public class MemoTable : IMemoTable
                 table.Add(position, innerTable);
             }
 
+            if (parser.OutputType.GetMethod("InnerExpToString", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance) != null)
+            {
+                //Console.WriteLine($"Updating {position} ==== {result}");
+            }
+
             if (!innerTable.TryGetValue(parser, out IParseResult? oldResult))
             {
                 innerTable[parser] = result;
+                ToString();
                 return false;
             }
 
             if (oldResult == result)
             {
+                ToString();
                 return false;
             }
 
             innerTable[parser] = result;
+            ToString();
             return true;
         }
     }
@@ -86,4 +98,94 @@ public class MemoTable : IMemoTable
     /// <inheritdoc/>
     public IReadOnlyList<int> GetPositions()
         => table.Keys.ToList();
+
+    /// <inheritdoc/>
+    public bool IsGrowing(int position, IParser parser)
+        => growing.TryGetValue(position, out HashSet<IParser>? innerTable) && innerTable.Contains(parser);
+
+    /// <inheritdoc/>
+    public void SetGrowing(int position, IParser parser, bool growing)
+    {
+        lock (lck)
+        {
+            if (growing)
+            {
+                EnableGrowing(position, parser);
+            }
+            else
+            {
+                DisableGrowing(position, parser);
+            }
+
+            ToString();
+        }
+    }
+
+    private void EnableGrowing(int position, IParser parser)
+    {
+        if (!growing.TryGetValue(position, out HashSet<IParser>? innerTable))
+        {
+            innerTable = new HashSet<IParser>();
+            growing.Add(position, innerTable);
+        }
+
+        innerTable.Add(parser);
+    }
+
+    private void DisableGrowing(int position, IParser parser)
+    {
+        if (growing.TryGetValue(position, out HashSet<IParser>? innerTable))
+        {
+            innerTable.Remove(parser);
+            if (innerTable.Count <= 0)
+            {
+                growing.Remove(position);
+            }
+        }
+    }
+
+    private string prevString = string.Empty;
+
+    public override string ToString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine("\n\n=================================");
+        sb.AppendLine("MEMOTABLE CONTENT:");
+
+        foreach (KeyValuePair<int, Dictionary<IParser, IParseResult>> column in table.OrderBy(x => x.Key))
+        {
+            foreach (KeyValuePair<IParser, IParseResult> entry in column.Value)
+            {
+                if (entry.Key.GetType().Name == "ExpectedParser`1")
+                {
+                    sb.AppendLine($"({entry.Key}, {column.Key}) = <{GetResultString(entry.Value)}, {entry.Value.End}, {IsGrowing(column.Key, entry.Key)}>");
+                }
+            }
+        }
+        sb.AppendLine("=================================\n\n");
+        string newString = sb.ToString();
+
+        if (prevString != newString)
+        {
+            prevString = newString;
+            Console.WriteLine(newString);
+        }
+
+        return newString;
+    }
+
+    private static string GetResultString(IParseResult result)
+    {
+        if (result.Success)
+        {
+            return $"MATCH[{result.Value}]";
+        }
+
+        if (result.Error is UnboundedRecursionError)
+        {
+            return "FAIL";
+        }
+
+        return "MISMATCH";
+    }
 }

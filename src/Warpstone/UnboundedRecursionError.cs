@@ -9,12 +9,12 @@ public class UnboundedRecursionError : ParseError
     /// Initializes a new instance of the <see cref="UnboundedRecursionError"/> class.
     /// </summary>
     /// <param name="position">The start position.</param>
-    public UnboundedRecursionError(SourcePosition position)
+    internal UnboundedRecursionError(SourcePosition position)
         : base(position)
     {
     }
 
     /// <inheritdoc/>
     protected override string GetSimpleMessage()
-        => $"Encountered unbounded recursion. At {Position}.";
+        => $"Encountered unbounded recursion.";
 }
