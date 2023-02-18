@@ -36,13 +36,16 @@ public static class Program
 
 
     private static readonly IParser<string> Digit = Or(String('0'), String('1'), String('2'), String('3'), String('4'), String('5'), String('6'), String('7'), String('8'), String('9')).WithName("DIGIT");
-    private static readonly IParser<string> Num = Or(Lazy(() => Num!).ThenAdd(Digit).Transform((x, y) => x + y), Digit).WithName("Num");
+    //private static readonly IParser<string> Num = Or(Lazy(() => Num!).ThenAdd(Digit).Transform((x, y) => x + y), Digit).WithName("Num");
+    private static readonly IParser<string> Num = Regex("[0-9]+").WithName("Num");
     private static readonly IParser<string> Expr = Or(Lazy(() => Expr!).ThenAdd(String('+')).ThenAdd(Num).Transform((x, y, z) => x + y + z), Num).WithName("Expr");
 
     public static void Main(string[] args)
     {
-        ParseArithmetic();
-        SimpleGraph();
+        //ParseArithmetic();
+        //SimpleGraph();
+
+        Console.WriteLine(Expr.Parse("1+2+3+4"));
     }
 
     private static void ParseArithmetic()
