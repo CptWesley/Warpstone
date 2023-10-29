@@ -1,4 +1,5 @@
 ﻿using Warpstone.V2.Errors;
+using Warpstone.V2.Internal;
 using Warpstone.V2.Parsers;
 
 namespace Warpstone.V2;
@@ -16,6 +17,7 @@ public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
 {
     private readonly Stack<Job> stack = new();
     private readonly MemoTable memo = new();
+    private readonly GrowingTable growing = new();
 
     private ParseContext(IParseInput input, IParser<T> parser)
     {
@@ -54,17 +56,21 @@ public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
         }
 
         var job = stack.Pop();
+        PerformJob(ref job);
+        return true;
+    }
 
+    private void PerformJob(ref Job job)
+    {
         if (MemoTable[job.Position, job.Parser] is { })
         {
-            return true;
+            return;
         }
 
         var error = new InfiniteRecursionError(Input, job.Parser, job.Position, 0);
         MemoTable[job.Position, job.Parser] = job.Parser.Fail(job.Position, error);
 
         job.Parser.Step(this, job.Position, job.Phase);
-        return true;
     }
 
     public static IParseContext<T> Create(IParseInput input, IParser<T> parser)
