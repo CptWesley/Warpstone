@@ -22,4 +22,10 @@ internal class ParseState : IParseState
 
     /// <inheritdoc/>
     public IParseUnit Unit { get; }
+
+    /// <inheritdoc/>
+    public IParseQueue Queue { get; } = new ParseQueue();
+
+    /// <inheritdoc/>
+    IReadOnlyParseQueue IReadOnlyParseState.Queue => Queue;
 }

@@ -10,22 +10,13 @@ public interface IReadOnlyParseState
     /// </summary>
     public IReadOnlyMemoTable MemoTable { get; }
 
-    /*
-    /// <summary>
-    /// Gets the current position in the parse unit.
-    /// </summary>
-    public int Position { get; }
-    */
-
     /// <summary>
     /// Gets the parse unit associated with this state.
     /// </summary>
     public IParseUnit Unit { get; }
 
-    /*
     /// <summary>
-    /// Gets the number of remaining characters to parse.
+    /// Gets the used <see cref="IReadOnlyParseQueue"/> instance.
     /// </summary>
-    public int RemainingCharacters { get; }
-    */
+    public IReadOnlyParseQueue Queue { get; }
 }
