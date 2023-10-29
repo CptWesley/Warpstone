@@ -1,6 +1,6 @@
 ﻿namespace Warpstone.V2.Parsers;
 
-public sealed class ChoiceParser<T> : IParser<T>
+public sealed class ChoiceParser<T> : ParserBase<T>
 {
     private readonly Lazy<IParser<T>> first;
     private readonly Lazy<IParser<T>> second;
@@ -15,7 +15,7 @@ public sealed class ChoiceParser<T> : IParser<T>
 
     public IParser<T> Second => second.Value;
 
-    public void Step(IActiveParseContext context, int position, int phase)
+    public override void Step(IActiveParseContext context, int position, int phase)
     {
         switch (phase)
         {

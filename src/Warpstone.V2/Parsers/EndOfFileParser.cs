@@ -2,7 +2,7 @@
 
 namespace Warpstone.V2.Parsers;
 
-public sealed class EndOfFileParser : IParser<string>
+public sealed class EndOfFileParser : ParserBase<string>
 {
     public static readonly EndOfFileParser Instance = new EndOfFileParser();
 
@@ -10,7 +10,7 @@ public sealed class EndOfFileParser : IParser<string>
     {
     }
 
-    public void Step(IActiveParseContext context, int position, int phase)
+    public override void Step(IActiveParseContext context, int position, int phase)
     {
         if (position >= context.Input.Input.Length)
         {

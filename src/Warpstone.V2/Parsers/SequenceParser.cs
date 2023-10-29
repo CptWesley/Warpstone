@@ -1,6 +1,6 @@
 ﻿namespace Warpstone.V2.Parsers;
 
-public sealed class SequenceParser<TFirst, TSecond> : IParser<(TFirst, TSecond)>
+public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecond)>
 {
     private readonly Lazy<IParser<TFirst>> first;
     private readonly Lazy<IParser<TSecond>> second;
@@ -15,7 +15,7 @@ public sealed class SequenceParser<TFirst, TSecond> : IParser<(TFirst, TSecond)>
 
     public IParser<TSecond> Second => second.Value;
 
-    public void Step(IActiveParseContext context, int position, int phase)
+    public override void Step(IActiveParseContext context, int position, int phase)
     {
         switch (phase)
         {

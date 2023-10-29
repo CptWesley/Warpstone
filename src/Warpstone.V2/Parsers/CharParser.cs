@@ -2,7 +2,7 @@
 
 namespace Warpstone.V2.Parsers;
 
-public sealed class CharParser : IParser<char>
+public sealed class CharParser : ParserBase<char>
 {
     private readonly string expected;
 
@@ -14,7 +14,7 @@ public sealed class CharParser : IParser<char>
 
     public char Value { get; }
 
-    public void Step(IActiveParseContext context, int position, int phase)
+    public override void Step(IActiveParseContext context, int position, int phase)
     {
         if (context.Input.Input[position] == Value)
         {

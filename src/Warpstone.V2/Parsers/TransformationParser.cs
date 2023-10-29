@@ -2,7 +2,7 @@
 
 namespace Warpstone.V2.Parsers;
 
-public sealed class TransformationParser<TIn, TOut> : IParser<TOut>
+public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>
 {
     private readonly Lazy<IParser<TIn>> first;
 
@@ -16,7 +16,7 @@ public sealed class TransformationParser<TIn, TOut> : IParser<TOut>
 
     public Func<TIn, TOut> Transformation { get; }
 
-    public void Step(IActiveParseContext context, int position, int phase)
+    public override void Step(IActiveParseContext context, int position, int phase)
     {
         switch (phase)
         {

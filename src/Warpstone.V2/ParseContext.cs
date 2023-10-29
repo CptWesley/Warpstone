@@ -1,4 +1,5 @@
-﻿using Warpstone.V2.Parsers;
+﻿using Warpstone.V2.Errors;
+using Warpstone.V2.Parsers;
 
 namespace Warpstone.V2;
 
@@ -58,6 +59,9 @@ public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
         {
             return true;
         }
+
+        var error = new InfiniteRecursionError(Input, job.Parser, job.Position, 0);
+        MemoTable[job.Position, job.Parser] = job.Parser.Fail(job.Position, error);
 
         job.Parser.Step(this, job.Position, job.Phase);
         return true;
