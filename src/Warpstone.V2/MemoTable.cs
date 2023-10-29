@@ -29,7 +29,7 @@ public sealed class MemoTable : IMemoTable
                 table.Add(position, expressions);
             }
 
-            expressions.Add(parser, value);
+            expressions[parser] = value;
         }
     }
 
