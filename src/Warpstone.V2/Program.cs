@@ -7,11 +7,11 @@ public static class Program
 {
     public static void Main(string[] args)
     {
-        var parser = new SequenceParser<string, (string, string)>(
+        var parser = new SequenceParser<char, (char, char)>(
             new CharParser('a'),
-            new SequenceParser<string, string>(
+            new SequenceParser<char, char>(
                 new CharParser('b'),
-                new ChoiceParser<string>(
+                new ChoiceParser<char>(
                     new CharParser('c'),
                     new CharParser('d'))));
         var result1 = parser.Parse("abc");

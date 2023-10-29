@@ -1,6 +1,6 @@
 ﻿namespace Warpstone.V2.Parsers;
 
-public sealed class CharParser : IParser<string>
+public sealed class CharParser : IParser<char>
 {
     private readonly string stringValue;
 
@@ -16,7 +16,7 @@ public sealed class CharParser : IParser<string>
     {
         if (context.Input.Input[position] == Value)
         {
-            context.MemoTable[position, this] = this.Succeed(position, 1, stringValue);
+            context.MemoTable[position, this] = this.Succeed(position, 1, Value);
         }
         else
         {
