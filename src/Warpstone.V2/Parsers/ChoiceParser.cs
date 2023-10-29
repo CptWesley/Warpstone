@@ -17,11 +17,6 @@ public sealed class ChoiceParser<T> : IParser<T>
 
     public void Step(IActiveParsingContext context, int position, int phase)
     {
-        if (context.MemoTable[position, this] is { })
-        {
-            return;
-        }
-
         switch (phase)
         {
             case 0:

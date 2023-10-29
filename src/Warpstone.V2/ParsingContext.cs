@@ -51,6 +51,12 @@ public sealed class ParsingContext<T> : IParsingContext<T>, IActiveParsingContex
         }
 
         var job = stack.Pop();
+
+        if (MemoTable[job.Position, job.Parser] is { })
+        {
+            return true;
+        }
+
         job.Parser.Step(this, job.Position, job.Phase);
         return true;
     }

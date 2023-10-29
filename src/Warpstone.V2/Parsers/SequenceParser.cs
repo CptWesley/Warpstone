@@ -17,11 +17,6 @@ public sealed class SequenceParser<TFirst, TSecond> : IParser<(TFirst, TSecond)>
 
     public void Step(IActiveParsingContext context, int position, int phase)
     {
-        if (context.MemoTable[position, this] is { })
-        {
-            return;
-        }
-
         switch (phase)
         {
             case 0:

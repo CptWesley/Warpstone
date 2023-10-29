@@ -16,11 +16,6 @@ public sealed class TransformationParser<TIn, TOut> : IParser<TOut>
 
     public void Step(IActiveParsingContext context, int position, int phase)
     {
-        if (context.MemoTable[position, this] is { })
-        {
-            return;
-        }
-
         switch (phase)
         {
             case 0:
