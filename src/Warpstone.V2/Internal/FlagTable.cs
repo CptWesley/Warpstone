@@ -2,7 +2,7 @@
 
 namespace Warpstone.V2.Internal;
 
-internal sealed class GrowingTable
+internal sealed class FlagTable
 {
     private readonly Dictionary<int, HashSet<IParser>> table = new();
 
