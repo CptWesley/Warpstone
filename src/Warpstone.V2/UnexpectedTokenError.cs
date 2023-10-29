@@ -14,7 +14,7 @@ public sealed class UnexpectedTokenError : ParseError
               position,
               length,
               expected,
-              $"Expected token '{expected}', but found token '{Find(input.Input, position)}'. At position {position}.")
+              $"Expected token {expected}, but found token {Find(input.Input, position)}. At position {position}.")
     {
     }
 

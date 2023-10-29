@@ -1,16 +1,19 @@
 ﻿namespace Warpstone.V2.Parsers;
 
-public sealed record ChoiceParser<T> : IParser<T>
+public sealed class ChoiceParser<T> : IParser<T>
 {
-    public ChoiceParser(IParser<T> first, IParser<T> second)
+    private readonly Lazy<IParser<T>> first;
+    private readonly Lazy<IParser<T>> second;
+
+    public ChoiceParser(Func<IParser<T>> first, Func<IParser<T>> second)
     {
-        First = first;
-        Second = second;
+        this.first = new(first);
+        this.second = new(second);
     }
 
-    public IParser<T> First { get; }
+    public IParser<T> First => first.Value;
 
-    public IParser<T> Second { get; }
+    public IParser<T> Second => second.Value;
 
     public void Step(IActiveParsingContext context, int position, int phase)
     {

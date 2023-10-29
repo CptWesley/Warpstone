@@ -43,7 +43,4 @@ public abstract class ParseError : Exception, IParseError
     public int Position { get; }
 
     public int Length { get; }
-
-    public override string ToString()
-        => Message;
 }

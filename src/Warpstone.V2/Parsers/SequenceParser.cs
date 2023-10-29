@@ -2,15 +2,18 @@
 
 public sealed class SequenceParser<TFirst, TSecond> : IParser<(TFirst, TSecond)>
 {
-    public SequenceParser(IParser<TFirst> first, IParser<TSecond> second)
+    private readonly Lazy<IParser<TFirst>> first;
+    private readonly Lazy<IParser<TSecond>> second;
+
+    public SequenceParser(Func<IParser<TFirst>> first, Func<IParser<TSecond>> second)
     {
-        First = first;
-        Second = second;
+        this.first = new(first);
+        this.second = new(second);
     }
 
-    public IParser<TFirst> First { get; }
+    public IParser<TFirst> First => first.Value;
 
-    public IParser<TSecond> Second { get; }
+    public IParser<TSecond> Second => second.Value;
 
     public void Step(IActiveParsingContext context, int position, int phase)
     {

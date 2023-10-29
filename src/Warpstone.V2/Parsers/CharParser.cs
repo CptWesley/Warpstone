@@ -2,12 +2,12 @@
 
 public sealed class CharParser : IParser<char>
 {
-    private readonly string stringValue;
+    private readonly string expected;
 
     public CharParser(char value)
     {
         Value = value;
-        stringValue = value.ToString();
+        expected = $"'{value}'";
     }
 
     public char Value { get; }
@@ -20,7 +20,7 @@ public sealed class CharParser : IParser<char>
         }
         else
         {
-            context.MemoTable[position, this] = this.Fail(position, new UnexpectedTokenError(context.Input, this, position, 1, stringValue));
+            context.MemoTable[position, this] = this.Fail(position, new UnexpectedTokenError(context.Input, this, position, 1, expected));
         }
     }
 }
