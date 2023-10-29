@@ -1,4 +1,4 @@
-﻿namespace Warpstone.V2;
+﻿namespace Warpstone.V2.Parsers;
 
 public interface IParser
 {

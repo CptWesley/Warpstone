@@ -1,4 +1,6 @@
-﻿namespace Warpstone.V2.Parsers;
+﻿using Warpstone.V2.Errors;
+
+namespace Warpstone.V2.Parsers;
 
 public sealed class TransformationParser<TIn, TOut> : IParser<TOut>
 {
