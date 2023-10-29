@@ -1,5 +1,14 @@
 ﻿namespace Warpstone.V2;
 
+public static class ParseResult
+{
+    public static IParseResult<T> CreateSuccess<T>(IParser<T> parser, int position, int length, T value)
+        => ParseResult<T>.CreateSuccess(parser, position, length, value);
+
+    public static IParseResult<T> CreateFailure<T>(IParser<T> parser, int position, IEnumerable<IParseError> errors)
+        => ParseResult<T>.CreateFailure(parser, position, errors);
+}
+
 public sealed class ParseResult<T> : IParseResult<T>
 {
     private readonly T? value;
