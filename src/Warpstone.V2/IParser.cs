@@ -2,7 +2,7 @@
 
 public interface IParser
 {
-    void Step(IActiveParsingContext context, int position, int phase);
+    void Step(IActiveParseContext context, int position, int phase);
 }
 
 public interface IParser<T> : IParser

@@ -1,10 +1,10 @@
 ﻿namespace Warpstone.V2;
 
-public interface IReadOnlyParsingContext
+public interface IReadOnlyParseContext
 {
     public IParser Parser { get; }
 
-    public IParsingInput Input { get; }
+    public IParseInput Input { get; }
 
     public IReadOnlyMemoTable MemoTable { get; }
 
@@ -13,7 +13,7 @@ public interface IReadOnlyParsingContext
     public IParseResult Result { get; }
 }
 
-public interface IReadOnlyParsingContext<T> : IReadOnlyParsingContext
+public interface IReadOnlyParseContext<T> : IReadOnlyParseContext
 {
     public new IParser<T> Parser { get; }
 

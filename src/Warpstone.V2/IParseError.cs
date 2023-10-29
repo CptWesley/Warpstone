@@ -2,7 +2,7 @@
 
 public interface IParseError
 {
-    public IParsingInput Input { get; }
+    public IParseInput Input { get; }
 
     public IParser Parser { get; }
 

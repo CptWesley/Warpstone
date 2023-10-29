@@ -8,7 +8,7 @@ public sealed class EndOfFileParser : IParser<string>
     {
     }
 
-    public void Step(IActiveParsingContext context, int position, int phase)
+    public void Step(IActiveParseContext context, int position, int phase)
     {
         if (position >= context.Input.Input.Length)
         {

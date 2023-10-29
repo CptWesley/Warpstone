@@ -14,7 +14,7 @@ public sealed class TransformationParser<TIn, TOut> : IParser<TOut>
 
     public Func<TIn, TOut> Transformation { get; }
 
-    public void Step(IActiveParsingContext context, int position, int phase)
+    public void Step(IActiveParseContext context, int position, int phase)
     {
         switch (phase)
         {
@@ -29,13 +29,13 @@ public sealed class TransformationParser<TIn, TOut> : IParser<TOut>
         }
     }
 
-    private void Step0(IActiveParsingContext context, int position)
+    private void Step0(IActiveParseContext context, int position)
     {
         context.Push(this, position, 1);
         context.Push(First, position);
     }
 
-    private void Step1(IActiveParsingContext context, int position)
+    private void Step1(IActiveParseContext context, int position)
     {
         if (context.MemoTable[position, First] is not ParseResult<TIn> inner)
         {

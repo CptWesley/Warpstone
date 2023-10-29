@@ -15,7 +15,7 @@ public sealed class SequenceParser<TFirst, TSecond> : IParser<(TFirst, TSecond)>
 
     public IParser<TSecond> Second => second.Value;
 
-    public void Step(IActiveParsingContext context, int position, int phase)
+    public void Step(IActiveParseContext context, int position, int phase)
     {
         switch (phase)
         {
@@ -33,13 +33,13 @@ public sealed class SequenceParser<TFirst, TSecond> : IParser<(TFirst, TSecond)>
         }
     }
 
-    private void Step0(IActiveParsingContext context, int position)
+    private void Step0(IActiveParseContext context, int position)
     {
         context.Push(this, position, 1);
         context.Push(First, position);
     }
 
-    private void Step1(IActiveParsingContext context, int position)
+    private void Step1(IActiveParseContext context, int position)
     {
         if (context.MemoTable[position, First] is not { } firstResult)
         {
@@ -57,7 +57,7 @@ public sealed class SequenceParser<TFirst, TSecond> : IParser<(TFirst, TSecond)>
         }
     }
 
-    private void Step2(IActiveParsingContext context, int position)
+    private void Step2(IActiveParseContext context, int position)
     {
         if (context.MemoTable[position, First] is not IParseResult<TFirst> firstSuccess || !firstSuccess.Success)
         {

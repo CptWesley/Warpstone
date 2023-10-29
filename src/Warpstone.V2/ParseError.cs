@@ -3,7 +3,7 @@
 public abstract class ParseError : Exception, IParseError
 {
     protected ParseError(
-        IParsingInput input,
+        IParseInput input,
         IParser parser,
         int position,
         int length)
@@ -12,7 +12,7 @@ public abstract class ParseError : Exception, IParseError
     }
 
     protected ParseError(
-        IParsingInput input,
+        IParseInput input,
         IParser parser,
         int position,
         int length,
@@ -22,7 +22,7 @@ public abstract class ParseError : Exception, IParseError
     }
 
     protected ParseError(
-        IParsingInput input,
+        IParseInput input,
         IParser parser,
         int position,
         int length,
@@ -36,7 +36,7 @@ public abstract class ParseError : Exception, IParseError
         Length = length;
     }
 
-    public IParsingInput Input { get; }
+    public IParseInput Input { get; }
 
     public IParser Parser { get; }
 

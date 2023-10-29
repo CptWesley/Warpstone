@@ -1,20 +1,20 @@
 ﻿namespace Warpstone.V2;
 
-public static class ParsingContext
+public static class ParseContext
 {
-    public static IParsingContext<T> Create<T>(IParsingInput input, IParser<T> parser)
-        => ParsingContext<T>.Create(input, parser);
+    public static IParseContext<T> Create<T>(IParseInput input, IParser<T> parser)
+        => ParseContext<T>.Create(input, parser);
 
-    public static IParsingContext<T> Create<T>(string input, IParser<T> parser)
-        => Create(new ParsingInput(input), parser);
+    public static IParseContext<T> Create<T>(string input, IParser<T> parser)
+        => Create(new ParseInput(input), parser);
 }
 
-public sealed class ParsingContext<T> : IParsingContext<T>, IActiveParsingContext
+public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
 {
     private readonly Stack<Job> stack = new();
     private readonly MemoTable memo = new();
 
-    private ParsingContext(IParsingInput input, IParser<T> parser)
+    private ParseContext(IParseInput input, IParser<T> parser)
     {
         Input = input;
         Parser = parser;
@@ -25,9 +25,9 @@ public sealed class ParsingContext<T> : IParsingContext<T>, IActiveParsingContex
 
     public bool Done => memo[0, Parser] is not null;
 
-    public IParsingInput Input { get; }
+    public IParseInput Input { get; }
 
-    IReadOnlyMemoTable IReadOnlyParsingContext.MemoTable => MemoTable;
+    IReadOnlyMemoTable IReadOnlyParseContext.MemoTable => MemoTable;
 
     public IParser<T> Parser { get; }
 
@@ -36,9 +36,9 @@ public sealed class ParsingContext<T> : IParsingContext<T>, IActiveParsingContex
         ? result
         : throw new InvalidOperationException();
 
-    IParser IReadOnlyParsingContext.Parser => Parser;
+    IParser IReadOnlyParseContext.Parser => Parser;
 
-    IParseResult IReadOnlyParsingContext.Result => Result;
+    IParseResult IReadOnlyParseContext.Result => Result;
 
     public void Push(IParser parser, int position, int phase)
         => stack.Push(new(parser, position, phase));
@@ -61,8 +61,8 @@ public sealed class ParsingContext<T> : IParsingContext<T>, IActiveParsingContex
         return true;
     }
 
-    public static IParsingContext<T> Create(IParsingInput input, IParser<T> parser)
-        => new ParsingContext<T>(input, parser);
+    public static IParseContext<T> Create(IParseInput input, IParser<T> parser)
+        => new ParseContext<T>(input, parser);
 
     private readonly record struct Job(IParser Parser, int Position, int Phase);
 }

@@ -3,7 +3,7 @@
 public sealed class UnexpectedTokenError : ParseError
 {
     public UnexpectedTokenError(
-        IParsingInput input,
+        IParseInput input,
         IParser parser,
         int position,
         int length,
@@ -19,7 +19,7 @@ public sealed class UnexpectedTokenError : ParseError
     }
 
     public UnexpectedTokenError(
-        IParsingInput input,
+        IParseInput input,
         IParser parser,
         int position,
         int length,
@@ -30,7 +30,7 @@ public sealed class UnexpectedTokenError : ParseError
     }
 
     public UnexpectedTokenError(
-        IParsingInput input,
+        IParseInput input,
         IParser parser,
         int position,
         int length,

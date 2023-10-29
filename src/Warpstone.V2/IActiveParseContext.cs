@@ -1,6 +1,6 @@
 ﻿namespace Warpstone.V2;
 
-public interface IActiveParsingContext : IReadOnlyParsingContext
+public interface IActiveParseContext : IReadOnlyParseContext
 {
     public new IMemoTable MemoTable { get; }
 

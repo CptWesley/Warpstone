@@ -12,7 +12,7 @@ public sealed class CharParser : IParser<char>
 
     public char Value { get; }
 
-    public void Step(IActiveParsingContext context, int position, int phase)
+    public void Step(IActiveParseContext context, int position, int phase)
     {
         if (context.Input.Input[position] == Value)
         {
