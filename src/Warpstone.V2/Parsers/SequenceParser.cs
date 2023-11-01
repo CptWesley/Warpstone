@@ -46,20 +46,20 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
             throw new InvalidOperationException();
         }
 
-        if (firstResult.Success)
+        if (firstResult.Status == ParseStatus.Match)
         {
             context.Push(this, position, 2);
             context.Push(Second, firstResult.NextPosition);
         }
         else
         {
-            context.MemoTable[position, this] = this.Fail(position, firstResult.Errors);
+            context.MemoTable[position, this] = this.Mismatch(position, firstResult.Errors);
         }
     }
 
     private void Step2(IActiveParseContext context, int position)
     {
-        if (context.MemoTable[position, First] is not IParseResult<TFirst> firstSuccess || !firstSuccess.Success)
+        if (context.MemoTable[position, First] is not IParseResult<TFirst> firstSuccess || firstSuccess.Status != ParseStatus.Match)
         {
             throw new InvalidOperationException();
         }
@@ -69,15 +69,15 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
             throw new InvalidOperationException();
         }
 
-        if (secondResult.Success)
+        if (secondResult.Status == ParseStatus.Match)
         {
             var value = (firstSuccess.Value, secondResult.Value);
             var length = firstSuccess.Length + secondResult.Length;
-            context.MemoTable[position, this] = this.Succeed(position, length, value);
+            context.MemoTable[position, this] = this.Match(position, length, value);
         }
         else
         {
-            context.MemoTable[position, this] = this.Fail(position, secondResult.Errors);
+            context.MemoTable[position, this] = this.Mismatch(position, secondResult.Errors);
         }
     }
 }

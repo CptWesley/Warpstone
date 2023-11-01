@@ -17,7 +17,7 @@ public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
 {
     private readonly Stack<Job> stack = new();
     private readonly MemoTable memo = new();
-    private readonly GrowingTable growing = new();
+    private readonly FlagTable growing = new();
 
     private ParseContext(IParseInput input, IParser<T> parser)
     {
@@ -28,7 +28,10 @@ public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
 
     public IMemoTable MemoTable => memo;
 
-    public bool Done => memo[0, Parser] is not null;
+    public bool Done
+        => memo[0, Parser] is { } v
+        && v.Status != ParseStatus.Fail
+        && !growing[0, Parser];
 
     public IParseInput Input { get; }
 
@@ -62,13 +65,21 @@ public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
 
     private void PerformJob(ref Job job)
     {
-        if (MemoTable[job.Position, job.Parser] is { })
+        var prev = MemoTable[job.Position, job.Parser];
+
+        if (prev is null)
+        {
+            //MemoTable[job.Position, job.Parser] = job.Parser.Fail(job.Position, Input);
+        }
+        else if (prev.Status == ParseStatus.Fail)
+        {
+            MemoTable[job.Position, job.Parser] = prev.AsMismatch();
+            growing[job.Position, job.Parser] = true;
+        }
+        else if (job.Phase == 0 && prev.Status != ParseStatus.Fail)
         {
             return;
         }
-
-        var error = new InfiniteRecursionError(Input, job.Parser, job.Position, 0);
-        MemoTable[job.Position, job.Parser] = job.Parser.Fail(job.Position, error);
 
         job.Parser.Step(this, job.Position, job.Phase);
     }

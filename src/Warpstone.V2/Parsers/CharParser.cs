@@ -18,11 +18,11 @@ public sealed class CharParser : ParserBase<char>
     {
         if (context.Input.Input[position] == Value)
         {
-            context.MemoTable[position, this] = this.Succeed(position, 1, Value);
+            context.MemoTable[position, this] = this.Match(position, 1, Value);
         }
         else
         {
-            context.MemoTable[position, this] = this.Fail(position, new UnexpectedTokenError(context.Input, this, position, 1, expected));
+            context.MemoTable[position, this] = this.Mismatch(position, new UnexpectedTokenError(context.Input, this, position, 1, expected));
         }
     }
 }

@@ -44,21 +44,21 @@ public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>
             throw new InvalidOperationException();
         }
 
-        if (!inner.Success)
+        if (inner.Status != ParseStatus.Match)
         {
-            context.MemoTable[position, this] = this.Fail(position, inner.Errors);
+            context.MemoTable[position, this] = this.Mismatch(position, inner.Errors);
             return;
         }
 
         try
         {
             var transformed = Transformation(inner.Value);
-            context.MemoTable[position, this] = this.Succeed(position, inner.Length, transformed);
+            context.MemoTable[position, this] = this.Match(position, inner.Length, transformed);
         }
         catch (Exception e)
         {
             var error = new TransformationError(context.Input, this, position, 0, e.Message, e);
-            context.MemoTable[position, this] = this.Fail(position, error);
+            context.MemoTable[position, this] = this.Mismatch(position, error);
         }
     }
 }

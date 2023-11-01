@@ -1,6 +1,4 @@
-﻿using Warpstone.V2.Errors;
-
-namespace Warpstone.V2.Parsers;
+﻿namespace Warpstone.V2.Parsers;
 
 public abstract class ParserBase<T> : IParser<T>
 {
@@ -8,9 +6,9 @@ public abstract class ParserBase<T> : IParser<T>
 
     public abstract void Step(IActiveParseContext context, int position, int phase);
 
-    public IParseResult<T> Fail(int position, IEnumerable<IParseError> errors)
-        => ParseResult.CreateFailure(this, position, errors);
+    public IParseResult<T> Fail(int position, IParseInput input)
+        => ParseResult.CreateFail(this, position, input);
 
-    IParseResult IParser.Fail(int position, IEnumerable<IParseError> errors)
-        => Fail(position, errors);
+    IParseResult IParser.Fail(int position, IParseInput input)
+        => Fail(position, input);
 }

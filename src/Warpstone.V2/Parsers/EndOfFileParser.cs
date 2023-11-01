@@ -14,11 +14,11 @@ public sealed class EndOfFileParser : ParserBase<string>
     {
         if (position >= context.Input.Input.Length)
         {
-            context.MemoTable[position, this] = this.Succeed(position, 0, string.Empty);
+            context.MemoTable[position, this] = this.Match(position, 0, string.Empty);
         }
         else
         {
-            context.MemoTable[position, this] = this.Fail(position, new UnexpectedTokenError(context.Input, this, position, 1, "EOF"));
+            context.MemoTable[position, this] = this.Mismatch(position, new UnexpectedTokenError(context.Input, this, position, 1, "EOF"));
         }
     }
 }

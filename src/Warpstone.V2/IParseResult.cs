@@ -13,11 +13,13 @@ public interface IParseResult
 
     public IParser Parser { get; }
 
-    public bool Success { get; }
+    public ParseStatus Status { get; }
 
     public object? Value { get; }
 
     public IReadOnlyList<IParseError> Errors { get; }
+
+    public IParseResult AsMismatch();
 }
 
 
@@ -26,4 +28,6 @@ public interface IParseResult<T> : IParseResult
     public new IParser<T> Parser { get; }
 
     public new T Value { get; }
+
+    public new IParseResult<T> AsMismatch();
 }

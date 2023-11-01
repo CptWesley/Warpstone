@@ -5,23 +5,26 @@ namespace Warpstone.V2;
 
 public static class ParseResult
 {
-    public static IParseResult<T> CreateSuccess<T>(IParser<T> parser, int position, int length, T value)
-        => ParseResult<T>.CreateSuccess(parser, position, length, value);
+    public static IParseResult<T> CreateMatch<T>(IParser<T> parser, int position, int length, T value)
+        => ParseResult<T>.CreateMatch(parser, position, length, value);
 
-    public static IParseResult<T> CreateFailure<T>(IParser<T> parser, int position, IEnumerable<IParseError> errors)
-        => ParseResult<T>.CreateFailure(parser, position, errors);
+    public static IParseResult<T> CreateMismatch<T>(IParser<T> parser, int position, IEnumerable<IParseError> errors)
+        => ParseResult<T>.CreateMismatch(parser, position, errors);
+
+    public static IParseResult<T> CreateFail<T>(IParser<T> parser, int position, IParseInput input)
+        => ParseResult<T>.CreateFail(parser, position, input);
 }
 
 public sealed class ParseResult<T> : IParseResult<T>
 {
     private readonly T? value;
 
-    private ParseResult(IParser<T> parser, int position, int length, bool success, T? value, IReadOnlyList<IParseError> errors)
+    private ParseResult(IParser<T> parser, int position, int length, ParseStatus status, T? value, IReadOnlyList<IParseError> errors)
     {
         Parser = parser;
         Position = position;
         Length = length;
-        Success = success;
+        Status = status;
         this.value = value;
         Errors = errors;
     }
@@ -32,7 +35,7 @@ public sealed class ParseResult<T> : IParseResult<T>
     {
         get
         {
-            if (!this.Success)
+            if (Status != ParseStatus.Match)
             {
                 throw new InvalidOperationException();
             }
@@ -45,7 +48,7 @@ public sealed class ParseResult<T> : IParseResult<T>
 
     public int NextPosition => Position + Length;
 
-    public bool Success { get; }
+    public ParseStatus Status { get; }
 
     public int Length { get; }
 
@@ -55,9 +58,25 @@ public sealed class ParseResult<T> : IParseResult<T>
 
     object? IParseResult.Value => Value;
 
-    public static IParseResult<T> CreateSuccess(IParser<T> parser, int position, int length, T value)
-        => new ParseResult<T>(parser, position, length, true, value, Array.Empty<IParseError>());
+    public static IParseResult<T> CreateMatch(IParser<T> parser, int position, int length, T value)
+        => new ParseResult<T>(parser, position, length, ParseStatus.Match, value, Array.Empty<IParseError>());
 
-    public static IParseResult<T> CreateFailure(IParser<T> parser, int position, IEnumerable<IParseError> errors)
-        => new ParseResult<T>(parser, position, 0, false, default, errors.ToArray());
+    public static IParseResult<T> CreateMismatch(IParser<T> parser, int position, IEnumerable<IParseError> errors)
+        => new ParseResult<T>(parser, position, 0, ParseStatus.Mismatch, default, errors.ToArray());
+
+    public static IParseResult<T> CreateFail(IParser<T> parser, int position, IParseInput input)
+        => new ParseResult<T>(parser, position, 0, ParseStatus.Fail, default, new[] { new InfiniteRecursionError(input, parser, position, 0) });
+
+    public IParseResult<T> AsMismatch()
+    {
+        if (Status == ParseStatus.Mismatch)
+        {
+            return this;
+        }
+
+        return new ParseResult<T>(Parser, Position, Length, ParseStatus.Mismatch, value, Errors);
+    }
+
+    IParseResult IParseResult.AsMismatch()
+        => AsMismatch();
 }

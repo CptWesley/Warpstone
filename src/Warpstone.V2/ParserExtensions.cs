@@ -5,14 +5,14 @@ namespace Warpstone.V2;
 
 public static class ParserExtensions
 {
-    public static IParseResult<T> Succeed<T>(this IParser<T> parser, int position, int length, T value)
-        => ParseResult.CreateSuccess(parser, position, length, value);
+    public static IParseResult<T> Match<T>(this IParser<T> parser, int position, int length, T value)
+        => ParseResult.CreateMatch(parser, position, length, value);
 
-    public static IParseResult<T> Fail<T>(this IParser<T> parser, int position, params IParseError[] errors)
-        => parser.Fail(position, errors);
+    public static IParseResult<T> Mismatch<T>(this IParser<T> parser, int position, IEnumerable<IParseError> errors)
+        => ParseResult.CreateMismatch(parser, position, errors);
 
-    public static IParseResult Fail(this IParser parser, int position, params IParseError[] errors)
-        => parser.Fail(position, errors);
+    public static IParseResult<T> Mismatch<T>(this IParser<T> parser, int position, params IParseError[] errors)
+        => parser.Mismatch(position, errors as IEnumerable<IParseError>);
 
     public static IParseContext<T> CreateContext<T>(this IParser<T> parser, IParseInput input)
         => ParseContext.Create(input, parser);

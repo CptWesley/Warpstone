@@ -46,9 +46,9 @@ public sealed class ChoiceParser<T> : ParserBase<T>
             throw new InvalidOperationException();
         }
 
-        if (firstResult.Success)
+        if (firstResult.Status == ParseStatus.Match)
         {
-            context.MemoTable[position, this] = this.Succeed(position, firstResult.Length, firstResult.Value);
+            context.MemoTable[position, this] = this.Match(position, firstResult.Length, firstResult.Value);
         }
         else
         {
@@ -59,7 +59,7 @@ public sealed class ChoiceParser<T> : ParserBase<T>
 
     private void Step2(IActiveParseContext context, int position)
     {
-        if (context.MemoTable[position, First] is not IParseResult<T> firstResult || firstResult.Success)
+        if (context.MemoTable[position, First] is not IParseResult<T> firstResult || firstResult.Status == ParseStatus.Match)
         {
             throw new InvalidOperationException();
         }
@@ -69,14 +69,14 @@ public sealed class ChoiceParser<T> : ParserBase<T>
             throw new InvalidOperationException();
         }
 
-        if (secondResult.Success)
+        if (secondResult.Status == ParseStatus.Match)
         {
-            context.MemoTable[position, this] = this.Succeed(position, secondResult.Length, secondResult.Value);
+            context.MemoTable[position, this] = this.Match(position, secondResult.Length, secondResult.Value);
         }
         else
         {
             var errors = firstResult.Errors.Concat(secondResult.Errors);
-            context.MemoTable[position, this] = this.Fail(position, errors);
+            context.MemoTable[position, this] = this.Mismatch(position, errors);
         }
     }
 }

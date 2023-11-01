@@ -8,10 +8,10 @@ public interface IParser
 
     public void Step(IActiveParseContext context, int position, int phase);
 
-    public IParseResult Fail(int position, IEnumerable<IParseError> errors);
+    public IParseResult Fail(int position, IParseInput input);
 }
 
 public interface IParser<T> : IParser
 {
-    public new IParseResult<T> Fail(int position, IEnumerable<IParseError> errors);
+    public new IParseResult<T> Fail(int position, IParseInput input);
 }
