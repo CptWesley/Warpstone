@@ -59,11 +59,11 @@ public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
         }
 
         var job = stack.Pop();
-        PerformJob(ref job);
+        Step(ref job);
         return true;
     }
 
-    private void PerformJob(ref Job job)
+    private void Step(ref Job job)
     {
         var prev = MemoTable[job.Position, job.Parser];
 
