@@ -60,12 +60,7 @@ public sealed class AltParseContext
         limits = limits.Add(parser);
         var ans = EvalGrow(parser, p, limits);
 
-        if (memo[p, parser] is not { } prev)
-        {
-            throw new InvalidOperationException();
-        }
-
-        if (ans.Status != ParseStatus.Match || ans.NextPosition <= prev.NextPosition)
+        if (memo[p, parser] is { } prev && (ans.Status != ParseStatus.Match || ans.NextPosition <= prev.NextPosition))
         {
             return prev;
         }
@@ -106,6 +101,7 @@ public sealed class AltParseContext
 
     private void Log(string message)
     {
+        /*
         Console.WriteLine(message);
 
         foreach (var entry in memo)
@@ -116,5 +112,6 @@ public sealed class AltParseContext
         Console.WriteLine();
         Console.WriteLine();
         Console.WriteLine();
+        */
     }
 }

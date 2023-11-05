@@ -9,6 +9,35 @@ public static class Program
     private static readonly Func<IParser<string>> ManyALeftLazy = () => ManyALeft!;
     private static readonly IParser<string> ManyALeft = ManyALeftLazy.Concat(Char('a')).Or(Char('a'));
 
+    private static readonly IParser<string> Digit
+        = Char('0')
+        .Or(Char('1'))
+        .Or(Char('2'))
+        .Or(Char('3'))
+        .Or(Char('4'))
+        .Or(Char('5'))
+        .Or(Char('6'))
+        .Or(Char('7'))
+        .Or(Char('8'))
+        .Or(Char('9'));
+
+    private static readonly Func<IParser<string>> LazyNumber = () => Number!;
+    private static readonly IParser<string> Number
+        = LazyNumber.Concat(Digit).Or(Digit);
+
+    private static readonly Func<IParser<string>> LazyExp = () => Exp!;
+    private static readonly Func<IParser<string>> LazyAddSub = () => AddSub!;
+    private static readonly IParser<string> Add = LazyExp.Concat(Char('+')).Concat(LazyAddSub);
+    private static readonly IParser<string> Sub = LazyExp.Concat(Char('-')).Concat(LazyAddSub);
+    private static readonly IParser<string> AddSub = Add.Or(Sub).Or(Number);
+
+    private static readonly Func<IParser<string>> LazyMulDiv = () => MulDiv!;
+    private static readonly IParser<string> Mul = LazyExp.Concat(Char('*')).Concat(LazyMulDiv);
+    private static readonly IParser<string> Div = LazyExp.Concat(Char('/')).Concat(LazyMulDiv);
+    private static readonly IParser<string> MulDiv = Mul.Or(Div).Or(AddSub);
+
+    private static readonly IParser<string> Exp = MulDiv;
+
     public static void Main(string[] args)
     {
         var parser
@@ -32,7 +61,14 @@ public static class Program
         //var result9 = ManyARight.Parse(new string('a', 10_000));
 
         //var result10 = ManyALeft.Parse("aaa");
-        var result11 = ManyALeft.Parse(new string('a', 100));
+        //var result11 = ManyALeft.Parse(new string('a', 100));
+        var result12 = Exp.Parse("1");
+        var result13 = Exp.Parse("12");
+        var result14 = Exp.Parse("12+54");
+        var result15 = Exp.Parse("12+54+23");
+        var result16 = Exp.Parse("12-54-23");
+        var result17 = Exp.Parse("1+2-3+4-2");
+        var result18 = Exp.Parse("1-2+3-4+2");
     }
 
     private static IParser<(T1, T2)> Then<T1, T2>(this Func<IParser<T1>> p1, Func<IParser<T2>> p2)
