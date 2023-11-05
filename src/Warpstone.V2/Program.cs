@@ -7,7 +7,7 @@ public static class Program
     private static readonly IParser<string> ManyARight = EOF.Or(Char('a').Concat(() => ManyARight!));
 
     private static readonly Func<IParser<string>> ManyALeftLazy = () => ManyALeft!;
-    private static readonly IParser<string> ManyALeft = EOF.Or(ManyALeftLazy.Concat(Char('a')));
+    private static readonly IParser<string> ManyALeft = ManyALeftLazy.Concat(Char('a')).Or(Char('a'));
 
     public static void Main(string[] args)
     {
@@ -19,6 +19,7 @@ public static class Program
                     Char('c')
                     .Or(Char('d'))))
             .Concat(EOF);
+        /*
         var result1 = parser.Parse("abc");
         var result2 = parser.Parse("abd");
         var result3 = parser.Parse("abe");
@@ -27,9 +28,11 @@ public static class Program
         var result6 = ManyARight.Parse("a");
         var result7 = ManyARight.Parse("aa");
         var result8 = ManyARight.Parse("aaaaaaaaaaaaaa");
-        var result9 = ManyARight.Parse(new string('a', 10_000));
+        */
+        //var result9 = ManyARight.Parse(new string('a', 10_000));
 
-        var result10 = ManyALeft.Parse("aaa");
+        //var result10 = ManyALeft.Parse("aaa");
+        var result11 = ManyALeft.Parse(new string('a', 100));
     }
 
     private static IParser<(T1, T2)> Then<T1, T2>(this Func<IParser<T1>> p1, Func<IParser<T2>> p2)

@@ -79,4 +79,12 @@ public sealed class ParseResult<T> : IParseResult<T>
 
     IParseResult IParseResult.AsMismatch()
         => AsMismatch();
+
+    public override string ToString()
+        => Status switch
+        {
+            ParseStatus.Match => Value?.ToString() ?? string.Empty,
+            ParseStatus.Fail => "Fail",
+            _ => $"Error([{string.Join(", ", Errors)}])",
+        };
 }

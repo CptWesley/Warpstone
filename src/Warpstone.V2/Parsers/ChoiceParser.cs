@@ -15,6 +15,32 @@ public sealed class ChoiceParser<T> : ParserBase<T>
 
     public IParser<T> Second => second.Value;
 
+    public override IParseResult<T> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval)
+    {
+        if (eval(First, position) is not IParseResult<T> first)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (first.Status == ParseStatus.Match)
+        {
+            return first;
+        }
+
+        if (eval(Second, position) is not IParseResult<T> second)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (second.Status == ParseStatus.Match)
+        {
+            return second;
+        }
+
+        var errors = first.Errors.Concat(second.Errors);
+        return this.Mismatch(position, errors);
+    }
+
     public override void Step(IActiveParseContext context, int position, int phase)
     {
         switch (phase)
@@ -79,4 +105,7 @@ public sealed class ChoiceParser<T> : ParserBase<T>
             context.MemoTable[position, this] = this.Mismatch(position, errors);
         }
     }
+
+    protected override string InternalToString(int depth)
+        => $"({First.ToString(depth - 1)} | {Second.ToString(depth - 1)})";
 }

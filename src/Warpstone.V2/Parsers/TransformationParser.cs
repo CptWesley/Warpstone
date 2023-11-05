@@ -16,6 +16,30 @@ public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>
 
     public Func<TIn, TOut> Transformation { get; }
 
+    public override IParseResult<TOut> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval)
+    {
+        if (eval(First, position) is not ParseResult<TIn> inner)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (inner.Status != ParseStatus.Match)
+        {
+            return this.Mismatch(position, inner.Errors);
+        }
+
+        try
+        {
+            var transformed = Transformation(inner.Value);
+            return this.Match(position, inner.Length, transformed);
+        }
+        catch (Exception e)
+        {
+            var error = new TransformationError(input, this, position, 0, e.Message, e);
+            return this.Mismatch(position, error);
+        }
+    }
+
     public override void Step(IActiveParseContext context, int position, int phase)
     {
         switch (phase)
@@ -61,4 +85,7 @@ public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>
             context.MemoTable[position, this] = this.Mismatch(position, error);
         }
     }
+
+    protected override string InternalToString(int depth)
+        => $"Transform({First.ToString(depth - 1)})";
 }

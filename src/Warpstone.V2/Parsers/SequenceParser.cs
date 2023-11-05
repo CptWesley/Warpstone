@@ -15,6 +15,33 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
 
     public IParser<TSecond> Second => second.Value;
 
+    public override IParseResult<(TFirst, TSecond)> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval)
+    {
+        if (eval(First, position) is not IParseResult<TFirst> first)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (first.Status != ParseStatus.Match)
+        {
+            return this.Mismatch(position, first.Errors);
+        }
+
+        if (eval(Second, first.NextPosition) is not IParseResult<TSecond> second)
+        {
+            throw new InvalidOperationException();
+        }
+
+        if (second.Status != ParseStatus.Match)
+        {
+            return this.Mismatch(first.Position, second.Errors);
+        }
+
+        var value = (first.Value, second.Value);
+        var length = first.Length + second.Length;
+        return this.Match(position, length, value);
+    }
+
     public override void Step(IActiveParseContext context, int position, int phase)
     {
         switch (phase)
@@ -80,4 +107,7 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
             context.MemoTable[position, this] = this.Mismatch(position, secondResult.Errors);
         }
     }
+
+    protected override string InternalToString(int depth)
+        => $"({First.ToString(depth - 1)} {Second.ToString(depth - 1)})";
 }
