@@ -20,14 +20,12 @@ public sealed class AltParseContext
         lock (memo)
         {
             var result = ApplyRule(parser, p);
-            Log($"Final result ({result.Length}): {result}");
             return (IParseResult<T>)result;
         }
     }
 
     private IParseResult ApplyRule(IParser parser, int p)
     {
-        Log($"ApplyRule({parser}, {p})");
         if (memo[p, parser] is not { } m)
         {
             memo[p, parser] = parser.Fail(p, input);
@@ -56,7 +54,6 @@ public sealed class AltParseContext
 
     private IParseResult ApplyRuleGrow(IParser parser, int p, IImmutableSet<IParser> limits)
     {
-        Log($"ApplyRuleGrow({parser}, {p}, {{{string.Join(", ", limits)}}})");
         limits = limits.Add(parser);
         var ans = EvalGrow(parser, p, limits);
 
@@ -98,20 +95,4 @@ public sealed class AltParseContext
 
             return ApplyRule(calledParser, calledPosition);
         });
-
-    private void Log(string message)
-    {
-        /*
-        Console.WriteLine(message);
-
-        foreach (var entry in memo)
-        {
-            Console.WriteLine($"[{entry.Key.Item1}, {entry.Key.Item2}] = {entry.Value}");
-        }
-
-        Console.WriteLine();
-        Console.WriteLine();
-        Console.WriteLine();
-        */
-    }
 }
