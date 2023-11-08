@@ -14,10 +14,7 @@ public abstract class ParserBase<T> : IParser<T>
     IParseResult IParser.Fail(int position, IParseInput input)
         => Fail(position, input);
 
-    IParseResult IParser.Eval(IParseInput input, int p, Func<IParser, int, IParseResult> eval)
-        => Eval(input, p, eval);
-
-    public abstract IParseResult<T> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval);
+    public abstract IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval);
 
     public IParseResult<T> Mismatch(int position, IEnumerable<IParseError> errors)
         => ParseResult.CreateMismatch(this, position, errors);

@@ -15,31 +15,39 @@ public sealed class ChoiceParser<T> : ParserBase<T>
 
     public IParser<T> Second => second.Value;
 
-    public override IParseResult<T> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval)
-    {
-        if (eval(First, position) is not IParseResult<T> first)
-        {
-            throw new InvalidOperationException();
-        }
+    public override IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval)
+        => Iterative.More(
+            () => eval(First, position),
+            untypedFirst =>
+            {
+                if (untypedFirst is not IParseResult<T> first)
+                {
+                    throw new InvalidOperationException();
+                }
 
-        if (first.Status == ParseStatus.Match)
-        {
-            return first;
-        }
+                if (first.Status == ParseStatus.Match)
+                {
+                    return Iterative.Done(first);
+                }
 
-        if (eval(Second, position) is not IParseResult<T> second)
-        {
-            throw new InvalidOperationException();
-        }
+                return Iterative.More(
+                    () => eval(Second, position),
+                    untypedSecond =>
+                    {
+                        if (untypedSecond is not IParseResult<T> second)
+                        {
+                            throw new InvalidOperationException();
+                        }
 
-        if (second.Status == ParseStatus.Match)
-        {
-            return second;
-        }
+                        if (second.Status == ParseStatus.Match)
+                        {
+                            return Iterative.Done(second);
+                        }
 
-        var errors = first.Errors.Concat(second.Errors);
-        return this.Mismatch(position, errors);
-    }
+                        var errors = first.Errors.Concat(second.Errors);
+                        return Iterative.Done(this.Mismatch(position, errors));
+                    });
+            });
 
     public override void Step(IActiveParseContext context, int position, int phase)
     {

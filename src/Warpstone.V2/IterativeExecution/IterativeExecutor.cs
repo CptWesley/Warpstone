@@ -20,30 +20,27 @@ public sealed class IterativeExecutor
 
     public void Step()
     {
-        lock (stack)
+        var job = stack.Pop();
+
+        if (job.Type == IterativeStepType.Done)
         {
-            var job = stack.Pop();
+            last = job.Value;
+        }
+        else if (job.Type == IterativeStepType.More)
+        {
+            stack.Push(new()
+            {
+                Type = IterativeStepType.Continue,
+                More = job.More,
 
-            if (job.Type == IterativeStepType.Done)
-            {
-                last = job.Value;
-            }
-            else if (job.Type == IterativeStepType.More)
-            {
-                stack.Push(new()
-                {
-                    Type = IterativeStepType.Continue,
-                    More = job.More,
-
-                    First = null,
-                    Value = null,
-                });
-                stack.Push(job.First!());
-            }
-            else if (job.Type == IterativeStepType.Continue)
-            {
-                stack.Push(job.More!(last));
-            }
+                First = null,
+                Value = null,
+            });
+            stack.Push(job.First!());
+        }
+        else if (job.Type == IterativeStepType.Continue)
+        {
+            stack.Push(job.More!(last));
         }
     }
 }

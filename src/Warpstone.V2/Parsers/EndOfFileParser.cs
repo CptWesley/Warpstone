@@ -10,15 +10,15 @@ public sealed class EndOfFileParser : ParserBase<string>
     {
     }
 
-    public override IParseResult<string> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval)
+    public override IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval)
     {
         if (position >= input.Input.Length)
         {
-            return this.Match(position, 0, string.Empty);
+            return Iterative.Done(this.Match(position, 0, string.Empty));
         }
         else
         {
-            return this.Mismatch(position, new UnexpectedTokenError(input, this, position, 1, "EOF"));
+            return Iterative.Done(this.Mismatch(position, new UnexpectedTokenError(input, this, position, 1, "EOF")));
         }
     }
 

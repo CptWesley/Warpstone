@@ -15,7 +15,7 @@ public interface IParser
 
     public IParseResult Match(int position, int length, object value);
 
-    public IParseResult Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval);
+    public IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval);
 
     public string ToString(int depth);
 }
@@ -27,6 +27,4 @@ public interface IParser<T> : IParser
     public new IParseResult<T> Mismatch(int position, IEnumerable<IParseError> errors);
 
     public IParseResult<T> Match(int position, int length, T value);
-
-    public new IParseResult<T> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval);
 }

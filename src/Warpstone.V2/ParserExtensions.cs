@@ -33,7 +33,7 @@ public static class ParserExtensions
     */
 
     public static IParseResult<T> Parse<T>(this IParser<T> parser, string input)
-        => new AltParseContext(input).Parse(parser, 0);
+        => new AltParseContext<T>(input, parser).RunToEnd();
 
     public static Task<IParseResult<T>> ParseAsync<T>(this IParser<T> parser, IParseInput input, CancellationToken cancellationToken = default)
         => parser.CreateContext(input).StepUntilCompletionAsync(cancellationToken);

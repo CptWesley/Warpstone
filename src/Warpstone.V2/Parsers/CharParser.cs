@@ -14,20 +14,20 @@ public sealed class CharParser : ParserBase<char>
 
     public char Value { get; }
 
-    public override IParseResult<char> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval)
+    public override IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval)
     {
         if (position >= input.Input.Length)
         {
-            return this.Mismatch(position, new UnexpectedTokenError(input, this, position, 1, expected));
+            return Iterative.Done(this.Mismatch(position, new UnexpectedTokenError(input, this, position, 1, expected)));
         }
 
         if (input.Input[position] == Value)
         {
-            return this.Match(position, 1, Value);
+            return Iterative.Done(this.Match(position, 1, Value));
         }
         else
         {
-            return this.Mismatch(position, new UnexpectedTokenError(input, this, position, 1, expected));
+            return Iterative.Done(this.Mismatch(position, new UnexpectedTokenError(input, this, position, 1, expected)));
         }
     }
 

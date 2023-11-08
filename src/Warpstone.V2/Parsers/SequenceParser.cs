@@ -15,32 +15,40 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
 
     public IParser<TSecond> Second => second.Value;
 
-    public override IParseResult<(TFirst, TSecond)> Eval(IParseInput input, int position, Func<IParser, int, IParseResult> eval)
-    {
-        if (eval(First, position) is not IParseResult<TFirst> first)
-        {
-            throw new InvalidOperationException();
-        }
+    public override IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval)
+        => Iterative.More(
+            () => eval(First, position),
+            untypedFirst =>
+            {
+                if (untypedFirst is not IParseResult<TFirst> first)
+                {
+                    throw new InvalidOperationException();
+                }
 
-        if (first.Status != ParseStatus.Match)
-        {
-            return this.Mismatch(position, first.Errors);
-        }
+                if (first.Status != ParseStatus.Match)
+                {
+                    return Iterative.Done(this.Mismatch(position, first.Errors));
+                }
 
-        if (eval(Second, first.NextPosition) is not IParseResult<TSecond> second)
-        {
-            throw new InvalidOperationException();
-        }
+                return Iterative.More(
+                    () => eval(Second, first.NextPosition),
+                    untypedSecond =>
+                    {
+                        if (untypedSecond is not IParseResult<TSecond> second)
+                        {
+                            throw new InvalidOperationException();
+                        }
 
-        if (second.Status != ParseStatus.Match)
-        {
-            return this.Mismatch(first.Position, second.Errors);
-        }
+                        if (second.Status != ParseStatus.Match)
+                        {
+                            return Iterative.Done(this.Mismatch(first.Position, second.Errors));
+                        }
 
-        var value = (first.Value, second.Value);
-        var length = first.Length + second.Length;
-        return this.Match(position, length, value);
-    }
+                        var value = (first.Value, second.Value);
+                        var length = first.Length + second.Length;
+                        return Iterative.Done(this.Match(position, length, value));
+                    });
+            });
 
     public override void Step(IActiveParseContext context, int position, int phase)
     {

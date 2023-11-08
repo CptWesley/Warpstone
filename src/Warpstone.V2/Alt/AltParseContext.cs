@@ -1,44 +1,115 @@
 ﻿using System.Collections.Immutable;
-using Warpstone.V2.Internal;
-using Warpstone.V2.Parsers;
 
 namespace Warpstone.V2.Alt;
 
-public sealed class AltParseContext
+public sealed class AltParseContext<T>
 {
     private readonly MemoTable memo = new();
     private readonly FlagTable growing = new();
-    private readonly IParseInput input;
 
-    public AltParseContext(string input)
+    private readonly IParseInput input;
+    private readonly IParser<T> parser;
+
+    private readonly IterativeExecutor executor;
+
+    public AltParseContext(ParseInput input, IParser<T> parser)
     {
-        this.input = new ParseInput(input);
+        this.input = input;
+        this.parser = parser;
+        this.executor = IterativeExecutor.Create(ApplyRule(parser, 0));
     }
 
-    public IParseResult<T> Parse<T>(IParser<T> parser, int p)
+    public AltParseContext(string input, IParser<T> parser)
+        : this(new ParseInput(input), parser)
     {
-        lock (memo)
+    }
+
+    public bool Done => executor.Done;
+
+    public IParseResult<T> Result => RunToEnd();
+
+    public void Step()
+    {
+        if (executor.Done)
         {
-            var result = ApplyRule(parser, p);
-            return (IParseResult<T>)result;
+            return;
+        }
+
+        lock (executor)
+        {
+            if (executor.Done)
+            {
+                return;
+            }
+
+            executor.Step();
         }
     }
 
-    private IParseResult ApplyRule(IParser parser, int p)
+    public IParseResult<T> RunToEnd()
+    {
+        if (executor.Done)
+        {
+            return (IParseResult<T>)executor.Result!;
+        }
+
+        lock (executor)
+        {
+            while (!executor.Done)
+            {
+                executor.Step();
+            }
+        }
+
+        return (IParseResult<T>)executor.Result!;
+    }
+
+    public IParseResult<T> RunToEnd(CancellationToken cancellationToken)
+    {
+        if (executor.Done)
+        {
+            return (IParseResult<T>)executor.Result!;
+        }
+
+        lock (executor)
+        {
+            while (!executor.Done)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                executor.Step();
+            }
+        }
+
+        return (IParseResult<T>)executor.Result!;
+    }
+
+    private IterativeStep ApplyRule(IParser parser, int p)
     {
         if (memo[p, parser] is not { } m)
         {
             memo[p, parser] = parser.Fail(p, input);
-            m = Eval(parser, p);
-            memo[p, parser] = m;
-            if (growing[p, parser])
-            {
-                GrowLR(parser, p);
-                growing[p, parser] = false;
-                m = memo[p, parser]!;
-            }
+            return Iterative.More(
+                () => Eval(parser, p),
+                untypedM =>
+                {
+                    var m = (IParseResult)untypedM!;
 
-            return m;
+                    memo[p, parser] = m;
+
+                    if (!growing[p, parser])
+                    {
+                        return Iterative.Done(m);
+                    }
+
+                    return Iterative.More(
+                        () => GrowLR(parser, p),
+                        _ =>
+                        {
+                            growing[p, parser] = false;
+                            var m = memo[p, parser]!;
+                            return Iterative.Done(m);
+                        });
+                });
         }
 
         if (m.Status == ParseStatus.Fail)
@@ -46,46 +117,54 @@ public sealed class AltParseContext
             m = parser.Mismatch(p, m.Errors);
             memo[p, parser] = m;
             growing[p, parser] = true;
-            return m;
+            return Iterative.Done(m);
         }
 
-        return m;
+        return Iterative.Done(m);
     }
 
-    private IParseResult ApplyRuleGrow(IParser parser, int p, IImmutableSet<IParser> limits)
+    private IterativeStep ApplyRuleGrow(IParser parser, int p, IImmutableSet<IParser> limits)
     {
         limits = limits.Add(parser);
-        var ans = EvalGrow(parser, p, limits);
 
-        if (memo[p, parser] is { } prev && (ans.Status != ParseStatus.Match || ans.NextPosition <= prev.NextPosition))
-        {
-            return prev;
-        }
-
-        memo[p, parser] = ans;
-        return ans;
-    }
-
-    private void GrowLR(IParser parser, int p)
-    {
-        var prevPos = -1;
-        while (true)
-        {
-            var ans = EvalGrow(parser, p, ImmutableHashSet.Create(parser));
-            if (ans.Status != ParseStatus.Match || ans.NextPosition <= prevPos)
+        return Iterative.More(
+            () => EvalGrow(parser, p, limits),
+            untypedAns =>
             {
-                break;
-            }
+                var ans = (IParseResult)untypedAns!;
 
-            memo[p, parser] = ans;
-            prevPos = ans.NextPosition;
-        }
+                if (memo[p, parser] is { } prev && (ans.Status != ParseStatus.Match || ans.NextPosition <= prev.NextPosition))
+                {
+                    return Iterative.Done(prev);
+                }
+
+                memo[p, parser] = ans;
+                return Iterative.Done(ans);
+            });
     }
 
-    private IParseResult Eval(IParser parser, int position)
+    private IterativeStep GrowLR(IParser parser, int p)
+        => GrowLR(parser, p, -1);
+
+    private IterativeStep GrowLR(IParser parser, int p, int prevPos)
+        => Iterative.More(
+            () => EvalGrow(parser, p, ImmutableHashSet.Create(parser)),
+            untypedAns =>
+            {
+                var ans = (IParseResult)untypedAns!;
+                if (ans.Status != ParseStatus.Match || ans.NextPosition <= prevPos)
+                {
+                    return Iterative.Done();
+                }
+
+                memo[p, parser] = ans;
+                return Iterative.Done(() => GrowLR(parser, p, ans.NextPosition));
+            });
+
+    private IterativeStep Eval(IParser parser, int position)
         => parser.Eval(input, position, ApplyRule);
 
-    private IParseResult EvalGrow(IParser parser, int position, IImmutableSet<IParser> limits)
+    private IterativeStep EvalGrow(IParser parser, int position, IImmutableSet<IParser> limits)
         => parser.Eval(input, position, (calledParser, calledPosition) =>
         {
             if (calledPosition == position && !limits.Contains(calledParser))
