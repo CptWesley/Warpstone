@@ -48,27 +48,41 @@ public static class Program
                     Char('c')
                     .Or(Char('d'))))
             .Concat(EOF);
-        /*
-        var result1 = parser.Parse("abc");
-        var result2 = parser.Parse("abd");
-        var result3 = parser.Parse("abe");
-        var result4 = parser.Parse("abdz");
-        var result5 = ManyARight.Parse("");
-        var result6 = ManyARight.Parse("a");
-        var result7 = ManyARight.Parse("aa");
-        var result8 = ManyARight.Parse("aaaaaaaaaaaaaa");
-        */
-        //var result9 = ManyARight.Parse(new string('a', 10_000));
 
-        //var result10 = ManyALeft.Parse("aaa");
-        //var result11 = ManyALeft.Parse(new string('a', 100));
-        var result12 = Exp.Parse("1");
-        var result13 = Exp.Parse("12");
-        var result14 = Exp.Parse("12+54");
-        var result15 = Exp.Parse("12+54+23");
-        var result16 = Exp.Parse("12-54-23");
-        var result17 = Exp.Parse("1+2-3+4-2");
-        var result18 = Exp.Parse("1-2+3-4+2");
+        var result1 = Do(parser, "abc");
+        var result2 = Do(parser, "abd");
+        var result3 = Do(parser, "abe");
+        var result4 = Do(parser, "abdz");
+        var result5 = Do(ManyARight, "");
+        var result6 = Do(ManyARight, "a");
+        var result7 = Do(ManyARight, "aa");
+        var result8 = Do(ManyARight, "aaaaaaaaaaaaaa");
+        var result9 = Do(ManyARight, new string('a', 10_000));
+
+        var result10 = Do(ManyALeft, "aaa");
+        var result11 = Do(ManyALeft, new string('a', 100));
+        var result12 = Do(ManyALeft, new string('a', 10_000));
+        var result13 = Do(Exp, "1");
+        var result14 = Do(Exp, "12");
+        var result15 = Do(Exp, "12+54");
+        var result16 = Do(Exp, "12+54+23");
+        var result17 = Do(Exp, "12-54-23");
+        var result18 = Do(Exp, "1+2-3+4-2");
+        var result19 = Do(Exp, "1-2+3-4+2");
+    }
+
+    private static IParseResult<string> Do(IParser<string> parser, string input)
+    {
+        var result = parser.Parse(input);
+        if (result.Status == ParseStatus.Match)
+        {
+            Console.WriteLine($"[{result.Value == input}] Expected: '{input}' Found: '{result.Value}'");
+        }
+        else
+        {
+            Console.WriteLine($"[False] Expected: '{input}' Found: Error");
+        }
+        return result;
     }
 
     private static IParser<(T1, T2)> Then<T1, T2>(this Func<IParser<T1>> p1, Func<IParser<T2>> p2)
