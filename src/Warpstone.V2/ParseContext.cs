@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Warpstone.V2;
 
@@ -116,6 +117,7 @@ public sealed class ParseContext<T> : IParseContext<T>
                 () => Eval(parser, p),
                 untypedM =>
                 {
+                    Debug.Assert(untypedM is IParseResult);
                     var m = (IParseResult)untypedM!;
 
                     memo[p, parser] = m;
@@ -155,6 +157,7 @@ public sealed class ParseContext<T> : IParseContext<T>
             () => EvalGrow(parser, p, limits),
             untypedAns =>
             {
+                Debug.Assert(untypedAns is IParseResult);
                 var ans = (IParseResult)untypedAns!;
 
                 if (memo[p, parser] is { } prev && (ans.Status != ParseStatus.Match || ans.NextPosition <= prev.NextPosition))
@@ -176,7 +179,9 @@ public sealed class ParseContext<T> : IParseContext<T>
             () => EvalGrow(parser, p, ImmutableHashSet.Create(parser)),
             untypedAns =>
             {
+                Debug.Assert(untypedAns is IParseResult);
                 var ans = (IParseResult)untypedAns!;
+
                 if (ans.Status != ParseStatus.Match || ans.NextPosition <= prevPos)
                 {
                     return Iterative.Done();

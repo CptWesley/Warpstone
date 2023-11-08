@@ -1,4 +1,6 @@
-﻿namespace Warpstone.V2.Parsers;
+﻿using System.Diagnostics;
+
+namespace Warpstone.V2.Parsers;
 
 public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecond)>
 {
@@ -20,10 +22,8 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
             () => eval(First, position),
             untypedFirst =>
             {
-                if (untypedFirst is not IParseResult<TFirst> first)
-                {
-                    throw new InvalidOperationException();
-                }
+                Debug.Assert(untypedFirst is IParseResult<TFirst>);
+                var first = (IParseResult<TFirst>)untypedFirst;
 
                 if (first.Status != ParseStatus.Match)
                 {
@@ -34,10 +34,8 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
                     () => eval(Second, first.NextPosition),
                     untypedSecond =>
                     {
-                        if (untypedSecond is not IParseResult<TSecond> second)
-                        {
-                            throw new InvalidOperationException();
-                        }
+                        Debug.Assert(untypedSecond is IParseResult<TSecond>);
+                        var second = (IParseResult<TSecond>)untypedSecond;
 
                         if (second.Status != ParseStatus.Match)
                         {

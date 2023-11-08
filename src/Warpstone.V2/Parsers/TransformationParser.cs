@@ -1,4 +1,5 @@
-﻿using Warpstone.V2.Errors;
+﻿using System.Diagnostics;
+using Warpstone.V2.Errors;
 
 namespace Warpstone.V2.Parsers;
 
@@ -21,10 +22,8 @@ public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>
             () => eval(First, position),
             untypedInner =>
             {
-                if (untypedInner is not IParseResult<TIn> inner)
-                {
-                    throw new InvalidOperationException();
-                }
+                Debug.Assert(untypedInner is IParseResult<TIn>);
+                var inner = (IParseResult<TIn>)untypedInner;
 
                 if (inner.Status != ParseStatus.Match)
                 {

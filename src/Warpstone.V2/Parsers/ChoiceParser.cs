@@ -1,4 +1,6 @@
-﻿namespace Warpstone.V2.Parsers;
+﻿using System.Diagnostics;
+
+namespace Warpstone.V2.Parsers;
 
 public sealed class ChoiceParser<T> : ParserBase<T>
 {
@@ -20,10 +22,8 @@ public sealed class ChoiceParser<T> : ParserBase<T>
             () => eval(First, position),
             untypedFirst =>
             {
-                if (untypedFirst is not IParseResult<T> first)
-                {
-                    throw new InvalidOperationException();
-                }
+                Debug.Assert(untypedFirst is IParseResult<T>);
+                var first = (IParseResult<T>)untypedFirst;
 
                 if (first.Status == ParseStatus.Match)
                 {
@@ -34,10 +34,8 @@ public sealed class ChoiceParser<T> : ParserBase<T>
                     () => eval(Second, position),
                     untypedSecond =>
                     {
-                        if (untypedSecond is not IParseResult<T> second)
-                        {
-                            throw new InvalidOperationException();
-                        }
+                        Debug.Assert(untypedSecond is IParseResult<T>);
+                        var second = (IParseResult<T>)untypedSecond;
 
                         if (second.Status == ParseStatus.Match)
                         {
