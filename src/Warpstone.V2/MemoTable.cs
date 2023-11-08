@@ -8,7 +8,7 @@ public sealed class MemoTable : IMemoTable
 {
     private readonly Dictionary<int, Dictionary<IParser, IParseResult>> table = new();
 
-    public IParseResult this[(int, IParser) key] => throw new NotImplementedException();
+    public IParseResult? this[(int, IParser) key] => this[key.Item1, key.Item2];
 
     public IParseResult? this[int position, IParser parser]
     {

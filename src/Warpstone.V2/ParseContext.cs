@@ -29,15 +29,15 @@ public sealed class ParseContext<T> : IParseContext<T>
 
     public IParser<T> Parser { get; }
 
+    IParser IReadOnlyParseContext.Parser => Parser;
+
     public bool Done => executor.Done;
 
     public IParseResult<T> Result => RunToEnd(default);
 
-    IParser IReadOnlyParseContext.Parser => throw new NotImplementedException();
+    IParseResult IReadOnlyParseContext.Result => Result;
 
-    public IReadOnlyMemoTable MemoTable => throw new NotImplementedException();
-
-    IParseResult IReadOnlyParseContext.Result => throw new NotImplementedException();
+    public IReadOnlyMemoTable MemoTable => memo;
 
     public bool Step()
     {
