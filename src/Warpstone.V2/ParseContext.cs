@@ -4,9 +4,11 @@ namespace Warpstone.V2;
 
 public static class ParseContext
 {
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static IParseContext<T> Create<T>(IParseInput input, IParser<T> parser)
         => ParseContext<T>.Create(input, parser);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static IParseContext<T> Create<T>(string input, IParser<T> parser)
         => Create(new ParseInput(input), parser);
 }
@@ -78,6 +80,7 @@ public sealed class ParseContext<T> : IParseContext<T>
         return (IParseResult<T>)executor.Result!;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     IParseResult IParseContext.RunToEnd(CancellationToken cancellationToken)
         => RunToEnd(cancellationToken);
 
@@ -141,6 +144,7 @@ public sealed class ParseContext<T> : IParseContext<T>
             });
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     private IterativeStep GrowLR(IParser parser, int p)
         => GrowLR(parser, p, -1);
 
@@ -159,9 +163,11 @@ public sealed class ParseContext<T> : IParseContext<T>
                 return Iterative.Done(() => GrowLR(parser, p, ans.NextPosition));
             });
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     private IterativeStep Eval(IParser parser, int position)
         => parser.Eval(Input, position, ApplyRule);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     private IterativeStep EvalGrow(IParser parser, int position, IImmutableSet<IParser> limits)
         => parser.Eval(Input, position, (calledParser, calledPosition) =>
         {
@@ -173,6 +179,7 @@ public sealed class ParseContext<T> : IParseContext<T>
             return ApplyRule(calledParser, calledPosition);
         });
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public static IParseContext<T> Create(IParseInput input, IParser<T> parser)
         => new ParseContext<T>(input, parser);
 }

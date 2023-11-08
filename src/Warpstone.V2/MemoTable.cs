@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Diagnostics.CodeAnalysis;
-using Warpstone.V2.Parsers;
 
 namespace Warpstone.V2;
 
@@ -47,19 +46,23 @@ public sealed class MemoTable : IMemoTable
 
     public int Count => table.Sum(x => x.Value.Count);
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool ContainsKey((int, IParser) key)
         => this[key.Item1, key.Item2] is not null;
 
-    public IEnumerator<KeyValuePair<(int, IParser), IParseResult?>> GetEnumerator()
-        => table.SelectMany(x => x.Value.Select(y => new KeyValuePair<(int, IParser), IParseResult?>((x.Key, y.Key), y.Value)))
-            .GetEnumerator();
-
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     public bool TryGetValue((int, IParser) key, [NotNullWhen(true)] out IParseResult? value)
     {
         value = this[key.Item1, key.Item2];
         return value is not null;
     }
 
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
+    public IEnumerator<KeyValuePair<(int, IParser), IParseResult?>> GetEnumerator()
+        => table.SelectMany(x => x.Value.Select(y => new KeyValuePair<(int, IParser), IParseResult?>((x.Key, y.Key), y.Value)))
+            .GetEnumerator();
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
 }
