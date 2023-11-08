@@ -62,6 +62,11 @@ public sealed class ParseContext<T> : IParseContext<T>
     }
 
     public IParseResult<T> RunToEnd(CancellationToken cancellationToken)
+        => cancellationToken.CanBeCanceled
+        ? RunToEndWithCancellation(cancellationToken)
+        : RunToEndWithoutCancellation();
+
+    private IParseResult<T> RunToEndWithCancellation(CancellationToken cancellationToken)
     {
         if (executor.Done)
         {
@@ -73,6 +78,24 @@ public sealed class ParseContext<T> : IParseContext<T>
             while (!executor.Done)
             {
                 cancellationToken.ThrowIfCancellationRequested();
+                executor.Step();
+            }
+        }
+
+        return (IParseResult<T>)executor.Result!;
+    }
+
+    private IParseResult<T> RunToEndWithoutCancellation()
+    {
+        if (executor.Done)
+        {
+            return (IParseResult<T>)executor.Result!;
+        }
+
+        lock (executor)
+        {
+            while (!executor.Done)
+            {
                 executor.Step();
             }
         }
