@@ -31,18 +31,6 @@ public sealed class CharParser : ParserBase<char>
         }
     }
 
-    public override void Step(IActiveParseContext context, int position, int phase)
-    {
-        if (context.Input.Input[position] == Value)
-        {
-            context.MemoTable[position, this] = this.Match(position, 1, Value);
-        }
-        else
-        {
-            context.MemoTable[position, this] = this.Mismatch(position, new UnexpectedTokenError(context.Input, this, position, 1, expected));
-        }
-    }
-
     protected override string InternalToString(int depth)
         => expected;
 }

@@ -1,6 +1,4 @@
-﻿using Warpstone.V2.Errors;
-using Warpstone.V2.Internal;
-using Warpstone.V2.Parsers;
+﻿using System.Collections.Immutable;
 
 namespace Warpstone.V2;
 
@@ -13,79 +11,168 @@ public static class ParseContext
         => Create(new ParseInput(input), parser);
 }
 
-public sealed class ParseContext<T> : IParseContext<T>, IActiveParseContext
+public sealed class ParseContext<T> : IParseContext<T>
 {
-    private readonly Stack<Job> stack = new();
     private readonly MemoTable memo = new();
     private readonly FlagTable growing = new();
+
+    private readonly IterativeExecutor executor;
 
     private ParseContext(IParseInput input, IParser<T> parser)
     {
         Input = input;
         Parser = parser;
-        Push(parser, 0, 0);
+        executor = IterativeExecutor.Create(ApplyRule(parser, 0));
     }
-
-    public IMemoTable MemoTable => memo;
-
-    public bool Done
-        => memo[0, Parser] is { } v
-        && v.Status != ParseStatus.Fail
-        && !growing[0, Parser];
 
     public IParseInput Input { get; }
 
-    IReadOnlyMemoTable IReadOnlyParseContext.MemoTable => MemoTable;
-
     public IParser<T> Parser { get; }
 
-    public IParseResult<T> Result
-        => memo[0, Parser] is IParseResult<T> result
-        ? result
-        : throw new InvalidOperationException();
+    public bool Done => executor.Done;
 
-    IParser IReadOnlyParseContext.Parser => Parser;
+    public IParseResult<T> Result => RunToEnd(default);
 
-    IParseResult IReadOnlyParseContext.Result => Result;
+    IParser IReadOnlyParseContext.Parser => throw new NotImplementedException();
 
-    public void Push(IParser parser, int position, int phase)
-        => stack.Push(new(parser, position, phase));
+    public IReadOnlyMemoTable MemoTable => throw new NotImplementedException();
+
+    IParseResult IReadOnlyParseContext.Result => throw new NotImplementedException();
 
     public bool Step()
     {
-        if (Done)
+        if (executor.Done)
         {
             return false;
         }
 
-        var job = stack.Pop();
-        Step(ref job);
+        lock (executor)
+        {
+            if (executor.Done)
+            {
+                return false;
+            }
+
+            executor.Step();
+        }
+
         return true;
     }
 
-    private void Step(ref Job job)
+    public IParseResult<T> RunToEnd(CancellationToken cancellationToken)
     {
-        var prev = MemoTable[job.Position, job.Parser];
-
-        if (prev is null)
+        if (executor.Done)
         {
-            //MemoTable[job.Position, job.Parser] = job.Parser.Fail(job.Position, Input);
-        }
-        else if (prev.Status == ParseStatus.Fail)
-        {
-            MemoTable[job.Position, job.Parser] = prev.AsMismatch();
-            growing[job.Position, job.Parser] = true;
-        }
-        else if (job.Phase == 0 && prev.Status != ParseStatus.Fail)
-        {
-            return;
+            return (IParseResult<T>)executor.Result!;
         }
 
-        job.Parser.Step(this, job.Position, job.Phase);
+        lock (executor)
+        {
+            while (!executor.Done)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                executor.Step();
+            }
+        }
+
+        return (IParseResult<T>)executor.Result!;
     }
+
+    IParseResult IParseContext.RunToEnd(CancellationToken cancellationToken)
+        => RunToEnd(cancellationToken);
+
+    private IterativeStep ApplyRule(IParser parser, int p)
+    {
+        if (memo[p, parser] is not { } m)
+        {
+            memo[p, parser] = parser.Fail(p, Input);
+            return Iterative.More(
+                () => Eval(parser, p),
+                untypedM =>
+                {
+                    var m = (IParseResult)untypedM!;
+
+                    memo[p, parser] = m;
+
+                    if (!growing[p, parser])
+                    {
+                        return Iterative.Done(m);
+                    }
+
+                    return Iterative.More(
+                        () => GrowLR(parser, p),
+                        _ =>
+                        {
+                            growing[p, parser] = false;
+                            var m = memo[p, parser]!;
+                            return Iterative.Done(m);
+                        });
+                });
+        }
+
+        if (m.Status == ParseStatus.Fail)
+        {
+            m = parser.Mismatch(p, m.Errors);
+            memo[p, parser] = m;
+            growing[p, parser] = true;
+            return Iterative.Done(m);
+        }
+
+        return Iterative.Done(m);
+    }
+
+    private IterativeStep ApplyRuleGrow(IParser parser, int p, IImmutableSet<IParser> limits)
+    {
+        limits = limits.Add(parser);
+
+        return Iterative.More(
+            () => EvalGrow(parser, p, limits),
+            untypedAns =>
+            {
+                var ans = (IParseResult)untypedAns!;
+
+                if (memo[p, parser] is { } prev && (ans.Status != ParseStatus.Match || ans.NextPosition <= prev.NextPosition))
+                {
+                    return Iterative.Done(prev);
+                }
+
+                memo[p, parser] = ans;
+                return Iterative.Done(ans);
+            });
+    }
+
+    private IterativeStep GrowLR(IParser parser, int p)
+        => GrowLR(parser, p, -1);
+
+    private IterativeStep GrowLR(IParser parser, int p, int prevPos)
+        => Iterative.More(
+            () => EvalGrow(parser, p, ImmutableHashSet.Create(parser)),
+            untypedAns =>
+            {
+                var ans = (IParseResult)untypedAns!;
+                if (ans.Status != ParseStatus.Match || ans.NextPosition <= prevPos)
+                {
+                    return Iterative.Done();
+                }
+
+                memo[p, parser] = ans;
+                return Iterative.Done(() => GrowLR(parser, p, ans.NextPosition));
+            });
+
+    private IterativeStep Eval(IParser parser, int position)
+        => parser.Eval(Input, position, ApplyRule);
+
+    private IterativeStep EvalGrow(IParser parser, int position, IImmutableSet<IParser> limits)
+        => parser.Eval(Input, position, (calledParser, calledPosition) =>
+        {
+            if (calledPosition == position && !limits.Contains(calledParser))
+            {
+                return ApplyRuleGrow(calledParser, calledPosition, limits);
+            }
+
+            return ApplyRule(calledParser, calledPosition);
+        });
 
     public static IParseContext<T> Create(IParseInput input, IParser<T> parser)
         => new ParseContext<T>(input, parser);
-
-    private readonly record struct Job(IParser Parser, int Position, int Phase);
 }
