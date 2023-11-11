@@ -1,27 +1,41 @@
 ﻿namespace Warpstone.Parsers;
 
+/// <summary>
+/// Parser which attempts to parse the input in two different ways.
+/// If the first parser fails, the second parser is used.
+/// If the second parser also fails, this parser will fail.
+/// </summary>
+/// <typeparam name="T">The result type of the parsers.</typeparam>
 public sealed class ChoiceParser<T> : ParserBase<T>
 {
-    private readonly Lazy<IParser<T>> first;
-    private readonly Lazy<IParser<T>> second;
-
-    public ChoiceParser(Func<IParser<T>> first, Func<IParser<T>> second)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ChoiceParser{T}"/> class.
+    /// </summary>
+    /// <param name="first">The parser which is attempted first.</param>
+    /// <param name="second">The parser which is attempted second.</param>
+    public ChoiceParser(IParser<T> first, IParser<T> second)
     {
-        this.first = new(first);
-        this.second = new(second);
+        First = first;
+        Second = second;
     }
 
-    public IParser<T> First => first.Value;
+    /// <summary>
+    /// The parser which is attempted first.
+    /// </summary>
+    public IParser<T> First { get; }
 
-    public IParser<T> Second => second.Value;
+    /// <summary>
+    /// The parser which is attempted second.
+    /// </summary>
+    public IParser<T> Second { get; }
 
-    public override IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval)
+    /// <inheritdoc />
+    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
         => Iterative.More(
             () => eval(First, position),
             untypedFirst =>
             {
-                Debug.Assert(untypedFirst is IParseResult<T>);
-                var first = (IParseResult<T>)untypedFirst!;
+                var first = untypedFirst.AssertOfType<IParseResult<T>>();
 
                 if (first.Status == ParseStatus.Match)
                 {
@@ -32,8 +46,7 @@ public sealed class ChoiceParser<T> : ParserBase<T>
                     () => eval(Second, position),
                     untypedSecond =>
                     {
-                        Debug.Assert(untypedSecond is IParseResult<T>);
-                        var second = (IParseResult<T>)untypedSecond!;
+                        var second = untypedSecond.AssertOfType<IParseResult<T>>();
 
                         if (second.Status == ParseStatus.Match)
                         {
@@ -41,10 +54,11 @@ public sealed class ChoiceParser<T> : ParserBase<T>
                         }
 
                         var errors = first.Errors.Concat(second.Errors);
-                        return Iterative.Done(this.Mismatch(position, errors));
+                        return Iterative.Done(this.Mismatch(context, position, errors));
                     });
             });
 
+    /// <inheritdoc />
     protected override string InternalToString(int depth)
         => $"({First.ToString(depth - 1)} | {Second.ToString(depth - 1)})";
 }

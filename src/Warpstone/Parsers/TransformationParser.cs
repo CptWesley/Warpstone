@@ -1,44 +1,59 @@
 ﻿namespace Warpstone.Parsers;
 
+/// <summary>
+/// Represents a parser which performs a transformation on the result of an internal parser.
+/// </summary>
+/// <typeparam name="TIn">The result type of the inner parser.</typeparam>
+/// <typeparam name="TOut">The result type of the transformation.</typeparam>
 public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>
 {
-    private readonly Lazy<IParser<TIn>> first;
-
-    public TransformationParser(Func<IParser<TIn>> first, Func<TIn, TOut> transformation)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="TransformationParser{TIn, TOut}"/> class.
+    /// </summary>
+    /// <param name="first">The inner parser.</param>
+    /// <param name="transformation">The transformation function.</param>
+    public TransformationParser(IParser<TIn> first, Func<TIn, TOut> transformation)
     {
-        this.first = new(first);
+        First = first;
         Transformation = transformation;
     }
 
-    public IParser<TIn> First => first.Value;
+    /// <summary>
+    /// Gets the inner parser.
+    /// </summary>
+    public IParser<TIn> First { get; }
 
+    /// <summary>
+    /// Gets the transformation function.
+    /// </summary>
     public Func<TIn, TOut> Transformation { get; }
 
-    public override IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval)
+    /// <inheritdoc />
+    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
         => Iterative.More(
             () => eval(First, position),
             untypedInner =>
             {
-                Debug.Assert(untypedInner is IParseResult<TIn>);
-                var inner = (IParseResult<TIn>)untypedInner!;
+                var inner = untypedInner.AssertOfType<IParseResult<TIn>>();
 
                 if (inner.Status != ParseStatus.Match)
                 {
-                    return Iterative.Done(this.Mismatch(position, inner.Errors));
+                    return Iterative.Done(this.Mismatch(context, position, inner.Errors));
                 }
 
                 try
                 {
                     var transformed = Transformation(inner.Value);
-                    return Iterative.Done(this.Match(position, inner.Length, transformed));
+                    return Iterative.Done(this.Match(context, position, inner.Length, transformed));
                 }
                 catch (Exception e)
                 {
-                    var error = new TransformationError(input, this, position, 0, e.Message, e);
-                    return Iterative.Done(this.Mismatch(position, error));
+                    var error = new TransformationError(context, this, position, 0, e.Message, e);
+                    return Iterative.Done(this.Mismatch(context, position, error));
                 }
             });
 
+    /// <inheritdoc />
     protected override string InternalToString(int depth)
         => $"Transform({First.ToString(depth - 1)})";
 }

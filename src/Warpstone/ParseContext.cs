@@ -1,20 +1,85 @@
 ﻿namespace Warpstone;
 
+/// <summary>
+/// Provides helper methods to create <see cref="IParseContext{T}"/> instances.
+/// </summary>
 public static class ParseContext
 {
+    private static readonly MethodInfo createMethodInfo
+        = typeof(ParseContext)
+            .GetRuntimeMethods()
+            .First(m
+                => m.Name == nameof(Create)
+                && m.IsGenericMethodDefinition
+                && m.GetParameters().Length == 2
+                && m.GetParameters()[0].ParameterType == typeof(IParseInput));
+
+    /// <summary>
+    /// Creates a new <see cref="IParseContext{T}"/> from the given <paramref name="input"/>
+    /// and the initial <paramref name="parser"/>.
+    /// </summary>
+    /// <param name="input">The input to be parsed.</param>
+    /// <param name="parser">The parser that starts the parsing.</param>
+    /// <typeparam name="T">The output type of the initial parser.</typeparam>
+    /// <returns>The newly created <see cref="IParseContext{T}"/> instance.</returns>
     [MethodImpl(InlinedOptimized)]
     public static IParseContext<T> Create<T>(IParseInput input, IParser<T> parser)
         => ParseContext<T>.Create(input, parser);
 
+    /// <summary>
+    /// Creates a new <see cref="IParseContext{T}"/> from the given <paramref name="input"/>
+    /// and the initial <paramref name="parser"/>.
+    /// </summary>
+    /// <param name="input">The input to be parsed.</param>
+    /// <param name="parser">The parser that starts the parsing.</param>
+    /// <typeparam name="T">The output type of the initial parser.</typeparam>
+    /// <returns>The newly created <see cref="IParseContext{T}"/> instance.</returns>
     [MethodImpl(InlinedOptimized)]
     public static IParseContext<T> Create<T>(string input, IParser<T> parser)
-        => Create(new ParseInput(input), parser);
+        => Create(ParseInput.CreateFromMemory(input), parser);
+
+    /// <summary>
+    /// Creates a new <see cref="IParseContext{T}"/> from the given <paramref name="input"/>
+    /// and the initial <paramref name="parser"/>.
+    /// </summary>
+    /// <param name="input">The input to be parsed.</param>
+    /// <param name="parser">The parser that starts the parsing.</param>
+    /// <returns>The newly created <see cref="IParseContext{T}"/> instance.</returns>
+    [MethodImpl(InlinedOptimized)]
+    public static IParseContext Create(IParseInput input, IParser parser)
+    {
+        var expectedInterface = typeof(IParser<>).MakeGenericType(parser.ResultType);
+        if (!parser.GetType().GetInterfaces().Contains(expectedInterface))
+        {
+            throw new ArgumentException($"Parser does not implement 'IParser<{parser.ResultType.FullName}>'.", nameof(parser));
+        }
+
+        var method = createMethodInfo.MakeGenericMethod(parser.ResultType);
+        return (IParseContext)method.Invoke(null, new object[] { input, parser });
+    }
+
+    /// <summary>
+    /// Creates a new <see cref="IParseContext{T}"/> from the given <paramref name="input"/>
+    /// and the initial <paramref name="parser"/>.
+    /// </summary>
+    /// <param name="input">The input to be parsed.</param>
+    /// <param name="parser">The parser that starts the parsing.</param>
+    /// <returns>The newly created <see cref="IParseContext{T}"/> instance.</returns>
+    [MethodImpl(InlinedOptimized)]
+    public static IParseContext Create(string input, IParser parser)
+        => Create(ParseInput.CreateFromMemory(input), parser);
 }
 
+/// <summary>
+/// Represents a parse context.
+/// </summary>
+/// <typeparam name="T">The output type.</typeparam>
 public sealed class ParseContext<T> : IParseContext<T>
 {
-    private readonly MemoTable memo = new();
+    private readonly IMemoTable memo;
+    private readonly IReadOnlyMemoTable readOnlyMemo;
     private readonly FlagTable growing = new();
+    private readonly IReadOnlyParseContext<T> readOnlySelf;
 
     private readonly IterativeExecutor executor;
 
@@ -23,22 +88,33 @@ public sealed class ParseContext<T> : IParseContext<T>
         Input = input;
         Parser = parser;
         executor = IterativeExecutor.Create(ApplyRule(parser, 0));
+        memo = new MemoTable();
+        readOnlyMemo = memo.AsReadOnly();
+        readOnlySelf = new ReadOnlyParseContext<T>(this);
     }
 
+    /// <inheritdoc />
     public IParseInput Input { get; }
 
+    /// <inheritdoc />
     public IParser<T> Parser { get; }
 
+    /// <inheritdoc />
     IParser IReadOnlyParseContext.Parser => Parser;
 
+    /// <inheritdoc />
     public bool Done => executor.Done;
 
+    /// <inheritdoc />
     public IParseResult<T> Result => RunToEnd(default);
 
+    /// <inheritdoc />
     IParseResult IReadOnlyParseContext.Result => Result;
 
-    public IReadOnlyMemoTable MemoTable => memo;
+    /// <inheritdoc />
+    public IReadOnlyMemoTable MemoTable => readOnlyMemo;
 
+    /// <inheritdoc />
     public bool Step()
     {
         if (executor.Done)
@@ -59,6 +135,7 @@ public sealed class ParseContext<T> : IParseContext<T>
         return true;
     }
 
+    /// <inheritdoc />
     public IParseResult<T> RunToEnd(CancellationToken cancellationToken)
         => cancellationToken.CanBeCanceled
         ? RunToEndWithCancellation(cancellationToken)
@@ -101,6 +178,7 @@ public sealed class ParseContext<T> : IParseContext<T>
         return (IParseResult<T>)executor.Result!;
     }
 
+    /// <inheritdoc />
     [MethodImpl(InlinedOptimized)]
     IParseResult IParseContext.RunToEnd(CancellationToken cancellationToken)
         => RunToEnd(cancellationToken);
@@ -109,13 +187,12 @@ public sealed class ParseContext<T> : IParseContext<T>
     {
         if (memo[p, parser] is not { } m)
         {
-            memo[p, parser] = parser.Fail(p, Input);
+            memo[p, parser] = parser.Fail(readOnlySelf, p);
             return Iterative.More(
                 () => Eval(parser, p),
                 untypedM =>
                 {
-                    Debug.Assert(untypedM is IParseResult);
-                    var m = (IParseResult)untypedM!;
+                    var m = untypedM.AssertOfType<IParseResult>();
 
                     memo[p, parser] = m;
 
@@ -137,7 +214,7 @@ public sealed class ParseContext<T> : IParseContext<T>
 
         if (m.Status == ParseStatus.Fail)
         {
-            m = parser.Mismatch(p, m.Errors);
+            m = parser.Mismatch(readOnlySelf, p, m.Errors);
             memo[p, parser] = m;
             growing[p, parser] = true;
             return Iterative.Done(m);
@@ -154,8 +231,7 @@ public sealed class ParseContext<T> : IParseContext<T>
             () => EvalGrow(parser, p, limits),
             untypedAns =>
             {
-                Debug.Assert(untypedAns is IParseResult);
-                var ans = (IParseResult)untypedAns!;
+                var ans = untypedAns.AssertOfType<IParseResult>();
 
                 if (memo[p, parser] is { } prev && (ans.Status != ParseStatus.Match || ans.NextPosition <= prev.NextPosition))
                 {
@@ -176,8 +252,7 @@ public sealed class ParseContext<T> : IParseContext<T>
             () => EvalGrow(parser, p, ImmutableHashSet.Create(parser)),
             untypedAns =>
             {
-                Debug.Assert(untypedAns is IParseResult);
-                var ans = (IParseResult)untypedAns!;
+                var ans = untypedAns.AssertOfType<IParseResult>();
 
                 if (ans.Status != ParseStatus.Match || ans.NextPosition <= prevPos)
                 {
@@ -190,11 +265,11 @@ public sealed class ParseContext<T> : IParseContext<T>
 
     [MethodImpl(InlinedOptimized)]
     private IterativeStep Eval(IParser parser, int position)
-        => parser.Eval(Input, position, ApplyRule);
+        => parser.Eval(readOnlySelf, position, ApplyRule);
 
     [MethodImpl(InlinedOptimized)]
     private IterativeStep EvalGrow(IParser parser, int position, IImmutableSet<IParser> limits)
-        => parser.Eval(Input, position, (calledParser, calledPosition) =>
+        => parser.Eval(readOnlySelf, position, (calledParser, calledPosition) =>
         {
             if (calledPosition == position && !limits.Contains(calledParser))
             {
@@ -204,6 +279,13 @@ public sealed class ParseContext<T> : IParseContext<T>
             return ApplyRule(calledParser, calledPosition);
         });
 
+    /// <summary>
+    /// Creates a new <see cref="IParseContext{T}"/> from the given <paramref name="input"/>
+    /// and the initial <paramref name="parser"/>.
+    /// </summary>
+    /// <param name="input">The input to be parsed.</param>
+    /// <param name="parser">The parser that starts the parsing.</param>
+    /// <returns>The newly created <see cref="IParseContext{T}"/> instance.</returns>
     [MethodImpl(InlinedOptimized)]
     public static IParseContext<T> Create(IParseInput input, IParser<T> parser)
         => new ParseContext<T>(input, parser);

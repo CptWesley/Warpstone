@@ -1,12 +1,27 @@
 ﻿namespace Warpstone.Errors;
 
+/// <summary>
+/// Represents a parse error.
+/// </summary>
 public interface IParseError
 {
-    public IParseInput Input { get; }
+    /// <summary>
+    /// The parsing context in which this error was found.
+    /// </summary>
+    public IReadOnlyParseContext Context { get; }
 
+    /// <summary>
+    /// The parser that caused this error.
+    /// </summary>
     public IParser Parser { get; }
 
+    /// <summary>
+    /// The position in the <see cref="Context"/> where this error occurred.
+    /// </summary>
     public int Position { get; }
 
+    /// <summary>
+    /// The number of characters in the input that caused this error.
+    /// </summary>
     public int Length { get; }
 }

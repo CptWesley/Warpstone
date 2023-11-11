@@ -1,25 +1,33 @@
 ﻿namespace Warpstone.Parsers;
 
+/// <summary>
+/// A parser which only parses the end of a file.
+/// </summary>
 public sealed class EndOfFileParser : ParserBase<string>
 {
+    /// <summary>
+    /// The singleton instance of this parser.
+    /// </summary>
     public static readonly EndOfFileParser Instance = new EndOfFileParser();
 
     private EndOfFileParser()
     {
     }
 
-    public override IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval)
+    /// <inheritdoc />
+    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
     {
-        if (position >= input.Input.Length)
+        if (position >= context.Input.Content.Length)
         {
-            return Iterative.Done(this.Match(position, 0, string.Empty));
+            return Iterative.Done(this.Match(context, position, 0, string.Empty));
         }
         else
         {
-            return Iterative.Done(this.Mismatch(position, new UnexpectedTokenError(input, this, position, 1, "EOF")));
+            return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, "EOF")));
         }
     }
 
+    /// <inheritdoc />
     protected override string InternalToString(int depth)
         => "EOF";
 }

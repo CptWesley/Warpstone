@@ -1,38 +1,59 @@
 ﻿namespace Warpstone.Parsers;
 
+/// <summary>
+/// Provides a base implementation for the
+/// <see cref="IParser{T}"/> interface.
+/// </summary>
+/// <typeparam name="T">The type of values found by the parser.</typeparam>
 public abstract class ParserBase<T> : IParser<T>
 {
+    /// <inheritdoc />
     public Type ResultType => typeof(T);
 
-    public IParseResult<T> Fail(int position, IParseInput input)
-        => ParseResult.CreateFail(this, position, input);
+    /// <inheritdoc />
+    public abstract IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval);
 
-    IParseResult IParser.Fail(int position, IParseInput input)
-        => Fail(position, input);
+    /// <inheritdoc cref="ToString(int)"/>
+    protected abstract string InternalToString(int depth);
 
-    public abstract IterativeStep Eval(IParseInput input, int position, Func<IParser, int, IterativeStep> eval);
+    /// <inheritdoc />
+    [MethodImpl(InlinedOptimized)]
+    public IParseResult<T> Fail(IReadOnlyParseContext context, int position)
+        => ParseResult.CreateFail(context, this, position);
 
-    public IParseResult<T> Mismatch(int position, IEnumerable<IParseError> errors)
-        => ParseResult.CreateMismatch(this, position, errors);
+    /// <inheritdoc />
+    [MethodImpl(InlinedOptimized)]
+    IParseResult IParser.Fail(IReadOnlyParseContext context, int position)
+        => Fail(context, position);
 
-    public IParseResult<T> Match(int position, int length, T value)
-        => ParseResult.CreateMatch(this, position, length, value);
+    /// <inheritdoc />
+    [MethodImpl(InlinedOptimized)]
+    public IParseResult<T> Mismatch(IReadOnlyParseContext context, int position, IEnumerable<IParseError> errors)
+        => ParseResult.CreateMismatch(context, this, position, errors);
 
-    IParseResult IParser.Mismatch(int position, IEnumerable<IParseError> errors)
-        => Mismatch(position, errors);
+    /// <inheritdoc />
+    [MethodImpl(InlinedOptimized)]
+    public IParseResult<T> Match(IReadOnlyParseContext context, int position, int length, T value)
+        => ParseResult.CreateMatch(context, this, position, length, value);
 
-    IParseResult IParser.Match(int position, int length, object value)
+    /// <inheritdoc />
+    [MethodImpl(InlinedOptimized)]
+    IParseResult IParser.Mismatch(IReadOnlyParseContext context, int position, IEnumerable<IParseError> errors)
+        => Mismatch(context, position, errors);
+
+    /// <inheritdoc />
+    [MethodImpl(InlinedOptimized)]
+    IParseResult IParser.Match(IReadOnlyParseContext context, int position, int length, object value)
     {
         if (value is not T v)
         {
             throw new ArgumentException($"Argument is not of type '{typeof(T).FullName}'.", nameof(value));
         }
 
-        return Match(position, length, v);
+        return Match(context, position, length, v);
     }
 
-    protected abstract string InternalToString(int depth);
-
+    /// <inheritdoc />
     public string ToString(int depth)
     {
         if (depth < 0)
@@ -43,6 +64,8 @@ public abstract class ParserBase<T> : IParser<T>
         return InternalToString(depth);
     }
 
+    /// <inheritdoc />
+    [MethodImpl(InlinedOptimized)]
     public sealed override string ToString()
         => ToString(10);
 }

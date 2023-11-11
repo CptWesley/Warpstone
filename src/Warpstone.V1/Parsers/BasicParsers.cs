@@ -791,7 +791,7 @@ namespace Warpstone.Parsers
         /// <typeparam name="TOut">The output type.</typeparam>
         /// <param name="parser">The parser to try and use.</param>
         /// <param name="recoveryParser">The parser to use for recovery.</param>
-        /// <param name="successTransformation">The transformation to apply to the succesful result.</param>
+        /// <param name="successTransformation">The transformation to apply to the successful result.</param>
         /// <param name="failureTransformation">The transformation to apply to the failure result.</param>
         /// <returns>A parsers that attempts to parse or recovers.</returns>
         public static IParser<TOut> Try<TIn, TOut>(IParser<TIn> parser, IParser<string> recoveryParser, Func<TIn, TOut> successTransformation, Func<IParseError, TOut> failureTransformation)
