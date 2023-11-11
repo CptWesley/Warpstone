@@ -25,7 +25,7 @@ namespace Warpstone.Parsers.InternalParsers
                 options |= RegexOptions.Compiled;
             }
 
-            regex = new Regex(@"\G" + pattern, options);
+            regex = new Regex(@$"\G({pattern})", options);
         }
 
         /// <summary>

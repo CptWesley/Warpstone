@@ -48,11 +48,13 @@ public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterPars
 
     /// <inheritdoc />
     public override bool Equals(object obj)
-        => obj is CharacterParser other && Equals(other);
+        => obj is CharacterParser other
+        && Equals(other);
 
     /// <inheritdoc />
     public bool Equals(CharacterParser other)
-        => other is not null && Value == other.Value;
+        => other is not null
+        && Value == other.Value;
 
     /// <inheritdoc />
     public override int GetHashCode()

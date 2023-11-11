@@ -1,6 +1,4 @@
-﻿using DotNetProjectFile.Resx;
-
-namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers;
 
 /// <summary>
 /// A parser which only parses the end of a file.
