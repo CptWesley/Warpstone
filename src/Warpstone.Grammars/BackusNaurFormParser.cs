@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using static Warpstone.Parsers.BasicParsers;
-using static Warpstone.Parsers.CommonParsers;
 
 namespace Warpstone.Grammars
 {

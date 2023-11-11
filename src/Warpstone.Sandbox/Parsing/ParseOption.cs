@@ -1,6 +1,4 @@
-﻿using Warpstone;
-
-namespace ClausewitzLsp.Core.Parsing;
+﻿namespace ClausewitzLsp.Core.Parsing;
 
 /// <summary>
 /// Base class for all parsed units.

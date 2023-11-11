@@ -2,7 +2,6 @@
 using System.Linq;
 using Xunit;
 using static AssertNet.Assertions;
-using static Warpstone.Parsers.BasicParsers;
 
 namespace Warpstone.Tests.Parsers
 {

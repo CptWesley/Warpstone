@@ -2,7 +2,6 @@
 using System.Globalization;
 using System.Text;
 using Warpstone;
-using static Warpstone.Parsers.BasicParsers;
 
 namespace ClausewitzLsp.Core.Parsing;
 

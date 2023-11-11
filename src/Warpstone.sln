@@ -15,7 +15,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Grammars", "Warps
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Sandbox", "Warpstone.Sandbox\Warpstone.Sandbox.csproj", "{20492752-93BB-4472-A20D-AB32E10C485C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone.V2", "Warpstone.V2\Warpstone.V2.csproj", "{36EFBE59-9C95-490D-B1C3-72FD18405153}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.V1", "Warpstone.V1\Warpstone.V1.csproj", "{36EFBE59-9C95-490D-B1C3-72FD18405153}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F765A0D5-384E-46D4-A3A8-9625E365C8C2}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		benchmarks.props = benchmarks.props
+		common.props = common.props
+		executable.props = executable.props
+		package.props = package.props
+		tests.props = tests.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

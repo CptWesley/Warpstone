@@ -1,7 +1,6 @@
 ﻿using Warpstone.Parsers;
 using Xunit;
 using static AssertNet.Assertions;
-using static Warpstone.Parsers.NumberParsers;
 
 namespace Warpstone.Tests.Parsers
 {

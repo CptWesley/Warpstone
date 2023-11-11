@@ -1,88 +1,87 @@
-﻿using System.Collections.Generic;
+﻿namespace Warpstone;
 
-namespace Warpstone
+public static class ParseResult
 {
-    /// <summary>
-    /// Object representing the parsing result.
-    /// </summary>
-    /// <typeparam name="T">The output type of the parse process.</typeparam>
-    public class ParseResult<T> : IParseResult<T>
+    public static IParseResult<T> CreateMatch<T>(IParser<T> parser, int position, int length, T value)
+        => ParseResult<T>.CreateMatch(parser, position, length, value);
+
+    public static IParseResult<T> CreateMismatch<T>(IParser<T> parser, int position, IEnumerable<IParseError> errors)
+        => ParseResult<T>.CreateMismatch(parser, position, errors);
+
+    public static IParseResult<T> CreateFail<T>(IParser<T> parser, int position, IParseInput input)
+        => ParseResult<T>.CreateFail(parser, position, input);
+}
+
+public sealed class ParseResult<T> : IParseResult<T>
+{
+    private readonly T? value;
+
+    private ParseResult(IParser<T> parser, int position, int length, ParseStatus status, T? value, IReadOnlyList<IParseError> errors)
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseResult{T}"/> class.
-        /// </summary>
-        /// <param name="parser">The parser that produced the result.</param>
-        /// <param name="input">The input text.</param>
-        /// <param name="startPosition">The start position.</param>
-        /// <param name="position">The position.</param>
-        /// <param name="error">The parse error that occured.</param>
-        /// <param name="innerResults">The inner results that lead to this result.</param>
-        public ParseResult(IParser<T> parser, string input, int startPosition, int position, IParseError? error, IEnumerable<IParseResult> innerResults)
+        Parser = parser;
+        Position = position;
+        Length = length;
+        Status = status;
+        this.value = value;
+        Errors = errors;
+    }
+
+    public IParser<T> Parser { get; }
+
+    public T Value
+    {
+        get
         {
-            Error = error;
-            Success = false;
-            InnerResults = innerResults;
-            Parser = parser;
-            Position = new SourcePosition(input, startPosition, position);
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ParseResult{T}"/> class.
-        /// </summary>
-        /// <param name="parser">The parser that produced the result.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="input">The input text.</param>
-        /// <param name="startPosition">The start position of the parser.</param>
-        /// <param name="position">The position of the parser.</param>
-        /// <param name="innerResults">The inner results that lead to this result.</param>
-        public ParseResult(IParser<T> parser, T? value, string input, int startPosition, int position, IEnumerable<IParseResult> innerResults)
-        {
-            Value = value;
-            Success = true;
-            InnerResults = innerResults;
-            Parser = parser;
-            Position = new SourcePosition(input, startPosition, position);
-        }
-
-        /// <inheritdoc/>
-        public bool Success { get; }
-
-        /// <inheritdoc/>
-        public T? Value { get; }
-
-        /// <summary>
-        /// Gets the position of the parse result.
-        /// </summary>
-        public SourcePosition Position { get; }
-
-        /// <inheritdoc/>
-        public IParseError? Error { get; }
-
-        /// <inheritdoc/>
-        public IEnumerable<IParseResult> InnerResults { get; }
-
-        /// <inheritdoc/>
-        public IParser<T> Parser { get; }
-
-        /// <inheritdoc/>
-        object? IParseResult.Value => Value;
-
-        /// <inheritdoc/>
-        IParser IParseResult.Parser => Parser;
-
-        /// <inheritdoc/>
-        public override string ToString()
-            => ToString(2);
-
-        /// <inheritdoc/>
-        public string ToString(int depth)
-        {
-            if (Success)
+            if (Status != ParseStatus.Match)
             {
-                return $"Value from {Parser.ToString(depth)} at {Position}: {Value!}";
+                throw new InvalidOperationException();
             }
 
-            return $"Error from {Parser.ToString(depth)} at {Position}: {Error!.GetMessage()}";
+            return value!;
         }
     }
+
+    public int Position { get; }
+
+    public int NextPosition => Position + Length;
+
+    public ParseStatus Status { get; }
+
+    public int Length { get; }
+
+    public IReadOnlyList<IParseError> Errors { get; }
+
+    IParser IParseResult.Parser => Parser;
+
+    object? IParseResult.Value => Value;
+
+    public static IParseResult<T> CreateMatch(IParser<T> parser, int position, int length, T value)
+        => new ParseResult<T>(parser, position, length, ParseStatus.Match, value, Array.Empty<IParseError>());
+
+    public static IParseResult<T> CreateMismatch(IParser<T> parser, int position, IEnumerable<IParseError> errors)
+        => new ParseResult<T>(parser, position, 0, ParseStatus.Mismatch, default, errors.ToArray());
+
+    public static IParseResult<T> CreateFail(IParser<T> parser, int position, IParseInput input)
+        => new ParseResult<T>(parser, position, 0, ParseStatus.Fail, default, new[] { new InfiniteRecursionError(input, parser, position, 0) });
+
+    public IParseResult<T> AsMismatch()
+    {
+        if (Status == ParseStatus.Mismatch)
+        {
+            return this;
+        }
+
+        return new ParseResult<T>(Parser, Position, Length, ParseStatus.Mismatch, value, Errors);
+    }
+
+    IParseResult IParseResult.AsMismatch()
+        => AsMismatch();
+
+    public override string ToString()
+        => Status switch
+        {
+            ParseStatus.Match => Value?.ToString() ?? string.Empty,
+            ParseStatus.Fail => "Fail",
+            _ => $"Error([{string.Join(", ", Errors)}])",
+        };
 }

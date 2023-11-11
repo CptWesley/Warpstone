@@ -1,0 +1,19 @@
+﻿namespace Warpstone.Errors;
+
+public sealed class TransformationError : ParseError
+{
+    public TransformationError(IParseInput input, IParser parser, int position, int length)
+        : base(input, parser, position, length)
+    {
+    }
+
+    public TransformationError(IParseInput input, IParser parser, int position, int length, string? message)
+        : base(input, parser, position, length, message)
+    {
+    }
+
+    public TransformationError(IParseInput input, IParser parser, int position, int length, string? message, Exception? innerException)
+        : base(input, parser, position, length, message, innerException)
+    {
+    }
+}
