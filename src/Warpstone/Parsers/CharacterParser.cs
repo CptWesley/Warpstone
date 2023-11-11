@@ -3,15 +3,15 @@
 /// <summary>
 /// Parser which parses a single character.
 /// </summary>
-public sealed class CharParser : ParserBase<char>
+public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterParser>
 {
     private readonly string expected;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CharParser"/> class.
+    /// Initializes a new instance of the <see cref="CharacterParser"/> class.
     /// </summary>
     /// <param name="value">The expected character.</param>
-    public CharParser(char value)
+    public CharacterParser(char value)
     {
         Value = value;
         expected = $"'{value}'";
@@ -45,4 +45,16 @@ public sealed class CharParser : ParserBase<char>
     /// <inheritdoc />
     protected override string InternalToString(int depth)
         => expected;
+
+    /// <inheritdoc />
+    public override bool Equals(object obj)
+        => obj is CharacterParser other && Equals(other);
+
+    /// <inheritdoc />
+    public bool Equals(CharacterParser other)
+        => other is not null && Value == other.Value;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => (typeof(CharacterParser), Value).GetHashCode();
 }

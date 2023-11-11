@@ -1,9 +1,11 @@
-﻿namespace Warpstone.Parsers;
+﻿using DotNetProjectFile.Resx;
+
+namespace Warpstone.Parsers;
 
 /// <summary>
 /// A parser which only parses the end of a file.
 /// </summary>
-public sealed class EndOfFileParser : ParserBase<string>
+public sealed class EndOfFileParser : ParserBase<string>, IEquatable<EndOfFileParser>
 {
     /// <summary>
     /// The singleton instance of this parser.
@@ -30,4 +32,16 @@ public sealed class EndOfFileParser : ParserBase<string>
     /// <inheritdoc />
     protected override string InternalToString(int depth)
         => "EOF";
+
+    /// <inheritdoc />
+    public override bool Equals(object obj)
+        => obj is EndOfFileParser other && Equals(other);
+
+    /// <inheritdoc />
+    public bool Equals(EndOfFileParser other)
+        => other is not null;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => typeof(CharacterParser).GetHashCode();
 }
