@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Examples.Expressi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Tests", "Warpstone.Tests\Warpstone.Tests.csproj", "{A81E1B83-5552-40F4-BEFC-F4F180F7484D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Grammars", "Warpstone.Grammars\Warpstone.Grammars.csproj", "{FA1723CE-13CA-4052-952D-B66B17F3A440}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.Sandbox", "Warpstone.Sandbox\Warpstone.Sandbox.csproj", "{20492752-93BB-4472-A20D-AB32E10C485C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warpstone.V1", "Warpstone.V1\Warpstone.V1.csproj", "{36EFBE59-9C95-490D-B1C3-72FD18405153}"
@@ -49,10 +47,6 @@ Global
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A81E1B83-5552-40F4-BEFC-F4F180F7484D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FA1723CE-13CA-4052-952D-B66B17F3A440}.Release|Any CPU.Build.0 = Release|Any CPU
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Release|Any CPU.ActiveCfg = Release|Any CPU
