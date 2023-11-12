@@ -24,8 +24,8 @@ public sealed class UnexpectedTokenError : ParseError
               parser,
               position,
               length,
-              expected,
-              GetMessage(context, position, expected))
+              ImmutableSortedSet.Create(expected),
+              ImmutableSortedSet<UnexpectedTokenError>.Empty)
     {
     }
 
@@ -37,15 +37,62 @@ public sealed class UnexpectedTokenError : ParseError
     /// <param name="position">The position in the input string.</param>
     /// <param name="length">The length of the error.</param>
     /// <param name="expected">The expected input.</param>
+    /// <param name="innerErrors">The errors that caused this error to occur.</param>
+    public UnexpectedTokenError(
+        IReadOnlyParseContext context,
+        IParser parser,
+        int position,
+        int length,
+        IEnumerable<string> expected,
+        IEnumerable<UnexpectedTokenError> innerErrors)
+        : this(
+              context,
+              parser,
+              position,
+              length,
+              expected.ToImmutableSortedSet(),
+              innerErrors.ToImmutableSortedSet())
+    {
+    }
+
+    private UnexpectedTokenError(
+        IReadOnlyParseContext context,
+        IParser parser,
+        int position,
+        int length,
+        ImmutableSortedSet<string> expected,
+        ImmutableSortedSet<UnexpectedTokenError> innerErrors)
+        : base(
+              context,
+              parser,
+              position,
+              length,
+              GetMessage(context, position, expected),
+              null)
+    {
+        Expected = expected;
+        InnerErrors = innerErrors;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UnexpectedTokenError"/> class.
+    /// </summary>
+    /// <param name="context">The context of the error.</param>
+    /// <param name="parser">The parser.</param>
+    /// <param name="position">The position in the input string.</param>
+    /// <param name="length">The length of the error.</param>
+    /// <param name="expected">The expected input.</param>
+    /// <param name="innerErrors">The errors that caused this error to occur.</param>
     /// <param name="message">The custom message.</param>
     public UnexpectedTokenError(
         IReadOnlyParseContext context,
         IParser parser,
         int position,
         int length,
-        string expected,
+        IEnumerable<string> expected,
+        IEnumerable<UnexpectedTokenError> innerErrors,
         string? message)
-        : this(context, parser, position, length, expected, message, null)
+        : this(context, parser, position, length, expected, innerErrors, message, null)
     {
     }
 
@@ -57,6 +104,7 @@ public sealed class UnexpectedTokenError : ParseError
     /// <param name="position">The position in the input string.</param>
     /// <param name="length">The length of the error.</param>
     /// <param name="expected">The expected input.</param>
+    /// <param name="innerErrors">The errors that caused this error to occur.</param>
     /// <param name="message">The custom message.</param>
     /// <param name="innerException">The inner exception that caused this exception.</param>
     public UnexpectedTokenError(
@@ -64,18 +112,25 @@ public sealed class UnexpectedTokenError : ParseError
         IParser parser,
         int position,
         int length,
-        string expected,
+        IEnumerable<string> expected,
+        IEnumerable<UnexpectedTokenError> innerErrors,
         string? message,
         Exception? innerException)
         : base(context, parser, position, length, message, innerException)
     {
-        Expected = expected;
+        Expected = expected.ToImmutableSortedSet();
+        InnerErrors = innerErrors.ToImmutableSortedSet();
     }
 
     /// <summary>
     /// Gets the expected string.
     /// </summary>
-    public string Expected { get; }
+    public ImmutableSortedSet<string> Expected { get; }
+
+    /// <summary>
+    /// Gets the inner errors.
+    /// </summary>
+    public ImmutableSortedSet<UnexpectedTokenError> InnerErrors { get; }
 
     /// <summary>
     /// Gets the found string.
@@ -99,13 +154,20 @@ public sealed class UnexpectedTokenError : ParseError
         return $"'{input[position]}'";
     }
 
-    private static string GetMessage(IReadOnlyParseContext context, int position, string expected)
+    private static string GetMessage(IReadOnlyParseContext context, int position, IReadOnlyList<string> expected)
     {
-        var found = Find(context, position);
         var sb = new StringBuilder()
-            .Append("Expected ")
-            .Append(expected)
-            .Append(" but found ")
+            .Append("Expected ");
+
+        if (expected.Count > 1)
+        {
+            sb.Append("one of ");
+        }
+
+        sb.Append(string.Join(", ", expected));
+
+        var found = Find(context, position);
+        sb.Append(" but found ")
             .Append(found)
             .Append(" at ")
             .Append(context.Input.GetPosition(position).ToString());
@@ -122,5 +184,5 @@ public sealed class UnexpectedTokenError : ParseError
 
     /// <inheritdoc />
     public override IParseError Retarget(IParser parser)
-        => new UnexpectedTokenError(Context, parser, Position, Length, Expected, Message, InnerException);
+        => new UnexpectedTokenError(Context, parser, Position, Length, Expected, InnerErrors, Message, InnerException);
 }

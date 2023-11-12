@@ -53,7 +53,7 @@ public sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
                             return Iterative.Done(second);
                         }
 
-                        var errors = first.Errors.Concat(second.Errors);
+                        var errors = MergeErrors(first.Errors, second.Errors);
                         return Iterative.Done(this.Mismatch(context, position, errors));
                     });
             });
@@ -61,4 +61,39 @@ public sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
     /// <inheritdoc />
     protected override string InternalToString(int depth)
         => $"({First.ToString(depth - 1)} | {Second.ToString(depth - 1)})";
+
+    private IEnumerable<IParseError> MergeErrors(IReadOnlyList<IParseError> first, IReadOnlyList<IParseError> second)
+    {
+        var errors = new List<IParseError>();
+        var tokenErrors = new Dictionary<int, UnexpectedTokenError>();
+
+        foreach (var error in first.Concat(second))
+        {
+            if (error is UnexpectedTokenError ute)
+            {
+                if (tokenErrors.TryGetValue(ute.Position, out var prev))
+                {
+                    tokenErrors[ute.Position] = Merge(prev, ute);
+                }
+                else
+                {
+                    tokenErrors.Add(ute.Position, ute);
+                }
+            }
+            else
+            {
+                errors.Add(error);
+            }
+        }
+
+        errors.AddRange(tokenErrors.Values);
+        return errors;
+    }
+
+    private UnexpectedTokenError Merge(UnexpectedTokenError first, UnexpectedTokenError second)
+    {
+        var expected = first.Expected.Concat(second.Expected);
+        var length = first.Length == second.Length ? first.Length : 1;
+        return new UnexpectedTokenError(first.Context, this, first.Position, length, expected, new[] { first, second });
+    }
 }

@@ -1,16 +1,16 @@
 ﻿namespace Warpstone.Parsers;
 
 /// <summary>
-/// Parser which succeeds if the inner parser fails, but fails if the inner parser succeeds.
+/// Parser which succeeds if the inner parser succeeds, but does not consume any tokens.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class NegativeLookaheadParser<T> : ParserBase<T?>, IParserFirst<T>
+public sealed class PositiveLookaheadParser<T> : ParserBase<T?>, IParserFirst<T>
 {
     /// <summary>
-    /// Initializes a new instance of the <see cref="NegativeLookaheadParser{T}"/> class.
+    /// Initializes a new instance of the <see cref="PositiveLookaheadParser{T}"/> class.
     /// </summary>
     /// <param name="first">The inner parser that is being wrapped.</param>
-    public NegativeLookaheadParser(IParser<T> first)
+    public PositiveLookaheadParser(IParser<T> first)
     {
         First = first;
     }
@@ -30,15 +30,15 @@ public sealed class NegativeLookaheadParser<T> : ParserBase<T?>, IParserFirst<T>
 
                 if (first.Success)
                 {
-                    return Iterative.Done(this.Mismatch(context, position, 1, "<not>"));
+                    return Iterative.Done(this.Match(context, position, 0, default));
                 }
                 else
                 {
-                    return Iterative.Done(this.Match(context, position, 0, default));
+                    return Iterative.Done(this.Mismatch(context, position, first.Errors));
                 }
             });
 
     /// <inheritdoc />
     protected override string InternalToString(int depth)
-        => $"Not({First.ToString(depth - 1)})";
+        => $"Peek({First.ToString(depth - 1)})";
 }
