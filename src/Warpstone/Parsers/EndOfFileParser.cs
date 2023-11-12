@@ -23,7 +23,7 @@ public sealed class EndOfFileParser : ParserBase<string>, IEquatable<EndOfFilePa
         }
         else
         {
-            return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, "EOF")));
+            return Iterative.Done(this.Mismatch(context, position, 1, "EOF"));
         }
     }
 

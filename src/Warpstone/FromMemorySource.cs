@@ -13,4 +13,8 @@ public sealed class FromMemorySource : IParseInputSource
     private FromMemorySource()
     {
     }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => "in-memory";
 }

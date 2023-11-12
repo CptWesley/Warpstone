@@ -44,7 +44,7 @@ public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<string>, IPa
                 }
                 else
                 {
-                    return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, Expected)));
+                    return Iterative.Done(this.Mismatch(context, position, 1, Expected));
                 }
             });
 

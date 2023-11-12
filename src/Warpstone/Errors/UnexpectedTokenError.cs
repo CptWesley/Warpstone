@@ -25,7 +25,7 @@ public sealed class UnexpectedTokenError : ParseError
               position,
               length,
               expected,
-              $"Expected token {expected}, but found token {Find(context.Input.Content, position)}. At position {position}.")
+              GetMessage(context, position, expected))
     {
     }
 
@@ -80,14 +80,16 @@ public sealed class UnexpectedTokenError : ParseError
     /// <summary>
     /// Gets the found string.
     /// </summary>
-    public string Found => Find(Context.Input.Content, Position);
+    public string Found => Find(Context, Position);
 
-    private static string Find(string input, int position)
+    private static string Find(IReadOnlyParseContext context, int position)
     {
         if (position < 0)
         {
             return "BOF";
         }
+
+        var input = context.Input.Content;
 
         if (position >= input.Length)
         {
@@ -96,4 +98,29 @@ public sealed class UnexpectedTokenError : ParseError
 
         return $"'{input[position]}'";
     }
+
+    private static string GetMessage(IReadOnlyParseContext context, int position, string expected)
+    {
+        var found = Find(context, position);
+        var sb = new StringBuilder()
+            .Append("Expected ")
+            .Append(expected)
+            .Append(" but found ")
+            .Append(found)
+            .Append(" at ")
+            .Append(context.Input.GetPosition(position).ToString());
+
+        if (context.Input.Source is not FromMemorySource)
+        {
+            sb.Append(" in ")
+                .Append(context.Input.Source.ToString());
+        }
+
+        sb.Append('.');
+        return sb.ToString();
+    }
+
+    /// <inheritdoc />
+    public override IParseError Retarget(IParser parser)
+        => new UnexpectedTokenError(Context, parser, Position, Length, Expected, Message, InnerException);
 }

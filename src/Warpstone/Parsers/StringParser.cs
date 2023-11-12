@@ -48,7 +48,7 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>,
 
         if (position >= input.Length)
         {
-            return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, expected)));
+            return Iterative.Done(this.Mismatch(context, position, 1, expected));
         }
 
         if (StringAtIndex(input, position))
@@ -57,7 +57,7 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>,
         }
         else
         {
-            return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, expected)));
+            return Iterative.Done(this.Mismatch(context, position, 1, expected));
         }
     }
 

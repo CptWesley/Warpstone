@@ -16,4 +16,8 @@ public sealed class FileSource : IParseInputSource
     /// The path of the file.
     /// </summary>
     public string Path { get; }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => Path;
 }

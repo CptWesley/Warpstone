@@ -36,7 +36,7 @@ public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>, IParserF
             {
                 var inner = untypedInner.AssertOfType<IParseResult<TIn>>();
 
-                if (inner.Status != ParseStatus.Match)
+                if (!inner.Success)
                 {
                     return Iterative.Done(this.Mismatch(context, position, inner.Errors));
                 }

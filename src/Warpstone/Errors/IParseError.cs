@@ -24,4 +24,11 @@ public interface IParseError
     /// The number of characters in the input that caused this error.
     /// </summary>
     public int Length { get; }
+
+    /// <summary>
+    /// Creates a new, retargeted error.
+    /// </summary>
+    /// <param name="parser">The new parser.</param>
+    /// <returns>The newly created <see cref="IParseError"/>.</returns>
+    public IParseError Retarget(IParser parser);
 }

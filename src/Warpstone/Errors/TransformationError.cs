@@ -43,4 +43,8 @@ public sealed class TransformationError : ParseError
         : base(context, parser, position, length, message, innerException)
     {
     }
+
+    /// <inheritdoc />
+    public override IParseError Retarget(IParser parser)
+        => new TransformationError(Context, parser, Position, Length, Message, InnerException);
 }

@@ -43,4 +43,8 @@ public sealed class InfiniteRecursionError : ParseError
         : base(context, parser, position, length, message, innerException)
     {
     }
+
+    /// <inheritdoc />
+    public override IParseError Retarget(IParser parser)
+        => new InfiniteRecursionError(Context, parser, Position, Length, Message, InnerException);
 }

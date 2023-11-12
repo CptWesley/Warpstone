@@ -32,7 +32,7 @@ public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterPars
 
         if (position >= input.Length)
         {
-            return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, expected)));
+            return Iterative.Done(this.Mismatch(context, position, 1, expected));
         }
 
         if (input[position] == Character)
@@ -41,7 +41,7 @@ public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterPars
         }
         else
         {
-            return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, expected)));
+            return Iterative.Done(this.Mismatch(context, position, 1, expected));
         }
     }
 

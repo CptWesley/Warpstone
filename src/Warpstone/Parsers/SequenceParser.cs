@@ -37,7 +37,7 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
             {
                 var first = untypedFirst.AssertOfType<IParseResult<TFirst>>();
 
-                if (first.Status != ParseStatus.Match)
+                if (!first.Success)
                 {
                     return Iterative.Done(this.Mismatch(context, position, first.Errors));
                 }
@@ -48,7 +48,7 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
                     {
                         var second = untypedSecond.AssertOfType<IParseResult<TSecond>>();
 
-                        if (second.Status != ParseStatus.Match)
+                        if (!second.Success)
                         {
                             return Iterative.Done(this.Mismatch(context, first.Position, second.Errors));
                         }

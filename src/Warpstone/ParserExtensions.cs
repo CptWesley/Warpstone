@@ -11,10 +11,47 @@ public static class ParserExtensions
     public static IParseResult Mismatch(this IParser parser, IReadOnlyParseContext context, int position, params IParseError[] errors)
         => parser.Mismatch(context, position, errors);
 
+    /// <summary>
+    /// Create a parse result for errors encountered in the input.
+    /// </summary>
+    /// <param name="parser">The parser.</param>
+    /// <param name="context">The parsing context.</param>
+    /// <param name="position">The position in the input.</param>
+    /// <param name="length">The length of the failed match.</param>
+    /// <param name="expected">The expected input.</param>
+    /// <returns>The newly created <see cref="IParseResult"/>.</returns>
+    [MethodImpl(InlinedOptimized)]
+    public static IParseResult Mismatch(
+        this IParser parser,
+        IReadOnlyParseContext context,
+        int position,
+        int length,
+        string expected)
+        => parser.Mismatch(context, position, new UnexpectedTokenError(context, parser, position, length, expected));
+
     /// <inheritdoc cref="IParser{T}.Mismatch(IReadOnlyParseContext, int, IEnumerable{IParseError})" />
     [MethodImpl(InlinedOptimized)]
     public static IParseResult<T> Mismatch<T>(this IParser<T> parser, IReadOnlyParseContext context, int position, params IParseError[] errors)
         => parser.Mismatch(context, position, errors);
+
+    /// <summary>
+    /// Create a parse result for errors encountered in the input.
+    /// </summary>
+    /// <param name="parser">The parser.</param>
+    /// <param name="context">The parsing context.</param>
+    /// <param name="position">The position in the input.</param>
+    /// <param name="length">The length of the failed match.</param>
+    /// <param name="expected">The expected input.</param>
+    /// <typeparam name="T">The result type of the parser.</typeparam>
+    /// <returns>The newly created <see cref="IParseResult"/>.</returns>
+    [MethodImpl(InlinedOptimized)]
+    public static IParseResult<T> Mismatch<T>(
+        this IParser<T> parser,
+        IReadOnlyParseContext context,
+        int position,
+        int length,
+        string expected)
+        => parser.Mismatch(context, position, new UnexpectedTokenError(context, parser, position, length, expected));
 
     /// <summary>
     /// Create a parse result for a successful match in the input.

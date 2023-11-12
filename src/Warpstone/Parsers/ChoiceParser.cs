@@ -37,7 +37,7 @@ public sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
             {
                 var first = untypedFirst.AssertOfType<IParseResult<T>>();
 
-                if (first.Status == ParseStatus.Match)
+                if (first.Success)
                 {
                     return Iterative.Done(first);
                 }
@@ -48,7 +48,7 @@ public sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
                     {
                         var second = untypedSecond.AssertOfType<IParseResult<T>>();
 
-                        if (second.Status == ParseStatus.Match)
+                        if (second.Success)
                         {
                             return Iterative.Done(second);
                         }

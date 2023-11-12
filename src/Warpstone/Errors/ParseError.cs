@@ -74,4 +74,7 @@ public abstract class ParseError : Exception, IParseError
 
     /// <inheritdoc />
     public int Length { get; }
+
+    /// <inheritdoc />
+    public abstract IParseError Retarget(IParser parser);
 }

@@ -30,7 +30,7 @@ public sealed class NegativeLookaheadParser<T> : ParserBase<T?>, IParserFirst<T>
 
                 if (first.Success)
                 {
-                    return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, $"<not>")));
+                    return Iterative.Done(this.Mismatch(context, position, 1, "<not>"));
                 }
                 else
                 {

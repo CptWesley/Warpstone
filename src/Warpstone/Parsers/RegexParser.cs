@@ -50,7 +50,7 @@ public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, I
 
         if (position >= input.Length)
         {
-            return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, expected)));
+            return Iterative.Done(this.Mismatch(context, position, 1, expected));
         }
 
         var match = regex.Match(input, position);
@@ -61,7 +61,7 @@ public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, I
         }
         else
         {
-            return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, expected)));
+            return Iterative.Done(this.Mismatch(context, position, 1, expected));
         }
     }
 
