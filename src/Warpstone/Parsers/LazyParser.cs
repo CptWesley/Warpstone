@@ -4,7 +4,7 @@
 /// Parser which lazily constructs the inner parser.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class LazyParser<T> : ParserBase<T?>
+public sealed class LazyParser<T> : ParserBase<T>
 {
     private readonly Lazy<IParser<T>> lazyFirst;
 

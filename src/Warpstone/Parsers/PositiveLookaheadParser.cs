@@ -4,7 +4,7 @@
 /// Parser which succeeds if the inner parser succeeds, but does not consume any tokens.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class PositiveLookaheadParser<T> : ParserBase<T?>, IParserFirst<T>
+public sealed class PositiveLookaheadParser<T> : ParserBase<T>, IParserFirst<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="PositiveLookaheadParser{T}"/> class.
@@ -30,7 +30,7 @@ public sealed class PositiveLookaheadParser<T> : ParserBase<T?>, IParserFirst<T>
 
                 if (first.Success)
                 {
-                    return Iterative.Done(this.Match(context, position, 0, default));
+                    return Iterative.Done(this.Match(context, position, 0, first.Value));
                 }
                 else
                 {

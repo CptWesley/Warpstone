@@ -4,17 +4,17 @@
 /// Parser which grants a name to the expected input.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<string>, IParserFirst<T>
+public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<ImmutableArray<string>>, IParserFirst<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ExpectedParser{T}"/> class.
     /// </summary>
     /// <param name="first">The inner parser that is being wrapped.</param>
     /// <param name="value">The expected element name.</param>
-    public ExpectedParser(IParser<T> first, string value)
+    public ExpectedParser(IParser<T> first, IEnumerable<string> value)
     {
         First = first;
-        Expected = value;
+        Expected = value.ToImmutableArray();
     }
 
     /// <summary>
@@ -25,10 +25,10 @@ public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<string>, IPa
     /// <summary>
     /// The expected element name.
     /// </summary>
-    public string Expected { get; }
+    public ImmutableArray<string> Expected { get; }
 
     /// <inheritdoc />
-    string IParserValue<string>.Value => Expected;
+    ImmutableArray<string> IParserValue<ImmutableArray<string>>.Value => Expected;
 
     /// <inheritdoc />
     public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
@@ -44,11 +44,14 @@ public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<string>, IPa
                 }
                 else
                 {
-                    return Iterative.Done(this.Mismatch(context, position, 1, Expected));
+                    return Iterative.Done(this.Mismatch(
+                        context,
+                        position,
+                        new UnexpectedTokenError(context, this, position, 1, Expected, Array.Empty<UnexpectedTokenError>())));
                 }
             });
 
     /// <inheritdoc />
     protected override string InternalToString(int depth)
-        => Expected;
+        => string.Join(" | ", Expected);
 }

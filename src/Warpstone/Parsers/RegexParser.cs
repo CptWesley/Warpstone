@@ -16,7 +16,7 @@ public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, I
     public RegexParser([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
     {
         Pattern = pattern;
-        Options = options;
+        Options = options | RegexOptions.ExplicitCapture;
         expected = Regex.Escape(pattern);
         regex = new Regex(@$"\G({pattern})", options);
     }
@@ -26,7 +26,7 @@ public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, I
     /// </summary>
     /// <param name="pattern">The pattern to be matched.</param>
     public RegexParser([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
-        : this(pattern, RegexOptions.Compiled | RegexOptions.ExplicitCapture)
+        : this(pattern, RegexOptions.Compiled)
     {
     }
 

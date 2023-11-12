@@ -4,7 +4,7 @@
 /// Parser that doesn't take any arguments and always fails.
 /// </summary>
 /// <typeparam name="T">The result type of the parser.</typeparam>
-public sealed class FailParser<T> : ParserBase<T?>, IEquatable<FailParser<T>>
+public sealed class FailParser<T> : ParserBase<T>, IEquatable<FailParser<T>>
 {
     /// <summary>
     /// The singleton instance of this parser.
