@@ -8,7 +8,7 @@ public sealed class EndOfFileParser : ParserBase<string>, IEquatable<EndOfFilePa
     /// <summary>
     /// The singleton instance of this parser.
     /// </summary>
-    public static readonly EndOfFileParser Instance = new EndOfFileParser();
+    public static readonly EndOfFileParser Instance = new();
 
     private EndOfFileParser()
     {

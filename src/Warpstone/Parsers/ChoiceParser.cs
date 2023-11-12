@@ -6,7 +6,7 @@
 /// If the second parser also fails, this parser will fail.
 /// </summary>
 /// <typeparam name="T">The result type of the parsers.</typeparam>
-public sealed class ChoiceParser<T> : ParserBase<T>
+public sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ChoiceParser{T}"/> class.

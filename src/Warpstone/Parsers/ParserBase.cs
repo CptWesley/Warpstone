@@ -33,11 +33,6 @@ public abstract class ParserBase<T> : IParser<T>
 
     /// <inheritdoc />
     [MethodImpl(InlinedOptimized)]
-    public IParseResult<T> Match(IReadOnlyParseContext context, int position, int length, T value)
-        => ParseResult.CreateMatch(context, this, position, length, value);
-
-    /// <inheritdoc />
-    [MethodImpl(InlinedOptimized)]
     IParseResult IParser.Mismatch(IReadOnlyParseContext context, int position, IEnumerable<IParseError> errors)
         => Mismatch(context, position, errors);
 
@@ -50,7 +45,7 @@ public abstract class ParserBase<T> : IParser<T>
             throw new ArgumentException($"Argument is not of type '{typeof(T).FullName}'.", nameof(value));
         }
 
-        return Match(context, position, length, v);
+        return this.Match(context, position, length, v);
     }
 
     /// <inheritdoc />

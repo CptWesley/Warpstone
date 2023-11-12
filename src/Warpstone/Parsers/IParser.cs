@@ -55,7 +55,7 @@ public interface IParser
 /// Interface for parser implementations.
 /// </summary>
 /// <typeparam name="T">The type of values found by the parser.</typeparam>
-public interface IParser<T> : IParser
+public interface IParser<out T> : IParser
 {
     /// <summary>
     /// Create a parse result for errors encountered due to the parser definition.
@@ -73,14 +73,4 @@ public interface IParser<T> : IParser
     /// <param name="errors">The encountered errors.</param>
     /// <returns>The newly created <see cref="IParseResult{T}"/>.</returns>
     public new IParseResult<T> Mismatch(IReadOnlyParseContext context, int position, IEnumerable<IParseError> errors);
-
-    /// <summary>
-    /// Create a parse result for a successful match in the input.
-    /// </summary>
-    /// <param name="context">The parsing context.</param>
-    /// <param name="position">The position in the input.</param>
-    /// <param name="length">The length of the match.</param>
-    /// <param name="value">The value produced by the parser.</param>
-    /// <returns>The newly created <see cref="IParseResult{T}"/>.</returns>
-    public IParseResult<T> Match(IReadOnlyParseContext context, int position, int length, T value);
 }

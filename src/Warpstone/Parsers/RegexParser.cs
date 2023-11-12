@@ -3,7 +3,7 @@
 /// <summary>
 /// Parser which parses a regular expression.
 /// </summary>
-public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>
+public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, IParserValue<string>
 {
     private readonly string expected;
     private readonly Regex regex;
@@ -31,9 +31,12 @@ public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>
     }
 
     /// <summary>
-    /// The expected string.
+    /// The expected pattern.
     /// </summary>
     public string Pattern { get; }
+
+    /// <inheritdoc />
+    string IParserValue<string>.Value => Pattern;
 
     /// <summary>
     /// Gets the string comparison method.

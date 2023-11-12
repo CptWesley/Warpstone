@@ -5,7 +5,7 @@
 /// </summary>
 /// <typeparam name="TIn">The result type of the inner parser.</typeparam>
 /// <typeparam name="TOut">The result type of the transformation.</typeparam>
-public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>
+public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>, IParserFirst<TIn>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TransformationParser{TIn, TOut}"/> class.

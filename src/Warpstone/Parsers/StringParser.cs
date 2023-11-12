@@ -3,7 +3,7 @@
 /// <summary>
 /// Parser which parses a constant string.
 /// </summary>
-public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
+public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>, IParserValue<string>
 {
     private readonly string expected;
 
@@ -14,7 +14,7 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
     /// <param name="stringComparison">The string comparison method to use.</param>
     public StringParser(string value, StringComparison stringComparison)
     {
-        Value = value;
+        String = value;
         StringComparison = stringComparison;
         expected = $"\"{value}\"";
     }
@@ -31,7 +31,10 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
     /// <summary>
     /// The expected string.
     /// </summary>
-    public string Value { get; }
+    public string String { get; }
+
+    /// <inheritdoc />
+    string IParserValue<string>.Value => String;
 
     /// <summary>
     /// Gets the string comparison method.
@@ -50,7 +53,7 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
 
         if (StringAtIndex(input, position))
         {
-            return Iterative.Done(this.Match(context, position, 1, Value));
+            return Iterative.Done(this.Match(context, position, 1, String));
         }
         else
         {
@@ -60,12 +63,12 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
 
     private bool StringAtIndex(string input, int position)
     {
-        if (position + Value.Length > input.Length)
+        if (position + String.Length > input.Length)
         {
             return false;
         }
 
-        return Value.Equals(input.Substring(position, Value.Length), StringComparison);
+        return String.Equals(input.Substring(position, String.Length), StringComparison);
     }
 
     /// <inheritdoc />
@@ -80,10 +83,10 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
     /// <inheritdoc />
     public bool Equals(StringParser other)
         => other is not null
-        && Value == other.Value
+        && String == other.String
         && Equals(StringComparison, other.StringComparison);
 
     /// <inheritdoc />
     public override int GetHashCode()
-        => (typeof(StringParser), Value, StringComparison).GetHashCode();
+        => (typeof(StringParser), String, StringComparison).GetHashCode();
 }

@@ -3,7 +3,7 @@
 /// <summary>
 /// Parser which parses a single character.
 /// </summary>
-public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterParser>
+public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterParser>, IParserValue<char>
 {
     private readonly string expected;
 
@@ -13,14 +13,17 @@ public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterPars
     /// <param name="value">The expected character.</param>
     public CharacterParser(char value)
     {
-        Value = value;
+        Character = value;
         expected = $"'{value}'";
     }
 
     /// <summary>
     /// The expected character.
     /// </summary>
-    public char Value { get; }
+    public char Character { get; }
+
+    /// <inheritdoc />
+    char IParserValue<char>.Value => Character;
 
     /// <inheritdoc />
     public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
@@ -32,9 +35,9 @@ public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterPars
             return Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, expected)));
         }
 
-        if (input[position] == Value)
+        if (input[position] == Character)
         {
-            return Iterative.Done(this.Match(context, position, 1, Value));
+            return Iterative.Done(this.Match(context, position, 1, Character));
         }
         else
         {
@@ -54,9 +57,9 @@ public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterPars
     /// <inheritdoc />
     public bool Equals(CharacterParser other)
         => other is not null
-        && Value == other.Value;
+        && Character == other.Character;
 
     /// <inheritdoc />
     public override int GetHashCode()
-        => (typeof(CharacterParser), Value).GetHashCode();
+        => (typeof(CharacterParser), Character).GetHashCode();
 }

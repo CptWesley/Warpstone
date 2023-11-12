@@ -61,7 +61,7 @@ public interface IParseResult
 /// Interface for results of parsing.
 /// </summary>
 /// <typeparam name="T">The type of the values obtained in the results.</typeparam>
-public interface IParseResult<T> : IParseResult
+public interface IParseResult<out T> : IParseResult
 {
     /// <summary>
     /// The parser used to obtain this result.

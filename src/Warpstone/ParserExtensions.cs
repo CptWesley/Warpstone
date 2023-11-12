@@ -17,6 +17,20 @@ public static class ParserExtensions
         => parser.Mismatch(context, position, errors);
 
     /// <summary>
+    /// Create a parse result for a successful match in the input.
+    /// </summary>
+    /// <param name="parser">The parser.</param>
+    /// <param name="context">The parsing context.</param>
+    /// <param name="position">The position in the input.</param>
+    /// <param name="length">The length of the match.</param>
+    /// <param name="value">The value produced by the parser.</param>
+    /// <typeparam name="T">The result type of the parser.</typeparam>
+    /// <returns>The newly created <see cref="IParseResult{T}"/>.</returns>
+    [MethodImpl(InlinedOptimized)]
+    public static IParseResult<T> Match<T>(this IParser<T> parser, IReadOnlyParseContext context, int position, int length, T value)
+        => ParseResult.CreateMatch(context, parser, position, length, value);
+
+    /// <summary>
     /// Creates a new <see cref="IParseContext"/> from the given <paramref name="input"/>
     /// and the initial <paramref name="parser"/>.
     /// </summary>
