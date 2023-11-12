@@ -22,7 +22,7 @@ public sealed class ParseInput : IParseInput
     public IParseInputSource Source { get; }
 
     /// <inheritdoc />
-    public LineColumn GetPosition(int index)
+    public ParseInputPosition GetPosition(int index)
     {
         var start = 0;
         var end = lineLengths.Length;
@@ -42,19 +42,19 @@ public sealed class ParseInput : IParseInput
             }
             else if (index == startIndex)
             {
-                return new LineColumn(index, pivot + 1, 1);
+                return new ParseInputPosition(this, index, pivot + 1, 1);
             }
             else if (index > startIndex)
             {
                 if (pivot == lineLengths.Length - 1)
                 {
-                    return new LineColumn(index, pivot + 1, index - startIndex + 1);
+                    return new ParseInputPosition(this, index, pivot + 1, index - startIndex + 1);
                 }
 
                 var nextStartIndex = lineLengths[pivot + 1];
                 if (index < nextStartIndex)
                 {
-                    return new LineColumn(index, pivot + 1, index - startIndex + 1);
+                    return new ParseInputPosition(this, index, pivot + 1, index - startIndex + 1);
                 }
 
                 start += halfRange;
@@ -62,7 +62,7 @@ public sealed class ParseInput : IParseInput
             }
         }
 
-        return new LineColumn(index, start + 1, index - lineLengths[start] + 1);
+        return new ParseInputPosition(this, index, start + 1, index - lineLengths[start] + 1);
     }
 
     /// <summary>

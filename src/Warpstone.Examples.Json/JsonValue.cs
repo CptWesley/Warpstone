@@ -6,7 +6,7 @@ namespace Warpstone.Examples.Json
 {
     public abstract class JsonValue : IParsed
     {
-        public SourcePosition Position { get; set; }
+        public ParseInputPosition Position { get; set; }
     }
 
     public abstract class JsonValue<T> : JsonValue

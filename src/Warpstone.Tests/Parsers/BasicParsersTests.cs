@@ -590,7 +590,7 @@ namespace Warpstone.Tests.Parsers
         public static void PositionCorrect()
         {
             IParser<string> parser = Regex("\\s*").Then(String("hello"));
-            SourcePosition pos1 = parser.TryParse("hello").Position;
+            ParseInputPosition pos1 = parser.TryParse("hello").Position;
             AssertThat(pos1.Start).IsEqualTo(0);
             AssertThat(pos1.End).IsEqualTo(5);
             AssertThat(pos1.StartLine).IsEqualTo(1);
@@ -598,7 +598,7 @@ namespace Warpstone.Tests.Parsers
             AssertThat(pos1.EndLine).IsEqualTo(1);
             AssertThat(pos1.EndLinePosition).IsEqualTo(5);
 
-            SourcePosition pos2 = parser.TryParse("\n \t\nhello").Position;
+            ParseInputPosition pos2 = parser.TryParse("\n \t\nhello").Position;
             AssertThat(pos2.Start).IsEqualTo(0);
             AssertThat(pos2.End).IsEqualTo(9);
             AssertThat(pos2.StartLine).IsEqualTo(1);
@@ -612,7 +612,7 @@ namespace Warpstone.Tests.Parsers
             public Parsed(char c)
                 => Value = c;
 
-            public SourcePosition Position { get; set; }
+            public ParseInputPosition Position { get; set; }
 
             public char Value { get; }
         }

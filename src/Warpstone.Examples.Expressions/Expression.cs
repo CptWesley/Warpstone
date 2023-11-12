@@ -4,7 +4,7 @@ namespace Warpstone.Examples.Expressions
 {
     public abstract class Expression : IParsed
     {
-        public SourcePosition Position { get; set; }
+        public ParseInputPosition Position { get; set; }
 
         public abstract int Evaluate();
     }
