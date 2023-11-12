@@ -12,11 +12,20 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
     /// </summary>
     /// <param name="value">The expected character.</param>
     /// <param name="stringComparison">The string comparison method to use.</param>
-    public StringParser(string value, StringComparison? stringComparison = null)
+    public StringParser(string value, StringComparison stringComparison)
     {
         Value = value;
         StringComparison = stringComparison;
         expected = $"\"{value}\"";
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StringParser"/> class.
+    /// </summary>
+    /// <param name="value">The expected character.</param>
+    public StringParser(string value)
+        : this(value, StringComparison.Ordinal)
+    {
     }
 
     /// <summary>
@@ -27,7 +36,7 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
     /// <summary>
     /// Gets the string comparison method.
     /// </summary>
-    public StringComparison? StringComparison { get; }
+    public StringComparison StringComparison { get; }
 
     /// <inheritdoc />
     public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
@@ -56,22 +65,7 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>
             return false;
         }
 
-        if (StringComparison.HasValue)
-        {
-            return Value.Equals(input.Substring(position, Value.Length), StringComparison.Value);
-        }
-        else
-        {
-            for (int i = 0; i < Value.Length; i++)
-            {
-                if (Value[i] != input[position + i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
+        return Value.Equals(input.Substring(position, Value.Length), StringComparison);
     }
 
     /// <inheritdoc />
