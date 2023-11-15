@@ -24,11 +24,11 @@ public sealed class PositionParser : ParserBase<ParseInputPosition>, IEquatable<
         => "Position()";
 
     /// <inheritdoc />
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
         => obj is PositionParser other && Equals(other);
 
     /// <inheritdoc />
-    public bool Equals(PositionParser other)
+    public bool Equals(PositionParser? other)
         => other is not null;
 
     /// <inheritdoc />

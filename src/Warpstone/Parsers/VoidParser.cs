@@ -24,11 +24,11 @@ public sealed class VoidParser<T> : ParserBase<T?>, IEquatable<VoidParser<T>>
         => "Void()";
 
     /// <inheritdoc />
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
         => obj is VoidParser<T> other && Equals(other);
 
     /// <inheritdoc />
-    public bool Equals(VoidParser<T> other)
+    public bool Equals(VoidParser<T>? other)
         => other is not null;
 
     /// <inheritdoc />

@@ -24,11 +24,11 @@ public sealed class FailParser<T> : ParserBase<T>, IEquatable<FailParser<T>>
         => "Fail()";
 
     /// <inheritdoc />
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
         => obj is FailParser<T> other && Equals(other);
 
     /// <inheritdoc />
-    public bool Equals(FailParser<T> other)
+    public bool Equals(FailParser<T>? other)
         => other is not null;
 
     /// <inheritdoc />

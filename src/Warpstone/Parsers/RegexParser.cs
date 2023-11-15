@@ -70,12 +70,12 @@ public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, I
         => expected;
 
     /// <inheritdoc />
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
         => obj is RegexParser other
         && Equals(other);
 
     /// <inheritdoc />
-    public bool Equals(RegexParser other)
+    public bool Equals(RegexParser? other)
         => other is not null
         && Pattern == other.Pattern
         && Options == other.Options;

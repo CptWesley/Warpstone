@@ -76,12 +76,12 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>,
         => expected;
 
     /// <inheritdoc />
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
         => obj is StringParser other
         && Equals(other);
 
     /// <inheritdoc />
-    public bool Equals(StringParser other)
+    public bool Equals(StringParser? other)
         => other is not null
         && String == other.String
         && Equals(StringComparison, other.StringComparison);

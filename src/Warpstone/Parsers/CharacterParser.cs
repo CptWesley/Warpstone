@@ -50,12 +50,12 @@ public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterPars
         => expected;
 
     /// <inheritdoc />
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
         => obj is CharacterParser other
         && Equals(other);
 
     /// <inheritdoc />
-    public bool Equals(CharacterParser other)
+    public bool Equals(CharacterParser? other)
         => other is not null
         && Character == other.Character;
 

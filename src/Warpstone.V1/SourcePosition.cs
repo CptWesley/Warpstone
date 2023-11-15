@@ -115,11 +115,11 @@ namespace Warpstone
             => !(left == right);
 
         /// <inheritdoc/>
-        public override bool Equals(object obj)
+        public override bool Equals(object? obj)
             => obj is SourcePosition sp ? Equals(sp) : false;
 
         /// <inheritdoc/>
-        public bool Equals(SourcePosition other)
+        public bool Equals(SourcePosition? other)
             => Start == other.Start && Length == other.Length;
 
         /// <inheritdoc/>

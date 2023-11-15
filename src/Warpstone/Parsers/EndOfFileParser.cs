@@ -32,11 +32,11 @@ public sealed class EndOfFileParser : ParserBase<string>, IEquatable<EndOfFilePa
         => "EOF";
 
     /// <inheritdoc />
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
         => obj is EndOfFileParser other && Equals(other);
 
     /// <inheritdoc />
-    public bool Equals(EndOfFileParser other)
+    public bool Equals(EndOfFileParser? other)
         => other is not null;
 
     /// <inheritdoc />
