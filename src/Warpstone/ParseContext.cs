@@ -55,7 +55,7 @@ public static class ParseContext
         }
 
         var method = createMethodInfo.MakeGenericMethod(parser.ResultType);
-        return (IParseContext)method.Invoke(null, new object[] { input, parser });
+        return (IParseContext)method.Invoke(null, new object[] { input, parser })!;
     }
 
     /// <summary>

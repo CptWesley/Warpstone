@@ -9,7 +9,7 @@ public static partial class BasicParsers
     /// <summary>
     /// A parser matching the end of an input stream.
     /// </summary>
-    public static readonly IParser<object> End = EndOfFileParser.Instance;
+    public static readonly IParser<string> End = EndOfFileParser.Instance;
 
     /// <summary>
     /// Creates a parser that always succeeds.

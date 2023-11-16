@@ -17,7 +17,7 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void CharParserIncorrect()
-        => AssertThat(() => Char('x').Parse("yz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('x').Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing strings works correctly.
@@ -31,7 +31,7 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void StringParserIncorrect()
-        => AssertThat(() => String("abc").Parse("def")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => String("abc").Parse("def")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing regexes works correctly.
@@ -45,7 +45,7 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void RegexParserIncorrect()
-        => AssertThat(() => Regex("[abc]+").Parse("def")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Regex("[abc]+").Parse("def")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that branch parsing works correctly.
@@ -73,7 +73,7 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void OrParserIncorrect()
-        => AssertThat(() => Or(Char('x'), Char('y')).Parse("zzz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Or(Char('x'), Char('y')).Parse("zzz")).ThrowsExactlyException<UnexpectedTokenError>();
     /*
     /// <summary>
     /// Checks that parsing one or more works correctly.
@@ -143,14 +143,14 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void ThenParserIncorrectLeft()
-        => AssertThat(() => Char('x').Then(Char('y')).Parse("yz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('x').Then(Char('y')).Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
     [Fact]
     public static void ThenParserIncorrectRight()
-        => AssertThat(() => Char('x').Then(Char('y')).Parse("xz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('x').Then(Char('y')).Parse("xz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
@@ -164,14 +164,14 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void ThenSkipParserIncorrectLeft()
-        => AssertThat(() => Char('x').ThenSkip(Char('y')).Parse("yz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('x').ThenSkip(Char('y')).Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
     [Fact]
     public static void ThenSkipParserIncorrectRight()
-        => AssertThat(() => Char('x').ThenSkip(Char('y')).Parse("xz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('x').ThenSkip(Char('y')).Parse("xz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
@@ -374,14 +374,14 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void ThenAddParserIncorrectLeft()
-        => AssertThat(() => Char('x').ThenAdd(Char('y')).Parse("yz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('x').ThenAdd(Char('y')).Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
     [Fact]
     public static void ThenAddParserIncorrectRight()
-        => AssertThat(() => Char('x').ThenAdd(Char('y')).Parse("xz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('x').ThenAdd(Char('y')).Parse("xz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that peek parsing works correctly.
@@ -395,21 +395,21 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void PeekParserIncorrect()
-        => AssertThat(() => Peek(Char('x')).Parse("yz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Peek(Char('x')).Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that end parsing works correctly.
     /// </summary>
     [Fact]
     public static void EndParserCorrect()
-        => AssertThat(End.Parse(string.Empty)).IsNull();
+        => AssertThat(End.Parse(string.Empty)).IsEqualTo(string.Empty);
 
     /// <summary>
     /// Checks that end parsing works correctly.
     /// </summary>
     [Fact]
     public static void EndParserIncorrect()
-        => AssertThat(() => End.Parse("yz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => End.Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that end parsing works correctly.
@@ -423,14 +423,14 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void ThenEndParserIncorrectLeft()
-        => AssertThat(() => Char('a').ThenEnd().Parse("yz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('a').ThenEnd().Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that end parsing works correctly.
     /// </summary>
     [Fact]
     public static void ThenEndParserIncorrectRight()
-        => AssertThat(() => Char('a').ThenEnd().Parse("ayz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => Char('a').ThenEnd().Parse("ayz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that creation parsing works correctly.
@@ -458,7 +458,7 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void IfParserIncorrect()
-        => AssertThat(() => If(Char('x'), Char('y'), Char('z')).Parse("g")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => If(Char('x'), Char('y'), Char('z')).Parse("g")).ThrowsExactlyException<UnexpectedTokenError>();
     /*
     /// <summary>
     /// Checks that optional parsing works correctly.

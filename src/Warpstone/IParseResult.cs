@@ -44,7 +44,7 @@ public interface IParseResult
     /// <summary>
     /// The list of errors (if any).
     /// </summary>
-    public IReadOnlyList<IParseError> Errors { get; }
+    public IImmutableList<IParseError> Errors { get; }
 
     /// <summary>
     /// Indicates whether or not the parsing was successful.

@@ -58,7 +58,7 @@ public sealed class ParseResult<T> : IParseResult<T>
         int length,
         ParseStatus status,
         T? value,
-        IReadOnlyList<IParseError> errors)
+        IImmutableList<IParseError> errors)
     {
         Context = context;
         Parser = parser;
@@ -98,7 +98,7 @@ public sealed class ParseResult<T> : IParseResult<T>
     public int Length { get; }
 
     /// <inheritdoc />
-    public IReadOnlyList<IParseError> Errors { get; }
+    public IImmutableList<IParseError> Errors { get; }
 
     /// <inheritdoc />
     IParser IParseResult.Parser => Parser;
@@ -146,7 +146,7 @@ public sealed class ParseResult<T> : IParseResult<T>
     /// <param name="value">The value that was found.</param>
     /// <returns>The newly created <see cref="IParseResult{T}"/> instance.</returns>
     public static IParseResult<T> CreateMatch(IReadOnlyParseContext context, IParser<T> parser, int position, int length, T value)
-        => new ParseResult<T>(context, parser, position, length, ParseStatus.Match, value, Array.Empty<IParseError>());
+        => new ParseResult<T>(context, parser, position, length, ParseStatus.Match, value, ImmutableList<IParseError>.Empty);
 
     /// <summary>
     /// Creates a new failed parse result, because the input could not be matched.
@@ -157,7 +157,7 @@ public sealed class ParseResult<T> : IParseResult<T>
     /// <param name="errors">The list of errors that explain why the parsing was not successful.</param>
     /// <returns>The newly created <see cref="IParseResult{T}"/> instance.</returns>
     public static IParseResult<T> CreateMismatch(IReadOnlyParseContext context, IParser<T> parser, int position, IEnumerable<IParseError> errors)
-        => new ParseResult<T>(context, parser, position, 0, ParseStatus.Mismatch, default, errors.ToArray());
+        => new ParseResult<T>(context, parser, position, 0, ParseStatus.Mismatch, default, errors.ToImmutableList());
 
     /// <summary>
     /// Creates a new failed parse result, because the parser failed for
@@ -168,5 +168,5 @@ public sealed class ParseResult<T> : IParseResult<T>
     /// <param name="position">The position in the input where the match started.</param>
     /// <returns>The newly created <see cref="IParseResult{T}"/> instance.</returns>
     public static IParseResult<T> CreateFail(IReadOnlyParseContext context, IParser<T> parser, int position)
-        => new ParseResult<T>(context, parser, position, 0, ParseStatus.Fail, default, new[] { new InfiniteRecursionError(context, parser, position, 0) });
+        => new ParseResult<T>(context, parser, position, 0, ParseStatus.Fail, default, ImmutableList<IParseError>.Empty.Add(new InfiniteRecursionError(context, parser, position, 0)));
 }

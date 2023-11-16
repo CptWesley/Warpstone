@@ -51,7 +51,7 @@ public sealed class UnexpectedTokenError : ParseError
               position,
               length,
               expected.ToImmutableSortedSet(),
-              innerErrors.ToImmutableSortedSet())
+              innerErrors.ToImmutableHashSet())
     {
     }
 
@@ -61,7 +61,7 @@ public sealed class UnexpectedTokenError : ParseError
         int position,
         int length,
         ImmutableSortedSet<string> expected,
-        ImmutableSortedSet<UnexpectedTokenError> innerErrors)
+        ImmutableHashSet<UnexpectedTokenError> innerErrors)
         : base(
               context,
               parser,
@@ -119,18 +119,18 @@ public sealed class UnexpectedTokenError : ParseError
         : base(context, parser, position, length, message, innerException)
     {
         Expected = expected.ToImmutableSortedSet();
-        InnerErrors = innerErrors.ToImmutableSortedSet();
+        InnerErrors = innerErrors.ToImmutableHashSet();
     }
 
     /// <summary>
     /// Gets the expected string.
     /// </summary>
-    public ImmutableSortedSet<string> Expected { get; }
+    public IImmutableSet<string> Expected { get; }
 
     /// <summary>
     /// Gets the inner errors.
     /// </summary>
-    public ImmutableSortedSet<UnexpectedTokenError> InnerErrors { get; }
+    public IImmutableSet<UnexpectedTokenError> InnerErrors { get; }
 
     /// <summary>
     /// Gets the found string.
