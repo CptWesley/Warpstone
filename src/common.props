@@ -40,7 +40,7 @@
 
   <ItemGroup Label="CodeGenerators">
     <PackageReference Include="PolySharp" Version="1.13.2" PrivateAssets="all" />
-    <PackageReference Include="T4.SourceGenerator" Version="1.0.0" PrivateAssets="all" />
+    <PackageReference Include="T4.SourceGenerator" Version="1.2.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
