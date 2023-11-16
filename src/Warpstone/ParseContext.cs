@@ -87,7 +87,7 @@ public sealed class ParseContext<T> : IParseContext<T>
     {
         Input = input;
         Parser = parser;
-        executor = IterativeExecutor.Create(ApplyRule(parser, 0));
+        executor = IterativeExecutor.Create(Iterative.Done(() => ApplyRule(parser, 0)));
         memo = new MemoTable();
         readOnlyMemo = memo.AsReadOnly();
         readOnlySelf = new ReadOnlyParseContext<T>(this);

@@ -26,5 +26,6 @@
   <ItemGroup Label="DefaultImports">
     <Using Include="FluentAssertions"/>
     <Using Include="Xunit"/>
+    <Using Static="true" Include="AssertNet.Assertions"/>
   </ItemGroup>
 </Project>

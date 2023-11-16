@@ -63,6 +63,7 @@
     <Using Include="System.Diagnostics"/>
     <Using Include="System.Diagnostics.CodeAnalysis"/>
     <Using Include="System.Diagnostics.Contracts"/>
+    <Using Include="System.Globalization"/>
     <Using Include="System.IO"/>
     <Using Include="System.Linq"/>
     <Using Include="System.Reflection"/>
