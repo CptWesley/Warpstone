@@ -41,7 +41,7 @@ public static partial class BasicParsers
     /// </summary>
     /// <param name="pattern">The pattern to match.</param>
     /// <returns>A parser matching a regular expression.</returns>
-    public static IParser<string> Regex(string pattern)
+    public static IParser<string> Regex([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
         => new RegexParser(pattern);
 
     /// <summary>
