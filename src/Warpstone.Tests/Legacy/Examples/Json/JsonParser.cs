@@ -21,7 +21,11 @@ public static class JsonParser
         .Transform(x => new JsonDouble(double.Parse(x)));
 
     private static readonly IParser<JsonArray> Array
-        = Char('[').Then(Many(Lazy(() => Json), Char(','))).ThenSkip(Char(']'))
+        = Char('[')
+        .ThenSkip(OptionalWhitespaces)
+        .Then(Many(Lazy(() => Json), Char(',')))
+        .ThenSkip(OptionalWhitespaces)
+        .ThenSkip(Char(']'))
         .Transform(x => new JsonArray(x.ToImmutableArray()));
 
     private static readonly IParser<JsonBoolean> True
@@ -50,7 +54,9 @@ public static class JsonParser
         .Transform((x, y) => new KeyValuePair<JsonString, JsonValue>(x, y));
 
     private static readonly IParser<JsonObject> Object
-        = Char('{').Then(Many(Field, Char(','), Char('}')))
+        = Char('{')
+        .ThenSkip(OptionalWhitespaces)
+        .Then(Many(Field, Char(','), OptionalWhitespaces.ThenSkip(Char('}'))))
         .Transform(x => new JsonObject(x.ToImmutableArray()));
 
     private static readonly IParser<JsonValue> Json
