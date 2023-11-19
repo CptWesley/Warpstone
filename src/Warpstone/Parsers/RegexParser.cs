@@ -48,16 +48,18 @@ public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, I
     {
         var input = context.Input.Content;
 
+        /*
         if (position >= input.Length)
         {
             return Iterative.Done(this.Mismatch(context, position, 1, expected));
         }
+        */
 
         var match = regex.Match(input, position);
 
         if (match.Success && match.Index == position)
         {
-            return Iterative.Done(this.Match(context, position, 1, match.Value));
+            return Iterative.Done(this.Match(context, position, match.Length, match.Value));
         }
         else
         {

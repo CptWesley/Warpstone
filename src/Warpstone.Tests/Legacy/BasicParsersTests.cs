@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Tests.Parsers;
+﻿namespace Warpstone.Tests.Legacy;
 
 /// <summary>
 /// Test class for the <see cref="BasicParsers"/> class.
@@ -511,7 +511,7 @@ public static class BasicParsersTests
     [Fact]
     public static void LazyParserCorrect()
         => AssertThat(Lazy(() => Char('x')).Parse("xyz")).IsEqualTo('x');
-    
+
     /// <summary>
     /// Checks that the expected parser works correctly.
     /// </summary>
@@ -524,14 +524,14 @@ public static class BasicParsersTests
         AssertThat(result.Errors[0]).IsExactlyInstanceOf<UnexpectedTokenError>();
         AssertThat(((UnexpectedTokenError)result.Errors[0]).Expected).ContainsExactly("bahbah", "booboo");
     }
-    
+
     /// <summary>
     /// Checks that the expected parser works correctly.
     /// </summary>
     [Fact]
     public static void StringComparisonCorrect()
     {
-        IParser<string> parser = String("test-string", System.StringComparison.InvariantCultureIgnoreCase);
+        IParser<string> parser = String("test-string", StringComparison.InvariantCultureIgnoreCase);
         IParseResult<string> result = parser.TryParse("TeSt-StRiNg");
         AssertThat(result.Success).IsTrue();
         AssertThat(result.Value).IsSameAs("test-string");

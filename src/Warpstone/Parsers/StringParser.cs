@@ -53,7 +53,7 @@ public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>,
 
         if (StringAtIndex(input, position))
         {
-            return Iterative.Done(this.Match(context, position, 1, String));
+            return Iterative.Done(this.Match(context, position, String.Length, String));
         }
         else
         {
