@@ -27,7 +27,7 @@ public sealed class LazyParser<T> : ParserBase<T>
 
                 if (first.Success)
                 {
-                    return Iterative.Done(this.Match(context, position, 0, default));
+                    return Iterative.Done(this.Match(context, position, first.Length, first.Value));
                 }
                 else
                 {

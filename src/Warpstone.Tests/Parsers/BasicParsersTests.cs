@@ -74,7 +74,7 @@ public static class BasicParsersTests
     [Fact]
     public static void OrParserIncorrect()
         => AssertThat(() => Or(Char('x'), Char('y')).Parse("zzz")).ThrowsExactlyException<UnexpectedTokenError>();
-    /*
+
     /// <summary>
     /// Checks that parsing one or more works correctly.
     /// </summary>
@@ -130,7 +130,7 @@ public static class BasicParsersTests
     [Fact]
     public static void ManyParserCorrectMore()
         => AssertThat(Many(Char('x')).Parse("xxxyz")).ContainsExactly('x', 'x', 'x');
-    */
+
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
@@ -277,7 +277,7 @@ public static class BasicParsersTests
         AssertThat(parsed.Position.Length).IsEqualTo(1);
         AssertThat(parsed.Value).IsEqualTo('b');
     }
-
+    */
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
@@ -368,7 +368,7 @@ public static class BasicParsersTests
             .ThenAdd(Char('h'))
             .Transform((a, b, c, d, e, f, g, h) => $"{a}{b}{c}{d}{e}{f}{g}{h}")
             .Parse("abcdefghijklmnop")).IsEqualTo("abcdefgh");
-    */
+
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
@@ -503,7 +503,7 @@ public static class BasicParsersTests
         AssertThat(result2.HasValue).IsFalse();
         AssertThat(result2.Value).IsEqualTo(default(char));
     }
-    /*
+    */
 
     /// <summary>
     /// Checks that lazy parsing works correctly.
@@ -522,7 +522,7 @@ public static class BasicParsersTests
         IParseResult<string> result = parser.TryParse("y");
         AssertThat(result.Errors).HasSize(1);
         AssertThat(result.Errors[0]).IsExactlyInstanceOf<UnexpectedTokenError>();
-        AssertThat(((UnexpectedTokenError)result.Errors[0]).Expected).ContainsExactly("booboo", "bahbah");
+        AssertThat(((UnexpectedTokenError)result.Errors[0]).Expected).ContainsExactly("bahbah", "booboo");
     }
     
     /// <summary>

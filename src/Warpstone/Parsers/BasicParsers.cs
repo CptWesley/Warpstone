@@ -68,7 +68,7 @@ public static partial class BasicParsers
     /// <returns>A parser parsing the given character.</returns>
     public static IParser<char> Char(char c)
         => new CharacterParser(c);
-    /*
+
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
     /// </summary>
@@ -78,7 +78,7 @@ public static partial class BasicParsers
     /// <param name="count">The exact number of matches.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, int count, IParser<T2> terminator)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, int count, IParser<T2> terminator)
         => Multiple(parser, VoidParser<T2>.Instance, count, terminator);
 
     /// <summary>
@@ -88,7 +88,7 @@ public static partial class BasicParsers
     /// <param name="parser">The parser to apply multiple times.</param>
     /// <param name="count">The exact number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T>> Multiple<T>(IParser<T> parser, int count)
+    public static IParser<IImmutableList<T>> Multiple<T>(IParser<T> parser, int count)
         => Multiple(parser, count, VoidParser<object>.Instance);
 
     /// <summary>
@@ -102,7 +102,7 @@ public static partial class BasicParsers
     /// <param name="count">The exact number of matches.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, int count, IParser<T3> terminator)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, int count, IParser<T3> terminator)
         => Multiple(parser, delimiter, count, count, terminator);
 
     /// <summary>
@@ -114,7 +114,7 @@ public static partial class BasicParsers
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <param name="count">The exact number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int count)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int count)
         => Multiple(parser, delimiter, count, VoidParser<T2>.Instance);
 
     /// <summary>
@@ -127,7 +127,7 @@ public static partial class BasicParsers
     /// <param name="max">The maximum number of matches.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, int min, int max, IParser<T2> terminator)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, int min, int max, IParser<T2> terminator)
         => Multiple(parser, VoidParser<T2>.Instance, min, max, terminator);
 
     /// <summary>
@@ -138,7 +138,7 @@ public static partial class BasicParsers
     /// <param name="min">The minimum number of matches.</param>
     /// <param name="max">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T>> Multiple<T>(IParser<T> parser, int min, int max)
+    public static IParser<IImmutableList<T>> Multiple<T>(IParser<T> parser, int min, int max)
         => Multiple(parser, min, max, VoidParser<object>.Instance);
 
     /// <summary>
@@ -153,7 +153,7 @@ public static partial class BasicParsers
     /// <param name="max">The maximum number of matches.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, int min, int max, IParser<T3> terminator)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, int min, int max, IParser<T3> terminator)
     {
         if (min < 0)
         {
@@ -178,7 +178,7 @@ public static partial class BasicParsers
     /// <param name="min">The minimum number of matches.</param>
     /// <param name="max">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int min, int max)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int min, int max)
         => Multiple(parser, delimiter, min, max, VoidParser<T2>.Instance);
 
     /// <summary>
@@ -190,7 +190,7 @@ public static partial class BasicParsers
     /// <param name="count">The exact number of matches.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, ulong count, IParser<T2> terminator)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, ulong count, IParser<T2> terminator)
         => Multiple(parser, VoidParser<T2>.Instance, count, terminator);
 
     /// <summary>
@@ -200,7 +200,7 @@ public static partial class BasicParsers
     /// <param name="parser">The parser to apply multiple times.</param>
     /// <param name="count">The exact number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T>> Multiple<T>(IParser<T> parser, ulong count)
+    public static IParser<IImmutableList<T>> Multiple<T>(IParser<T> parser, ulong count)
         => Multiple(parser, count, VoidParser<object>.Instance);
 
     /// <summary>
@@ -214,7 +214,7 @@ public static partial class BasicParsers
     /// <param name="count">The exact number of matches.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, ulong count, IParser<T3> terminator)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, ulong count, IParser<T3> terminator)
         => Multiple(parser, delimiter, count, count, terminator);
 
     /// <summary>
@@ -226,7 +226,7 @@ public static partial class BasicParsers
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <param name="count">The exact number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong count)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong count)
         => Multiple(parser, delimiter, count, VoidParser<T2>.Instance);
 
     /// <summary>
@@ -239,7 +239,7 @@ public static partial class BasicParsers
     /// <param name="max">The maximum number of matches.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, ulong min, ulong max, IParser<T2> terminator)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, ulong min, ulong max, IParser<T2> terminator)
         => Multiple(parser, VoidParser<T2>.Instance, min, max, terminator);
 
     /// <summary>
@@ -250,7 +250,7 @@ public static partial class BasicParsers
     /// <param name="min">The minimum number of matches.</param>
     /// <param name="max">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T>> Multiple<T>(IParser<T> parser, ulong min, ulong max)
+    public static IParser<IImmutableList<T>> Multiple<T>(IParser<T> parser, ulong min, ulong max)
         => Multiple(parser, min, max, VoidParser<object>.Instance);
 
     /// <summary>
@@ -265,7 +265,7 @@ public static partial class BasicParsers
     /// <param name="max">The maximum number of matches.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max, IParser<T3> terminator)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max, IParser<T3> terminator)
     {
         if (max < min)
         {
@@ -285,7 +285,7 @@ public static partial class BasicParsers
     /// <param name="min">The minimum number of matches.</param>
     /// <param name="max">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max)
+    public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max)
         => Multiple(parser, delimiter, min, max, VoidParser<T2>.Instance);
 
     /// <summary>
@@ -294,7 +294,7 @@ public static partial class BasicParsers
     /// <typeparam name="T">The type of results collected.</typeparam>
     /// <param name="parser">The parser to apply multiple times.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T>> Many<T>(IParser<T> parser)
+    public static IParser<IImmutableList<T>> Many<T>(IParser<T> parser)
         => Many(parser, VoidParser<object>.Instance);
 
     /// <summary>
@@ -307,7 +307,7 @@ public static partial class BasicParsers
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Many<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator)
+    public static IParser<IImmutableList<T1>> Many<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator)
           => Multiple(parser, delimiter, 0, ulong.MaxValue, terminator);
 
     /// <summary>
@@ -318,7 +318,7 @@ public static partial class BasicParsers
     /// <param name="parser">The parser to apply multiple times.</param>
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IList<T1>> Many<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
+    public static IParser<IImmutableList<T1>> Many<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
           => Multiple(parser, delimiter, 0, ulong.MaxValue, VoidParser<T2>.Instance);
 
     /// <summary>
@@ -327,7 +327,7 @@ public static partial class BasicParsers
     /// <typeparam name="T">The result type of the parser.</typeparam>
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
-    public static IParser<IList<T>> OneOrMore<T>(IParser<T> parser)
+    public static IParser<IImmutableList<T>> OneOrMore<T>(IParser<T> parser)
         => OneOrMore(parser, VoidParser<object>.Instance);
 
     /// <summary>
@@ -340,7 +340,7 @@ public static partial class BasicParsers
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
-    public static IParser<IList<T1>> OneOrMore<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator)
+    public static IParser<IImmutableList<T1>> OneOrMore<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator)
         => Multiple(parser, delimiter, 1, ulong.MaxValue, terminator);
 
     /// <summary>
@@ -351,9 +351,9 @@ public static partial class BasicParsers
     /// <param name="parser">The parser to apply multiple times.</param>
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
-    public static IParser<IList<T1>> OneOrMore<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
+    public static IParser<IImmutableList<T1>> OneOrMore<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
         => Multiple(parser, delimiter, 1, ulong.MaxValue, VoidParser<T2>.Instance);
-    */
+
     /// <summary>
     /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
     /// </summary>

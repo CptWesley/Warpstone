@@ -4,7 +4,7 @@
 /// Parser which grants a name to the expected input.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<ImmutableArray<string>>, IParserFirst<T>
+public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<IImmutableList<string>>, IParserFirst<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ExpectedParser{T}"/> class.
@@ -25,10 +25,10 @@ public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<ImmutableArr
     /// <summary>
     /// The expected element name.
     /// </summary>
-    public ImmutableArray<string> Expected { get; }
+    public IImmutableList<string> Expected { get; }
 
     /// <inheritdoc />
-    ImmutableArray<string> IParserValue<ImmutableArray<string>>.Value => Expected;
+    IImmutableList<string> IParserValue<IImmutableList<string>>.Value => Expected;
 
     /// <inheritdoc />
     public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
