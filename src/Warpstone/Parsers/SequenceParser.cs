@@ -50,7 +50,7 @@ public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecon
 
                         if (!second.Success)
                         {
-                            return Iterative.Done(this.Mismatch(context, first.Position, second.Errors));
+                            return Iterative.Done(this.Mismatch(context, position, second.Errors));
                         }
 
                         var value = (first.Value, second.Value);

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers;
 
 /// <summary>
 /// A parser which runs a single parser multiple times with optional
@@ -34,6 +32,11 @@ public sealed class MultipleParser<TElement, TDelimiter, TTerminator> :
         Terminator = terminator;
         Min = min;
         Max = max;
+
+        if (Max < Min)
+        {
+            throw new ArgumentException($"Max ({Max}) may not me less than Min ({Min}).", nameof(max));
+        }
     }
 
     /// <summary>
@@ -75,36 +78,118 @@ public sealed class MultipleParser<TElement, TDelimiter, TTerminator> :
 
     /// <inheritdoc />
     public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
-        => Iterative.Done(() => eval(Element, position));
-        /*
-        => Iterative.More(
-            () => eval(First, position),
-            untypedFirst =>
-            {
-                var first = untypedFirst.AssertOfType<IParseResult<TElement>>();
+        => Min > 0
+        ? EvalMin(context, position, position, eval, Min, new List<TElement>())
+        : EvalMax(context, position, position, position, eval, Max, new List<TElement>());
 
-                if (!first.Success)
+    private IterativeStep EvalMin(
+        IReadOnlyParseContext context,
+        int initialPosition,
+        int position,
+        Func<IParser, int, IterativeStep> eval,
+        ulong rem,
+        List<TElement> acc)
+        => Iterative.More(
+            () => eval(Element, position),
+            untypedElement =>
+            {
+                var element = untypedElement.AssertOfType<IParseResult<TElement>>();
+
+                if (!element.Success)
                 {
-                    return Iterative.Done(this.Mismatch(context, position, first.Errors));
+                    return Iterative.Done(this.Mismatch(context, element.Position, element.Errors));
+                }
+
+                acc.Add(element.Value);
+
+                return Iterative.More(
+                    () => eval(Delimiter, element.NextPosition),
+                    untypedDelimiter =>
+                    {
+                        var delimiter = untypedDelimiter.AssertOfType<IParseResult<TDelimiter>>();
+
+                        if (rem > 1)
+                        {
+                            if (!delimiter.Success)
+                            {
+                                return Iterative.Done(this.Mismatch(context, initialPosition, delimiter.Errors));
+                            }
+                            else
+                            {
+                                return EvalMin(context, initialPosition, delimiter.NextPosition, eval, rem - 1, acc);
+                            }
+                        }
+
+                        var maxRem = Max - Min;
+                        if (!delimiter.Success || maxRem == 0)
+                        {
+                            return EvalTerminator(context, initialPosition, element.NextPosition, eval, acc);
+                        }
+
+                        return EvalMax(context, initialPosition, delimiter.NextPosition, element.NextPosition, eval, maxRem, acc);
+                    });
+            });
+
+    private IterativeStep EvalMax(
+        IReadOnlyParseContext context,
+        int initialPosition,
+        int position,
+        int lastElementPosition,
+        Func<IParser, int, IterativeStep> eval,
+        ulong rem,
+        List<TElement> acc)
+        => Iterative.More(
+            () => eval(Element, position),
+            untypedElement =>
+            {
+                var element = untypedElement.AssertOfType<IParseResult<TElement>>();
+
+                if (!element.Success)
+                {
+                    return EvalTerminator(context, initialPosition, lastElementPosition, eval, acc);
+                }
+
+                acc.Add(element.Value);
+
+                if (rem == 0)
+                {
+                    return EvalTerminator(context, initialPosition, element.NextPosition, eval, acc);
                 }
 
                 return Iterative.More(
-                    () => eval(Second, first.NextPosition),
-                    untypedSecond =>
+                    () => eval(Delimiter, element.NextPosition),
+                    untypedDelimiter =>
                     {
-                        var second = untypedSecond.AssertOfType<IParseResult<TSecond>>();
+                        var delimiter = untypedDelimiter.AssertOfType<IParseResult<TDelimiter>>();
 
-                        if (!second.Success)
+                        if (!delimiter.Success)
                         {
-                            return Iterative.Done(this.Mismatch(context, first.Position, second.Errors));
+                            return EvalTerminator(context, initialPosition, element.NextPosition, eval, acc);
                         }
 
-                        var value = (first.Value, second.Value);
-                        var length = first.Length + second.Length;
-                        return Iterative.Done(this.Match(context, position, length, value));
+                        return EvalMax(context, initialPosition, delimiter.NextPosition, element.NextPosition, eval, rem - 1, acc);
                     });
             });
-        */
+
+    private IterativeStep EvalTerminator(
+        IReadOnlyParseContext context,
+        int initialPosition,
+        int position,
+        Func<IParser, int, IterativeStep> eval,
+        List<TElement> acc)
+        => Iterative.More(
+            () => eval(Terminator, position),
+            untypedTerminator =>
+            {
+                var terminator = untypedTerminator.AssertOfType<IParseResult<TTerminator>>();
+
+                if (!terminator.Success)
+                {
+                    return Iterative.Done(this.Mismatch(context, initialPosition, terminator.Errors));
+                }
+
+                return Iterative.Done(this.Match(context, position, terminator.NextPosition - initialPosition, acc.ToImmutableArray()));
+            });
 
     /// <inheritdoc />
     protected override string InternalToString(int depth)

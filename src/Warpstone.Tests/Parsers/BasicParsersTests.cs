@@ -108,7 +108,7 @@ public static class BasicParsersTests
     /// </summary>
     [Fact]
     public static void OneOrMoreParserIncorrect()
-        => AssertThat(() => OneOrMore(Char('x')).Parse("yz")).ThrowsExactlyException<ParseError>();
+        => AssertThat(() => OneOrMore(Char('x')).Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing many works correctly.
