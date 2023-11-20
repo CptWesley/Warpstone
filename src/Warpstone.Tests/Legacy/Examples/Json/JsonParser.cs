@@ -23,7 +23,7 @@ public static class JsonParser
     private static readonly IParser<JsonArray> Array
         = Char('[')
         .ThenSkip(OptionalWhitespaces)
-        .Then(Many(Lazy(() => Json), Char(',')))
+        .Then(Many(Lazy(() => Json!), Char(',')))
         .ThenSkip(OptionalWhitespaces)
         .ThenSkip(Char(']'))
         .Transform(x => new JsonArray(x.ToImmutableArray()));
@@ -50,7 +50,7 @@ public static class JsonParser
         .ThenSkip(OptionalWhitespaces)
         .ThenSkip(Char(':'))
         .ThenSkip(OptionalWhitespaces)
-        .ThenAdd(Lazy(() => Json))
+        .ThenAdd(Lazy(() => Json!))
         .Transform((x, y) => new KeyValuePair<JsonString, JsonValue>(x, y));
 
     private static readonly IParser<JsonObject> Object

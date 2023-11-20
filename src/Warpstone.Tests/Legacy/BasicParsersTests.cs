@@ -1,4 +1,6 @@
-﻿namespace Warpstone.Tests.Legacy;
+﻿#pragma warning disable S107 // Max 8 parameters. Disabled for tests.
+
+namespace Warpstone.Tests.Legacy;
 
 /// <summary>
 /// Test class for the <see cref="BasicParsers"/> class.
