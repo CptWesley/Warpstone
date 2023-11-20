@@ -265,19 +265,7 @@ public static class BasicParsersTests
         => AssertThat(Char('a')
             .Transform(a => $"{a}")
             .Parse("abcdefghijklmnop")).IsEqualTo("a");
-    /*
-    /// <summary>
-    /// Checks that parsing transformations works correctly.
-    /// </summary>
-    [Fact]
-    public static void TransformParserCorrectIParsed()
-    {
-        Parsed parsed = Char('a').Then(Char('b').Transform(x => new Parsed(x))).Parse("abc");
-        AssertThat(parsed.Position.Start).IsEqualTo(1);
-        AssertThat(parsed.Position.Length).IsEqualTo(1);
-        AssertThat(parsed.Value).IsEqualTo('b');
-    }
-    */
+
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
@@ -459,51 +447,6 @@ public static class BasicParsersTests
     [Fact]
     public static void IfParserIncorrect()
         => AssertThat(() => If(Char('x'), Char('y'), Char('z')).Parse("g")).ThrowsExactlyException<UnexpectedTokenError>();
-    /*
-    /// <summary>
-    /// Checks that optional parsing works correctly.
-    /// </summary>
-    [Fact]
-    public static void MaybeParserCorrectExists()
-        => AssertThat(Maybe(Char('x')).Parse("xyz")).IsExactlyInstanceOf<Some<char>>();
-
-    /// <summary>
-    /// Checks that optional parsing works correctly.
-    /// </summary>
-    [Fact]
-    public static void MaybeParserCorrectDoesNotExist()
-        => AssertThat(Maybe(Char('x')).Parse("yz")).IsExactlyInstanceOf<None<char>>();
-
-    /// <summary>
-    /// Checks that optional parsing works correctly.
-    /// </summary>
-    [Fact]
-    public static void MaybeParserCorrectExistsDefaultValue()
-        => AssertThat(Maybe(Char('x'), '-').Parse("xyz")).IsEqualTo('x');
-
-    /// <summary>
-    /// Checks that optional parsing works correctly.
-    /// </summary>
-    [Fact]
-    public static void MaybeParserCorrectDoesNotExistDefaultValue()
-        => AssertThat(Maybe(Char('x'), '-').Parse("yz")).IsEqualTo('-');
-
-    /// <summary>
-    /// Checks that optional parsing works correctly.
-    /// </summary>
-    [Fact]
-    public static void MaybeParserOptions()
-    {
-        IParser<IOption<char>> parser = Maybe(Char('x'));
-        IOption<char> result1 = parser.Parse("xyz");
-        AssertThat(result1.HasValue).IsTrue();
-        AssertThat(result1.Value).IsEqualTo('x');
-
-        IOption<char> result2 = parser.Parse("yz");
-        AssertThat(result2.HasValue).IsFalse();
-        AssertThat(result2.Value).IsEqualTo(default(char));
-    }
-    */
 
     /// <summary>
     /// Checks that lazy parsing works correctly.
@@ -564,44 +507,4 @@ public static class BasicParsersTests
         AssertThat(identifier.TryParse("the warpstone parser").Success).IsTrue();
         AssertThat(identifier.TryParse("fOr warpstone parser").Success).IsTrue();
     }
-    /*
-    /// <summary>
-    /// Checks that transformation exceptions are handled correctly.
-    /// </summary>
-    [Fact]
-    public static void TransformationExceptionCorrect()
-    {
-        IParser<int> parser = String("x").Transform(x => int.Parse(x, CultureInfo.InvariantCulture));
-        IParseResult<int> result = parser.TryParse("x");
-        AssertThat(result.Error).IsInstanceOf<TransformationError>();
-        TransformationError? error = result.Error as TransformationError;
-        AssertThat(error).IsNotNull();
-        AssertThat(error!.Exception).IsNotNull();
-        AssertThat(error.GetMessage()).IsEqualTo(error.Exception.Message + " At 1:1.");
-    }
-
-    /// <summary>
-    /// Checks that position is correct.
-    /// </summary>
-    [Fact]
-    public static void PositionCorrect()
-    {
-        IParser<string> parser = Regex("\\s*").Then(String("hello"));
-        ParseInputPosition pos1 = parser.TryParse("hello").Position;
-        AssertThat(pos1.Start).IsEqualTo(0);
-        AssertThat(pos1.End).IsEqualTo(5);
-        AssertThat(pos1.StartLine).IsEqualTo(1);
-        AssertThat(pos1.StartLinePosition).IsEqualTo(1);
-        AssertThat(pos1.EndLine).IsEqualTo(1);
-        AssertThat(pos1.EndLinePosition).IsEqualTo(5);
-
-        ParseInputPosition pos2 = parser.TryParse("\n \t\nhello").Position;
-        AssertThat(pos2.Start).IsEqualTo(0);
-        AssertThat(pos2.End).IsEqualTo(9);
-        AssertThat(pos2.StartLine).IsEqualTo(1);
-        AssertThat(pos2.StartLinePosition).IsEqualTo(1);
-        AssertThat(pos2.EndLine).IsEqualTo(3);
-        AssertThat(pos2.EndLinePosition).IsEqualTo(5);
-    }
-    */
 }
