@@ -76,5 +76,11 @@ public abstract class ParseError : Exception, IParseError
     public int Length { get; }
 
     /// <inheritdoc />
+    public ParseInputPosition InputStartPosition => Context.Input.GetPosition(Position);
+
+    /// <inheritdoc />
+    public ParseInputPosition InputEndPosition => Context.Input.GetPosition(Position + Length - 1);
+
+    /// <inheritdoc />
     public abstract IParseError Retarget(IParser parser);
 }

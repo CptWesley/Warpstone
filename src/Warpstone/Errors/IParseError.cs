@@ -26,6 +26,16 @@ public interface IParseError
     public int Length { get; }
 
     /// <summary>
+    /// Gets the start position of the result in the source file.
+    /// </summary>
+    public ParseInputPosition InputStartPosition { get; }
+
+    /// <summary>
+    /// Gets the end position of the result in the source file.
+    /// </summary>
+    public ParseInputPosition InputEndPosition { get; }
+
+    /// <summary>
     /// Creates a new, retargeted error.
     /// </summary>
     /// <param name="parser">The new parser.</param>

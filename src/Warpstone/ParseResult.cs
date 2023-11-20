@@ -89,6 +89,12 @@ public sealed class ParseResult<T> : IParseResult<T>
     public int NextPosition => Position + Length;
 
     /// <inheritdoc />
+    public ParseInputPosition InputStartPosition => Context.Input.GetPosition(Position);
+
+    /// <inheritdoc />
+    public ParseInputPosition InputEndPosition => Context.Input.GetPosition(Length == 0 ? Position : NextPosition - 1);
+
+    /// <inheritdoc />
     public ParseStatus Status { get; }
 
     /// <inheritdoc />

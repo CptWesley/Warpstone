@@ -558,4 +558,13 @@ public static partial class BasicParsers
     /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
     public static IParser<T> WithNames<T>(this IParser<T> parser, string firstName, params string[] otherNames)
         => parser.WithNames(new[] { firstName }.Concat(otherNames));
+
+    /// <summary>
+    /// Creates a parser that returns its inner <see cref="IParseResult{T}"/> directly.
+    /// </summary>
+    /// <typeparam name="T">The result type of the given parser.</typeparam>
+    /// <param name="parser">The given parser.</param>
+    /// <returns>A parser that returns its inner <see cref="IParseResult{T}"/> directly.</returns>
+    public static IParser<IParseResult<T>> AsResult<T>(this IParser<T> parser)
+        => new AsResultParser<T>(parser);
 }
