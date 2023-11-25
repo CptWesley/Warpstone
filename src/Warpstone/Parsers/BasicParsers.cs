@@ -1,4 +1,6 @@
-﻿namespace Warpstone.Parsers;
+﻿using System.Collections.Generic;
+
+namespace Warpstone.Parsers;
 
 /// <summary>
 /// Static class providing simple parsers.
@@ -440,6 +442,17 @@ public static partial class BasicParsers
         => new SequenceParser<T1, T2>(first, second);
 
     /// <summary>
+    /// Creates a parser that applies two parsers and combines the results.
+    /// </summary>
+    /// <typeparam name="T1">The result type of the first parser.</typeparam>
+    /// <typeparam name="T2">The result type of the second parser.</typeparam>
+    /// <param name="first">The first parser.</param>
+    /// <param name="second">The second parser.</param>
+    /// <returns>A parser combining the results of both parsers.</returns>
+    public static IParser<(T1 First, T2 Second)> ThenAdd<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
+        => new SelectParser<T1, T2>(first, second);
+
+    /// <summary>
     /// Creates a parser that applies two parsers and returns the result of the second one.
     /// </summary>
     /// <typeparam name="T1">The result type of the first parser.</typeparam>
@@ -451,6 +464,17 @@ public static partial class BasicParsers
         => first.ThenAdd(second).Transform((_, r) => r);
 
     /// <summary>
+    /// Creates a parser that applies two parsers and returns the result of the second one.
+    /// </summary>
+    /// <typeparam name="T1">The result type of the first parser.</typeparam>
+    /// <typeparam name="T2">The result type of the second parser.</typeparam>
+    /// <param name="first">The first parser.</param>
+    /// <param name="second">The function to select the second parser.</param>
+    /// <returns>A parser returning the result of the second parser.</returns>
+    public static IParser<T2> Then<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
+        => first.ThenAdd(second).Transform((_, r) => r);
+
+    /// <summary>
     /// Creates a parser that applies two parsers and returns the result of the first one.
     /// </summary>
     /// <typeparam name="T1">The result type of the first parser.</typeparam>
@@ -459,6 +483,17 @@ public static partial class BasicParsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser returning the result of the first parser.</returns>
     public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, IParser<T2> second)
+        => first.ThenAdd(second).Transform((l, _) => l);
+
+    /// <summary>
+    /// Creates a parser that applies two parsers and returns the result of the first one.
+    /// </summary>
+    /// <typeparam name="T1">The result type of the first parser.</typeparam>
+    /// <typeparam name="T2">The result type of the second parser.</typeparam>
+    /// <param name="first">The first parser.</param>
+    /// <param name="second">The second parser.</param>
+    /// <returns>A parser returning the result of the first parser.</returns>
+    public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
         => first.ThenAdd(second).Transform((l, _) => l);
 
     /// <summary>

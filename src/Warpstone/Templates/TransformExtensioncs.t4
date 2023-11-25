@@ -59,6 +59,57 @@ public static partial class BasicParsers
 <#
     }
 #>
+<#
+	for (var i = 2; i <= count - 1; i++)
+	{
+#>
+    /// <summary>
+    /// Creates a parser that applies two parsers and combines the results.
+    /// </summary>
+<#
+        for (var t = 0; t < i; t++)
+        {
+#>
+    /// <typeparam name="T<#= t + 1 #>">The <#= GetOrdinal(t + 1).ToLowerInvariant() #> result type of the first parser.</typeparam>
+<#
+        }
+#>
+    /// <typeparam name="T<#= i + 1 #>">The result type of the second parser.</typeparam>
+    /// <param name="first">The first parser.</param>
+    /// <param name="second">The second parser.</param>
+    /// <returns>A parser combining the results of both parsers.</returns>
+    public static IParser<(<#= GetTupleArguments(i + 1) #>)> ThenAdd<<#= GetGenerics(i + 1) #>>(this IParser<(<#= GetTupleArguments(i) #>)> first, Func<(<#= GetTupleArguments(i) #>), IParser<T<#= i + 1 #>>> second)
+        => first.ThenAdd<(<#= GetTupleArguments(i) #>), T<#= i + 1 #>>(second)
+        .Transform((x, y) => (<#= GetInvocationArguments(i) #>, y));
+
+<#
+    }
+#>
+<#
+	for (var i = 2; i <= count - 1; i++)
+	{
+#>
+    /// <summary>
+    /// Creates a parser that applies two parsers and combines the results.
+    /// </summary>
+<#
+        for (var t = 0; t < i; t++)
+        {
+#>
+    /// <typeparam name="T<#= t + 1 #>">The <#= GetOrdinal(t + 1).ToLowerInvariant() #> result type of the first parser.</typeparam>
+<#
+        }
+#>
+    /// <typeparam name="T<#= i + 1 #>">The result type of the second parser.</typeparam>
+    /// <param name="first">The first parser.</param>
+    /// <param name="second">The second parser.</param>
+    /// <returns>A parser combining the results of both parsers.</returns>
+    public static IParser<(<#= GetTupleArguments(i + 1) #>)> ThenAdd<<#= GetGenerics(i + 1) #>>(this IParser<(<#= GetTupleArguments(i) #>)> first, Func<<#= GetGenerics(i) #>, IParser<T<#= i + 1 #>>> second)
+        => first.ThenAdd(x => second(<#= GetInvocationArguments(i) #>));
+
+<#
+    }
+#>
 }
 
 <#+
