@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser which attempts to parse the input in two different ways.
@@ -6,7 +6,7 @@
 /// If the second parser also fails, this parser will fail.
 /// </summary>
 /// <typeparam name="T">The result type of the parsers.</typeparam>
-public sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
+internal sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ChoiceParser{T}"/> class.

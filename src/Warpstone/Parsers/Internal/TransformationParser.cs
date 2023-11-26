@@ -1,11 +1,11 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Represents a parser which performs a transformation on the result of an internal parser.
 /// </summary>
 /// <typeparam name="TIn">The result type of the inner parser.</typeparam>
 /// <typeparam name="TOut">The result type of the transformation.</typeparam>
-public sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>, IParserFirst<TIn>
+internal sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>, IParserFirst<TIn>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="TransformationParser{TIn, TOut}"/> class.

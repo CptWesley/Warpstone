@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// A parser which runs a single parser multiple times with optional
@@ -7,7 +7,7 @@
 /// <typeparam name="TElement">The parser for the elements.</typeparam>
 /// <typeparam name="TDelimiter">The parser for the delimiter.</typeparam>
 /// <typeparam name="TTerminator">The parser for the terminator.</typeparam>
-public sealed class MultipleParser<TElement, TDelimiter, TTerminator> :
+internal sealed class MultipleParser<TElement, TDelimiter, TTerminator> :
     ParserBase<IImmutableList<TElement>>,
     IParserThird<TElement, TDelimiter, TTerminator>,
     IParserValue<(ulong Min, ulong Max)>

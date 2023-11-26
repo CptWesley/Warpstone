@@ -1,10 +1,10 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// A parser which wraps a parser and returns the internal parse result.
 /// </summary>
 /// <typeparam name="T">The type of the inner parser.</typeparam>
-public sealed class AsResultParser<T> : ParserBase<IParseResult<T>>, IParserFirst<T>
+internal sealed class AsResultParser<T> : ParserBase<IParseResult<T>>, IParserFirst<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="AsResultParser{T}"/> class.

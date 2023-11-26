@@ -1,9 +1,9 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser which parses a constant string.
 /// </summary>
-public sealed class StringParser : ParserBase<string>, IEquatable<StringParser>, IParserValue<string>
+internal sealed class StringParser : ParserBase<string>, IEquatable<StringParser>, IParserValue<string>
 {
     private readonly string expected;
 

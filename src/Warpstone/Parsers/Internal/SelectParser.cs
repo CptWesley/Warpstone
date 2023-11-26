@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// A parser which first attempts to use the <see cref="First"/> parser
@@ -7,7 +7,7 @@
 /// </summary>
 /// <typeparam name="TFirst">The result type of the first parser.</typeparam>
 /// <typeparam name="TSecond">The result type of the parser selected by this parser.</typeparam>
-public sealed class SelectParser<TFirst, TSecond> : ParserBase<(TFirst, TSecond)>, IParserFirst<TFirst>
+internal sealed class SelectParser<TFirst, TSecond> : ParserBase<(TFirst, TSecond)>, IParserFirst<TFirst>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SelectParser{TIn, TOut}"/> class.

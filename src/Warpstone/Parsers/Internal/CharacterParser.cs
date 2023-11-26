@@ -1,9 +1,9 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser which parses a single character.
 /// </summary>
-public sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterParser>, IParserValue<char>
+internal sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterParser>, IParserValue<char>
 {
     private readonly string expected;
 

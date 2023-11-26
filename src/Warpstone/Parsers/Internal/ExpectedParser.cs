@@ -1,10 +1,10 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser which grants a name to the expected input.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<IImmutableList<string>>, IParserFirst<T>
+internal sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<IImmutableList<string>>, IParserFirst<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="ExpectedParser{T}"/> class.

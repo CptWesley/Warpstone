@@ -1,10 +1,10 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser that doesn't take any arguments and always succeeds.
 /// </summary>
 /// <typeparam name="T">The result type of the parser.</typeparam>
-public sealed class VoidParser<T> : ParserBase<T?>, IEquatable<VoidParser<T>>
+internal sealed class VoidParser<T> : ParserBase<T?>, IEquatable<VoidParser<T>>
 {
     /// <summary>
     /// The singleton instance of this parser.

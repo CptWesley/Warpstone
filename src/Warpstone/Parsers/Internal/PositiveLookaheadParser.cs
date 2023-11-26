@@ -1,33 +1,36 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
-/// Parser which lazily constructs the inner parser.
+/// Parser which succeeds if the inner parser succeeds, but does not consume any tokens.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class LazyParser<T> : ParserBase<T>
+internal sealed class PositiveLookaheadParser<T> : ParserBase<T>, IParserFirst<T>
 {
-    private readonly Lazy<IParser<T>> lazyFirst;
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
+    /// Initializes a new instance of the <see cref="PositiveLookaheadParser{T}"/> class.
     /// </summary>
     /// <param name="first">The inner parser that is being wrapped.</param>
-    public LazyParser(Func<IParser<T>> first)
+    public PositiveLookaheadParser(IParser<T> first)
     {
-        lazyFirst = new(first);
+        First = first;
     }
+
+    /// <summary>
+    /// The inner parser.
+    /// </summary>
+    public IParser<T> First { get; }
 
     /// <inheritdoc />
     public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
         => Iterative.More(
-            () => eval(lazyFirst.Value, position),
+            () => eval(First, position),
             untypedFirst =>
             {
                 var first = untypedFirst.AssertOfType<IParseResult<T>>();
 
                 if (first.Success)
                 {
-                    return Iterative.Done(this.Match(context, position, first.Length, first.Value));
+                    return Iterative.Done(this.Match(context, position, 0, first.Value));
                 }
                 else
                 {
@@ -37,5 +40,5 @@ public sealed class LazyParser<T> : ParserBase<T>
 
     /// <inheritdoc />
     protected override string InternalToString(int depth)
-        => $"Lazy({(lazyFirst.IsValueCreated ? lazyFirst.Value : "<not-evaluated>")})";
+        => $"Peek({First.ToString(depth - 1)})";
 }

@@ -1,36 +1,33 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
-/// Parser which succeeds if the inner parser succeeds, but does not consume any tokens.
+/// Parser which lazily constructs the inner parser.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class PositiveLookaheadParser<T> : ParserBase<T>, IParserFirst<T>
+internal sealed class LazyParser<T> : ParserBase<T>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="PositiveLookaheadParser{T}"/> class.
-    /// </summary>
-    /// <param name="first">The inner parser that is being wrapped.</param>
-    public PositiveLookaheadParser(IParser<T> first)
-    {
-        First = first;
-    }
+    private readonly Lazy<IParser<T>> lazyFirst;
 
     /// <summary>
-    /// The inner parser.
+    /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
     /// </summary>
-    public IParser<T> First { get; }
+    /// <param name="first">The inner parser that is being wrapped.</param>
+    public LazyParser(Func<IParser<T>> first)
+    {
+        lazyFirst = new(first);
+    }
 
     /// <inheritdoc />
     public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
         => Iterative.More(
-            () => eval(First, position),
+            () => eval(lazyFirst.Value, position),
             untypedFirst =>
             {
                 var first = untypedFirst.AssertOfType<IParseResult<T>>();
 
                 if (first.Success)
                 {
-                    return Iterative.Done(this.Match(context, position, 0, first.Value));
+                    return Iterative.Done(this.Match(context, position, first.Length, first.Value));
                 }
                 else
                 {
@@ -40,5 +37,5 @@ public sealed class PositiveLookaheadParser<T> : ParserBase<T>, IParserFirst<T>
 
     /// <inheritdoc />
     protected override string InternalToString(int depth)
-        => $"Peek({First.ToString(depth - 1)})";
+        => $"Lazy({(lazyFirst.IsValueCreated ? lazyFirst.Value : "<not-evaluated>")})";
 }

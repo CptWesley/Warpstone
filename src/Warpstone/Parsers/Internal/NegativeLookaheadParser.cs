@@ -1,10 +1,10 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser which succeeds if the inner parser fails, but fails if the inner parser succeeds.
 /// </summary>
 /// <typeparam name="T">The type of the wrapped parser.</typeparam>
-public sealed class NegativeLookaheadParser<T> : ParserBase<T?>, IParserFirst<T>
+internal sealed class NegativeLookaheadParser<T> : ParserBase<T?>, IParserFirst<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="NegativeLookaheadParser{T}"/> class.

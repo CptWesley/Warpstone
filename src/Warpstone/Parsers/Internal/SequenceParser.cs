@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// A parser which runs two parsers in sequence where both parsers should succeed
@@ -6,7 +6,7 @@
 /// </summary>
 /// <typeparam name="TFirst">The result type of the first parser.</typeparam>
 /// <typeparam name="TSecond">The result type of the second parser.</typeparam>
-public sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecond)>, IParserSecond<TFirst, TSecond>
+internal sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSecond)>, IParserSecond<TFirst, TSecond>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SequenceParser{TFirst, TSecond}"/> class.

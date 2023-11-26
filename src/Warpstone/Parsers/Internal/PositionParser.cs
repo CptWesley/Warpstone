@@ -1,10 +1,10 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser that doesn't take any arguments and always succeeds
 /// and return the current position in the input.
 /// </summary>
-public sealed class PositionParser : ParserBase<ParseInputPosition>, IEquatable<PositionParser>
+internal sealed class PositionParser : ParserBase<ParseInputPosition>, IEquatable<PositionParser>
 {
     /// <summary>
     /// The singleton instance of this parser.

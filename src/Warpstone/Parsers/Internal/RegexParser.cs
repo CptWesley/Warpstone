@@ -1,9 +1,9 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser which parses a regular expression.
 /// </summary>
-public sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, IParserValue<string>
+internal sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>, IParserValue<string>
 {
     private readonly string expected;
     private readonly Regex regex;

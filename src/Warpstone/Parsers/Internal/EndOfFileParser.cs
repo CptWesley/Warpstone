@@ -1,9 +1,9 @@
-﻿namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// A parser which only parses the end of a file.
 /// </summary>
-public sealed class EndOfFileParser : ParserBase<string>, IEquatable<EndOfFileParser>
+internal sealed class EndOfFileParser : ParserBase<string>, IEquatable<EndOfFileParser>
 {
     /// <summary>
     /// The singleton instance of this parser.

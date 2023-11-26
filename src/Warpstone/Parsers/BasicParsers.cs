@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Warpstone.Parsers;
+﻿namespace Warpstone.Parsers;
 
 /// <summary>
 /// Static class providing simple parsers.
@@ -602,4 +600,63 @@ public static partial class BasicParsers
     /// <returns>A parser that returns its inner <see cref="IParseResult{T}"/> directly.</returns>
     public static IParser<IParseResult<T>> AsResult<T>(this IParser<T> parser)
         => new AsResultParser<T>(parser);
+
+    /// <summary>
+    /// Creates a parser that attempts to parse something and if it fails attempt to recover.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <typeparam name="TOut">The output type.</typeparam>
+    /// <param name="parser">The parser to try and use.</param>
+    /// <param name="recoveryParser">The parser to use for recovery.</param>
+    /// <param name="resultTransformation">The transformation to apply to the result.</param>
+    /// <returns>A parsers that attempts to parse or recovers.</returns>
+    public static IParser<TOut> Try<TIn, TOut>(IParser<TIn> parser, IParser<string> recoveryParser, Func<IParseResult<TIn>, TOut> resultTransformation)
+        => Try(parser, recoveryParser)
+            .Transform(resultTransformation);
+
+    /// <summary>
+    /// Creates a parser that attempts to parse something and if it fails attempt to recover.
+    /// </summary>
+    /// <typeparam name="TIn">The input type.</typeparam>
+    /// <typeparam name="TOut">The output type.</typeparam>
+    /// <param name="parser">The parser to try and use.</param>
+    /// <param name="recoveryParser">The parser to use for recovery.</param>
+    /// <param name="successTransformation">The transformation to apply to the succesful result.</param>
+    /// <param name="failureTransformation">The transformation to apply to the failure result.</param>
+    /// <returns>A parsers that attempts to parse or recovers.</returns>
+    public static IParser<TOut> Try<TIn, TOut>(IParser<TIn> parser, IParser<string> recoveryParser, Func<TIn, TOut> successTransformation, Func<IImmutableList<IParseError>, TOut> failureTransformation)
+        => Try(parser, recoveryParser, result =>
+        {
+            if (result.Success)
+            {
+                return successTransformation(result.Value!);
+            }
+
+            return failureTransformation(result.Errors!);
+        });
+
+    /// <summary>
+    /// Creates a parser that attempts to parse something and if it fails attempt to recover.
+    /// </summary>
+    /// <typeparam name="T">The output type.</typeparam>
+    /// <param name="parser">The parser to try and use.</param>
+    /// <param name="recoveryParser">The parser to use for recovery.</param>
+    /// <param name="failureTransformation">The transformation to apply to the failure result.</param>
+    /// <returns>A parsers that attempts to parse or recovers.</returns>
+    public static IParser<T> Try<T>(IParser<T> parser, IParser<string> recoveryParser, Func<IImmutableList<IParseError>, T> failureTransformation)
+        => Try(parser, recoveryParser, value => value, error => failureTransformation(error));
+
+    /// <summary>
+    /// Creates a parser that attempts to parse something and if it fails attempt to recover.
+    /// </summary>
+    /// <typeparam name="T">The output type.</typeparam>
+    /// <param name="parser">The parser to try and use.</param>
+    /// <param name="recoveryParser">The parser to use for recovery.</param>
+    /// <returns>A parser that attempts to parse or recovers.</returns>
+    public static IParser<IParseResult<T>> Try<T>(IParser<T> parser, IParser<string> recoveryParser)
+        => parser.AsResult().ThenSkip(r => r.Success switch
+        {
+            true => Pass<string>(),
+            false => recoveryParser,
+        });
 }
