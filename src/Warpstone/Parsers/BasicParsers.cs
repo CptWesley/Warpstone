@@ -12,6 +12,11 @@ public static partial class BasicParsers
     public static readonly IParser<string> End = EndOfFileParser.Instance;
 
     /// <summary>
+    /// A parser which returns the current position in the input.
+    /// </summary>
+    public static readonly IParser<ParseInputPosition> Position = PositionParser.Instance;
+
+    /// <summary>
     /// Creates a parser that always succeeds.
     /// </summary>
     /// <typeparam name="T">The return type of the parser.</typeparam>
