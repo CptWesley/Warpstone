@@ -39,7 +39,7 @@ public static partial class BasicParsers
     /// <param name="options">The regex options to use.</param>
     /// <returns>A parser matching a regular expression.</returns>
     public static IParser<string> Regex([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
-        => new RegexParser(pattern, options);
+        => new RegexParser(pattern.MustNotBeNull(), options);
 
     /// <summary>
     /// Creates a parser which matches a regular expression.
@@ -47,7 +47,7 @@ public static partial class BasicParsers
     /// <param name="pattern">The pattern to match.</param>
     /// <returns>A parser matching a regular expression.</returns>
     public static IParser<string> Regex([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
-        => new RegexParser(pattern);
+        => new RegexParser(pattern.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that parses a string.
@@ -55,7 +55,7 @@ public static partial class BasicParsers
     /// <param name="str">The string to parse.</param>
     /// <returns>A parser parsing a string.</returns>
     public static IParser<string> String(string str)
-        => new StringParser(str);
+        => new StringParser(str.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that parses a string, using the specified string comparison method.
@@ -64,7 +64,7 @@ public static partial class BasicParsers
     /// <param name="stringComparison">The string comparison method to use.</param>
     /// <returns>A parser parsing a string.</returns>
     public static IParser<string> String(string str, StringComparison stringComparison)
-        => new StringParser(str, stringComparison);
+        => new StringParser(str.MustNotBeNull(), stringComparison);
 
     /// <summary>
     /// Creates a parser parsing the given character.
@@ -84,7 +84,11 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, int count, IParser<T2> terminator)
-        => Multiple(parser, VoidParser<T2>.Instance, count, terminator);
+        => Multiple(
+            parser.MustNotBeNull(),
+            VoidParser<T2>.Instance,
+            count.MustBeGreaterThan(0),
+            terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -94,7 +98,10 @@ public static partial class BasicParsers
     /// <param name="count">The exact number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T>> Multiple<T>(IParser<T> parser, int count)
-        => Multiple(parser, count, VoidParser<object>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            count.MustBeGreaterThan(0),
+            VoidParser<object>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -108,7 +115,12 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, int count, IParser<T3> terminator)
-        => Multiple(parser, delimiter, count, count, terminator);
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            count.MustBeGreaterThanOrEqualTo(0),
+            count,
+            terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -120,7 +132,11 @@ public static partial class BasicParsers
     /// <param name="count">The exact number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int count)
-        => Multiple(parser, delimiter, count, VoidParser<T2>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            count.MustBeGreaterThanOrEqualTo(0),
+            VoidParser<T2>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -133,7 +149,12 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, int min, int max, IParser<T2> terminator)
-        => Multiple(parser, VoidParser<T2>.Instance, min, max, terminator);
+        => Multiple(
+            parser.MustNotBeNull(),
+            VoidParser<T2>.Instance,
+            min.MustBeGreaterThanOrEqualTo(0),
+            max.MustBeGreaterThanOrEqualTo(min),
+            terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -144,7 +165,11 @@ public static partial class BasicParsers
     /// <param name="max">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T>> Multiple<T>(IParser<T> parser, int min, int max)
-        => Multiple(parser, min, max, VoidParser<object>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            min.MustBeGreaterThanOrEqualTo(0),
+            max.MustBeGreaterThanOrEqualTo(min),
+            VoidParser<object>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -159,19 +184,12 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, int min, int max, IParser<T3> terminator)
-    {
-        if (min < 0)
-        {
-            throw new ArgumentException($"Value of '{nameof(min)}' needs to be larger than zero.", nameof(min));
-        }
-
-        if (max < 0)
-        {
-            throw new ArgumentException($"Value of '{nameof(max)}' needs to be larger than zero.", nameof(max));
-        }
-
-        return Multiple(parser, delimiter, (ulong)min, (ulong)max, terminator);
-    }
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            (ulong)min.MustBeGreaterThanOrEqualTo(0),
+            (ulong)max.MustBeGreaterThanOrEqualTo(min),
+            terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -184,7 +202,12 @@ public static partial class BasicParsers
     /// <param name="max">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, int min, int max)
-        => Multiple(parser, delimiter, min, max, VoidParser<T2>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            min.MustBeGreaterThanOrEqualTo(0),
+            max.MustBeGreaterThanOrEqualTo(max),
+            VoidParser<T2>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -196,7 +219,11 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, ulong count, IParser<T2> terminator)
-        => Multiple(parser, VoidParser<T2>.Instance, count, terminator);
+        => Multiple(
+            parser.MustNotBeNull(),
+            VoidParser<T2>.Instance,
+            count.MustBeGreaterThanOrEqualTo(0),
+            terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -206,7 +233,10 @@ public static partial class BasicParsers
     /// <param name="count">The exact number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T>> Multiple<T>(IParser<T> parser, ulong count)
-        => Multiple(parser, count, VoidParser<object>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            count.MustBeGreaterThanOrEqualTo(0),
+            VoidParser<object>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -220,7 +250,12 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, ulong count, IParser<T3> terminator)
-        => Multiple(parser, delimiter, count, count, terminator);
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            count.MustBeGreaterThanOrEqualTo(0),
+            count,
+            terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -232,7 +267,11 @@ public static partial class BasicParsers
     /// <param name="count">The exact number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong count)
-        => Multiple(parser, delimiter, count, VoidParser<T2>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            count.MustBeGreaterThanOrEqualTo(0),
+            VoidParser<T2>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -245,7 +284,12 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, ulong min, ulong max, IParser<T2> terminator)
-        => Multiple(parser, VoidParser<T2>.Instance, min, max, terminator);
+        => Multiple(
+            parser.MustNotBeNull(),
+            VoidParser<T2>.Instance,
+            min.MustBeGreaterThanOrEqualTo(0),
+            max.MustBeGreaterThanOrEqualTo(min),
+            terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -256,7 +300,11 @@ public static partial class BasicParsers
     /// <param name="max">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T>> Multiple<T>(IParser<T> parser, ulong min, ulong max)
-        => Multiple(parser, min, max, VoidParser<object>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            min.MustBeGreaterThanOrEqualTo(0),
+            max.MustBeGreaterThanOrEqualTo(max),
+            VoidParser<object>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -271,14 +319,12 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max, IParser<T3> terminator)
-    {
-        if (max < min)
-        {
-            throw new ArgumentException($"Value of '{nameof(max)}' needs to be larger than or equal to value of '{nameof(min)}'.", nameof(max));
-        }
-
-        return new MultipleParser<T1, T2, T3>(parser, delimiter, terminator, min, max);
-    }
+        => new MultipleParser<T1, T2, T3>(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            terminator.MustNotBeNull(),
+            min.MustBeGreaterThanOrEqualTo(0),
+            max.MustBeGreaterThanOrEqualTo(min));
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -291,7 +337,12 @@ public static partial class BasicParsers
     /// <param name="max">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Multiple<T1, T2>(IParser<T1> parser, IParser<T2> delimiter, ulong min, ulong max)
-        => Multiple(parser, delimiter, min, max, VoidParser<T2>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            min.MustBeGreaterThanOrEqualTo(0),
+            max.MustBeGreaterThanOrEqualTo(min),
+            VoidParser<T2>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -300,7 +351,9 @@ public static partial class BasicParsers
     /// <param name="parser">The parser to apply multiple times.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T>> Many<T>(IParser<T> parser)
-        => Many(parser, VoidParser<object>.Instance);
+        => Many(
+            parser.MustNotBeNull(),
+            VoidParser<object>.Instance);
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -313,7 +366,12 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Many<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator)
-          => Multiple(parser, delimiter, 0, ulong.MaxValue, terminator);
+          => Multiple(
+              parser.MustNotBeNull(),
+              delimiter.MustNotBeNull(),
+              0,
+              ulong.MaxValue,
+              terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -324,7 +382,12 @@ public static partial class BasicParsers
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
     public static IParser<IImmutableList<T1>> Many<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
-          => Multiple(parser, delimiter, 0, ulong.MaxValue, VoidParser<T2>.Instance);
+          => Multiple(
+              parser.MustNotBeNull(),
+              delimiter.MustNotBeNull(),
+              0,
+              ulong.MaxValue,
+              VoidParser<T2>.Instance);
 
     /// <summary>
     /// Creates a parser which applies the given parser at least once and collects all results.
@@ -333,7 +396,9 @@ public static partial class BasicParsers
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
     public static IParser<IImmutableList<T>> OneOrMore<T>(IParser<T> parser)
-        => OneOrMore(parser, VoidParser<object>.Instance);
+        => OneOrMore(
+            parser.MustNotBeNull(),
+            VoidParser<object>.Instance);
 
     /// <summary>
     /// Creates a parser which applies the given parser at least once and collects all results.
@@ -346,7 +411,12 @@ public static partial class BasicParsers
     /// <param name="terminator">The terminator indicating the end of the sequence.</param>
     /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
     public static IParser<IImmutableList<T1>> OneOrMore<T1, T2, T3>(IParser<T1> parser, IParser<T2> delimiter, IParser<T3> terminator)
-        => Multiple(parser, delimiter, 1, ulong.MaxValue, terminator);
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            1,
+            ulong.MaxValue,
+            terminator.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser which applies the given parser at least once and collects all results.
@@ -357,7 +427,12 @@ public static partial class BasicParsers
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
     public static IParser<IImmutableList<T1>> OneOrMore<T1, T2>(IParser<T1> parser, IParser<T2> delimiter)
-        => Multiple(parser, delimiter, 1, ulong.MaxValue, VoidParser<T2>.Instance);
+        => Multiple(
+            parser.MustNotBeNull(),
+            delimiter.MustNotBeNull(),
+            1,
+            ulong.MaxValue,
+            VoidParser<T2>.Instance);
 
     /// <summary>
     /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
@@ -376,16 +451,17 @@ public static partial class BasicParsers
     /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
     public static IParser<T> Or<T>(IEnumerable<IParser<T>> parsers)
     {
+        parsers.MustNotBeNull();
         if (!parsers.Any())
         {
             throw new ArgumentException("List of parsers may not be empty.", nameof(parsers));
         }
 
-        IParser<T> result = parsers.First();
+        IParser<T> result = parsers.First().MustNotBeNull();
 
         foreach (IParser<T> parser in parsers.Skip(1))
         {
-            result = new ChoiceParser<T>(result, parser);
+            result = new ChoiceParser<T>(result, parser.MustNotBeNull());
         }
 
         return result;
@@ -398,7 +474,7 @@ public static partial class BasicParsers
     /// <param name="not">The parser which, if it succeeds, causes the returned parser to fail.</param>
     /// <returns>A parser trying the given parser, and failing if it succeeds.</returns>
     public static IParser<T?> Not<T>(IParser<T> not)
-        => new NegativeLookaheadParser<T>(not);
+        => new NegativeLookaheadParser<T>(not.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that parses the given parser, except if the exclusion parser succeedds, in which case it fails.
@@ -409,7 +485,7 @@ public static partial class BasicParsers
     /// <param name="exclusion">The exclusion parser. If this parser succeeds, the expression fails. Otherwise, the value from the nested parser is produced.</param>
     /// <returns>A parser trying the given parser, running the nested parser if the condition fails, or failing if the condition succeeds.</returns>
     public static IParser<T2> Except<T1, T2>(this IParser<T2> parser, IParser<T1> exclusion)
-        => Not(exclusion).Then(parser);
+        => Not(exclusion.MustNotBeNull()).Then(parser.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -420,7 +496,7 @@ public static partial class BasicParsers
     /// <param name="output">The result of the transformation.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, TOutput output)
-        => parser.Transform(_ => output);
+        => parser.MustNotBeNull().Transform(_ => output);
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -431,7 +507,7 @@ public static partial class BasicParsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, Func<TInput, TOutput> transformation)
-        => new TransformationParser<TInput, TOutput>(parser, transformation);
+        => new TransformationParser<TInput, TOutput>(parser.MustNotBeNull(), transformation.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that applies two parsers and combines the results.
@@ -442,7 +518,7 @@ public static partial class BasicParsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second)> ThenAdd<T1, T2>(this IParser<T1> first, IParser<T2> second)
-        => new SequenceParser<T1, T2>(first, second);
+        => new SequenceParser<T1, T2>(first.MustNotBeNull(), second.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that applies two parsers and combines the results.
@@ -453,7 +529,7 @@ public static partial class BasicParsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second)> ThenAdd<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
-        => new SelectParser<T1, T2>(first, second);
+        => new SelectParser<T1, T2>(first.MustNotBeNull(), second.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that applies two parsers and returns the result of the second one.
@@ -464,7 +540,9 @@ public static partial class BasicParsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser returning the result of the second parser.</returns>
     public static IParser<T2> Then<T1, T2>(this IParser<T1> first, IParser<T2> second)
-        => first.ThenAdd(second).Transform((_, r) => r);
+        => first.MustNotBeNull()
+        .ThenAdd(second.MustNotBeNull())
+        .Transform((_, r) => r);
 
     /// <summary>
     /// Creates a parser that applies two parsers and returns the result of the second one.
@@ -475,7 +553,9 @@ public static partial class BasicParsers
     /// <param name="second">The function to select the second parser.</param>
     /// <returns>A parser returning the result of the second parser.</returns>
     public static IParser<T2> Then<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
-        => first.ThenAdd(second).Transform((_, r) => r);
+        => first.MustNotBeNull()
+        .ThenAdd(second.MustNotBeNull())
+        .Transform((_, r) => r);
 
     /// <summary>
     /// Creates a parser that applies two parsers and returns the result of the first one.
@@ -486,7 +566,9 @@ public static partial class BasicParsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser returning the result of the first parser.</returns>
     public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, IParser<T2> second)
-        => first.ThenAdd(second).Transform((l, _) => l);
+        => first.MustNotBeNull()
+        .ThenAdd(second.MustNotBeNull())
+        .Transform((l, _) => l);
 
     /// <summary>
     /// Creates a parser that applies two parsers and returns the result of the first one.
@@ -497,7 +579,9 @@ public static partial class BasicParsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser returning the result of the first parser.</returns>
     public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
-        => first.ThenAdd(second).Transform((l, _) => l);
+        => first.MustNotBeNull()
+        .ThenAdd(second.MustNotBeNull())
+        .Transform((l, _) => l);
 
     /// <summary>
     /// Creates a parser that applies the given parser but does not consume the input.
@@ -506,7 +590,7 @@ public static partial class BasicParsers
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser applying the given parser that does not consume the input.</returns>
     public static IParser<T> Peek<T>(IParser<T> parser)
-        => new PositiveLookaheadParser<T>(parser);
+        => new PositiveLookaheadParser<T>(parser.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that applies a parser and then applies a different parser depending on the result.
@@ -518,7 +602,7 @@ public static partial class BasicParsers
     /// <param name="elseParser">The else branch parser.</param>
     /// <returns>A parser applying a parser based on a condition.</returns>
     public static IParser<TBranches> If<TCondition, TBranches>(IParser<TCondition> conditionParser, IParser<TBranches> thenParser, IParser<TBranches> elseParser)
-        => Or(conditionParser.Then(thenParser), elseParser);
+        => Or(conditionParser.MustNotBeNull().Then(thenParser.MustNotBeNull()), elseParser.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that tries to parse something, but still proceeds if it fails.
@@ -527,7 +611,7 @@ public static partial class BasicParsers
     /// <param name="parser">The parser.</param>
     /// <returns>A parser trying to apply a parser, but always proceeding.</returns>
     public static IParser<T?> Maybe<T>(IParser<T> parser)
-        => Or<T?>(parser, VoidParser<T>.Instance);
+        => Or<T?>(parser.MustNotBeNull(), VoidParser<T>.Instance);
 
     /// <summary>
     /// Creates a parser that tries to apply a given parser, but proceeds and returns a default value if it fails.
@@ -537,7 +621,7 @@ public static partial class BasicParsers
     /// <param name="defaultValue">The default value to return when the parser fails.</param>
     /// <returns>A parser applying a parser, but returning a default value if it fails.</returns>
     public static IParser<T> Maybe<T>(IParser<T> parser, T defaultValue)
-        => Or(parser, Create(defaultValue));
+        => Or(parser.MustNotBeNull(), Create(defaultValue));
 
     /// <summary>
     /// Creates a parser that always passes and creates an object.
@@ -555,7 +639,7 @@ public static partial class BasicParsers
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser applying the given parser and then expects the input stream to end.</returns>
     public static IParser<T> ThenEnd<T>(this IParser<T> parser)
-        => parser.ThenSkip(End);
+        => parser.MustNotBeNull().ThenSkip(End);
 
     /// <summary>
     /// Creates a parser that lazily applies a given parser allowing for recursion.
@@ -564,7 +648,7 @@ public static partial class BasicParsers
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser that lazily applies a given parser.</returns>
     public static IParser<T> Lazy<T>(Func<IParser<T>> parser)
-        => new LazyParser<T>(parser);
+        => new LazyParser<T>(parser.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that replaces the nested expected values with a given expected name.
@@ -574,7 +658,7 @@ public static partial class BasicParsers
     /// <param name="name">The name.</param>
     /// <returns>A parser that replaces the nested expected values with a given expected name.</returns>
     public static IParser<T> WithName<T>(this IParser<T> parser, string name)
-        => parser.WithNames(new[] { name });
+        => parser.MustNotBeNull().WithNames(new[] { name });
 
     /// <summary>
     /// Creates a parser that replaces the nested expected values with given expected names.
@@ -584,7 +668,7 @@ public static partial class BasicParsers
     /// <param name="names">The names.</param>
     /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
     public static IParser<T> WithNames<T>(this IParser<T> parser, IEnumerable<string> names)
-        => new ExpectedParser<T>(parser, names);
+        => new ExpectedParser<T>(parser.MustNotBeNull(), names.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that replaces the nested expected values with given expected names.
@@ -595,7 +679,7 @@ public static partial class BasicParsers
     /// <param name="otherNames">The other names.</param>
     /// <returns>A parser that replaces the nested expected values with given expected names.</returns>
     public static IParser<T> WithNames<T>(this IParser<T> parser, string firstName, params string[] otherNames)
-        => parser.WithNames(new[] { firstName }.Concat(otherNames));
+        => parser.MustNotBeNull().WithNames(new[] { firstName.MustNotBeNull() }.Concat(otherNames.MustNotBeNull()));
 
     /// <summary>
     /// Creates a parser that returns its inner <see cref="IParseResult{T}"/> directly.
@@ -604,7 +688,7 @@ public static partial class BasicParsers
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser that returns its inner <see cref="IParseResult{T}"/> directly.</returns>
     public static IParser<IParseResult<T>> AsResult<T>(this IParser<T> parser)
-        => new AsResultParser<T>(parser);
+        => new AsResultParser<T>(parser.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that attempts to parse something and if it fails attempt to recover.
@@ -616,8 +700,8 @@ public static partial class BasicParsers
     /// <param name="resultTransformation">The transformation to apply to the result.</param>
     /// <returns>A parsers that attempts to parse or recovers.</returns>
     public static IParser<TOut> Try<TIn, TOut>(IParser<TIn> parser, IParser<string> recoveryParser, Func<IParseResult<TIn>, TOut> resultTransformation)
-        => Try(parser, recoveryParser)
-            .Transform(resultTransformation);
+        => Try(parser.MustNotBeNull(), recoveryParser.MustNotBeNull())
+            .Transform(resultTransformation.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that attempts to parse something and if it fails attempt to recover.
@@ -630,7 +714,7 @@ public static partial class BasicParsers
     /// <param name="failureTransformation">The transformation to apply to the failure result.</param>
     /// <returns>A parsers that attempts to parse or recovers.</returns>
     public static IParser<TOut> Try<TIn, TOut>(IParser<TIn> parser, IParser<string> recoveryParser, Func<TIn, TOut> successTransformation, Func<IImmutableList<IParseError>, TOut> failureTransformation)
-        => Try(parser, recoveryParser, result =>
+        => Try(parser.MustNotBeNull(), recoveryParser.MustNotBeNull(), result =>
         {
             if (result.Success)
             {
@@ -649,7 +733,7 @@ public static partial class BasicParsers
     /// <param name="failureTransformation">The transformation to apply to the failure result.</param>
     /// <returns>A parsers that attempts to parse or recovers.</returns>
     public static IParser<T> Try<T>(IParser<T> parser, IParser<string> recoveryParser, Func<IImmutableList<IParseError>, T> failureTransformation)
-        => Try(parser, recoveryParser, value => value, error => failureTransformation(error));
+        => Try(parser.MustNotBeNull(), recoveryParser.MustNotBeNull(), value => value, error => failureTransformation(error));
 
     /// <summary>
     /// Creates a parser that attempts to parse something and if it fails attempt to recover.
@@ -659,9 +743,12 @@ public static partial class BasicParsers
     /// <param name="recoveryParser">The parser to use for recovery.</param>
     /// <returns>A parser that attempts to parse or recovers.</returns>
     public static IParser<IParseResult<T>> Try<T>(IParser<T> parser, IParser<string> recoveryParser)
-        => parser.AsResult().ThenSkip(r => r.Success switch
+    {
+        recoveryParser.MustNotBeNull();
+        return parser.MustNotBeNull().AsResult().ThenSkip(r => r.Success switch
         {
             true => Pass<string>(),
             false => recoveryParser,
         });
+    }
 }
