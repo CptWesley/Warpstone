@@ -31,7 +31,7 @@ public interface IParseContext : IReadOnlyParseContext
 /// Provides write access to the parsing context.
 /// </summary>
 /// <typeparam name="T">The output type.</typeparam>
-public interface IParseContext<T> : IParseContext, IReadOnlyParseContext<T>
+public interface IParseContext<out T> : IParseContext, IReadOnlyParseContext<T>
 {
     /// <summary>
     /// Runs the parser to completion.
