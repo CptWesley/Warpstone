@@ -44,14 +44,14 @@ public static class JsonParser
         = Char('"').Then(Many(StringContent).Concat()).ThenSkip(Char('"'))
         .Transform(x => new JsonString(System.Text.RegularExpressions.Regex.Unescape(x)));
 
-    private static readonly IParser<KeyValuePair<JsonString, JsonValue>> Field
+    private static readonly IParser<KeyValuePair<JsonString, IJsonValue>> Field
         = OptionalWhitespaces
         .Then(String)
         .ThenSkip(OptionalWhitespaces)
         .ThenSkip(Char(':'))
         .ThenSkip(OptionalWhitespaces)
         .ThenAdd(Lazy(() => Json!))
-        .Transform((x, y) => new KeyValuePair<JsonString, JsonValue>(x, y));
+        .Transform((x, y) => new KeyValuePair<JsonString, IJsonValue>(x, y));
 
     private static readonly IParser<JsonObject> Object
         = Char('{')
@@ -59,10 +59,10 @@ public static class JsonParser
         .Then(Many(Field, Char(','), OptionalWhitespaces.ThenSkip(Char('}'))))
         .Transform(x => new JsonObject(x.ToImmutableArray()));
 
-    private static readonly IParser<JsonValue> Json
-        = OptionalWhitespaces.Then(Or<JsonValue>(Array, Object, String, Null, Double, Int, Boolean)).ThenSkip(OptionalWhitespaces);
+    private static readonly IParser<IJsonValue> Json
+        = OptionalWhitespaces.Then(Or<IJsonValue>(Array, Object, String, Null, Double, Int, Boolean)).ThenSkip(OptionalWhitespaces);
 
-    public static IParseResult<JsonValue> Parse(string input)
+    public static IParseResult<IJsonValue> Parse(string input)
         => Json.ThenEnd().TryParse(input);
 
     private static IParser<string> Concat<T>(this IParser<IEnumerable<T>> chars)

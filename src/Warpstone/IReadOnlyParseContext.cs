@@ -37,7 +37,7 @@ public interface IReadOnlyParseContext
 /// Provides read-only access to the parsing context.
 /// </summary>
 /// <typeparam name="T">The output type.</typeparam>
-public interface IReadOnlyParseContext<T> : IReadOnlyParseContext
+public interface IReadOnlyParseContext<out T> : IReadOnlyParseContext
 {
     /// <summary>
     /// The used parser.

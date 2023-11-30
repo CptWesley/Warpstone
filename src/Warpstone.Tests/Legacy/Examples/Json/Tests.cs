@@ -168,12 +168,12 @@ public sealed class Complex
 
         result.Value.Should()
             .BeEquivalentTo(new JsonObject(ImmutableArray.Create( 
-                new KeyValuePair<JsonString, JsonValue>(new JsonString("elements"), new JsonArray(ImmutableArray.Create<JsonValue>(new JsonNull(), new JsonNull()))),
-                new KeyValuePair<JsonString, JsonValue>(new JsonString("name"), new JsonString("NullContainer")),
-                new KeyValuePair<JsonString, JsonValue>(new JsonString("body"), new JsonString("This is the first paragraph\\nThis is the second paragraph")),
-                new KeyValuePair<JsonString, JsonValue>(new JsonString("inner"), new JsonObject(ImmutableArray.Create(
-                    new KeyValuePair<JsonString, JsonValue>(new JsonString("numVal"), new JsonInt(42)),
-                    new KeyValuePair<JsonString, JsonValue>(new JsonString("boolVal"), new JsonBoolean(true))
+                new KeyValuePair<JsonString, IJsonValue>(new JsonString("elements"), new JsonArray(ImmutableArray.Create<IJsonValue>(new JsonNull(), new JsonNull()))),
+                new KeyValuePair<JsonString, IJsonValue>(new JsonString("name"), new JsonString("NullContainer")),
+                new KeyValuePair<JsonString, IJsonValue>(new JsonString("body"), new JsonString("This is the first paragraph\\nThis is the second paragraph")),
+                new KeyValuePair<JsonString, IJsonValue>(new JsonString("inner"), new JsonObject(ImmutableArray.Create(
+                    new KeyValuePair<JsonString, IJsonValue>(new JsonString("numVal"), new JsonInt(42)),
+                    new KeyValuePair<JsonString, IJsonValue>(new JsonString("boolVal"), new JsonBoolean(true))
                 )))
             )));
     }

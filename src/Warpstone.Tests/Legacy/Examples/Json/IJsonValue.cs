@@ -2,13 +2,13 @@
 
 namespace Warpstone.Tests.Legacy.Examples.Json;
 
-public abstract class JsonValue
+public interface IJsonValue
 {
 }
 
-public abstract class JsonValue<T> : JsonValue
+public abstract class JsonValue<T> : IJsonValue
 {
-    public JsonValue(T value)
+    protected JsonValue(T value)
         => Value = value;
 
     public T Value { get; }
@@ -34,9 +34,9 @@ public class JsonString : JsonValue<string>
         => $"JsonString(\"{Value}\")";
 }
 
-public class JsonArray : JsonValue<ImmutableArray<JsonValue>>
+public class JsonArray : JsonValue<ImmutableArray<IJsonValue>>
 {
-    public JsonArray(ImmutableArray<JsonValue> value) : base(value)
+    public JsonArray(ImmutableArray<IJsonValue> value) : base(value)
     {
     }
 
@@ -51,9 +51,9 @@ public class JsonDouble : JsonValue<double>
     }
 }
 
-public class JsonObject : JsonValue<ImmutableArray<KeyValuePair<JsonString, JsonValue>>>
+public class JsonObject : JsonValue<ImmutableArray<KeyValuePair<JsonString, IJsonValue>>>
 {
-    public JsonObject(ImmutableArray<KeyValuePair<JsonString, JsonValue>> value) : base(value)
+    public JsonObject(ImmutableArray<KeyValuePair<JsonString, IJsonValue>> value) : base(value)
     {
     }
 
@@ -68,7 +68,7 @@ public class JsonBoolean : JsonValue<bool>
     }
 }
 
-public class JsonNull : JsonValue
+public class JsonNull : IJsonValue
 {
     public override string ToString()
         => "JsonNull()";

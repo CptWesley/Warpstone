@@ -3,8 +3,8 @@
   <Import Project="../executable.props" />
 
   <ItemGroup>
-    <ProjectReference Include="..\Warpstone.Tests\Warpstone.Tests.csproj" />
     <ProjectReference Include="..\Warpstone\Warpstone.csproj" />
+    <ProjectReference Include="..\Warpstone.Tests\Warpstone.Tests.csproj" />
   </ItemGroup>
 
 </Project>

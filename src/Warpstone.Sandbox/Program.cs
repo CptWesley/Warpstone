@@ -12,6 +12,11 @@ public static class Program
 
             var input = Console.ReadLine();
 
+            if (input == "exit")
+            {
+                break;
+            }
+
             var result = JsonParser.Parse(input!);
 
             if (result.Success)

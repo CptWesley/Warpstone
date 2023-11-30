@@ -54,14 +54,14 @@ internal static class Guards
     /// <param name="parameterName">The name of the parameter.</param>
     /// <returns>The original <paramref name="value"/>.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is less than or equal to <paramref name="boundary"/>.</exception>
-    public static int MustBeGreaterThanOrEqualTo(
-        [NotNull] this int value,
-        int boundary,
+    public static ulong MustBeGreaterThan(
+        [NotNull] this ulong value,
+        ulong boundary,
         [CallerArgumentExpression("value")] string? parameterName = null)
     {
-        if (value < boundary)
+        if (value <= boundary)
         {
-            throw new ArgumentException($"Value of '{parameterName}' ({value}) must be greater than or equal to {boundary}.", parameterName);
+            throw new ArgumentException($"Value of '{parameterName}' ({value}) must be greater than {boundary}.", parameterName);
         }
 
         return value;
@@ -75,14 +75,14 @@ internal static class Guards
     /// <param name="parameterName">The name of the parameter.</param>
     /// <returns>The original <paramref name="value"/>.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is less than or equal to <paramref name="boundary"/>.</exception>
-    public static ulong MustBeGreaterThan(
-        [NotNull] this ulong value,
-        ulong boundary,
+    public static int MustBeGreaterThanOrEqualTo(
+        [NotNull] this int value,
+        int boundary,
         [CallerArgumentExpression("value")] string? parameterName = null)
     {
-        if (value <= boundary)
+        if (value < boundary)
         {
-            throw new ArgumentException($"Value of '{parameterName}' ({value}) must be greater than {boundary}.", parameterName);
+            throw new ArgumentException($"Value of '{parameterName}' ({value}) must be greater than or equal to {boundary}.", parameterName);
         }
 
         return value;

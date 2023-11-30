@@ -3,7 +3,7 @@
 /// <summary>
 /// Trait interface for parsers with a <see cref="Third"/> property.
 /// </summary>
-/// <typeparam name="T">The return type of the parser in the <see cref="Second"/> property.</typeparam>
+/// <typeparam name="T">The return type of the parser in the <see cref="Third"/> property.</typeparam>
 public interface IParserThird<out T>
 {
     /// <summary>
