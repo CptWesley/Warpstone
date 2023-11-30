@@ -1,62 +1,86 @@
-﻿using System.Collections.Generic;
+﻿namespace Warpstone;
 
-namespace Warpstone
+/// <summary>
+/// Interface for results of parsing.
+/// </summary>
+public interface IParseResult
 {
     /// <summary>
-    /// Object representing the parsing result.
+    /// The starting position of the result.
     /// </summary>
-    /// <typeparam name="T">The output type of the parse process.</typeparam>
-    public interface IParseResult<out T> : IParseResult
-    {
-        /// <summary>
-        /// Gets a value indicating whether the parsing was success.
-        /// </summary>
-        new bool Success { get; }
-
-        /// <summary>
-        /// Gets the parsed value.
-        /// </summary>
-        new T? Value { get; }
-
-        /// <summary>
-        /// Gets the parser that produced this result.
-        /// </summary>
-        new IParser<T> Parser { get; }
-    }
+    public int Position { get; }
 
     /// <summary>
-    /// Object representing the parsing result.
+    /// The number of characters in the input of the result.
     /// </summary>
-    public interface IParseResult : IBoundedToString
-    {
-        /// <summary>
-        /// Gets a value indicating whether the parsing was success.
-        /// </summary>
-        bool Success { get; }
+    public int Length { get; }
 
-        /// <summary>
-        /// Gets the parsed value.
-        /// </summary>
-        object? Value { get; }
+    /// <summary>
+    /// The next position in the input.
+    /// </summary>
+    public int NextPosition { get; }
 
-        /// <summary>
-        /// Gets the position of the parse result.
-        /// </summary>
-        SourcePosition Position { get; }
+    /// <summary>
+    /// Gets the start position of the result in the source file.
+    /// </summary>
+    public ParseInputPosition InputStartPosition { get; }
 
-        /// <summary>
-        /// Gets the parse error.
-        /// </summary>
-        IParseError? Error { get; }
+    /// <summary>
+    /// Gets the end position of the result in the source file.
+    /// </summary>
+    public ParseInputPosition InputEndPosition { get; }
 
-        /// <summary>
-        /// Gets the parser that produced this result.
-        /// </summary>
-        IParser Parser { get; }
+    /// <summary>
+    /// The parser used to obtain this result.
+    /// </summary>
+    public IParser Parser { get; }
 
-        /// <summary>
-        /// Gets the inner results when.
-        /// </summary>
-        IEnumerable<IParseResult> InnerResults { get; }
-    }
+    /// <summary>
+    /// The context in which this result was obtained.
+    /// </summary>
+    public IReadOnlyParseContext Context { get; }
+
+    /// <summary>
+    /// Indicates whether the result is an indication of success.
+    /// </summary>
+    public ParseStatus Status { get; }
+
+    /// <summary>
+    /// The obtained value.
+    /// Throws an exception if the parsing was not succcesful.
+    /// </summary>
+    public object? Value { get; }
+
+    /// <summary>
+    /// The list of errors (if any).
+    /// </summary>
+    public IImmutableList<IParseError> Errors { get; }
+
+    /// <summary>
+    /// Indicates whether or not the parsing was successful.
+    /// </summary>
+    public bool Success { get; }
+
+    /// <summary>
+    /// Throws an exception if the parsing result was not successful.
+    /// </summary>
+    public void ThrowIfUnsuccessful();
+}
+
+/// <summary>
+/// Interface for results of parsing.
+/// </summary>
+/// <typeparam name="T">The type of the values obtained in the results.</typeparam>
+public interface IParseResult<out T> : IParseResult
+{
+    /// <summary>
+    /// The parser used to obtain this result.
+    /// </summary>
+    public new IParser<T> Parser { get; }
+
+    /// <summary>
+    /// The obtained value.
+    /// Throws an exception if the parsing was not succcesful.
+    /// </summary>
+    public new T Value { get; }
 }
