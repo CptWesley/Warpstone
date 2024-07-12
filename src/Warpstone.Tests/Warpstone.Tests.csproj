@@ -2,6 +2,8 @@
   <Import Project="../tests.props" />
 
 	<ItemGroup>
+		<ProjectReference Include="..\Warpstone.Grammar\Warpstone.Grammar.csproj" />
 		<ProjectReference Include="..\Warpstone\Warpstone.csproj" />
 	</ItemGroup>
+
 </Project>

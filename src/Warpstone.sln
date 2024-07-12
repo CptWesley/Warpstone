@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		tests.props = tests.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warpstone.Grammar", "Warpstone.Grammar\Warpstone.Grammar.csproj", "{204362ED-EF5F-41C1-99BB-FC71F6E2EEF7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20492752-93BB-4472-A20D-AB32E10C485C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{204362ED-EF5F-41C1-99BB-FC71F6E2EEF7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{204362ED-EF5F-41C1-99BB-FC71F6E2EEF7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{204362ED-EF5F-41C1-99BB-FC71F6E2EEF7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{204362ED-EF5F-41C1-99BB-FC71F6E2EEF7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
