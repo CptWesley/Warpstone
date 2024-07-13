@@ -31,20 +31,21 @@
 
   <ItemGroup Label="Analyzers">
     <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all" />
-    <PackageReference Include="DotNetProjectFile.Analyzers" Version="1.1.0" PrivateAssets="all" />
+    <PackageReference Include="DotNetProjectFile.Analyzers" Version="1.2.2" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.23525.2" PrivateAssets="all" />
     <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all" />
-    <PackageReference Include="Qowaiv.Analyzers.CSharp" Version="0.0.8" PrivateAssets="all" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.14.0.81108" PrivateAssets="all" />
+    <PackageReference Include="Qowaiv.Analyzers.CSharp" Version="1.0.7" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.29.0.95321" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Label="CodeGenerators">
-    <PackageReference Include="PolySharp" Version="1.14.0" PrivateAssets="all" />
+    <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
     <PackageReference Include="T4.SourceGenerator" Version="1.2.0" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
     <AdditionalFiles Include="Templates/**" />
+    <AdditionalFiles Include="*.csproj" />
   </ItemGroup>
 
   <ItemGroup Label="ProjectFiles">
@@ -74,4 +75,5 @@
     <Using Include="System.Threading"/>
     <Using Include="System.Threading.Tasks"/>
   </ItemGroup>
+
 </Project>

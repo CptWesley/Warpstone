@@ -2,7 +2,11 @@
 
 public sealed class LeftRecursive
 {
-    private interface IExp;
+    private interface IExp 
+    {
+        int Value{ get; }
+    }
+
 
     private sealed record Num(int Value) : IExp
     {
@@ -14,12 +18,16 @@ public sealed class LeftRecursive
     {
         public override string ToString()
             => $"({Left} + {Right})";
+
+        public int Value => Left.Value + Right.Value;
     }
 
     private sealed record Mul(IExp Left, IExp Right) : IExp
     {
         public override string ToString()
             => $"({Left} * {Right})";
+
+        public int Value => Left.Value * Right.Value;
     }
 
     public static readonly IParser<string> OptionalWhitespaces
@@ -84,5 +92,25 @@ public sealed class LeftRecursive
     {
         var parsed = Exp.Parse(input);
         parsed.ToString().Should().Be(expected);
+    }
+
+    [Theory]
+    [InlineData("0", 0)]
+    [InlineData(" 0", 0)]
+    [InlineData("0 ", 0)]
+    [InlineData(" 0 ", 0)]
+    [InlineData("(42)", 42)]
+    [InlineData("1 + 2", 1 + 2)]
+    [InlineData("1 * 2", 1 * 2)]
+    [InlineData("1 * 2 + 3", 1 * 2 + 3)]
+    [InlineData("1 + 2 * 3", 1 + 2 * 3)]
+    [InlineData("(1 + 2) * 3", (1 + 2) * 3)]
+    [InlineData("1 + 2 + 3", 1 + 2 + 3)]
+    [InlineData("1 * 2 * 3", 1 * 2 * 3)]
+    [InlineData("1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9", 1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9)]
+    public static void Evalute_correctly(string input, int expected)
+    {
+        var parsed = Exp.Parse(input);
+        parsed.Value.Should().Be(expected);
     }
 }
