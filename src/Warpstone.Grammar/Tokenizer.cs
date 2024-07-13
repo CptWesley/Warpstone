@@ -57,7 +57,7 @@ public readonly struct Tokenizer<TKind> where TKind : struct, Enum
     /// The match to apply.
     /// </param>
     [Pure]
-    public static Tokenizer<TKind> operator +(Tokenizer<TKind> tokenizer, Grammar<TKind>.Tokens match)
+    public static Tokenizer<TKind> operator &(Tokenizer<TKind> tokenizer, Grammar<TKind>.Tokens match)
         => tokenizer.State == Matching.NoMatch
         ? tokenizer
         : match(tokenizer);
@@ -71,8 +71,8 @@ public readonly struct Tokenizer<TKind> where TKind : struct, Enum
     /// </param>
     public static Tokenizer<TKind> operator |(Tokenizer<TKind> tokenizer, Grammar<TKind>.Tokens match)
         => tokenizer.State != Matching.NoMatch
-        ? tokenizer
-        : match(tokenizer);
+            ? tokenizer
+            : match(tokenizer);
 
     /// <summary>Creates a new state.</summary>
     /// <param name="span">

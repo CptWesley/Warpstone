@@ -7,7 +7,7 @@
 /// <param name="textSpan">
 /// The (selected) span of the source text.
 /// </param>
-[DebuggerDisplay("{Span} {Text}")]
+//[DebuggerDisplay("{DebuggerDisplay}")]
 public readonly struct SourceSpan(SourceText sourceText, TextSpan textSpan)
 {
     /// <summary>Initializes a new instance of the <see cref="SourceSpan"/> struct.</summary>
@@ -200,4 +200,7 @@ public readonly struct SourceSpan(SourceText sourceText, TextSpan textSpan)
     /// <inheritdoc />
     [Pure]
     public override string ToString() => Text;
+
+    //[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay => $"{Span} {Text}";
 }
