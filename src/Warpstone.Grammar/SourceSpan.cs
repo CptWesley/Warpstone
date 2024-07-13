@@ -7,8 +7,7 @@
 /// <param name="textSpan">
 /// The (selected) span of the source text.
 /// </param>
-//[DebuggerDisplay("{DebuggerDisplay}")]
-public readonly struct SourceSpan(SourceText sourceText, TextSpan textSpan)
+public readonly struct SourceSpan(SourceText sourceText, TextSpan textSpan) : IEquatable<SourceSpan>
 {
     /// <summary>Initializes a new instance of the <see cref="SourceSpan"/> struct.</summary>
     /// <param name="sourceText">
@@ -201,6 +200,35 @@ public readonly struct SourceSpan(SourceText sourceText, TextSpan textSpan)
     [Pure]
     public override string ToString() => Text;
 
-    //[DebuggerBrowsable(DebuggerBrowsableState.Never)]
-    private string DebuggerDisplay => $"{Span} {Text}";
+    /// <inheritdoc />
+    [Pure]
+    public override bool Equals(object obj) => obj is SourceSpan other && Equals(other);
+
+    /// <inheritdoc />
+    [Pure]
+    public bool Equals(SourceSpan other)
+        => Span == other.Span
+        && SourceText == other.SourceText;
+
+    /// <inheritdoc />
+    [Pure]
+    public override int GetHashCode() => Span.GetHashCode();
+
+    /// <summary>Returns true if left and right are equal.</summary>
+    /// <param name="left">
+    /// Left operator.
+    /// </param>
+    /// <param name="right">
+    /// Right operator.
+    /// </param>
+    public static bool operator ==(SourceSpan left, SourceSpan right) => left.Equals(right);
+
+    /// <summary>Returns true if left and right are different.</summary>
+    /// <param name="left">
+    /// Left operator.
+    /// </param>
+    /// <param name="right">
+    /// Right operator.
+    /// </param>
+    public static bool operator !=(SourceSpan left, SourceSpan right) => !(left == right);
 }

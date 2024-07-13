@@ -49,31 +49,6 @@ public readonly struct Tokenizer<TKind> where TKind : struct, Enum
         var span => New(span.Value, kind),
     };
 
-    /// <summary>Applies an AND on the current state and the specified match.</summary>
-    /// <param name="tokenizer">
-    /// The current state.
-    /// </param>
-    /// <param name="match">
-    /// The match to apply.
-    /// </param>
-    [Pure]
-    public static Tokenizer<TKind> operator &(Tokenizer<TKind> tokenizer, Grammar<TKind>.Tokens match)
-        => tokenizer.State == Matching.NoMatch
-        ? tokenizer
-        : match(tokenizer);
-
-    /// <summary>Applies an OR on the current state and the specified match.</summary>
-    /// <param name="tokenizer">
-    /// The current state.
-    /// </param>
-    /// <param name="match">
-    /// The match to apply.
-    /// </param>
-    public static Tokenizer<TKind> operator |(Tokenizer<TKind> tokenizer, Grammar<TKind>.Tokens match)
-        => tokenizer.State != Matching.NoMatch
-            ? tokenizer
-            : match(tokenizer);
-
     /// <summary>Creates a new state.</summary>
     /// <param name="span">
     /// The matching span.
@@ -125,6 +100,6 @@ public readonly struct Tokenizer<TKind> where TKind : struct, Enum
     /// A tokinized source text.
     /// </returns>
     [Pure]
-    public static Tokenizer<TKind> Tokenize(SourceText sourceText, Grammar<TKind>.Tokens grammar)
-        => grammar(Tokenizer<TKind>.New(sourceText));
+    public static Tokenizer<TKind> Tokenize(SourceText sourceText, Grammar<TKind> grammar)
+        => grammar.Match(Tokenizer<TKind>.New(sourceText));
 }

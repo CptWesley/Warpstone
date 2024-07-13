@@ -1,6 +1,6 @@
-﻿using Warpstone;
+﻿using static Grammar_specs.TokenKind;
+using Grammr = Warpstone.Grammar<Grammar_specs.TokenKind>;
 using Tokenized = Warpstone.Tokenizer<Grammar_specs.TokenKind>;
-using static Grammar_specs.TokenKind;
 
 namespace Grammar_specs;
 
@@ -14,7 +14,6 @@ public class Parses
         tokenizer.Should().HaveTokenized(Token.New(0, "ab", None));
     }
 
-
     [Theory]
     [InlineData("   ")]
     [InlineData(" \t  ")]
@@ -22,7 +21,7 @@ public class Parses
     [InlineData("\r")]
     public void whitespace_only(string text)
     {
-        var source =  Source.Text(text);
+        var source = Source.Text(text);
         var tokenizer = Tokenized.Tokenize(source, IniGrammar.line);
         tokenizer.Should().HaveTokenized(Token.New(00, text, WhitespaceToken));
     }
@@ -60,54 +59,37 @@ public class Parses
     }
 }
 
-file sealed class SimpleGrammar : Grammar<TokenKind>
+file sealed class SimpleGrammar : Grammr
 {
-    public static Tokenized a_b_c_OR_ab(Tokenized t) => t & a_b_c | ab;
-    
-    public static Tokenized a_b_c(Tokenized t) => t & ch('a') & ch('b') & ch('c');
-    
-    public static Tokenized ab(Tokenized t) => t & str("abc");
+    public static Grammr a_b_c_OR_ab => a_b_c | ab;
+
+    public static Grammr a_b_c => ch('a') & ch('b') & ch('c');
+
+    public static Grammr ab => str("ab");
 }
 
-file sealed class IniGrammar : Grammar<TokenKind>
+file sealed class IniGrammar : Grammr
 {
-    public static Tokenized line(Tokenized t)
-        //{
-        //    if (kvp(t) is { State: not Matching.NoMatch } k) return k;
-        //    if (comment(t) is { State: not Matching.NoMatch } c) return c;
-        //    if (space(t) is { State: not Matching.NoMatch } s) return s;
-        //    return t.NoMatch();
-        //}
+    public static Grammr line => kvp | comment | space;
 
-        => t &
-        kvp | comment | space;
+    public static Grammr kvp =>
+         space & key & space & assign & space & value & space & comment.Option;
 
-    public static Tokenized kvp(Tokenized t) => t &
-         space & key & space & assign & space & value & space & Option(comment);
+    public static Grammr key => line(@"[^\s:=]+", KeyToken);
 
-    public static Tokenized key(Tokenized t) => t & 
-        line(@"[^\s:=]+", KeyToken);
+    public static Grammr assign => ch('=', EqualsToken) | ch(':', ColonToken);
 
-    public static Tokenized assign(Tokenized t) => t &
-        ch('=', EqualsToken) | ch(':', ColonToken);
+    public static Grammr value => line(@"[^\s#;]+", ValueToken);
 
-    public static Tokenized value(Tokenized t) => t &
-        line(@"[^\s#;]+", ValueToken);
+    public static Grammr comment => space & comment_delimiter & comment_text;
 
-    public static Tokenized comment(Tokenized t) => t &
-        space & comment_delimiter &  comment_text;
+    public static Grammr comment_delimiter => ch('#', CommentDelimiterToken) | ch(';', CommentDelimiterToken);
 
-    public static Tokenized comment_delimiter(Tokenized t) => t &
-        ch('#', CommentDelimiterToken) | ch(';', CommentDelimiterToken);
+    public static Grammr comment_text => line(".*", CommentToken);
 
-    public static Tokenized comment_text(Tokenized t) => t &
-        line(".*", CommentToken);
+    public static Grammr space => line(@"\s*", WhitespaceToken);
 
-    public static Tokenized space(Tokenized t) => t &
-        line(@"\s*", WhitespaceToken);
-
-    public static Tokenized eol(Tokenized t) => t &
-        eof | str("\r\n", EoLToken) | ch('\n', EoLToken);
+    public static Grammr eol => eof | str("\r\n", EoLToken) | ch('\n', EoLToken);
 }
 
 public enum TokenKind
