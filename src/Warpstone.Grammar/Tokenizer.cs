@@ -68,17 +68,6 @@ public readonly struct Tokenizer<TKind> where TKind : struct, Enum
     }
 
     /// <summary>Creates a new state.</summary>
-    /// <param name="sourceText">
-    /// The source text to tokenize.
-    /// </param>
-    /// <returns>
-    /// A new tokenizer with an updated state.
-    /// </returns>
-    [Pure]
-    public static Tokenizer<TKind> New(SourceText sourceText)
-        => New(new SourceSpan(sourceText));
-
-    /// <summary>Creates a new state.</summary>
     /// <param name="sourceSpan">
     /// The source span to tokenize.
     /// </param>
@@ -88,18 +77,4 @@ public readonly struct Tokenizer<TKind> where TKind : struct, Enum
     [Pure]
     public static Tokenizer<TKind> New(SourceSpan sourceSpan)
         => new(sourceSpan, [], sourceSpan.Length == 0 ? Matching.EoF : Matching.Match);
-
-    /// <summary>Tokenizes a source text.</summary>
-    /// <param name="sourceText">
-    /// The source text to tokenize.
-    /// </param>
-    /// <param name="grammar">
-    /// The grammar to apply.
-    /// </param>
-    /// <returns>
-    /// A tokinized source text.
-    /// </returns>
-    [Pure]
-    public static Tokenizer<TKind> Tokenize(SourceText sourceText, Grammar<TKind> grammar)
-        => grammar.Match(Tokenizer<TKind>.New(sourceText));
 }

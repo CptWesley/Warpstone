@@ -18,6 +18,10 @@ public class Grammar<TKind> where TKind : struct, Enum
     /// </remarks>
     protected Grammar() { }
 
+    [Pure]
+    public Tokenizer<TKind> Tokenize(SourceText sourceText)
+        => Match(Tokenizer<TKind>.New(new(sourceText)));
+
     /// <summary>Matches the grammar on the current state of the tokenizer.</summary>
     /// <param name="tokenizer">
     /// The (current state of the) tokenizer.
@@ -57,10 +61,11 @@ public class Grammar<TKind> where TKind : struct, Enum
     [Pure]
     public Grammar<TKind> Repeat(int min, int max = int.MaxValue) => new Repeat<TKind>(this, min, max);
 
+    public static Grammar<TKind> operator ~(Grammar<TKind> grammar) => grammar.Not;
+
     public static Grammar<TKind> operator |(Grammar<TKind> l, Grammar<TKind> r) => new Or<TKind>(l, r);
 
     public static Grammar<TKind> operator &(Grammar<TKind> l, Grammar<TKind> r) => new And<TKind>(l, r);
-
     /// <summary>End of File.</summary>
     public static readonly Grammar<TKind> eof = new EndOfFile<TKind>();
 
