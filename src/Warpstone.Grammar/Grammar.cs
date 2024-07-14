@@ -61,11 +61,15 @@ public class Grammar<TKind> where TKind : struct, Enum
     [Pure]
     public Grammar<TKind> Repeat(int min, int max = int.MaxValue) => new Repeat<TKind>(this, min, max);
 
+    /// <summary>The grammar must not match.</summary>
     public static Grammar<TKind> operator ~(Grammar<TKind> grammar) => grammar.Not;
 
+    /// <summary>The left or the right grammar should match.</summary>
     public static Grammar<TKind> operator |(Grammar<TKind> l, Grammar<TKind> r) => new Or<TKind>(l, r);
 
+    /// <summary>THe left grammar must be followed by the right grammar.</summary>
     public static Grammar<TKind> operator &(Grammar<TKind> l, Grammar<TKind> r) => new And<TKind>(l, r);
+
     /// <summary>End of File.</summary>
     public static readonly Grammar<TKind> eof = new EndOfFile<TKind>();
 
