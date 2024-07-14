@@ -1,8 +1,26 @@
-﻿using static Grammar_specs.TokenKind;
+﻿using Microsoft.CodeAnalysis.Text;
+using static Grammar_specs.TokenKind;
 using Grammr = Warpstone.Grammar<Grammar_specs.TokenKind>;
 using Tokenized = Warpstone.Tokenizer<Grammar_specs.TokenKind>;
 
 namespace Grammar_specs;
+
+public class Does_not_parse
+{
+    [Theory]
+    [InlineData(0)]
+    [InlineData(1)]
+    [InlineData(5)]
+    [InlineData(6)]
+    public void repetition(int count)
+    {
+        var source = Source.Text(new string('a', count));
+        var grammar = Grammr.ch('a').Repeat(2, 4);
+        var tokenizer = Tokenized.Tokenize(source, grammar);
+
+        tokenizer.Should().NotHaveTokenized();
+    }
+}
 
 public class Parses
 {
@@ -57,6 +75,30 @@ public class Parses
             Token.New(22, "#", CommentDelimiterToken),
             Token.New(23, " What a classic. :)", CommentToken));
     }
+
+    [Fact]
+    public void headers()
+    {
+        var source = Source.Text("[*]");
+        var tokenizer = Tokenized.Tokenize(source, IniGrammar.header);
+
+        tokenizer.Should().HaveTokenized(
+            Token.New(0, "[", HeaderStartToken),
+            Token.New(1, "*", HeaderToken),
+            Token.New(2, "]", HeaderEndToken));
+    }
+
+    [Fact]
+    public void dot_editorconfig()
+    {
+        using var file = new FileStream("../../../../.editorconfig", FileMode.Open, FileAccess.Read);
+        var source = SourceText.From(file);
+        var grammar = IniGrammar.file;
+
+        var tokenizer = Tokenized.Tokenize(source, grammar);
+
+        tokenizer.Tokens.Should().NotBeEmpty();
+    }
 }
 
 file sealed class SimpleGrammar : Grammr
@@ -70,10 +112,29 @@ file sealed class SimpleGrammar : Grammr
 
 file sealed class IniGrammar : Grammr
 {
-    public static Grammr line => kvp | comment | space;
+    public static Grammr file => line.Star & section.Option;
 
-    public static Grammr kvp =>
-         space & key & space & assign & space & value & space & comment.Option;
+    public static Grammr section = header & line.Star;
+
+    public static Grammr line => (kvp | comment | space) & eol;
+
+    public static Grammr kvp => space
+        & key
+        & space
+        & assign
+        & space
+        & value
+        & space
+        & comment.Option;
+
+    public static Grammr header => space 
+        & ch('[', HeaderStartToken) 
+        & header_text
+        & ch(']', HeaderEndToken) 
+        & space
+        & eol;
+
+    public static Grammr header_text = line(@"[^\]]", HeaderToken);
 
     public static Grammr key => line(@"[^\s:=]+", KeyToken);
 
@@ -97,10 +158,13 @@ public enum TokenKind
     None = 0,
     ValueToken,
     KeyToken,
-    EqualsToken,
-    ColonToken,
     WhitespaceToken,
     CommentDelimiterToken,
     CommentToken,
     EoLToken,
+    HeaderToken,
+    HeaderStartToken = '[',
+    HeaderEndToken =  ']',
+    EqualsToken = '=',
+    ColonToken = ':',
 }

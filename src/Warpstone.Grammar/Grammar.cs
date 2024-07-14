@@ -1,6 +1,16 @@
-﻿namespace Warpstone;
+﻿#pragma warning disable SA1300 // Element should begin with upper-case letter
+// Grammar is commonly defined with lowercase words.
 
-public partial class Grammar<TKind> where TKind : struct, Enum
+using Warpstone.Grammars;
+
+namespace Warpstone;
+
+/// <summary>A way of defining formal grammar.</summary>
+/// <typeparam name="TKind">
+/// The kind of tokens that are tokenized.
+/// </typeparam>
+
+public class Grammar<TKind> where TKind : struct, Enum
 {
     /// <summary>Initializes a new instance of the <see cref="Grammar{TKind}"/> class.</summary>
     /// <remarks>
@@ -20,11 +30,11 @@ public partial class Grammar<TKind> where TKind : struct, Enum
 
     /// <summary>This grammar may or may not match.</summary>
     [Pure]
-    public Grammar<TKind> Option => new Optional(this);
+    public Grammar<TKind> Option => new Repeat<TKind>(this, 0, 1);
 
     /// <summary>This grammar must not match.</summary>
     [Pure]
-    public Grammar<TKind> Not => new Negate(this);
+    public Grammar<TKind> Not => new Repeat<TKind>(this, 0, 0);
 
     /// <summary>This grammar may match multiple times.</summary>
     [Pure]
@@ -45,168 +55,77 @@ public partial class Grammar<TKind> where TKind : struct, Enum
     /// A new grammar.
     /// </returns>
     [Pure]
-    public Grammar<TKind> Repeat(int min, int max = int.MaxValue) => new Multiple(this, min, max);
+    public Grammar<TKind> Repeat(int min, int max = int.MaxValue) => new Repeat<TKind>(this, min, max);
 
-    public static Grammar<TKind> operator |(Grammar<TKind> l, Grammar<TKind> r) => new Or(l, r);
+    public static Grammar<TKind> operator |(Grammar<TKind> l, Grammar<TKind> r) => new Or<TKind>(l, r);
 
-    public static Grammar<TKind> operator &(Grammar<TKind> l, Grammar<TKind> r) => new And(l, r);
+    public static Grammar<TKind> operator &(Grammar<TKind> l, Grammar<TKind> r) => new And<TKind>(l, r);
 
-    private sealed class And(Grammar<TKind> left, Grammar<TKind> right) : Grammar<TKind>
-    {
-        private readonly Grammar<TKind> Left = left;
-        private readonly Grammar<TKind> Right = right;
+    /// <summary>End of File.</summary>
+    public static readonly Grammar<TKind> eof = new EndOfFile<TKind>();
 
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-            => Left.Match(tokenizer) is { State: not Matching.NoMatch } first
-            && Right.Match(first) is { State: not Matching.NoMatch } second
-            ? second
-            : tokenizer.NoMatch();
+    /// <summary>Matches if the remaining source starts with the specified character.</summary>
+    /// <param name="ch">
+    /// The expected character.
+    /// </param>
+    /// <param name="kind">
+    /// The (optional) token kind.
+    /// </param>
+    /// <returns>
+    /// A new grammar.
+    /// </returns>
+    [Pure]
+    public static Grammar<TKind> ch(char ch, TKind kind = default) => new StartWithChar<TKind>(ch, kind);
 
-        [Pure]
-        public override string ToString() => $"({Left} & {Right})";
-    }
+    /// <summary>Matches if the remaining source starts with the specified string.</summary>
+    /// <param name="str">
+    /// The expected string.
+    /// </param>
+    /// <param name="kind">
+    /// The (optional) token kind.
+    /// </param>
+    /// <returns>
+    /// A new grammar.
+    /// </returns>
+    [Pure]
+    public static Grammar<TKind> str(string str, TKind kind = default) => new StartWithString<TKind>(str, kind);
 
-    private sealed class Or(Grammar<TKind> left, Grammar<TKind> right) : Grammar<TKind>
-    {
-        private readonly Grammar<TKind> Left = left;
-        private readonly Grammar<TKind> Right = right;
+    /// <inheritdoc cref="line(System.Text.RegularExpressions.Regex, TKind)"/>
+    [Pure]
+    public static Grammar<TKind> line([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, TKind kind = default)
+        => new RegularExpression<TKind>(pattern, kind, true);
 
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer) => tokenizer switch
-        {
-            _ when Left.Match(tokenizer) is { State: not Matching.NoMatch } next => next,
-            _ when Right.Match(tokenizer) is { State: not Matching.NoMatch } next => next,
-            _ => tokenizer.NoMatch(),
-        };
+    /// <summary>Matches if the remaining source starts with the specified pattern.</summary>
+    /// <param name="pattern">
+    /// The expected pattern.
+    /// </param>
+    /// <param name="kind">
+    /// The (optional) token kind.
+    /// </param>
+    /// <returns>
+    /// A new grammar.
+    /// </returns>
+    /// <remarks>
+    /// the pattern is only applied on the current line.
+    /// </remarks>
+    [Pure]
+    public static Grammar<TKind> line(Regex pattern, TKind kind = default) => new RegularExpression<TKind>(pattern, kind, true);
 
-        [Pure]
-        public override string ToString() => $"({Left} | {Right})";
-    }
+    /// <inheritdoc cref="regex(Regex, TKind)"/>
+    [Pure]
+    public static Grammar<TKind> regex([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, TKind kind = default)
+        => new RegularExpression<TKind>(pattern, kind, false);
 
-    private sealed class Optional(Grammar<TKind> grammar) : Grammar<TKind>
-    {
-        private readonly Grammar<TKind> Grammar = grammar;
-
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-            => Grammar.Match(tokenizer) is { State: not Matching.NoMatch } next
-            ? next
-            : tokenizer;
-
-        [Pure]
-        public override string ToString() => $"({Grammar})?";
-    }
-
-    private sealed class Negate(Grammar<TKind> grammar) : Grammar<TKind>
-    {
-        private readonly Grammar<TKind> Grammar = grammar;
-
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-            => Grammar.Match(tokenizer) is { State: Matching.NoMatch } 
-            ? tokenizer
-            : tokenizer.NoMatch();
-
-        [Pure]
-        public override string ToString() => $"({Grammar}).Not";
-    }
-
-    private sealed class Multiple(Grammar<TKind> grammar, int min, int max) : Grammar<TKind>
-    {
-        private readonly Grammar<TKind> Grammar = grammar;
-        
-        private readonly int Minimum = min;
-        
-        private readonly int Maximum = max;
-
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-        {
-
-            var i = 0;
-            var next = tokenizer;
-            while (i++ < Maximum && next.State == Matching.Match)
-            {
-                next = Grammar.Match(next);
-            }
-
-            return i < Minimum || next.State == Matching.NoMatch
-                ? tokenizer.NoMatch()
-                : next;
-        }
-
-        [Pure]
-        public override string ToString() => Minimum switch
-        {
-            _ when Minimum == 0 && Maximum == int.MaxValue => $"({Grammar})*",
-            _ when Minimum == 1 && Maximum == int.MaxValue => $"({Grammar})+",
-            _ when Minimum == Maximum => $"({Grammar}){{{Minimum}}}",
-            _ when Maximum == int.MaxValue => $"({Grammar}){{{Minimum},}}",
-            _ => $"({Grammar}){{{Minimum},{Maximum}}}",
-        };
-    }
-
-    private sealed class Character(char ch, TKind kind) : Grammar<TKind>
-    {
-        private readonly char Char = ch;
-        private readonly TKind Kind = kind;
-
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-            => tokenizer.Match(s => s.StartsWith(Char), Kind);
-
-        [Pure]
-        public override string ToString() => $"ch('{Char}', {Kind})";
-    }
-
-    private sealed class Startwith(string str, TKind kind) : Grammar<TKind>
-    {
-        private readonly string String = str;
-        private readonly TKind Kind = kind;
-
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-            => tokenizer.Match(s => s.StartsWith(String), Kind);
-
-        [Pure]
-        public override string ToString() => $@"string(""{String}"", {Kind})";
-    }
-
-    private sealed class RegularExpression(Regex pattern, TKind kind) : Grammar<TKind>
-    {
-        private readonly Regex Pattern = pattern;
-        private readonly TKind Kind = kind;
-
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-            => tokenizer.Match(s => s.Regex(Pattern), Kind);
-
-        [Pure]
-        public override string ToString() => $@"regex(""{Pattern}"", {Kind})";
-    }
-
-    private sealed class RegularLineExpression(Regex pattern, TKind kind) : Grammar<TKind>
-    {
-        private readonly Regex Pattern = pattern;
-        private readonly TKind Kind = kind;
-
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-            => tokenizer.Match(s => s.Line(Pattern), Kind);
-
-        [Pure]
-        public override string ToString() => $@"line(""{Pattern}"", {Kind})";
-    }
-
-    private sealed class EndOfFile() : Grammar<TKind>
-    {
-        [Pure]
-        public override Tokenizer<TKind> Match(Tokenizer<TKind> tokenizer)
-            => tokenizer.State == Matching.EoF
-            ? tokenizer
-            : tokenizer.NoMatch();
-
-        [Pure]
-        public override string ToString() => "eof";
-    }
+    /// <summary>Matches if the remaining source starts with the specified pattern.</summary>
+    /// <param name="pattern">
+    /// The expected pattern.
+    /// </param>
+    /// <param name="kind">
+    /// The (optional) token kind.
+    /// </param>
+    /// <returns>
+    /// A new grammar.
+    /// </returns>
+    [Pure]
+    public static Grammar<TKind> regex(Regex pattern, TKind kind = default) => new RegularExpression<TKind>(pattern, kind, false);
 }
