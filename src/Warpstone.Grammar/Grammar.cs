@@ -99,7 +99,7 @@ public class Grammar<TKind> where TKind : struct, Enum
     [Pure]
     public static Grammar<TKind> str(string str, TKind kind = default) => new StartWithString<TKind>(str, kind);
 
-    /// <inheritdoc cref="line(System.Text.RegularExpressions.Regex, TKind)"/>
+    /// <inheritdoc cref="line(Regex, TKind)"/>
     [Pure]
     public static Grammar<TKind> line([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, TKind kind = default)
         => new RegularExpression<TKind>(pattern, kind, true);
@@ -119,6 +119,19 @@ public class Grammar<TKind> where TKind : struct, Enum
     /// </remarks>
     [Pure]
     public static Grammar<TKind> line(Regex pattern, TKind kind = default) => new RegularExpression<TKind>(pattern, kind, true);
+
+    /// <summary>Matches if the remaining source matches the predicate.</summary>
+    /// <param name="predicate">
+    /// The predicate to match.
+    /// </param>
+    /// <param name="kind">
+    /// The (optional) token kind.
+    /// </param>
+    /// <returns>
+    /// A new grammar.
+    /// </returns>
+    [Pure]
+    public static Grammar<TKind> match(Predicate<char> predicate, TKind kind = default) => new Matches<TKind>(predicate, kind);
 
     /// <inheritdoc cref="regex(Regex, TKind)"/>
     [Pure]

@@ -49,6 +49,17 @@ public class Matches
     }
 
     [Fact]
+    public void Predicate()
+    {
+        var grammar = match(char.IsDigit) & str("bc");
+        grammar.Tokenize(Source.Text("0123456789bc"))
+            .Should()
+            .HaveTokenized(
+                Token.New(0, "0123456789", None),
+                Token.New(10, "bc", None));
+    }
+
+    [Fact]
     public void Repeat()
     {
         var grammar = ch('a').Plus & str("bc");
@@ -118,6 +129,15 @@ public class Does_not_match
     {
         var grammar = ~ch('a') & str("aa");
         grammar.Tokenize(Source.Text("aa"))
+            .Should()
+            .NotHaveTokenized();
+    }
+
+    [Fact]
+    public void Predicate()
+    {
+        var grammar = match(char.IsDigit);
+        grammar.Tokenize(Source.Text("a12"))
             .Should()
             .NotHaveTokenized();
     }
