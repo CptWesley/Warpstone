@@ -1,7 +1,7 @@
 ﻿using System.Collections.Immutable;
-using static Warpstone.Tests.Legacy.Examples.Json.JsonParser;
+using static Warpstone.Examples.Legacy.Json.JsonParser;
 
-namespace Warpstone.Tests.Legacy.Examples.Json;
+namespace Warpstone.Examples.Legacy.Json;
 
 public sealed class Numbers
 {

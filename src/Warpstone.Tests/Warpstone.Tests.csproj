@@ -1,9 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="../tests.props" />
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\test\Warpstone.Examples\Warpstone.Examples.csproj" />
 		<ProjectReference Include="..\Warpstone.Grammar\Warpstone.Grammar.csproj" />
-		<ProjectReference Include="..\Warpstone\Warpstone.csproj" />
+    <ProjectReference Include="..\Warpstone\Warpstone.csproj" />
+    
 	</ItemGroup>
 
 </Project>
