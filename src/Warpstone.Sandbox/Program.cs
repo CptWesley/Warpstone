@@ -1,4 +1,4 @@
-﻿using Warpstone.Tests.Legacy.Examples.Json;
+﻿using Warpstone.Examples.Legacy.Json;
 
 namespace Warpstone.Sandbox;
 

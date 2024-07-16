@@ -1,6 +1,6 @@
-﻿using System.Collections.Immutable;
+﻿using Warpstone.Parsers;
 
-namespace Warpstone.Tests.Legacy.Examples.Json;
+namespace Warpstone.Examples.Legacy.Json;
 
 public static class JsonParser
 {

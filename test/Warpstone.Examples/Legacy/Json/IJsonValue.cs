@@ -1,6 +1,4 @@
-﻿using System.Collections.Immutable;
-
-namespace Warpstone.Tests.Legacy.Examples.Json;
+﻿namespace Warpstone.Examples.Legacy.Json;
 
 public interface IJsonValue
 {
