@@ -17,12 +17,16 @@ internal sealed class Repeat<TKind>(Grammar<TKind> grammar, int min, int max)
         var i = 0;
         var prev = tokenizer;
         var next = tokenizer;
+        var pos = -1;
 
-        while (next.State == Matching.Match && i <= Maximum)
+        while (next.State == Matching.Match
+            && i <= Maximum
+            && next.SourceSpan.Start != pos)
         {
             prev = next;
             next = Grammar.Match(prev);
             i += next.State == Matching.NoMatch ? 0 : 1;
+            pos = next.SourceSpan.Start;
         }
 
         var inRange = (i >= Minimum && i <= Maximum)
