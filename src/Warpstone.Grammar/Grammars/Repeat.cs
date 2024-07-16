@@ -25,7 +25,9 @@ internal sealed class Repeat<TKind>(Grammar<TKind> grammar, int min, int max)
             i += next.State == Matching.NoMatch ? 0 : 1;
         }
 
-        var inRange = i >= Minimum && i <= Maximum;
+        var inRange = (i >= Minimum && i <= Maximum)
+            // We have infinite matches with length 0.
+            || (next.State == Matching.EoF && Grammar.Match(next).State == Matching.EoF);
 
         return next.State switch
         {

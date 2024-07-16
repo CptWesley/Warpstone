@@ -74,6 +74,15 @@ public class Matches
     }
 
     [Fact]
+    public void Repeat_on_zero_match()
+    {
+        var grammar = ch('a') & regex(".*").Plus;
+        grammar.Tokenize(Source.Text("a"))
+            .Should()
+            .HaveTokenized(Token.New(0, "a", None));
+    }
+
+    [Fact]
     public void Repeat_till_end()
     {
         var grammar = ch('a').Star;
