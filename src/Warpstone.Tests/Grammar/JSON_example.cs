@@ -122,10 +122,6 @@ public sealed class JsonGrammar : Grammr
 {
     public static readonly Grammr ws = regex(@"[ \s\t\r\n]*", WhiteSpaceToken);
 
-    public static readonly Grammr sign = (ch('-', MinusToken) | ch('+', PlusToken)).Option;
-
-    public static readonly Grammr fraction = ch('.', DecimalSeparatorToken).Option;
-
     public static readonly Grammr number = regex(@"-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?(0|[1-9][0-9]*))?", NumberToken);
 
     public static readonly Grammr @string = ch('"', QuotationToken) & match(c => c != '"', StringToken) & ch('"', QuotationToken);
