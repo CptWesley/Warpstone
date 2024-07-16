@@ -51,6 +51,11 @@ public class Parses
     }
 
     [Fact]
+    public void empty_line()
+        => IniGrammar.single_line.Tokenize(Source.Text("\r\n"))
+        .Should().HaveTokenized(Token.New(0, "\r\n", EoLToken));
+
+    [Fact]
     public void complex_headers()
     {
         var source = Source.Text("[*.{cs,json,cshtml,ts}]");
@@ -63,7 +68,7 @@ public class Parses
     }
 
     [Fact]
-    public void dot_editorconfig()
+    public void dot_editor_config()
     {
         using var file = new FileStream("../../../../.editorconfig", FileMode.Open, FileAccess.Read);
         var source = SourceText.From(file);
