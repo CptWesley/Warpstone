@@ -7,11 +7,14 @@ internal sealed class TokenizerAssertions<TKind>(Tokenizer<TKind> subject) where
 {
     public Tokenizer<TKind> Subject { get; } = subject;
 
-    public void HaveTokenized(params Token<TKind>[] expected)
+    public void HaveTokenized(params Token<TKind>[]? expected)
     {
         Subject.State.Should().Be(Matching.EoF, because: "Did not fully tokenized.");
-        var tokens = Subject.Tokens.ToArray();
-        tokens.Should().BeEquivalentTo(expected);
+        if (expected is { })
+        {
+            var tokens = Subject.Tokens.ToArray();
+            tokens.Should().BeEquivalentTo(expected);
+        }
     }
 
     public void NotHaveTokenized(params Token<TKind>[] expected)

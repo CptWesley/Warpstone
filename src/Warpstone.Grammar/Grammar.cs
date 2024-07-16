@@ -73,6 +73,9 @@ public class Grammar<TKind> where TKind : struct, Enum
     /// <summary>End of File.</summary>
     public static readonly Grammar<TKind> eof = new EndOfFile<TKind>();
 
+    [Pure]
+    public static Grammar<TKind> Lazy(Func<Grammar<TKind>> factory) => new Grammars.Lazy<TKind>(factory);
+
     /// <summary>Matches if the remaining source starts with the specified character.</summary>
     /// <param name="ch">
     /// The expected character.
