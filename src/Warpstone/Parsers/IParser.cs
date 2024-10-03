@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers;
+namespace Warpstone.Parsers;
 
 /// <summary>
 /// Interface for parser implementations.

@@ -27,6 +27,7 @@
     <NuGetAudit>true</NuGetAudit>
     <DebugType>full</DebugType>
     <IsPublishable>false</IsPublishable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup Label="Analyzers">

@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers;
+namespace Warpstone.Parsers;
 
 /// <summary>
 /// Static class providing simple parsers.

@@ -1,4 +1,4 @@
-﻿namespace Warpstone;
+namespace Warpstone;
 
 /// <summary>
 /// Indicates what type of <see cref="IParseResult"/> a result is.

@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Errors;
+namespace Warpstone.Errors;
 
 /// <summary>
 /// Represents a <see cref="ParseError"/> that is thrown when infinite recursion is detected.

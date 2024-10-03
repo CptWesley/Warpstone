@@ -1,4 +1,4 @@
-﻿namespace Warpstone;
+namespace Warpstone;
 
 /// <summary>
 /// Provides extension methods for the <see cref="IReadOnlyMemoTable"/>

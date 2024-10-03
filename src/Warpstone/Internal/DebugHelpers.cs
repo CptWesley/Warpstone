@@ -1,4 +1,4 @@
-﻿#pragma warning disable CS8777 // Intentional.
+#pragma warning disable CS8777 // Intentional.
 
 namespace Warpstone.Internal;
 
