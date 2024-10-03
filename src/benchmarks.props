@@ -3,6 +3,10 @@
   <Import Project="executable.props" />
 
   <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <NoWarn>S1104</NoWarn>
   </PropertyGroup>
 

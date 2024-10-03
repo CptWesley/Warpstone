@@ -42,11 +42,9 @@
 
   <ItemGroup Label="CodeGenerators">
     <PackageReference Include="PolySharp" PrivateAssets="all" />
-    <PackageReference Include="T4.SourceGenerator" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="Templates/**" />
     <AdditionalFiles Include="*.csproj" />
   </ItemGroup>
 

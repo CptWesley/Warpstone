@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="../benchmarks.props" />
+
+  <ItemGroup>
+    <ProjectReference Include="../Warpstone/Warpstone.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Legacy\Warpstone1\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Pidgin" />
+  </ItemGroup>
+</Project>
