@@ -28,6 +28,7 @@
     <DebugType>full</DebugType>
     <IsPublishable>false</IsPublishable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup Label="Analyzers">

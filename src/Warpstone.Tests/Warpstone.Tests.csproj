@@ -4,8 +4,4 @@
   <ItemGroup>
     <ProjectReference Include="../Warpstone/Warpstone.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Update="xunit.runner.visualstudio" PrivateAssets="all" />
-  </ItemGroup>
 </Project>

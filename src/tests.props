@@ -3,6 +3,7 @@
   <Import Project="executable.props" />
 
   <PropertyGroup>
+    <OutputType>Library</OutputType>
     <IsTestProject>true</IsTestProject>
     <CollectCoverage>true</CollectCoverage>
     <CoverletOutputFormat>opencover</CoverletOutputFormat>
@@ -24,6 +25,7 @@
   <ItemGroup Label="Build dependencies">
     <PackageReference Include="coverlet.collector" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.TestPlatform.TestHost" PrivateAssets="all" />
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
   </ItemGroup>
 

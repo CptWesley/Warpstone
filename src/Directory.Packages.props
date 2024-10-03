@@ -33,4 +33,11 @@
   <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0' And '$(TargetFramework)' != 'net5.0'">
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
   </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.3.3" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0'">
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.11.1" />
+  </ItemGroup>
 </Project>
