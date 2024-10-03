@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Errors;
+namespace Warpstone.Errors;
 
 /// <summary>
 /// Represents an error that occurs during parsing when a transformation throws an exception.

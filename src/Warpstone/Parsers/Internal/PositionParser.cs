@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers.Internal;
+namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser that doesn't take any arguments and always succeeds

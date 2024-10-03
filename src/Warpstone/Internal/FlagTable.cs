@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Internal;
+namespace Warpstone.Internal;
 
 /// <summary>
 /// Represents a table that holds boolean flags.

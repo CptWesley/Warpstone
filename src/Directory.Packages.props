@@ -1,0 +1,43 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageVersion Include="AssertNet" Version="2.0.0" />
+    <PackageVersion Include="AsyncFixer" Version="1.6.0" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.13.5" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="DotNetProjectFile.Analyzers" Version="1.4.5" />
+    <PackageVersion Include="FluentAssertions" Version="6.12.1" />
+    <PackageVersion Include="FluentAssertions.Analyzers" Version="0.33.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.23525.2" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
+    <PackageVersion Include="PolySharp" Version="1.14.1" />
+    <PackageVersion Include="Qowaiv.Analyzers.CSharp" Version="2.0.3" />
+    <PackageVersion Include="SonarAnalyzer.CSharp" Version="9.32.0.97167" />
+    <PackageVersion Include="StyleCop.Analyzers" Version="1.2.0-beta.507" />
+    <PackageVersion Include="System.Collections.Immutable" Version="5.0.0" />
+    <PackageVersion Include="T4.SourceGenerator" Version="1.2.0" />
+    <PackageVersion Include="xunit" Version="2.9.2" />
+    <PackageVersion Include="xunit.analyzers" Version="1.16.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.3" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0' And '$(TargetFramework)' != 'net5.0'">
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.3.3" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0'">
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.11.1" />
+  </ItemGroup>
+</Project>

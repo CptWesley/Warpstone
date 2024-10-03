@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers.Internal;
+namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// Parser which succeeds if the inner parser fails, but fails if the inner parser succeeds.

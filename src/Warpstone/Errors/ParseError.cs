@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Errors;
+namespace Warpstone.Errors;
 
 /// <summary>
 /// Base implementation for various different errors that occur during parsing.

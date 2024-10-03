@@ -1,4 +1,4 @@
-﻿namespace Warpstone.IterativeExecution;
+namespace Warpstone.IterativeExecution;
 
 /// <summary>
 /// Provides helper methods for dealing with our iterative executor.

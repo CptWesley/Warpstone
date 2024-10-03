@@ -1,4 +1,4 @@
-﻿namespace Warpstone;
+namespace Warpstone;
 
 /// <summary>
 /// Provides helper methods to create <see cref="IParseContext{T}"/> instances.

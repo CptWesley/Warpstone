@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Internal;
+namespace Warpstone.Internal;
 
 /// <summary>
 /// Contains predefined sets of <see cref="MethodImplOptions"/>.

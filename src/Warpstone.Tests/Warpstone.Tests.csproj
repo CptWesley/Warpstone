@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="../tests.props" />
 
-	<ItemGroup>
-		<ProjectReference Include="..\Warpstone\Warpstone.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Warpstone/Warpstone.csproj" />
+  </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿namespace Warpstone.IterativeExecution;
+namespace Warpstone.IterativeExecution;
 
 /// <summary>
 /// Represents an iterative step that can be executed by

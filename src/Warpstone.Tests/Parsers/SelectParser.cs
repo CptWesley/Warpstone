@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Tests.Parsers;
+namespace Warpstone.Tests.Parsers;
 
 public sealed class SelectParser
 {

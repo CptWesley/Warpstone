@@ -1,4 +1,4 @@
-﻿namespace Warpstone;
+namespace Warpstone;
 
 /// <summary>
 /// Provides write access to the memo table.

@@ -1,4 +1,4 @@
-﻿#pragma warning disable S107 // Max 8 parameters. Disabled for tests.
+#pragma warning disable S107 // Max 8 parameters. Disabled for tests.
 
 namespace Warpstone.Tests.Legacy;
 

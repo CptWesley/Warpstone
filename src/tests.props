@@ -1,8 +1,10 @@
-<?xml version="1.0" encoding="utf-8"?>
+
 <Project>
   <Import Project="executable.props" />
 
   <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <IsTestProject>true</IsTestProject>
     <CollectCoverage>true</CollectCoverage>
     <CoverletOutputFormat>opencover</CoverletOutputFormat>
     <CoverletOutput>./bin/</CoverletOutput>
@@ -10,34 +12,26 @@
   </PropertyGroup>
 
   <ItemGroup Label="Analyzers">
-    <PackageReference Include="FluentAssertions.Analyzers" Version="0.33.0" PrivateAssets="all" />
-    <PackageReference Include="xunit.analyzers" Version="1.15.0" PrivateAssets="all" />
+    <PackageReference Include="FluentAssertions.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="xunit.analyzers" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Label="Dependencies">
-    <PackageReference Include="AssertNet" Version="2.0.0" />
-    <PackageReference Include="FluentAssertions" Version="6.12.0" />
-    <PackageReference Include="xunit" Version="2.9.0" />
+    <PackageReference Include="AssertNet" />
+    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="xunit" />
   </ItemGroup>
 
   <ItemGroup Label="Build dependencies">
-    <PackageReference Include="coverlet.collector" Version="6.0.2" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" PrivateAssets="all" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3"/>
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5"/>
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0' And '$(TargetFramework)' != 'net5.0'">
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.4"/>
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.TestPlatform.TestHost" PrivateAssets="all" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Label="DefaultImports">
-    <Using Include="FluentAssertions"/>
-    <Using Include="Xunit"/>
-    <Using Static="true" Include="AssertNet.Assertions"/>
+    <Using Include="FluentAssertions" />
+    <Using Include="Xunit" />
+    <Using Static="true" Include="AssertNet.Assertions" />
   </ItemGroup>
 </Project>

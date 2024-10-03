@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers;
+namespace Warpstone.Parsers;
 
 /// <summary>
 /// Trait interface for parsers with a <see cref="Third"/> property.

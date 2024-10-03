@@ -1,4 +1,4 @@
-﻿namespace Warpstone.IterativeExecution;
+namespace Warpstone.IterativeExecution;
 
 /// <summary>
 /// Used to indicate to the <see cref="IterativeExecutor"/>

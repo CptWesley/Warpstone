@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Tests.Expressions;
+namespace Warpstone.Tests.Expressions;
 
 public sealed class LeftRecursive
 {

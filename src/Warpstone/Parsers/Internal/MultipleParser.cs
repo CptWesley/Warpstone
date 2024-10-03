@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers.Internal;
+namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// A parser which runs a single parser multiple times with optional

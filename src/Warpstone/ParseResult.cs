@@ -1,4 +1,4 @@
-﻿namespace Warpstone;
+namespace Warpstone;
 
 /// <summary>
 /// Provides helper methods to create new <see cref="IParseResult"/> instances.

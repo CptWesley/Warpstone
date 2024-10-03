@@ -1,4 +1,4 @@
-﻿namespace Warpstone;
+namespace Warpstone;
 
 /// <summary>
 /// Represents a position in an <see cref="IParseInput"/>.

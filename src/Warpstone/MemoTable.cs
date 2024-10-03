@@ -1,4 +1,4 @@
-﻿namespace Warpstone;
+namespace Warpstone;
 
 /// <summary>
 /// Represents a packrat memotable.

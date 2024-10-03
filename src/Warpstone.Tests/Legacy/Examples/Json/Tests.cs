@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using static Warpstone.Tests.Legacy.Examples.Json.JsonParser;
 
 namespace Warpstone.Tests.Legacy.Examples.Json;

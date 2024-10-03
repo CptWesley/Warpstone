@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+
 <Project>
   <PropertyGroup>
     <Authors>Wesley Baartman</Authors>
@@ -27,20 +27,22 @@
     <NuGetAudit>true</NuGetAudit>
     <DebugType>full</DebugType>
     <IsPublishable>false</IsPublishable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <IsTestProject>false</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup Label="Analyzers">
-    <PackageReference Include="AsyncFixer" Version="1.6.0" PrivateAssets="all" />
-    <PackageReference Include="DotNetProjectFile.Analyzers" Version="1.2.2" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0-beta1.23525.2" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="8.0.0" PrivateAssets="all" />
-    <PackageReference Include="Qowaiv.Analyzers.CSharp" Version="1.0.7" PrivateAssets="all" />
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="9.29.0.95321" PrivateAssets="all" />
+    <PackageReference Include="AsyncFixer" PrivateAssets="all" />
+    <PackageReference Include="DotNetProjectFile.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" />
+    <PackageReference Include="Qowaiv.Analyzers.CSharp" PrivateAssets="all" />
+    <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Label="CodeGenerators">
-    <PackageReference Include="PolySharp" Version="1.14.1" PrivateAssets="all" />
-    <PackageReference Include="T4.SourceGenerator" Version="1.2.0" PrivateAssets="all" />
+    <PackageReference Include="PolySharp" PrivateAssets="all" />
+    <PackageReference Include="T4.SourceGenerator" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
@@ -58,22 +60,22 @@
   </ItemGroup>
 
   <ItemGroup Label="DefaultImports">
-    <Using Include="System"/>
-    <Using Include="System.Collections"/>
-    <Using Include="System.Collections.Generic"/>
-    <Using Include="System.Diagnostics"/>
-    <Using Include="System.Diagnostics.CodeAnalysis"/>
-    <Using Include="System.Diagnostics.Contracts"/>
-    <Using Include="System.Globalization"/>
-    <Using Include="System.IO"/>
-    <Using Include="System.Linq"/>
-    <Using Include="System.Reflection"/>
-    <Using Include="System.Runtime.CompilerServices"/>
-    <Using Include="System.Runtime.InteropServices"/>
-    <Using Include="System.Text"/>
-    <Using Include="System.Text.RegularExpressions"/>
-    <Using Include="System.Threading"/>
-    <Using Include="System.Threading.Tasks"/>
+    <Using Include="System" />
+    <Using Include="System.Collections" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.Diagnostics.Contracts" />
+    <Using Include="System.Globalization" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Reflection" />
+    <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="System.Runtime.InteropServices" />
+    <Using Include="System.Text" />
+    <Using Include="System.Text.RegularExpressions" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
   </ItemGroup>
 
 </Project>

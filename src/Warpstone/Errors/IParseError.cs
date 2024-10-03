@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Errors;
+namespace Warpstone.Errors;
 
 /// <summary>
 /// Represents a parse error.

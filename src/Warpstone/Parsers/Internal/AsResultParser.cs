@@ -1,4 +1,4 @@
-﻿namespace Warpstone.Parsers.Internal;
+namespace Warpstone.Parsers.Internal;
 
 /// <summary>
 /// A parser which wraps a parser and returns the internal parse result.
