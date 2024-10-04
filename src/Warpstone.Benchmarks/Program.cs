@@ -5,8 +5,10 @@ namespace Warpstone.Benchmarks;
 
 public static class Program
 {
-    public static void Main(string[] args)
+    public static void Main(params string[] args)
     {
-        BenchmarkRunner.Run<RightRecursiveSimpleString>();
+        BenchmarkSwitcher
+            .FromAssembly(typeof(Program).Assembly)
+            .Run(args);
     }
 }
