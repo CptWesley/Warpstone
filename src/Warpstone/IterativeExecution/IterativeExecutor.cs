@@ -42,25 +42,21 @@ public sealed class IterativeExecutor
     {
         var job = stack.Pop();
 
-        if (job.Type == IterativeStepType.Done)
+        if (job is IterativeDone done)
         {
-            last = job.Value;
+            last = done.Value;
         }
-        else if (job.Type == IterativeStepType.More)
+        else if (job is IterativeMore more)
         {
-            stack.Push(new()
+            stack.Push(new IterativeContinue()
             {
-                Type = IterativeStepType.Continue,
-                More = job.More,
-
-                First = null,
-                Value = null,
+                More = more.More,
             });
-            stack.Push(job.First!());
+            stack.Push(more.First!());
         }
-        else if (job.Type == IterativeStepType.Continue)
+        else if (job is IterativeContinue cont)
         {
-            stack.Push(job.More!(last));
+            stack.Push(cont.More!(last));
         }
         else
         {
