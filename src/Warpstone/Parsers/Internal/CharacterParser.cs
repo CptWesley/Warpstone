@@ -26,7 +26,7 @@ internal sealed class CharacterParser : ParserBase<char>, IEquatable<CharacterPa
     char IParserValue<char>.Value => Character;
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
     {
         var input = context.Input.Content;
 

@@ -44,7 +44,7 @@ internal sealed class RegexParser : ParserBase<string>, IEquatable<RegexParser>,
     public RegexOptions Options { get; }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
     {
         var input = context.Input.Content;
 

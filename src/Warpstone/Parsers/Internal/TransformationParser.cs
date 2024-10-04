@@ -29,7 +29,7 @@ internal sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>, IParse
     public Func<TIn, TOut> Transformation { get; }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
         => Iterative.More(
             () => eval(First, position),
             untypedInner =>

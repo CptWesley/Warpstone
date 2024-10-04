@@ -2,7 +2,7 @@ namespace Warpstone.IterativeExecution;
 
 /// <summary>
 /// Used to indicate to the <see cref="IterativeExecutor"/>
-/// how a <see cref="IterativeStep"/> should be handled.
+/// how a <see cref="IIterativeStep"/> should be handled.
 /// </summary>
 public enum IterativeStepType
 {

@@ -31,7 +31,7 @@ internal sealed class ExpectedParser<T> : ParserBase<T>, IParserValue<IImmutable
     IImmutableList<string> IParserValue<IImmutableList<string>>.Value => Expected;
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
         => Iterative.More(
             () => eval(First, position),
             untypedFirst =>

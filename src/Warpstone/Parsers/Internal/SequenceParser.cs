@@ -30,7 +30,7 @@ internal sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSec
     public IParser<TSecond> Second { get; }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
         => Iterative.More(
             () => eval(First, position),
             untypedFirst =>

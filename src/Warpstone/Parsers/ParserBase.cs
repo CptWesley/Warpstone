@@ -11,7 +11,7 @@ public abstract class ParserBase<T> : IParser<T>
     public Type ResultType => typeof(T);
 
     /// <inheritdoc />
-    public abstract IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval);
+    public abstract IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval);
 
     /// <inheritdoc cref="ToString(int)"/>
     protected abstract string InternalToString(int depth);
