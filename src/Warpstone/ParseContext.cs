@@ -183,7 +183,7 @@ public sealed class ParseContext<T> : IParseContext<T>
     IParseResult IParseContext.RunToEnd(CancellationToken cancellationToken)
         => RunToEnd(cancellationToken);
 
-    private IterativeStep ApplyRule(IParser parser, int p)
+    private IIterativeStep ApplyRule(IParser parser, int p)
     {
         if (memo[p, parser] is not { } m)
         {
@@ -223,7 +223,7 @@ public sealed class ParseContext<T> : IParseContext<T>
         return Iterative.Done(m);
     }
 
-    private IterativeStep ApplyRuleGrow(IParser parser, int p, IImmutableSet<IParser> limits)
+    private IIterativeStep ApplyRuleGrow(IParser parser, int p, IImmutableSet<IParser> limits)
     {
         limits = limits.Add(parser);
 
@@ -244,10 +244,10 @@ public sealed class ParseContext<T> : IParseContext<T>
     }
 
     [MethodImpl(InlinedOptimized)]
-    private IterativeStep GrowLR(IParser parser, int p)
+    private IIterativeStep GrowLR(IParser parser, int p)
         => GrowLR(parser, p, -1);
 
-    private IterativeStep GrowLR(IParser parser, int p, int prevPos)
+    private IIterativeStep GrowLR(IParser parser, int p, int prevPos)
         => Iterative.More(
             () => EvalGrow(parser, p, ImmutableHashSet.Create(parser)),
             untypedAns =>
@@ -264,11 +264,11 @@ public sealed class ParseContext<T> : IParseContext<T>
             });
 
     [MethodImpl(InlinedOptimized)]
-    private IterativeStep Eval(IParser parser, int position)
+    private IIterativeStep Eval(IParser parser, int position)
         => parser.Eval(readOnlySelf, position, ApplyRule);
 
     [MethodImpl(InlinedOptimized)]
-    private IterativeStep EvalGrow(IParser parser, int position, IImmutableSet<IParser> limits)
+    private IIterativeStep EvalGrow(IParser parser, int position, IImmutableSet<IParser> limits)
         => parser.Eval(readOnlySelf, position, (calledParser, calledPosition) =>
         {
             if (calledPosition == position && !limits.Contains(calledParser))

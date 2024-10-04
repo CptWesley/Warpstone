@@ -42,7 +42,7 @@ internal sealed class StringParser : ParserBase<string>, IEquatable<StringParser
     public StringComparison StringComparison { get; }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
     {
         var input = context.Input.Content;
 

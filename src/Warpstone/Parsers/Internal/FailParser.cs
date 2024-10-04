@@ -16,7 +16,7 @@ internal sealed class FailParser<T> : ParserBase<T>, IEquatable<FailParser<T>>
     }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
         => Iterative.Done(this.Mismatch(context, position, new UnexpectedTokenError(context, this, position, 1, string.Empty)));
 
     /// <inheritdoc />

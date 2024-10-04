@@ -44,8 +44,8 @@ public interface IParser
     /// <param name="context">The parse context in which the parser is invoked.</param>
     /// <param name="position">The position in the input for which the parser is invoked.</param>
     /// <param name="eval">The evaluation function that can be used for invoking other parsers.</param>
-    /// <returns>The newly created <see cref="IterativeStep"/>.</returns>
-    public IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval);
+    /// <returns>The newly created <see cref="IIterativeStep"/>.</returns>
+    public IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval);
 
     /// <inheritdoc cref="object.ToString"/>
     public string ToString(int depth);

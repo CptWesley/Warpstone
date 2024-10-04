@@ -21,7 +21,7 @@ internal sealed class NegativeLookaheadParser<T> : ParserBase<T?>, IParserFirst<
     public IParser<T> First { get; }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
         => Iterative.More(
             () => eval(First, position),
             untypedFirst =>

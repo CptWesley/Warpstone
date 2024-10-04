@@ -11,7 +11,7 @@ public static class Iterative
     /// <param name="value">The value returned by the return statement.</param>
     /// <returns>The newly created iterative step.</returns>
     [MethodImpl(InlinedOptimized)]
-    public static IterativeStep Done(object? value)
+    public static IIterativeStep Done(object? value)
         => new IterativeDone
         {
             Value = value,
@@ -24,7 +24,7 @@ public static class Iterative
     /// <param name="first">The function that is called and returned.</param>
     /// <returns>The newly created iterative step.</returns>
     [MethodImpl(InlinedOptimized)]
-    public static IterativeStep Done(Func<IterativeStep> first)
+    public static IIterativeStep Done(Func<IIterativeStep> first)
         => More(first, Done);
 
     /// <summary>
@@ -32,7 +32,7 @@ public static class Iterative
     /// </summary>
     /// <returns>The newly created iterative step.</returns>
     [MethodImpl(InlinedOptimized)]
-    public static IterativeStep Done()
+    public static IIterativeStep Done()
         => Done(null as object);
 
     /// <summary>
@@ -44,8 +44,8 @@ public static class Iterative
     /// of the <paramref name="first"/> call.</param>
     /// <returns>The newly created iterative step.</returns>
     [MethodImpl(InlinedOptimized)]
-    public static IterativeStep More(Func<IterativeStep> first, Func<object?, IterativeStep> more)
-        => new IterativeMore
+    public static IIterativeStep More(Func<IIterativeStep> first, Func<object?, IIterativeStep> more)
+        => new IterativeMoreAdHoc
         {
             First = first,
             More = more,

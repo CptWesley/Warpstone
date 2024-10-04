@@ -16,7 +16,7 @@ internal sealed class PositionParser : ParserBase<ParseInputPosition>, IEquatabl
     }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
         => Iterative.Done(this.Match(context, position, 0, context.Input.GetPosition(position)));
 
     /// <inheritdoc />

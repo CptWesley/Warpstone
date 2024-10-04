@@ -18,7 +18,7 @@ internal sealed class LazyParser<T> : ParserBase<T>
     }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
         => Iterative.More(
             () => eval(lazyFirst.Value, position),
             untypedFirst =>

@@ -15,7 +15,7 @@ internal sealed class EndOfFileParser : ParserBase<string>, IEquatable<EndOfFile
     }
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
     {
         if (position >= context.Input.Content.Length)
         {

@@ -77,16 +77,16 @@ internal sealed class MultipleParser<TElement, TDelimiter, TTerminator> :
     (ulong Min, ulong Max) IParserValue<(ulong Min, ulong Max)>.Value => (Min, Max);
 
     /// <inheritdoc />
-    public override IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval)
+    public override IIterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IIterativeStep> eval)
         => Min > 0
         ? EvalMin(context, position, position, eval, Min, new List<TElement>())
         : EvalMax(context, position, position, position, eval, Max, new List<TElement>());
 
-    private IterativeStep EvalMin(
+    private IIterativeStep EvalMin(
         IReadOnlyParseContext context,
         int initialPosition,
         int position,
-        Func<IParser, int, IterativeStep> eval,
+        Func<IParser, int, IIterativeStep> eval,
         ulong rem,
         List<TElement> acc)
         => Iterative.More(
@@ -130,12 +130,12 @@ internal sealed class MultipleParser<TElement, TDelimiter, TTerminator> :
                     });
             });
 
-    private IterativeStep EvalMax(
+    private IIterativeStep EvalMax(
         IReadOnlyParseContext context,
         int initialPosition,
         int position,
         int lastElementPosition,
-        Func<IParser, int, IterativeStep> eval,
+        Func<IParser, int, IIterativeStep> eval,
         ulong rem,
         List<TElement> acc)
         => Iterative.More(
@@ -171,11 +171,11 @@ internal sealed class MultipleParser<TElement, TDelimiter, TTerminator> :
                     });
             });
 
-    private IterativeStep EvalTerminator(
+    private IIterativeStep EvalTerminator(
         IReadOnlyParseContext context,
         int initialPosition,
         int position,
-        Func<IParser, int, IterativeStep> eval,
+        Func<IParser, int, IIterativeStep> eval,
         List<TElement> acc)
         => Iterative.More(
             () => eval(Terminator, position),

@@ -5,10 +5,10 @@ namespace Warpstone.IterativeExecution;
 /// </summary>
 public sealed class IterativeExecutor
 {
-    private readonly Stack<IterativeStep> stack = new();
+    private readonly Stack<IIterativeStep> stack = new();
     private object? last = null;
 
-    private IterativeExecutor(in IterativeStep step)
+    private IterativeExecutor(in IIterativeStep step)
     {
         stack.Push(step);
     }
@@ -20,7 +20,7 @@ public sealed class IterativeExecutor
     /// <param name="step">The iterative step that starts the execution.</param>
     /// <returns>The newly created <see cref="IterativeExecutor"/> instance.</returns>
     [MethodImpl(InlinedOptimized)]
-    public static IterativeExecutor Create(in IterativeStep step)
+    public static IterativeExecutor Create(in IIterativeStep step)
         => new IterativeExecutor(step);
 
     /// <summary>
@@ -41,26 +41,6 @@ public sealed class IterativeExecutor
     public void Step()
     {
         var job = stack.Pop();
-
-        if (job is IterativeDone done)
-        {
-            last = done.Value;
-        }
-        else if (job is IterativeMore more)
-        {
-            stack.Push(new IterativeContinue()
-            {
-                More = more.More,
-            });
-            stack.Push(more.First!());
-        }
-        else if (job is IterativeContinue cont)
-        {
-            stack.Push(cont.More!(last));
-        }
-        else
-        {
-            throw new InvalidOperationException("IterativeExecutor is unable to process IterativeStep with Type Unknown.");
-        }
+        job.Do(stack, ref last);
     }
 }
