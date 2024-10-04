@@ -81,16 +81,25 @@ public sealed class ParseContext<T> : IParseContext<T>
     private readonly FlagTable growing = new();
     private readonly IReadOnlyParseContext<T> readOnlySelf;
 
-    private readonly IterativeExecutor executor;
+    private readonly ParseStack stack;
+    //private readonly IterativeExecutor executor;
 
     private ParseContext(IParseInput input, IParser<T> parser)
     {
         Input = input;
         Parser = parser;
-        executor = IterativeExecutor.Create(Iterative.Done(() => ApplyRule(parser, 0)));
+        //executor = IterativeExecutor.Create(Iterative.Done(() => ApplyRule(parser, 0)));
         memo = new MemoTable();
         readOnlyMemo = memo.AsReadOnly();
         readOnlySelf = new ReadOnlyParseContext<T>(this);
+        stack = new ParseStack();
+        stack.Push(new ApplyParserInstruction
+        {
+            Context = this,
+            Parser = parser,
+            Position = 0,
+            Stack = stack,
+        });
     }
 
     /// <inheritdoc />
@@ -103,7 +112,7 @@ public sealed class ParseContext<T> : IParseContext<T>
     IParser IReadOnlyParseContext.Parser => Parser;
 
     /// <inheritdoc />
-    public bool Done => executor.Done;
+    public bool Done => stack.Done;
 
     /// <inheritdoc />
     public IParseResult<T> Result => RunToEnd(default);
@@ -115,21 +124,24 @@ public sealed class ParseContext<T> : IParseContext<T>
     public IReadOnlyMemoTable MemoTable => readOnlyMemo;
 
     /// <inheritdoc />
+    public IReadOnlyParseStack Stack => stack;
+
+    /// <inheritdoc />
     public bool Step()
     {
-        if (executor.Done)
+        if (stack.Done)
         {
             return false;
         }
 
-        lock (executor)
+        lock (stack)
         {
-            if (executor.Done)
+            if (stack.Done)
             {
                 return false;
             }
 
-            executor.Step();
+            InternalStep();
         }
 
         return true;
@@ -143,39 +155,46 @@ public sealed class ParseContext<T> : IParseContext<T>
 
     private IParseResult<T> RunToEndWithCancellation(CancellationToken cancellationToken)
     {
-        if (executor.Done)
+        if (stack.Done)
         {
-            return (IParseResult<T>)executor.Result!;
+            return (IParseResult<T>)stack.Last!;
         }
 
-        lock (executor)
+        lock (stack)
         {
-            while (!executor.Done)
+            while (!stack.Done)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                executor.Step();
+                InternalStep();
             }
         }
 
-        return (IParseResult<T>)executor.Result!;
+        return (IParseResult<T>)stack.Last!;
+    }
+
+    private void InternalStep()
+    {
+        var ins = (IParseInstruction)stack.Last!;
+        stack.Pop();
+        ins.Execute();
     }
 
     private IParseResult<T> RunToEndWithoutCancellation()
     {
-        if (executor.Done)
+        if (stack.Done)
         {
-            return (IParseResult<T>)executor.Result!;
+            return (IParseResult<T>)stack.Last!;
         }
 
-        lock (executor)
+        lock (stack)
         {
-            while (!executor.Done)
+            while (!stack.Done)
             {
-                executor.Step();
+                InternalStep();
             }
         }
 
-        return (IParseResult<T>)executor.Result!;
+        return (IParseResult<T>)stack.Last!;
     }
 
     /// <inheritdoc />

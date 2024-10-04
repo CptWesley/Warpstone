@@ -53,7 +53,53 @@ internal sealed class TransformationParser<TIn, TOut> : ParserBase<TOut>, IParse
                 }
             });
 
+    public override void Eval(IReadOnlyParseContext context, int position, IParseStack stack)
+    {
+        stack.Push(new Continue
+        {
+            Context = context,
+            Parser = this,
+            Position = position,
+            Stack = stack,
+        });
+        stack.Push(new ApplyParserInstruction
+        {
+            Context = context,
+            Parser = First,
+            Position = position,
+            Stack = stack,
+        });
+    }
+
     /// <inheritdoc />
     protected override string InternalToString(int depth)
         => $"Transform({First.ToString(depth - 1)})";
+
+    private sealed class Continue : ParseInstruction
+    {
+        public required TransformationParser<TIn, TOut> Parser { get; init; }
+
+        public override void Execute()
+        {
+            var inner = Stack.Last.AssertOfType<IParseResult<TIn>>();
+            Stack.Pop();
+
+            if (!inner.Success)
+            {
+                Stack.Push(Parser.Mismatch(Context, Position, inner.Errors));
+                return;
+            }
+
+            try
+            {
+                var transformed = Parser.Transformation(inner.Value);
+                Stack.Push(Parser.Match(Context, Position, inner.Length, transformed));
+            }
+            catch (Exception e)
+            {
+                var error = new TransformationError(Context, Parser, Position, 0, e.Message, e);
+                Stack.Push(Parser.Mismatch(Context, Position, error));
+            }
+        }
+    }
 }

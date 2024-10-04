@@ -13,6 +13,10 @@ public abstract class ParserBase<T> : IParser<T>
     /// <inheritdoc />
     public abstract IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval);
 
+    /// <inheritdoc />
+    public virtual void Eval(IReadOnlyParseContext context, int position, IParseStack stack)
+        => throw new NotImplementedException($"Not implemented for '{GetType().FullName}'");
+
     /// <inheritdoc cref="ToString(int)"/>
     protected abstract string InternalToString(int depth);
 

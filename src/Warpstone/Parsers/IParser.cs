@@ -47,6 +47,8 @@ public interface IParser
     /// <returns>The newly created <see cref="IterativeStep"/>.</returns>
     public IterativeStep Eval(IReadOnlyParseContext context, int position, Func<IParser, int, IterativeStep> eval);
 
+    public void Eval(IReadOnlyParseContext context, int position, IParseStack stack);
+
     /// <inheritdoc cref="object.ToString"/>
     public string ToString(int depth);
 }

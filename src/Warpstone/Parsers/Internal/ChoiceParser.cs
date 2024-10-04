@@ -1,3 +1,6 @@
+using DotNetProjectFile.Parsing;
+using System.Collections.Generic;
+
 namespace Warpstone.Parsers.Internal;
 
 /// <summary>
@@ -58,6 +61,24 @@ internal sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
                     });
             });
 
+    public override void Eval(IReadOnlyParseContext context, int position, IParseStack stack)
+    {
+        stack.Push(new Choice1
+        {
+            Parser = this,
+            Context = context,
+            Position = position,
+            Stack = stack,
+        });
+        stack.Push(new ApplyParserInstruction
+        {
+            Parser = First,
+            Context = context,
+            Position = position,
+            Stack = stack,
+        });
+    }
+
     /// <inheritdoc />
     protected override string InternalToString(int depth)
         => $"({First.ToString(depth - 1)} | {Second.ToString(depth - 1)})";
@@ -95,5 +116,63 @@ internal sealed class ChoiceParser<T> : ParserBase<T>, IParserSecond<T, T>
         var expected = first.Expected.Concat(second.Expected);
         var length = first.Length == second.Length ? first.Length : 1;
         return new UnexpectedTokenError(first.Context, this, first.Position, length, expected, new[] { first, second });
+    }
+
+    private abstract class Choice : ParseInstruction
+    {
+        public required ChoiceParser<T> Parser { get; init; }
+    }
+
+    private sealed class Choice1 : Choice
+    {
+        public override void Execute()
+        {
+            var first = (IParseResult)Stack.Last!;
+
+            if (first.Success)
+            {
+                return;
+            }
+
+            Stack.Pop();
+
+            Stack.Push(new Choice2
+            {
+                Parser = Parser,
+                Context = Context,
+                Position = Position,
+                Stack = Stack,
+                First = first,
+            });
+            Stack.Push(new ApplyParserInstruction
+            {
+                Parser = Parser.Second,
+                Context = Context,
+                Position = Position,
+                Stack = Stack,
+            });
+        }
+    }
+
+    private sealed class Choice2 : Choice
+    {
+        public required IParseResult First { get; init; }
+
+        public override void Execute()
+        {
+            var second = (IParseResult)Stack.Last!;
+
+            if (second.Success)
+            {
+                return;
+            }
+
+            Stack.Pop();
+
+            var errors = Parser.MergeErrors(First.Errors, second.Errors);
+            var result = Parser.Mismatch(Context, Position, errors);
+
+            Stack.Push(result);
+        }
     }
 }

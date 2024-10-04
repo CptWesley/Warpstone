@@ -61,6 +61,24 @@ internal sealed class StringParser : ParserBase<string>, IEquatable<StringParser
         }
     }
 
+    public override void Eval(IReadOnlyParseContext context, int position, IParseStack stack)
+    {
+        var input = context.Input.Content;
+
+        if (position >= input.Length)
+        {
+            stack.Push(this.Mismatch(context, position, 1, expected));
+        }
+        else if (StringAtIndex(input, position))
+        {
+            stack.Push(this.Match(context, position, String.Length, String));
+        }
+        else
+        {
+            stack.Push(this.Mismatch(context, position, 1, expected));
+        }
+    }
+
     private bool StringAtIndex(string input, int position)
     {
         if (position + String.Length > input.Length)

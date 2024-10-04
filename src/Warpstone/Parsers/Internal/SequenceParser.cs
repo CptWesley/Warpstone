@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Warpstone.Parsers.Internal;
 
 /// <summary>
@@ -59,7 +61,84 @@ internal sealed class SequenceParser<TFirst, TSecond> : ParserBase<(TFirst, TSec
                     });
             });
 
+    public override void Eval(IReadOnlyParseContext context, int position, IParseStack stack)
+    {
+        stack.Push(new Choice1
+        {
+            Parser = this,
+            Context = context,
+            Position = position,
+            Stack = stack,
+        });
+        stack.Push(new ApplyParserInstruction
+        {
+            Parser = First,
+            Context = context,
+            Position = position,
+            Stack = stack,
+        });
+    }
+
     /// <inheritdoc />
     protected override string InternalToString(int depth)
         => $"({First.ToString(depth - 1)} {Second.ToString(depth - 1)})";
+
+    private abstract class Choice : ParseInstruction
+    {
+        public required SequenceParser<TFirst, TSecond> Parser { get; init; }
+    }
+
+    private sealed class Choice1 : Choice
+    {
+        public override void Execute()
+        {
+            var first = (IParseResult)Stack.Last!;
+            Stack.Pop();
+
+            if (!first.Success)
+            {
+                Stack.Push(Parser.Mismatch(Context, Position, first.Errors));
+                return;
+            }
+
+            Stack.Push(new Choice2
+            {
+                Parser = Parser,
+                Context = Context,
+                Position = Position,
+                Stack = Stack,
+                First = first,
+            });
+            Stack.Push(new ApplyParserInstruction
+            {
+                Parser = Parser.Second,
+                Context = Context,
+                Position = first.NextPosition,
+                Stack = Stack,
+            });
+        }
+    }
+
+    private sealed class Choice2 : Choice
+    {
+        public required IParseResult First { get; init; }
+
+        public override void Execute()
+        {
+            var second = (IParseResult)Stack.Last!;
+            Stack.Pop();
+
+            if (!second.Success)
+            {
+                Stack.Push(Parser.Mismatch(Context, Position, second.Errors));
+                return;
+            }
+
+            var value = ((TFirst)First.Value!, (TSecond)second.Value!);
+            var length = First.Length + second.Length;
+            var result = Parser.Match(Context, Position, length, value);
+
+            Stack.Push(result);
+        }
+    }
 }

@@ -31,6 +31,8 @@ public interface IReadOnlyParseContext
     /// the parsing has not yet finished.
     /// </summary>
     public IParseResult Result { get; }
+
+    public IReadOnlyParseStack Stack { get; }
 }
 
 /// <summary>
