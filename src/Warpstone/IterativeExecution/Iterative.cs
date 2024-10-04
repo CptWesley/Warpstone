@@ -12,13 +12,9 @@ public static class Iterative
     /// <returns>The newly created iterative step.</returns>
     [MethodImpl(InlinedOptimized)]
     public static IterativeStep Done(object? value)
-        => new()
+        => new IterativeDone
         {
-            Type = IterativeStepType.Done,
             Value = value,
-
-            First = null,
-            More = null,
         };
 
     /// <summary>
@@ -49,11 +45,8 @@ public static class Iterative
     /// <returns>The newly created iterative step.</returns>
     [MethodImpl(InlinedOptimized)]
     public static IterativeStep More(Func<IterativeStep> first, Func<object?, IterativeStep> more)
-        => new()
+        => new IterativeMore
         {
-            Type = IterativeStepType.More,
-            Value = null,
-
             First = first,
             More = more,
         };
