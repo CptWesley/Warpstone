@@ -113,6 +113,18 @@ public static class BasicParsersTests
         => AssertThat(() => OneOrMore(Char('x')).Parse("yz")).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
+    /// Checks that parsing one or more works correctly.
+    /// </summary>
+    [Fact]
+    public static void OneOrMoreParserFollowedByOtherCorrect()
+    {
+        var parser = OneOrMore(Char('x'), Char('y'))
+            .ThenSkip(Regex("z+"));
+        AssertThat(parser.Parse("xyxyxzzz"))
+            .ContainsExactly('x', 'x', 'x');
+    }
+
+    /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
     [Fact]

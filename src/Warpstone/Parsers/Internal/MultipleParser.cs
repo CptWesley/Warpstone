@@ -188,7 +188,7 @@ internal sealed class MultipleParser<TElement, TDelimiter, TTerminator> :
                     return Iterative.Done(this.Mismatch(context, initialPosition, terminator.Errors));
                 }
 
-                return Iterative.Done(this.Match(context, position, terminator.NextPosition - initialPosition, acc.ToImmutableArray()));
+                return Iterative.Done(this.Match(context, initialPosition, terminator.NextPosition - initialPosition, acc.ToImmutableArray()));
             });
 
     /// <inheritdoc />
