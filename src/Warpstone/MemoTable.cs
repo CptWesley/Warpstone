@@ -53,12 +53,12 @@ public sealed class MemoTable : IMemoTable
     public int Count => table.Sum(x => x.Value.Count);
 
     /// <inheritdoc />
-    [MethodImpl(InlinedOptimized)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool ContainsKey((int, IParser) key)
         => this[key.Item1, key.Item2] is not null;
 
     /// <inheritdoc />
-    [MethodImpl(InlinedOptimized)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetValue((int, IParser) key, [NotNullWhen(true)] out IParseResult? value)
     {
         value = this[key.Item1, key.Item2];
@@ -66,13 +66,13 @@ public sealed class MemoTable : IMemoTable
     }
 
     /// <inheritdoc />
-    [MethodImpl(InlinedOptimized)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public IEnumerator<KeyValuePair<(int, IParser), IParseResult?>> GetEnumerator()
         => table.SelectMany(x => x.Value.Select(y => new KeyValuePair<(int, IParser), IParseResult?>((x.Key, y.Key), y.Value)))
             .GetEnumerator();
 
     /// <inheritdoc />
-    [MethodImpl(InlinedOptimized)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     IEnumerator IEnumerable.GetEnumerator()
         => GetEnumerator();
 }

@@ -31,19 +31,9 @@ public interface IParseResult
     public ParseInputPosition InputEndPosition { get; }
 
     /// <summary>
-    /// The parser used to obtain this result.
-    /// </summary>
-    public IParser Parser { get; }
-
-    /// <summary>
     /// The context in which this result was obtained.
     /// </summary>
     public IReadOnlyParseContext Context { get; }
-
-    /// <summary>
-    /// Indicates whether the result is an indication of success.
-    /// </summary>
-    public ParseStatus Status { get; }
 
     /// <summary>
     /// The obtained value.
@@ -54,7 +44,7 @@ public interface IParseResult
     /// <summary>
     /// The list of errors (if any).
     /// </summary>
-    public IImmutableList<IParseError> Errors { get; }
+    public IReadOnlyList<IParseError> Errors { get; }
 
     /// <summary>
     /// Indicates whether or not the parsing was successful.
@@ -73,11 +63,6 @@ public interface IParseResult
 /// <typeparam name="T">The type of the values obtained in the results.</typeparam>
 public interface IParseResult<out T> : IParseResult
 {
-    /// <summary>
-    /// The parser used to obtain this result.
-    /// </summary>
-    public new IParser<T> Parser { get; }
-
     /// <summary>
     /// The obtained value.
     /// Throws an exception if the parsing was not succcesful.

@@ -5,9 +5,12 @@
   <PropertyGroup Label="PackageInfo">
     <Description>Packrat parser combinator supporting left-recursion with a focus on elegance.</Description>
     <PackageTags>parser; combinator; language; parsing; parsercombinator; parser combinator; packrat; cfg; leftrecursion; left-recursion; left; recursion</PackageTags>
-    <Version>2.0.0-preview2</Version>
+    <Version>3.0.0-preview01</Version>
     <PackageReleaseNotes>
       <![CDATA[
+        ### v3.0.0
+        - Significantly improved performance.
+        - Reworked API interface.
         ### v2.0.0
         - Reworked library from scratch.
         - Changed to Packrat parsing.
