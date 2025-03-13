@@ -46,6 +46,20 @@ public static class BasicParsersTests
     /// Checks that parsing regexes works correctly.
     /// </summary>
     [Fact]
+    public static void RegexParserEmptyOnEmptyCorrect()
+        => AssertThat(Regex(@"\s*").Parse("")).IsEqualTo("");
+
+    /// <summary>
+    /// Checks that parsing regexes works correctly.
+    /// </summary>
+    [Fact]
+    public static void RegexParserNonEmptyOnEmptyCorrect()
+        => AssertThat(Regex(@"\s+").TryParse("").Success).IsFalse();
+
+    /// <summary>
+    /// Checks that parsing regexes works correctly.
+    /// </summary>
+    [Fact]
     public static void RegexParserIncorrect()
         => AssertThat(() => Regex("[abc]+").Parse("def")).ThrowsExactlyException<UnexpectedTokenError>();
 
