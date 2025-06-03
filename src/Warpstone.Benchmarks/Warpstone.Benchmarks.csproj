@@ -6,11 +6,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Legacy\Warpstone2\" />
-    <Folder Include="Legacy\Warpstone1\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Pidgin" />
   </ItemGroup>
 </Project>

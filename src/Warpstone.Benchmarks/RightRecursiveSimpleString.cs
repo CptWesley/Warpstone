@@ -1,23 +1,24 @@
 using BenchmarkDotNet.Attributes;
 using DotNetProjectFile.Resx;
 using Legacy.Warpstone1.Parsers;
+using Legacy.Warpstone2;
+using Legacy.Warpstone2.Parsers;
 using Pidgin;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Warpstone.Parsers;
 
 using BasicParsers1 = Legacy.Warpstone1.Parsers.BasicParsers;
-using BasicParsers2 = Warpstone.Parsers.BasicParsers;
+using BasicParsers2 = Legacy.Warpstone2.Parsers.BasicParsers;
 
 namespace Warpstone.Benchmarks;
 
 [MemoryDiagnoser(true)]
 public class RightRecursiveSimpleString
 {
-    private static readonly IParser<string> Warpstone2Parser
+    private static readonly Legacy.Warpstone2.Parsers.IParser<string> Warpstone2Parser
         = BasicParsers2.Or(BasicParsers2.String("a").ThenAdd(BasicParsers2.Lazy(() => Warpstone2Parser!)).Transform((x, y) => x + y), BasicParsers2.End);
 
     private static readonly Legacy.Warpstone1.IParser<string> Warpstone1Parser
@@ -26,7 +27,7 @@ public class RightRecursiveSimpleString
     private static readonly Pidgin.Parser<char, string> PidginParser
         = Pidgin.Parser.Map((x, y) => x + y, Pidgin.Parser.String("a"), Pidgin.Parser.Rec(() => PidginParser!)).Or(Pidgin.Parser<char>.End.Map(_ => string.Empty));
 
-    [Params(1, 10, 100, 1_000, 10_000, 100_000)]
+    [Params(10, 1_000, 100_000)]
     public int N;
 
     private string input = string.Empty;
