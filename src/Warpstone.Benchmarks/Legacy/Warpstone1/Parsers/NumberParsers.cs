@@ -1,9 +1,9 @@
 using System;
 using System.Globalization;
 using System.Numerics;
-using static Legacy.Warpstone.Parsers.BasicParsers;
+using static Legacy.Warpstone1.Parsers.BasicParsers;
 
-namespace Legacy.Warpstone.Parsers
+namespace Legacy.Warpstone1.Parsers
 {
     /// <summary>
     /// Contains logic for creating parsers dealing with numbers.

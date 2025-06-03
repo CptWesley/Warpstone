@@ -1,6 +1,6 @@
 using System;
 
-namespace Legacy.Warpstone.Parsers.InternalParsers;
+namespace Legacy.Warpstone1.Parsers.InternalParsers;
 
 /// <summary>
 /// Provides logic for tolerant parsing.

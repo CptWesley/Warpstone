@@ -2,11 +2,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Legacy.Warpstone.Expressions;
-using Legacy.Warpstone.Parsers.InternalParsers;
-using static Legacy.Warpstone.Parsers.BasicParsers;
+using Legacy.Warpstone1.Expressions;
+using Legacy.Warpstone1.Parsers.InternalParsers;
+using static Legacy.Warpstone1.Parsers.BasicParsers;
 
-namespace Legacy.Warpstone.Parsers
+namespace Legacy.Warpstone1.Parsers
 {
     /// <summary>
     /// Static class for dealing with expression parsers.

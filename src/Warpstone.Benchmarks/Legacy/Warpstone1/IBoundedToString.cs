@@ -1,4 +1,4 @@
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Provides interface for classes that have a <see cref="object.ToString()"/> override that is bounded by depth.

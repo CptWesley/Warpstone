@@ -1,4 +1,4 @@
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Parser interface for parsing textual input.

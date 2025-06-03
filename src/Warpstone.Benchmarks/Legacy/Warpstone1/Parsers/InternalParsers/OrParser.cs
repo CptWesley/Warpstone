@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Legacy.Warpstone.Parsers.InternalParsers
+namespace Legacy.Warpstone1.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser that first applies the left parser and if it fails applies the right parser.

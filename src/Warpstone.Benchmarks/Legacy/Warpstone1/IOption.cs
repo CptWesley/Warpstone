@@ -1,4 +1,4 @@
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Option class for parsing optional syntax.

@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Legacy.Warpstone.Parsers.InternalParsers
+namespace Legacy.Warpstone1.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser which first applies a wrapped parser before applying a transformation on the result.

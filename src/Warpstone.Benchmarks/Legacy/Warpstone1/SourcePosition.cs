@@ -1,6 +1,6 @@
 using System;
 
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Position of a parsed element in the source code.

@@ -1,4 +1,4 @@
-namespace Legacy.Warpstone.Parsers.InternalParsers
+namespace Legacy.Warpstone1.Parsers.InternalParsers
 {
     /// <summary>
     /// A Parser applying two parsers and retaining both results.

@@ -1,6 +1,6 @@
 using BenchmarkDotNet.Attributes;
 using DotNetProjectFile.Resx;
-using Legacy.Warpstone.Parsers;
+using Legacy.Warpstone1.Parsers;
 using Pidgin;
 using System;
 using System.Collections.Generic;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Warpstone.Parsers;
 
-using BasicParsers1 = Legacy.Warpstone.Parsers.BasicParsers;
+using BasicParsers1 = Legacy.Warpstone1.Parsers.BasicParsers;
 using BasicParsers2 = Warpstone.Parsers.BasicParsers;
 
 namespace Warpstone.Benchmarks;
@@ -20,7 +20,7 @@ public class RightRecursiveSimpleString
     private static readonly IParser<string> Warpstone2Parser
         = BasicParsers2.Or(BasicParsers2.String("a").ThenAdd(BasicParsers2.Lazy(() => Warpstone2Parser!)).Transform((x, y) => x + y), BasicParsers2.End);
 
-    private static readonly Legacy.Warpstone.IParser<string> Warpstone1Parser
+    private static readonly Legacy.Warpstone1.IParser<string> Warpstone1Parser
         = BasicParsers1.Or(BasicParsers1.String("a").ThenAdd(BasicParsers1.Lazy(() => Warpstone1Parser!)).Transform((x, y) => x + y), BasicParsers1.End.Transform(_ => string.Empty));
 
     private static readonly Pidgin.Parser<char, string> PidginParser

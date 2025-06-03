@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Legacy.Warpstone.Parsers.InternalParsers;
+using Legacy.Warpstone1.Parsers.InternalParsers;
 
-namespace Legacy.Warpstone.Parsers
+namespace Legacy.Warpstone1.Parsers
 {
     /// <summary>
     /// Static class providing simple parsers.

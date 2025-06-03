@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Parser class for parsing textual input.

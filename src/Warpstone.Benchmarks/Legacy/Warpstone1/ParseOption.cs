@@ -1,4 +1,4 @@
-namespace Legacy.Warpstone;
+namespace Legacy.Warpstone1;
 
 /// <summary>
 /// Base class for all parsed units.

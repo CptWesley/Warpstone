@@ -1,6 +1,6 @@
 using System;
 
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Parse error that occurs when a transformation causes an exception.

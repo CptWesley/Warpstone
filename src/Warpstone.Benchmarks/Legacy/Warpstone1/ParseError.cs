@@ -1,4 +1,4 @@
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Represents parse errors.

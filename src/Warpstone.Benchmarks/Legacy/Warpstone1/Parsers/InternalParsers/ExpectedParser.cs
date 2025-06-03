@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Legacy.Warpstone.Parsers.InternalParsers
+namespace Legacy.Warpstone1.Parsers.InternalParsers
 {
     /// <summary>
     /// A parser which replaced the expected string with a given string.
