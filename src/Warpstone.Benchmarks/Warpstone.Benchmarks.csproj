@@ -6,6 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ParsecSharp" />
     <PackageReference Include="Pidgin" />
   </ItemGroup>
 </Project>

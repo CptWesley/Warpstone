@@ -3,6 +3,7 @@ using DotNetProjectFile.Resx;
 using Legacy.Warpstone1.Parsers;
 using Legacy.Warpstone2;
 using Legacy.Warpstone2.Parsers;
+using ParsecSharp;
 using Pidgin;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ using BasicParsers2 = Legacy.Warpstone2.Parsers.BasicParsers;
 namespace Warpstone.Benchmarks;
 
 [MemoryDiagnoser(true)]
+[ReturnValueValidator(failOnError: false)]
 public class RightRecursiveSimpleString
 {
     private static readonly Legacy.Warpstone2.Parsers.IParser<string> Warpstone2Parser
@@ -26,6 +28,14 @@ public class RightRecursiveSimpleString
 
     private static readonly Pidgin.Parser<char, string> PidginParser
         = Pidgin.Parser.Map((x, y) => x + y, Pidgin.Parser.String("a"), Pidgin.Parser.Rec(() => PidginParser!)).Or(Pidgin.Parser<char>.End.Map(_ => string.Empty));
+
+    private static readonly ParsecSharp.IParser<char, string> ParsecParser
+        = ParsecSharp.Parser.Fix<char, string>(value =>
+        {
+            var a = ParsecSharp.Text.String("a");
+            var concat = ParsecSharp.Parser.Append(a, value);
+            return ParsecSharp.Parser.Choice(concat, ParsecSharp.Text.EndOfInput().Map(_ => string.Empty));
+        });
 
     [Params(10, 1_000, 100_000)]
     public int N;
@@ -50,9 +60,15 @@ public class RightRecursiveSimpleString
         return Warpstone1Parser.Parse(input);
     }
 
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public string Pidgin_benchmark()
     {
         return PidginParser.Parse(input).Value;
+    }
+
+    [Benchmark]
+    public string Parsec_benchmark()
+    {
+        return ParsecParser.Parse(input).Value;
     }
 }
