@@ -3,6 +3,7 @@ using DotNetProjectFile.Resx;
 using Legacy.Warpstone1.Parsers;
 using Legacy.Warpstone2;
 using Legacy.Warpstone2.Parsers;
+using Parlot.Fluent;
 using ParsecSharp;
 using Pidgin;
 using System;
@@ -37,6 +38,9 @@ public class RightRecursiveSimpleString
             return ParsecSharp.Parser.Choice(concat, ParsecSharp.Text.EndOfInput().Map(_ => string.Empty));
         });
 
+    private static readonly Parlot.Fluent.Parser<string> ParlotParser = CreateParlotParser();
+    private static readonly Parlot.Fluent.Parser<string> ParlotCompiledParser = CreateParlotParser().Compile();
+
     [Params(10, 1_000, 100_000)]
     public int N;
 
@@ -70,5 +74,32 @@ public class RightRecursiveSimpleString
     public string Parsec_benchmark()
     {
         return ParsecParser.Parse(input).Value;
+    }
+
+    [Benchmark]
+    public string Parlot_benchmark()
+    {
+        return ParlotParser.Parse(input)!;
+    }
+
+    [Benchmark]
+    public string Parlot_compiled_benchmark()
+    {
+        return ParlotCompiledParser.Parse(input)!;
+    }
+
+    private static Parlot.Fluent.Parser<string> CreateParlotParser()
+    {
+        var parser = Parlot.Fluent.Parsers.Deferred<string>();
+
+        var a = Parlot.Fluent.Parsers.Literals.Text("a");
+
+        var concat = Parlot.Fluent.Parsers.And(a, parser).Then(x => x.Item1 + x.Item2);
+        var end = Parlot.Fluent.Parsers.Literals.Text("");
+        var either = Parlot.Fluent.Parsers.Or(concat, end);
+
+        parser.Parser = either;
+
+        return parser;
     }
 }
