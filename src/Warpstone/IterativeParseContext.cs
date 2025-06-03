@@ -39,6 +39,7 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
 
         resultStack = new();
         executionStack = new();
+        executionStack.Push((0, parser));
     }
 
     /// <inheritdoc />
@@ -104,9 +105,10 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
                 cancellationToken.ThrowIfCancellationRequested();
                 InternalStep();
             }
+
+            result = resultStack.Pop().AsSafe(this);
         }
 
-        result = resultStack.Pop().AsSafe(this);
         return result;
     }
 
@@ -123,9 +125,10 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
             {
                 InternalStep();
             }
+
+            result = resultStack.Pop().AsSafe(this);
         }
 
-        result = resultStack.Pop().AsSafe(this);
         return result;
     }
 
@@ -145,6 +148,11 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
             }
 
             InternalStep();
+
+            if (executionStack.Count <= 0)
+            {
+                result = resultStack.Pop().AsSafe(this);
+            }
         }
 
         return true;
@@ -153,6 +161,7 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private void InternalStep()
     {
-        throw new NotImplementedException();
+        var (pos, cur) = executionStack.Pop();
+        cur.Apply(this, pos);
     }
 }

@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 
 using BasicParsers1 = Legacy.Warpstone1.Parsers.BasicParsers;
 using BasicParsers2 = Legacy.Warpstone2.Parsers.BasicParsers;
+using BasicParsers3 = Warpstone.Parsers;
 
 namespace Warpstone.Benchmarks;
 
@@ -21,6 +22,9 @@ namespace Warpstone.Benchmarks;
 [ReturnValueValidator(failOnError: false)]
 public class RightRecursiveSimpleString
 {
+    private static readonly Warpstone.IParser<string> Warpstone3Parser
+        = BasicParsers3.Or(BasicParsers3.String("a").ThenAdd(BasicParsers3.Lazy(() => Warpstone3Parser!)).Transform(p => p.Left + p.Right), BasicParsers3.End);
+
     private static readonly Legacy.Warpstone2.Parsers.IParser<string> Warpstone2Parser
         = BasicParsers2.Or(BasicParsers2.String("a").ThenAdd(BasicParsers2.Lazy(() => Warpstone2Parser!)).Transform((x, y) => x + y), BasicParsers2.End);
 
@@ -50,6 +54,18 @@ public class RightRecursiveSimpleString
     public void Setup()
     {
         input = new string('a', N);
+    }
+
+    [Benchmark]
+    public string Warpstone3_iterative_benchmark()
+    {
+        return Warpstone3Parser.Parse(input, ParseOptions.Default with { ExecutionMode = ParserExecutionMode.Iterative });
+    }
+
+    [Benchmark]
+    public string Warpstone3_recursive_benchmark()
+    {
+        return Warpstone3Parser.Parse(input, ParseOptions.Default with { ExecutionMode = ParserExecutionMode.Recursive });
     }
 
     [Benchmark]

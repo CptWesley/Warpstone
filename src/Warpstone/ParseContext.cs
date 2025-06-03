@@ -21,7 +21,8 @@ public static class ParseContext
 
     private static IParseContext<T> CreateAutomaticContext<T>(IParseInput input, IParser<T> parser)
     {
-        throw new NotImplementedException();
+        // TODO: determine if recursive is safe and use recursive.
+        return new IterativeParseContext<T>(input, parser);
     }
 
     /// <summary>
@@ -38,7 +39,7 @@ public static class ParseContext
         => options.ExecutionMode switch
         {
             ParserExecutionMode.Iterative => new IterativeParseContext<T>(input, parser),
-            ParserExecutionMode.Recursive => new IterativeParseContext<T>(input, parser),
+            ParserExecutionMode.Recursive => new RecursiveParseContext<T>(input, parser),
             _ => CreateAutomaticContext(input, parser),
         };
 

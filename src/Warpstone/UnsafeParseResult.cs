@@ -29,6 +29,22 @@ public readonly struct UnsafeParseResult
     /// The parsed value if successful; an error otherwise.
     /// </summary>
     public readonly object? Value;
+
+    public UnsafeParseResult(int position)
+    {
+        Position = position;
+        Length = 0;
+        Value = null;
+        Success = false;
+    }
+
+    public UnsafeParseResult(int position, int length, object value)
+    {
+        Position = position;
+        Length = length;
+        Value = value;
+        Success = true;
+    }
 }
 
 /// <summary>
