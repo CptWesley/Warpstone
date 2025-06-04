@@ -1,11 +1,38 @@
+using System.Text.RegularExpressions;
+
 namespace Warpstone;
 
 public static class Parsers
 {
-    public static IParser<string> End { get; } = String(string.Empty);
+    public static IParser<string> End { get; } = EndParser.Instance;
+
+    public static IParser<string> String(string value, CultureInfo? culture, CompareOptions options)
+        => new StringParser(value, culture, options);
+
+    public static IParser<string> String(string value, bool ignoreCase, CultureInfo? culture)
+        => String(value: value, culture: culture, options: ignoreCase ? CompareOptions.IgnoreCase : CompareOptions.None);
+
+    public static IParser<string> String(string value, StringComparison comparisonType)
+    {
+        var (culture, options) = comparisonType switch
+        {
+            StringComparison.InvariantCulture => (CultureInfo.InvariantCulture, CompareOptions.None),
+            StringComparison.InvariantCultureIgnoreCase => (CultureInfo.InvariantCulture, CompareOptions.IgnoreCase),
+            StringComparison.CurrentCulture => (CultureInfo.CurrentCulture, CompareOptions.None),
+            StringComparison.CurrentCultureIgnoreCase => (CultureInfo.CurrentCulture, CompareOptions.IgnoreCase),
+            StringComparison.Ordinal => (null, CompareOptions.Ordinal),
+            StringComparison.OrdinalIgnoreCase => (null, CompareOptions.OrdinalIgnoreCase),
+            _ => throw new NotSupportedException($"Currently the comparison type '{comparisonType}' is not yet supported."),
+        };
+
+        return String(value: value, culture: culture, options: options);
+    }
+
+    public static IParser<string> String(string value, bool ignoreCase)
+        => String(value: value, ignoreCase: ignoreCase, culture: null);
 
     public static IParser<string> String(string value)
-        => new StringParser(value);
+        => String(value: value, ignoreCase: false);
 
     public static IParser<T> Lazy<T>(Func<IParser<T>> parser)
         => new LazyParser<T>(parser);

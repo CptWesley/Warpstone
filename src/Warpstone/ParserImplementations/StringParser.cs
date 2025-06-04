@@ -4,7 +4,9 @@ namespace Warpstone.ParserImplementations;
 /// Represents a parser that parses an exact string.
 /// </summary>
 /// <param name="Value">The string to be parsed.</param>
-public sealed record StringParser(string Value) : IParser<string>
+/// <param name="Culture">The culture used for comparing.</param>
+/// <param name="Options">The options used for comparing.</param>
+public sealed record StringParser(string Value, CultureInfo? Culture, CompareOptions Options) : IParser<string>
 {
     /// <inheritdoc />
     public Type ResultType => typeof(string);
@@ -12,45 +14,39 @@ public sealed record StringParser(string Value) : IParser<string>
     /// <inheritdoc />
     public void Apply(IIterativeParseContext context, int position)
     {
-        var endPos = position + Value.Length;
-
-        if (endPos > context.Input.Length)
+        if (!Matches(context.Input, position))
         {
             context.ResultStack.Push(new UnsafeParseResult(position));
-            return;
         }
-
-        for (var i = 0; i < Value.Length; i++)
+        else
         {
-            if (Value[i] != context.Input[position + i])
-            {
-                context.ResultStack.Push(new UnsafeParseResult(position));
-                return;
-            }
+            context.ResultStack.Push(new(position, Value.Length, Value));
         }
-
-        context.ResultStack.Push(new UnsafeParseResult(position, Value.Length, Value));
     }
 
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
-        var input = context.Input;
+        if (!Matches(context.Input, position))
+        {
+            return new(position);
+        }
+        else
+        {
+            return new(position, Value.Length, Value);
+        }
+    }
+
+    private bool Matches(string input, int position)
+    {
         var endPos = position + Value.Length;
 
         if (endPos > input.Length)
         {
-            return new UnsafeParseResult(position);
+            return false;
         }
 
-        for (var i = 0; i < Value.Length; i++)
-        {
-            if (Value[i] != input[position + i])
-            {
-                return new UnsafeParseResult(position);
-            }
-        }
-
-        return new UnsafeParseResult(position, Value.Length, Value);
+        var result = string.Compare(input, position, Value, 0, Value.Length, Culture, Options);
+        return result == 0;
     }
 }

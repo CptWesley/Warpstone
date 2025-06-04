@@ -38,7 +38,7 @@ public readonly struct UnsafeParseResult
         Success = false;
     }
 
-    public UnsafeParseResult(int position, int length, object value)
+    public UnsafeParseResult(int position, int length, object? value)
     {
         Position = position;
         Length = length;
