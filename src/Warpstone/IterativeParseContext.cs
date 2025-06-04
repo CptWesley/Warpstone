@@ -12,7 +12,7 @@ namespace Warpstone;
 /// <typeparam name="T">The result type of the parsing.</typeparam>
 public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParseContext
 {
-    private readonly object lck = new();
+    private readonly Lock lck = new();
     private readonly string inputString;
 
     private readonly MemoTable memoTable;
