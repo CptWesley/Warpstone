@@ -1,3 +1,5 @@
+#pragma warning disable S3257 // Declarations and initializations should be as concise as possible
+
 using System;
 using System.Text.RegularExpressions;
 

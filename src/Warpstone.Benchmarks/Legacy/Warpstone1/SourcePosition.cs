@@ -1,3 +1,5 @@
+#pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
+
 using System;
 
 namespace Legacy.Warpstone1
