@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <ItemGroup Label="Analyzers">
-    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="all" ExcludeAssets="runtime" />
+    <PackageReference Include="StyleCop.Analyzers.Unstable" PrivateAssets="all" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup Label="Other">
