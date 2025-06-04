@@ -6,6 +6,9 @@ public static class Parsers
 {
     public static IParser<string> End { get; } = EndParser.Instance;
 
+    public static IParser<char> Char(char value)
+        => new CharacterParser(value);
+
     public static IParser<string> String(string value, CultureInfo? culture, CompareOptions options)
         => new StringParser(value, culture ?? CultureInfo.CurrentCulture, options);
 

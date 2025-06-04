@@ -1,13 +1,14 @@
 namespace Warpstone.ParserImplementations;
 
 /// <summary>
-/// Represents a parser that parses an exact string.
+/// Represents a parser that parses a string.
 /// </summary>
 /// <param name="Value">The string to be parsed.</param>
 /// <param name="Culture">The culture used for comparing.</param>
 /// <param name="Options">The options used for comparing.</param>
 public sealed record StringParser(string Value, CultureInfo Culture, CompareOptions Options) : IParser<string>
 {
+    private readonly string expected = @$"""{Value}""";
     private readonly bool useValue = Options is CompareOptions.Ordinal;
 
     /// <inheritdoc />
@@ -20,7 +21,7 @@ public sealed record StringParser(string Value, CultureInfo Culture, CompareOpti
 
         if (!Matches(input, position))
         {
-            context.ResultStack.Push(new UnsafeParseResult(position, [new UnexpectedTokenError(context, this, position, 1, @$"""{Value}""")]));
+            context.ResultStack.Push(new UnsafeParseResult(position, [new UnexpectedTokenError(context, this, position, 1, expected)]));
         }
         else
         {
@@ -35,7 +36,7 @@ public sealed record StringParser(string Value, CultureInfo Culture, CompareOpti
 
         if (!Matches(input, position))
         {
-            return new(position, [new UnexpectedTokenError(context, this, position, 1, @$"""{Value}""")]);
+            return new(position, [new UnexpectedTokenError(context, this, position, 1, expected)]);
         }
         else
         {
