@@ -34,7 +34,13 @@ public sealed record OrParser<T>(IParser<T> First, IParser<T> Second) : IParser<
         }
 
         var right = Second.Apply(context, left.NextPosition);
-        return right;
+
+        if (right.Success)
+        {
+            return right;
+        }
+
+        return new(position, left.Errors!.Concat(right.Errors!));
     }
 
     /// <summary>
@@ -43,6 +49,11 @@ public sealed record OrParser<T>(IParser<T> First, IParser<T> Second) : IParser<
     /// <param name="Second">The second parser to try.</param>
     public sealed record Continuation(IParser Second) : IParser
     {
+        /// <summary>
+        /// The second continuation of the sequential parser when executing in iterative mode.
+        /// </summary>
+        public SecondContinuation Continue { get; } = new();
+
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();
 
@@ -56,8 +67,36 @@ public sealed record OrParser<T>(IParser<T> First, IParser<T> Second) : IParser<
                 return;
             }
 
-            context.ResultStack.Pop();
+            context.ExecutionStack.Push((position, Continue));
             context.ExecutionStack.Push((position, Second));
+        }
+
+        /// <inheritdoc />
+        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+            => throw new NotSupportedException();
+    }
+
+    /// <summary>
+    /// The second continuation of the choice parser when executing in iterative mode.
+    /// </summary>
+    public sealed record SecondContinuation() : IParser
+    {
+        /// <inheritdoc />
+        public Type ResultType => throw new NotSupportedException();
+
+        /// <inheritdoc />
+        public void Apply(IIterativeParseContext context, int position)
+        {
+            var right = context.ResultStack.Pop();
+            var left = context.ResultStack.Pop();
+
+            if (right.Success)
+            {
+                context.ResultStack.Push(right);
+                return;
+            }
+
+            context.ResultStack.Push(new(left.Position, left.Errors!.Concat(right.Errors!)));
         }
 
         /// <inheritdoc />

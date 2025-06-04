@@ -6,7 +6,7 @@ namespace Warpstone.ParserImplementations;
 /// <param name="Value">The string to be parsed.</param>
 /// <param name="Culture">The culture used for comparing.</param>
 /// <param name="Options">The options used for comparing.</param>
-public sealed record StringParser(string Value, CultureInfo? Culture, CompareOptions Options) : IParser<string>
+public sealed record StringParser(string Value, CultureInfo Culture, CompareOptions Options) : IParser<string>
 {
     private readonly bool useValue = Options is CompareOptions.Ordinal;
 

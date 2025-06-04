@@ -7,7 +7,7 @@ public static class Parsers
     public static IParser<string> End { get; } = EndParser.Instance;
 
     public static IParser<string> String(string value, CultureInfo? culture, CompareOptions options)
-        => new StringParser(value, culture, options);
+        => new StringParser(value, culture ?? CultureInfo.CurrentCulture, options);
 
     public static IParser<string> String(string value, bool ignoreCase, CultureInfo? culture)
         => String(value: value, culture: culture, options: ignoreCase ? CompareOptions.IgnoreCase : CompareOptions.None);
@@ -20,8 +20,8 @@ public static class Parsers
             StringComparison.InvariantCultureIgnoreCase => (CultureInfo.InvariantCulture, CompareOptions.IgnoreCase),
             StringComparison.CurrentCulture => (CultureInfo.CurrentCulture, CompareOptions.None),
             StringComparison.CurrentCultureIgnoreCase => (CultureInfo.CurrentCulture, CompareOptions.IgnoreCase),
-            StringComparison.Ordinal => (null, CompareOptions.Ordinal),
-            StringComparison.OrdinalIgnoreCase => (null, CompareOptions.OrdinalIgnoreCase),
+            StringComparison.Ordinal => (CultureInfo.InvariantCulture, CompareOptions.Ordinal),
+            StringComparison.OrdinalIgnoreCase => (CultureInfo.InvariantCulture, CompareOptions.OrdinalIgnoreCase),
             _ => throw new NotSupportedException($"Currently the comparison type '{comparisonType}' is not yet supported."),
         };
 
