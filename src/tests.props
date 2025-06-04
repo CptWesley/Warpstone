@@ -12,13 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup Label="Analyzers">
-    <PackageReference Include="FluentAssertions.Analyzers" PrivateAssets="all" />
+    <PackageReference Include="AwesomeAssertions.Analyzers" PrivateAssets="all" />
     <PackageReference Include="xunit.analyzers" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Label="Dependencies">
     <PackageReference Include="AssertNet" />
-    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="AwesomeAssertions" />
     <PackageReference Include="xunit" />
   </ItemGroup>
 
