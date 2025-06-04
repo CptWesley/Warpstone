@@ -1,17 +1,17 @@
 namespace Warpstone.ParserImplementations;
 
 /// <summary>
-/// Represents a parser that parses either the provided <paramref name="Left"/> or <paramref name="Right"/> option.
+/// Represents a parser that parses either the provided <paramref name="First"/> or <paramref name="Second"/> option.
 /// </summary>
 /// <typeparam name="T">The result type of the parsers.</typeparam>
-/// <param name="Left">The first parser to try.</param>
-/// <param name="Right">The second parser to try.</param>
-public sealed record OrParser<T>(IParser<T> Left, IParser<T> Right) : IParser<T>
+/// <param name="First">The first parser to try.</param>
+/// <param name="Second">The second parser to try.</param>
+public sealed record OrParser<T>(IParser<T> First, IParser<T> Second) : IParser<T>
 {
     /// <summary>
     /// The continuation parser when executing in iterative mode.
     /// </summary>
-    public Continuation Continue { get; } = new(Right);
+    public Continuation Continue { get; } = new(Second);
 
     /// <inheritdoc />
     public Type ResultType => typeof(T);
@@ -20,28 +20,28 @@ public sealed record OrParser<T>(IParser<T> Left, IParser<T> Right) : IParser<T>
     public void Apply(IIterativeParseContext context, int position)
     {
         context.ExecutionStack.Push((position, Continue));
-        context.ExecutionStack.Push((position, Left));
+        context.ExecutionStack.Push((position, First));
     }
 
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
-        var left = Left.Apply(context, position);
+        var left = First.Apply(context, position);
 
         if (left.Success)
         {
             return left;
         }
 
-        var right = Right.Apply(context, left.NextPosition);
+        var right = Second.Apply(context, left.NextPosition);
         return right;
     }
 
     /// <summary>
     /// The continuation parser when executing in iterative mode.
     /// </summary>
-    /// <param name="Right">The second parser to try.</param>
-    public sealed record Continuation(IParser Right) : IParser
+    /// <param name="Second">The second parser to try.</param>
+    public sealed record Continuation(IParser Second) : IParser
     {
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();
@@ -57,7 +57,7 @@ public sealed record OrParser<T>(IParser<T> Left, IParser<T> Right) : IParser<T>
             }
 
             context.ResultStack.Pop();
-            context.ExecutionStack.Push((position, Right));
+            context.ExecutionStack.Push((position, Second));
         }
 
         /// <inheritdoc />
