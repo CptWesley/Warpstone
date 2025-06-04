@@ -35,4 +35,6 @@ public interface IParser
 /// Interface for all typed parser implementations.
 /// </summary>
 /// <typeparam name="T">The result type being parsed.</typeparam>
+#pragma warning disable S2326 // Unused type parameters should be removed
 public interface IParser<out T> : IParser;
+#pragma warning restore S2326 // Unused type parameters should be removed
