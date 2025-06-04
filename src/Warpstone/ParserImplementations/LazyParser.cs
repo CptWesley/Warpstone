@@ -1,10 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Warpstone.Internal.Parsers;
+namespace Warpstone.ParserImplementations;
 
 public sealed record LazyParser<T>(Lazy<IParser<T>> Element) : IParser<T>
 {

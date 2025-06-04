@@ -1,10 +1,4 @@
-#pragma warning disable QW0016 // Intended API.
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Warpstone.Internal.Parsers;
+namespace Warpstone.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that performs two parse operations sequentially and combines the result.

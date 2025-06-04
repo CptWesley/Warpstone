@@ -1,12 +1,4 @@
-#pragma warning disable QW0016 // Intended API.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Warpstone.Internal.Parsers;
+namespace Warpstone.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that converts the value of the given <paramref name="Element"/> parser
@@ -16,8 +8,8 @@ namespace Warpstone.Internal.Parsers;
 /// <typeparam name="TOut">The result type of the <paramref name="Map"/> function.</typeparam>
 /// <param name="Element">The input parser.</param>
 /// <param name="Map">The map function.</param>
-public sealed record MapBoxedParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, TOut> Map) : IParser<TOut>
-    where TIn : struct
+public sealed record MapRefParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, TOut> Map) : IParser<TOut>
+    where TIn : class
 {
     /// <summary>
     /// The continuation function when running in iterative mode.
@@ -43,11 +35,7 @@ public sealed record MapBoxedParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, T
             return prevResult;
         }
 
-#if NETCOREAPP3_0_OR_GREATER
-        var value = Unsafe.Unbox<TIn>(prevResult.Value!);
-#else
-        var value = (TIn)prevResult.Value!;
-#endif
+        var value = Unsafe.As<TIn>(prevResult.Value!);
         var modified = Map(value);
         return new UnsafeParseResult(prevResult.Position, prevResult.Length, modified!);
     }
@@ -73,11 +61,7 @@ public sealed record MapBoxedParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, T
 
             context.ResultStack.Pop();
 
-#if NETCOREAPP3_0_OR_GREATER
-            var value = Unsafe.Unbox<TIn>(prevResult.Value!);
-#else
-            var value = (TIn)prevResult.Value!;
-#endif
+            var value = Unsafe.As<TIn>(prevResult.Value!);
             var modified = Map(value);
             context.ResultStack.Push(new UnsafeParseResult(prevResult.Position, prevResult.Length, modified!));
         }

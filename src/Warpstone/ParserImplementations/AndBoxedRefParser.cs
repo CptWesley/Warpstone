@@ -1,10 +1,4 @@
-#pragma warning disable QW0016 // Intended API.
-
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Warpstone.Internal.Parsers;
+namespace Warpstone.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that performs two parse operations sequentially and combines the result.
@@ -13,9 +7,9 @@ namespace Warpstone.Internal.Parsers;
 /// <typeparam name="TRight">The result type of the <paramref name="Right"/> parser.</typeparam>
 /// <param name="Left">The parser that is executed first.</param>
 /// <param name="Right">The parser that is executed after the first one has succeeded.</param>
-public sealed record AndBoxedBoxedParser<TLeft, TRight>(IParser<TLeft> Left, IParser<TRight> Right) : IParser<(TLeft Left, TRight Right)>
+public sealed record AndBoxedRefParser<TLeft, TRight>(IParser<TLeft> Left, IParser<TRight> Right) : IParser<(TLeft Left, TRight Right)>
     where TLeft : struct
-    where TRight : struct
+    where TRight : class
 {
     /// <inheritdoc />
     public Type ResultType => typeof((TLeft, TRight));
@@ -51,11 +45,10 @@ public sealed record AndBoxedBoxedParser<TLeft, TRight>(IParser<TLeft> Left, IPa
 
 #if NETCOREAPP3_0_OR_GREATER
         var leftValue = Unsafe.Unbox<TLeft>(left.Value!);
-        var rightValue = Unsafe.Unbox<TRight>(right.Value!);
 #else
-        var leftValue = (TLeft)(left.Value!);
-        var rightValue = (TRight)(right.Value!);
+        var leftValue = (TLeft)left.Value!;
 #endif
+        var rightValue = Unsafe.As<TRight>(right.Value!);
         var newValue = (leftValue, rightValue);
 
         var newLength = left.Length + right.Length;
@@ -117,11 +110,10 @@ public sealed record AndBoxedBoxedParser<TLeft, TRight>(IParser<TLeft> Left, IPa
 
 #if NETCOREAPP3_0_OR_GREATER
                 var leftValue = Unsafe.Unbox<TLeft>(left.Value!);
-                var rightValue = Unsafe.Unbox<TRight>(right.Value!);
 #else
-                var leftValue = (TLeft)(left.Value!);
-                var rightValue = (TRight)(right.Value!);
+                var leftValue = (TLeft)left.Value!;
 #endif
+                var rightValue = Unsafe.As<TRight>(right.Value!);
                 var newValue = (leftValue, rightValue);
 
                 var newLength = left.Length + right.Length;
