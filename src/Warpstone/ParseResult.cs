@@ -8,6 +8,15 @@ public sealed class ParseResult<T> : IParseResult<T>
 {
     private readonly T? value;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ParseResult{T}"/> class.
+    /// </summary>
+    /// <param name="context">The parse context.</param>
+    /// <param name="position">The start position of the result in the input.</param>
+    /// <param name="length">The length of the result in the input.</param>
+    /// <param name="success">Indicates whether or not the result was succesful.</param>
+    /// <param name="value">The result value if succesful.</param>
+    /// <param name="errors">The errors if parsing failed.</param>
     public ParseResult(
         IReadOnlyParseContext context,
         int position,

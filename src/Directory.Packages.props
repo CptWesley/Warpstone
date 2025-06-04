@@ -13,7 +13,6 @@
     <PackageVersion Include="FluentAssertions.Analyzers" Version="0.34.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="8.0.0" />
     <PackageVersion Include="Parlot" Version="1.3.6" />
     <PackageVersion Include="ParsecSharp" Version="4.0.0" />
@@ -26,19 +25,39 @@
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.analyzers" Version="1.21.0" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.3" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0' And '$(TargetFramework)' != 'net5.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net481'">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.14.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.3" />
     <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.3.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.3" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net5.0'">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.13.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.13.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.13.0" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.0.2" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.14.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.14.1" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0" />
   </ItemGroup>
 </Project>
