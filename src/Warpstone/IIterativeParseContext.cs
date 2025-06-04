@@ -3,18 +3,8 @@ namespace Warpstone;
 /// <summary>
 /// Represents the context necessary for parsing iteratively.
 /// </summary>
-public interface IIterativeParseContext
+public interface IIterativeParseContext : IParseContext
 {
-    /// <summary>
-    /// The input string.
-    /// </summary>
-    public string Input { get; }
-
-    /// <summary>
-    /// The memo table.
-    /// </summary>
-    public IMemoTable MemoTable { get; }
-
     /// <summary>
     /// The result stack.
     /// </summary>

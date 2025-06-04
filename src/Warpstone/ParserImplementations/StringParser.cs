@@ -16,11 +16,11 @@ public sealed record StringParser(string Value, CultureInfo? Culture, CompareOpt
     /// <inheritdoc />
     public void Apply(IIterativeParseContext context, int position)
     {
-        var input = context.Input;
+        var input = context.Input.Content;
 
         if (!Matches(input, position))
         {
-            context.ResultStack.Push(new UnsafeParseResult(position));
+            context.ResultStack.Push(new UnsafeParseResult(position, [new UnexpectedTokenError(context, this, position, 1, @$"""{Value}""")]));
         }
         else
         {
@@ -31,11 +31,11 @@ public sealed record StringParser(string Value, CultureInfo? Culture, CompareOpt
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
-        var input = context.Input;
+        var input = context.Input.Content;
 
         if (!Matches(input, position))
         {
-            return new(position);
+            return new(position, [new UnexpectedTokenError(context, this, position, 1, @$"""{Value}""")]);
         }
         else
         {

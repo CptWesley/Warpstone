@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-
 namespace Warpstone;
 
 /// <summary>
@@ -12,7 +7,6 @@ namespace Warpstone;
 public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParseContext
 {
     private readonly Lock lck = new();
-    private readonly string inputString;
     private readonly MemoTable memoTable;
     private readonly IReadOnlyMemoTable readOnlyMemoTable;
 
@@ -27,7 +21,6 @@ public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParse
     {
         Parser = parser;
         Input = input;
-        inputString = input.Content;
 
         memoTable = new MemoTable();
         readOnlyMemoTable = memoTable.AsReadOnly();
@@ -49,16 +42,13 @@ public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParse
     public IParseInput Input { get; }
 
     /// <inheritdoc />
-    string IRecursiveParseContext.Input => inputString;
-
-    /// <inheritdoc />
     public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
 
     /// <inheritdoc />
-    IMemoTable IRecursiveParseContext.MemoTable => memoTable;
+    public bool Done => result is { };
 
     /// <inheritdoc />
-    public bool Done => result is { };
+    IMemoTable IParseContext.MemoTable => memoTable;
 
     /// <inheritdoc />
     public IParseResult<T> RunToEnd(CancellationToken cancellationToken)

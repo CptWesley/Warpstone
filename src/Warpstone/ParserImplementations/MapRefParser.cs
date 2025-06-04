@@ -36,8 +36,16 @@ public sealed record MapRefParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, TOu
         }
 
         var value = Unsafe.As<TIn>(prevResult.Value!);
-        var modified = Map(value);
-        return new UnsafeParseResult(prevResult.Position, prevResult.Length, modified!);
+
+        try
+        {
+            var modified = Map(value);
+            return new UnsafeParseResult(prevResult.Position, prevResult.Length, modified!);
+        }
+        catch (Exception e)
+        {
+            return new UnsafeParseResult(prevResult.Position, [new TransformationError(context, this, position, 0, null, e)]);
+        }
     }
 
     /// <summary>
@@ -62,8 +70,16 @@ public sealed record MapRefParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, TOu
             context.ResultStack.Pop();
 
             var value = Unsafe.As<TIn>(prevResult.Value!);
-            var modified = Map(value);
-            context.ResultStack.Push(new UnsafeParseResult(prevResult.Position, prevResult.Length, modified!));
+
+            try
+            {
+                var modified = Map(value);
+                context.ResultStack.Push(new UnsafeParseResult(prevResult.Position, prevResult.Length, modified!));
+            }
+            catch (Exception e)
+            {
+                context.ResultStack.Push(new UnsafeParseResult(prevResult.Position, [new TransformationError(context, this, position, 0, null, e)]));
+            }
         }
 
         /// <inheritdoc />

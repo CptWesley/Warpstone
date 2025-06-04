@@ -31,15 +31,22 @@ public readonly struct UnsafeParseResult
     public readonly object? Value;
 
     /// <summary>
+    /// The encountered errors.
+    /// </summary>
+    public readonly IEnumerable<IParseError>? Errors;
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct.
     /// </summary>
     /// <param name="position">The position where the error occurred.</param>
-    public UnsafeParseResult(int position)
+    /// <param name="errors">The encountered errors.</param>
+    public UnsafeParseResult(int position, IEnumerable<IParseError> errors)
     {
         Position = position;
         Length = 0;
         Value = null;
         Success = false;
+        Errors = errors;
     }
 
     /// <summary>
@@ -54,6 +61,7 @@ public readonly struct UnsafeParseResult
         Length = length;
         Value = value;
         Success = true;
+        Errors = null;
     }
 }
 
@@ -77,13 +85,19 @@ public static class UnsafeParseResultExtensions
                 context: context,
                 position: result.Position,
                 length: result.Length,
-                success: result.Success,
+                success: true,
                 value: (T)result.Value!,
                 errors: Array.Empty<IParseError>());
         }
         else
         {
-            throw new NotImplementedException();
+            return new ParseResult<T>(
+                context: context,
+                position: result.Position,
+                length: result.Length,
+                success: false,
+                value: default,
+                errors: result.Errors?.ToArray() ?? []);
         }
     }
 }

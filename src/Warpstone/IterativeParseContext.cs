@@ -1,9 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Text;
-using System.Threading;
-
 namespace Warpstone;
 
 /// <summary>
@@ -13,7 +7,6 @@ namespace Warpstone;
 public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParseContext
 {
     private readonly Lock lck = new();
-    private readonly string inputString;
 
     private readonly MemoTable memoTable;
     private readonly IReadOnlyMemoTable readOnlyMemoTable;
@@ -32,7 +25,6 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
     {
         Parser = parser;
         Input = input;
-        inputString = input.Content;
 
         memoTable = new MemoTable();
         readOnlyMemoTable = memoTable.AsReadOnly();
@@ -58,13 +50,10 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
     public IParseInput Input { get; }
 
     /// <inheritdoc />
-    string IIterativeParseContext.Input => inputString;
-
-    /// <inheritdoc />
     public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
 
     /// <inheritdoc />
-    IMemoTable IIterativeParseContext.MemoTable => memoTable;
+    IMemoTable IParseContext.MemoTable => memoTable;
 
     /// <inheritdoc />
     Stack<UnsafeParseResult> IIterativeParseContext.ResultStack => resultStack;
