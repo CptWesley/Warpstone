@@ -1,3 +1,5 @@
+#nullable enable
+
 using Legacy.Warpstone2.Parsers;
 using System.Collections.Immutable;
 

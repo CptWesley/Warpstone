@@ -30,6 +30,10 @@ public readonly struct UnsafeParseResult
     /// </summary>
     public readonly object? Value;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct.
+    /// </summary>
+    /// <param name="position">The position where the error occurred.</param>
     public UnsafeParseResult(int position)
     {
         Position = position;
@@ -38,6 +42,12 @@ public readonly struct UnsafeParseResult
         Success = false;
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct.
+    /// </summary>
+    /// <param name="position">The position where the result was obtained.</param>
+    /// <param name="length">The length of the value in the input.</param>
+    /// <param name="value">The found value.</param>
     public UnsafeParseResult(int position, int length, object? value)
     {
         Position = position;

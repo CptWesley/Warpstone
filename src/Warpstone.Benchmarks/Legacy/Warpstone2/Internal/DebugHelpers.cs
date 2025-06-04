@@ -1,3 +1,5 @@
+#nullable enable
+
 #pragma warning disable CS8777 // Intentional.
 
 namespace Legacy.Warpstone2.Internal;

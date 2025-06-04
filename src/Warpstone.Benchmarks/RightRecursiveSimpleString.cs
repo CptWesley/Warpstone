@@ -23,13 +23,13 @@ namespace Warpstone.Benchmarks;
 public class RightRecursiveSimpleString
 {
     private static readonly Warpstone.IParser<string> Warpstone3Parser
-        = BasicParsers3.Or(BasicParsers3.String("a").ThenAdd(BasicParsers3.Lazy(() => Warpstone3Parser!)).Transform(p => p.Left + p.Right), BasicParsers3.End);
+        = BasicParsers3.Or(BasicParsers3.String("a", StringComparison.Ordinal).ThenAdd(BasicParsers3.Lazy(() => Warpstone3Parser!)).Transform(p => p.Left + p.Right), BasicParsers3.End);
 
     private static readonly Legacy.Warpstone2.Parsers.IParser<string> Warpstone2Parser
-        = BasicParsers2.Or(BasicParsers2.String("a").ThenAdd(BasicParsers2.Lazy(() => Warpstone2Parser!)).Transform((x, y) => x + y), BasicParsers2.End);
+        = BasicParsers2.Or(BasicParsers2.String("a", StringComparison.Ordinal).ThenAdd(BasicParsers2.Lazy(() => Warpstone2Parser!)).Transform((x, y) => x + y), BasicParsers2.End);
 
     private static readonly Legacy.Warpstone1.IParser<string> Warpstone1Parser
-        = BasicParsers1.Or(BasicParsers1.String("a").ThenAdd(BasicParsers1.Lazy(() => Warpstone1Parser!)).Transform((x, y) => x + y), BasicParsers1.End.Transform(_ => string.Empty));
+        = BasicParsers1.Or(BasicParsers1.String("a", StringComparison.Ordinal).ThenAdd(BasicParsers1.Lazy(() => Warpstone1Parser!)).Transform((x, y) => x + y), BasicParsers1.End.Transform(_ => string.Empty));
 
     private static readonly Pidgin.Parser<char, string> PidginParser
         = Pidgin.Parser.Map((x, y) => x + y, Pidgin.Parser.String("a"), Pidgin.Parser.Rec(() => PidginParser!)).Or(Pidgin.Parser<char>.End.Map(_ => string.Empty));

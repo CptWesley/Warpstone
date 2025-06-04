@@ -1,3 +1,5 @@
+#nullable enable
+
 namespace Legacy.Warpstone2.IterativeExecution;
 
 /// <summary>

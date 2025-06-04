@@ -1,3 +1,5 @@
+#nullable enable
+
 using Legacy.Warpstone2.Internal;
 
 namespace Legacy.Warpstone2.IterativeExecution;

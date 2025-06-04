@@ -1,3 +1,5 @@
+#nullable enable
+
 using Legacy.Warpstone2.IterativeExecution;
 
 namespace Legacy.Warpstone2.Parsers.Internal;
