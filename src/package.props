@@ -41,7 +41,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Other">
-    <PackageReference Include="Microsoft.Sbom.Targets" PrivateAssets="All" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Sbom.Targets" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
   </ItemGroup>
 </Project>

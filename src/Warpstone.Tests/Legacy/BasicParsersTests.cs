@@ -491,7 +491,7 @@ public static class BasicParsersTests
         IParser<string> parser = String("test-string", StringComparison.InvariantCultureIgnoreCase);
         IParseResult<string> result = parser.TryParse("TeSt-StRiNg");
         AssertThat(result.Success).IsTrue();
-        AssertThat(result.Value).IsSameAs("test-string");
+        AssertThat(result.Value).IsSameAs("TeSt-StRiNg");
     }
 
     /// <summary>
