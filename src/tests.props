@@ -23,15 +23,19 @@
   </ItemGroup>
 
   <ItemGroup Label="Build dependencies">
-    <PackageReference Include="coverlet.collector" PrivateAssets="all" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" ExcludeAssets="compile" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" ExcludeAssets="compile" />
     <PackageReference Include="Microsoft.TestPlatform.TestHost" PrivateAssets="all" />
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" ExcludeAssets="compile" />
   </ItemGroup>
 
   <ItemGroup Label="DefaultImports">
     <Using Include="FluentAssertions" />
     <Using Include="Xunit" />
     <Using Static="true" Include="AssertNet.Assertions" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net481'">
+    <PackageVersion Update="System.Collections.Immutable" Version="8.0.0" />
   </ItemGroup>
 </Project>
