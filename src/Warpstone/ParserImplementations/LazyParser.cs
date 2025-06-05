@@ -5,7 +5,7 @@ namespace Warpstone.ParserImplementations;
 /// </summary>
 /// <typeparam name="T">The result type of the <paramref name="Element"/> parser.</typeparam>
 /// <param name="Element">The lazily executed parser.</param>
-public sealed record LazyParser<T>(Lazy<IParser<T>> Element) : IParser<T>
+internal sealed class LazyParser<T>(Lazy<IParser<T>> Element) : IParser<T>
 {
     /// <inheritdoc />
     public Type ResultType => typeof(T);

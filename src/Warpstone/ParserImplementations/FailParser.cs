@@ -3,8 +3,8 @@ namespace Warpstone.ParserImplementations;
 /// <summary>
 /// Represents a parser that always fails.
 /// </summary>
-/// <typeparam name="T"></typeparam>
-public sealed record FailParser<T> : IParser<T>
+/// <typeparam name="T">The result type of the parser.</typeparam>
+internal sealed class FailParser<T> : IParser<T>
 {
     /// <summary>
     /// The singleton instance of the parser.

@@ -3,7 +3,7 @@ namespace Warpstone.ParserImplementations;
 /// <summary>
 /// Represents a parser that matches regular expressions in the input.
 /// </summary>
-public sealed record RegexParser : IParser<string>
+internal sealed class RegexParser : IParser<string>
 {
     private readonly string expected;
     private readonly Regex regex;

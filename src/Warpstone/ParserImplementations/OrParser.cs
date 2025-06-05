@@ -4,7 +4,7 @@ namespace Warpstone.ParserImplementations;
 /// Represents a parser that parses either the provided first or second option.
 /// </summary>
 /// <typeparam name="T">The result type of the parsers.</typeparam>
-public sealed record OrParser<T> : IParser<T>
+internal sealed class OrParser<T> : IParser<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OrParser{T}"/> class.
@@ -31,7 +31,7 @@ public sealed record OrParser<T> : IParser<T>
     /// <summary>
     /// The continuation parser when executing in iterative mode.
     /// </summary>
-    public Continuation Continue { get; }
+    private Continuation Continue { get; }
 
     /// <inheritdoc />
     public Type ResultType => typeof(T);
@@ -66,8 +66,9 @@ public sealed record OrParser<T> : IParser<T>
     /// <summary>
     /// The continuation parser when executing in iterative mode.
     /// </summary>
+    /// <param name="Root">The root parser.</param>
     /// <param name="Second">The second parser to try.</param>
-    public sealed record Continuation(IParser Root, IParser Second) : IParser
+    private sealed class Continuation(IParser Root, IParser Second) : IParser
     {
         /// <summary>
         /// The second continuation of the sequential parser when executing in iterative mode.
@@ -99,7 +100,7 @@ public sealed record OrParser<T> : IParser<T>
     /// <summary>
     /// The second continuation of the choice parser when executing in iterative mode.
     /// </summary>
-    public sealed record SecondContinuation(IParser Root) : IParser
+    private sealed class SecondContinuation(IParser Root) : IParser
     {
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();

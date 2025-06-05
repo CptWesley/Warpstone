@@ -1,11 +1,16 @@
 namespace Warpstone.ParserImplementations;
 
-public sealed record AsResultParser<T>(IParser<T> Parser) : IParser<IParseResult<T>>
+/// <summary>
+/// Represents a parser that unwraps the result as a <see cref="IParseResult{T}"/> during the parsing.
+/// </summary>
+/// <typeparam name="T">The type of the result value.</typeparam>
+/// <param name="Parser">The internal parser.</param>
+internal sealed class AsResultParser<T>(IParser<T> Parser) : IParser<IParseResult<T>>
 {
-    public Continuation Continue { get; } = new();
-
+    /// <inheritdoc />
     public Type ResultType => typeof(IParseResult<T>);
 
+    /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
         var result = Parser.Apply(context, position);
@@ -13,14 +18,23 @@ public sealed record AsResultParser<T>(IParser<T> Parser) : IParser<IParseResult
         return new(position, result.Length, typed);
     }
 
+    /// <inheritdoc />
     public void Apply(IIterativeParseContext context, int position)
     {
-        context.ExecutionStack.Push((position, Continue));
+        context.ExecutionStack.Push((position, Continuation.Instance));
         context.ExecutionStack.Push((position, Parser));
     }
 
-    public sealed record Continuation : IParser
+    private sealed class Continuation : IParser
     {
+#pragma warning disable S2743 // Static fields should not be used in generic types
+        public static readonly Continuation Instance = new();
+#pragma warning restore S2743 // Static fields should not be used in generic types
+
+        private Continuation()
+        {
+        }
+
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();
 

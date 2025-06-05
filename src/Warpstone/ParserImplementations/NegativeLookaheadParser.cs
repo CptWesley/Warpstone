@@ -1,11 +1,16 @@
 namespace Warpstone.ParserImplementations;
 
-public sealed record NegativeLookaheadParser<T>(IParser<T> Parser) : IParser<T?>
+/// <summary>
+/// Parser which represents a positive lookahead (not). Which does not consume any length of the input.
+/// </summary>
+/// <typeparam name="T">The type of the parser used to peek forward.</typeparam>
+/// <param name="Parser">The parser used to peek forward.</param>
+public sealed class NegativeLookaheadParser<T>(IParser<T> Parser) : IParser<T?>
 {
-    public Continuation Continue { get; } = new();
-
+    /// <inheritdoc />
     public Type ResultType => typeof(T);
 
+    /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
         var result = Parser.Apply(context, position);
@@ -20,14 +25,23 @@ public sealed record NegativeLookaheadParser<T>(IParser<T> Parser) : IParser<T?>
         }
     }
 
+    /// <inheritdoc />
     public void Apply(IIterativeParseContext context, int position)
     {
-        context.ExecutionStack.Push((position, Continue));
+        context.ExecutionStack.Push((position, Continuation.Instance));
         context.ExecutionStack.Push((position, Parser));
     }
 
-    public sealed record Continuation : IParser
+    private sealed class Continuation : IParser
     {
+#pragma warning disable S2743 // Static fields should not be used in generic types
+        public static readonly Continuation Instance = new();
+#pragma warning restore S2743 // Static fields should not be used in generic types
+
+        private Continuation()
+        {
+        }
+
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();
 

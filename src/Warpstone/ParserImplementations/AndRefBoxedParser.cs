@@ -7,7 +7,7 @@ namespace Warpstone.ParserImplementations;
 /// <typeparam name="TSecond">The result type of the <paramref name="Second"/> parser.</typeparam>
 /// <param name="First">The parser that is executed first.</param>
 /// <param name="Second">The parser that is executed after the first one has succeeded.</param>
-public sealed record AndRefBoxedParser<TFirst, TSecond>(IParser<TFirst> First, IParser<TSecond> Second) : IParser<(TFirst First, TSecond Second)>
+internal sealed class AndRefBoxedParser<TFirst, TSecond>(IParser<TFirst> First, IParser<TSecond> Second) : IParser<(TFirst First, TSecond Second)>
     where TFirst : class
     where TSecond : struct
 {
@@ -17,7 +17,7 @@ public sealed record AndRefBoxedParser<TFirst, TSecond>(IParser<TFirst> First, I
     /// <summary>
     /// The first continuation of the sequential parser when executing in iterative mode.
     /// </summary>
-    public Continuation Continue { get; } = new(Second);
+    private Continuation Continue { get; } = new(Second);
 
     /// <inheritdoc />
     public void Apply(IIterativeParseContext context, int position)
@@ -58,13 +58,8 @@ public sealed record AndRefBoxedParser<TFirst, TSecond>(IParser<TFirst> First, I
     /// <summary>
     /// The first continuation of the sequential parser when executing in iterative mode.
     /// </summary>
-    public sealed record Continuation(IParser<TSecond> Second) : IParser
+    private sealed class Continuation(IParser<TSecond> Second) : IParser
     {
-        /// <summary>
-        /// The second continuation of the sequential parser when executing in iterative mode.
-        /// </summary>
-        public SecondContinuation Continue { get; } = new();
-
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();
 
@@ -80,7 +75,7 @@ public sealed record AndRefBoxedParser<TFirst, TSecond>(IParser<TFirst> First, I
 
             var nextPos = leftResult.NextPosition;
 
-            context.ExecutionStack.Push((nextPos, Continue));
+            context.ExecutionStack.Push((nextPos, SecondContinuation.Instance));
             context.ExecutionStack.Push((nextPos, Second));
         }
 
@@ -91,8 +86,16 @@ public sealed record AndRefBoxedParser<TFirst, TSecond>(IParser<TFirst> First, I
         /// <summary>
         /// The second continuation of the sequential parser when executing in iterative mode.
         /// </summary>
-        public sealed record SecondContinuation() : IParser
+        private sealed class SecondContinuation : IParser
         {
+#pragma warning disable S2743 // Static fields should not be used in generic types
+            public static readonly SecondContinuation Instance = new();
+#pragma warning restore S2743 // Static fields should not be used in generic types
+
+            private SecondContinuation()
+            {
+            }
+
             /// <inheritdoc />
             public Type ResultType => throw new NotSupportedException();
 

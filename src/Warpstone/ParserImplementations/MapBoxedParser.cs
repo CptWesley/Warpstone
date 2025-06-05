@@ -8,13 +8,13 @@ namespace Warpstone.ParserImplementations;
 /// <typeparam name="TOut">The result type of the <paramref name="Map"/> function.</typeparam>
 /// <param name="Element">The input parser.</param>
 /// <param name="Map">The map function.</param>
-public sealed record MapBoxedParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, TOut> Map) : IParser<TOut>
+internal sealed class MapBoxedParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, TOut> Map) : IParser<TOut>
     where TIn : struct
 {
     /// <summary>
     /// The continuation function when running in iterative mode.
     /// </summary>
-    public Continuation Continue { get; } = new(Map);
+    private Continuation Continue { get; } = new(Map);
 
     /// <inheritdoc />
     public Type ResultType => typeof(TOut);
@@ -56,7 +56,7 @@ public sealed record MapBoxedParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, T
     /// The continuation function when running in iterative mode.
     /// </summary>
     /// <param name="Map">The map function.</param>
-    public sealed record Continuation(Func<TIn, TOut> Map) : IParser
+    private sealed class Continuation(Func<TIn, TOut> Map) : IParser
     {
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();

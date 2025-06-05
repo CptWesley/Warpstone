@@ -3,7 +3,7 @@ namespace Warpstone.ParserImplementations;
 /// <summary>
 /// Parser used for detecting the end of the input stream.
 /// </summary>
-public sealed record EndParser : IParser<string>
+internal sealed class EndParser : IParser<string>
 {
     /// <summary>
     /// Singleton instance of the parser.

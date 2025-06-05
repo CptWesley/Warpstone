@@ -1,6 +1,18 @@
 namespace Warpstone.ParserImplementations;
 
-public sealed record AggregateParser<TSource, TDelimiter, TAccumulator>(
+/// <summary>
+/// Represents a parser that parses a repeated series of elements and aggregates the results.
+/// </summary>
+/// <typeparam name="TSource">The element type.</typeparam>
+/// <typeparam name="TDelimiter">The delimiter type.</typeparam>
+/// <typeparam name="TAccumulator">The accumulator type.</typeparam>
+/// <param name="Element">The element parser.</param>
+/// <param name="Delimiter">The optional delimiter parser.</param>
+/// <param name="MinCount">The minimum number of parsed elements.</param>
+/// <param name="MaxCount">The maximum number of parsed elements.</param>
+/// <param name="CreateSeed">The function to create the initial value of the accumulator.</param>
+/// <param name="Accumulate">The accumulation function.</param>
+internal sealed class AggregateParser<TSource, TDelimiter, TAccumulator>(
     IParser<TSource> Element,
     IParser<TDelimiter>? Delimiter,
     int MinCount,
@@ -12,7 +24,9 @@ public sealed record AggregateParser<TSource, TDelimiter, TAccumulator>(
     public Type ResultType => typeof(TAccumulator);
 
     /// <inheritdoc />
+#pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+#pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
     {
         var acc = CreateSeed();
         var min = MinCount;
@@ -91,7 +105,7 @@ public sealed record AggregateParser<TSource, TDelimiter, TAccumulator>(
         context.ExecutionStack.Push((position, Element));
     }
 
-    public sealed record ContinuationElement(
+    private sealed record ContinuationElement(
         IParser<TSource> Element,
         IParser<TDelimiter>? Delimiter,
         int StartPosition,
@@ -168,7 +182,7 @@ public sealed record AggregateParser<TSource, TDelimiter, TAccumulator>(
         }
     }
 
-    public sealed record ContinuationDelimiter(
+    private sealed record ContinuationDelimiter(
         IParser<TSource> Element,
         IParser<TDelimiter> Delimiter,
         int StartPosition,
