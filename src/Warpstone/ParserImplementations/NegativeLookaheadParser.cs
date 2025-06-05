@@ -1,6 +1,6 @@
 namespace Warpstone.ParserImplementations;
 
-public sealed record PositiveLookAheadParser<T>(IParser<T> Parser) : IParser<T>
+public sealed record NegativeLookaheadParser<T>(IParser<T> Parser) : IParser<T?>
 {
     public Continuation Continue { get; } = new();
 
@@ -10,13 +10,13 @@ public sealed record PositiveLookAheadParser<T>(IParser<T> Parser) : IParser<T>
     {
         var result = Parser.Apply(context, position);
 
-        if (!result.Success)
+        if (result.Success)
         {
-            return result;
+            return new(position, [new UnexpectedTokenError(context, this, position, 1, "<not>")]);
         }
         else
         {
-            return new(position, 0, result.Value);
+            return new(position, 0, default(T?));
         }
     }
 
@@ -34,15 +34,16 @@ public sealed record PositiveLookAheadParser<T>(IParser<T> Parser) : IParser<T>
         /// <inheritdoc />
         public void Apply(IIterativeParseContext context, int position)
         {
-            var result = context.ResultStack.Peek();
+            var result = context.ResultStack.Pop();
 
-            if (!result.Success)
+            if (result.Success)
             {
-                return;
+                context.ResultStack.Push(new(result.Position, [new UnexpectedTokenError(context, this, position, 1, "<not>")]));
             }
-
-            context.ResultStack.Pop();
-            context.ResultStack.Push(new(result.Position, 0, result.Value));
+            else
+            {
+                context.ResultStack.Push(new(result.Position, 0, default(T?)));
+            }
         }
 
         /// <inheritdoc />

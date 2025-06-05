@@ -1,3 +1,5 @@
+using Warpstone.ParserImplementations;
+
 namespace Warpstone;
 
 public static class Parsers
@@ -553,5 +555,14 @@ public static class Parsers
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser applying the given parser that does not consume the input.</returns>
     public static IParser<T> Peek<T>(IParser<T> parser)
-        => new PositiveLookAheadParser<T>(parser);
+        => new PositiveLookaheadParser<T>(parser);
+
+    /// <summary>
+    /// Creates a parser that fails if the specified parser succeeds.
+    /// </summary>
+    /// <typeparam name="T">The result type of the parser that should fail.</typeparam>
+    /// <param name="not">The parser which, if it succeeds, causes the returned parser to fail.</param>
+    /// <returns>A parser trying the given parser, and failing if it succeeds.</returns>
+    public static IParser<T?> Not<T>(IParser<T> not)
+        => new NegativeLookaheadParser<T>(not.MustNotBeNull());
 }
