@@ -35,7 +35,11 @@ internal sealed class MapRefParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, TO
             return prevResult;
         }
 
+#if NETCOREAPP3_0_OR_GREATER
         var value = Unsafe.As<TIn>(prevResult.Value!);
+#else
+        var value = (TIn)prevResult.Value!;
+#endif
 
         try
         {
@@ -69,7 +73,11 @@ internal sealed class MapRefParser<TIn, TOut>(IParser<TIn> Element, Func<TIn, TO
 
             context.ResultStack.Pop();
 
+#if NETCOREAPP3_0_OR_GREATER
             var value = Unsafe.As<TIn>(prevResult.Value!);
+#else
+            var value = (TIn)prevResult.Value!;
+#endif
 
             try
             {

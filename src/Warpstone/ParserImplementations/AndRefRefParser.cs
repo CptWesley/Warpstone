@@ -43,8 +43,13 @@ internal sealed class AndRefRefParser<TFirst, TSecond>(IParser<TFirst> First, IP
             return right;
         }
 
+#if NETCOREAPP3_0_OR_GREATER
         var leftValue = Unsafe.As<TFirst>(left.Value!);
         var rightValue = Unsafe.As<TSecond>(right.Value!);
+#else
+        var leftValue = (TFirst)left.Value!;
+        var rightValue = (TSecond)right.Value!;
+#endif
         var newValue = (leftValue, rightValue);
 
         var newLength = left.Length + right.Length;
@@ -107,8 +112,13 @@ internal sealed class AndRefRefParser<TFirst, TSecond>(IParser<TFirst> First, IP
                     return;
                 }
 
+#if NETCOREAPP3_0_OR_GREATER
                 var leftValue = Unsafe.As<TFirst>(left.Value!);
                 var rightValue = Unsafe.As<TSecond>(right.Value!);
+#else
+                var leftValue = (TFirst)left.Value!;
+                var rightValue = (TSecond)right.Value!;
+#endif
                 var newValue = (leftValue, rightValue);
 
                 var newLength = left.Length + right.Length;

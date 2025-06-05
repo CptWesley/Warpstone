@@ -43,10 +43,11 @@ internal sealed class AndRefBoxedParser<TFirst, TSecond>(IParser<TFirst> First, 
             return right;
         }
 
-        var leftValue = Unsafe.As<TFirst>(left.Value!);
 #if NETCOREAPP3_0_OR_GREATER
+        var leftValue = Unsafe.As<TFirst>(left.Value!);
         var rightValue = Unsafe.Unbox<TSecond>(right.Value!);
 #else
+        var leftValue = (TFirst)left.Value!;
         var rightValue = (TSecond)right.Value!;
 #endif
         var newValue = (leftValue, rightValue);
@@ -111,10 +112,11 @@ internal sealed class AndRefBoxedParser<TFirst, TSecond>(IParser<TFirst> First, 
                     return;
                 }
 
-                var leftValue = Unsafe.As<TFirst>(left.Value!);
 #if NETCOREAPP3_0_OR_GREATER
+                var leftValue = Unsafe.As<TFirst>(left.Value!);
                 var rightValue = Unsafe.Unbox<TSecond>(right.Value!);
 #else
+                var leftValue = (TFirst)left.Value!;
                 var rightValue = (TSecond)right.Value!;
 #endif
                 var newValue = (leftValue, rightValue);

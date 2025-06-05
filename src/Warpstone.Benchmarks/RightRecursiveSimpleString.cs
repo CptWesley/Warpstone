@@ -1,5 +1,4 @@
 using BenchmarkDotNet.Attributes;
-using DotNetProjectFile.Resx;
 using Legacy.Warpstone1.Parsers;
 using Legacy.Warpstone2;
 using Legacy.Warpstone2.Parsers;
