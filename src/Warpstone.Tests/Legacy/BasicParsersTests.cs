@@ -168,6 +168,91 @@ public static class BasicParsersTests
     /// </summary>
     [Theory]
     [MemberData(nameof(Options))]
+    public static void ManyParserIgnoreLastDelimiter(ParseOptions options)
+    {
+        var result = Many(Char('x'), Char('y')).TryParse("xyxyxy", options);
+        AssertThat(result.Success).IsTrue();
+        AssertThat(result.Value).ContainsExactly('x', 'x', 'x');
+        AssertThat(result.NextPosition).IsEqualTo(5);
+    }
+
+    /// <summary>
+    /// Checks that parsing many works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MultipleParserVerifyMinWithoutDelimiterCorrect(ParseOptions options)
+    {
+        var result = Multiple(Char('x'), 10, 100).TryParse("xxxxxxxxxx", options);
+        AssertThat(result.Success).IsTrue();
+        AssertThat(result.Value).ContainsExactly('x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x', 'x');
+        AssertThat(result.NextPosition).IsEqualTo(10);
+    }
+
+    /// <summary>
+    /// Checks that parsing many works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MultipleParserVerifyMinWithoutDelimiterIncorrect(ParseOptions options)
+    {
+        var result = Multiple(Char('x'), 10, 100).TryParse("xxxxxxxxx", options);
+        AssertThat(result.Success).IsFalse();
+    }
+
+    /// <summary>
+    /// Checks that parsing many works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MultipleParserVerifyMinMaxWithoutDelimiterCorrect1(ParseOptions options)
+    {
+        var result = Multiple(Char('x'), 1, 2).TryParse("x", options);
+        AssertThat(result.Success).IsTrue();
+        AssertThat(result.Value).ContainsExactly('x');
+        AssertThat(result.NextPosition).IsEqualTo(1);
+    }
+
+    /// <summary>
+    /// Checks that parsing many works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MultipleParserVerifyMinMaxWithoutDelimiterCorrect2(ParseOptions options)
+    {
+        var result = Multiple(Char('x'), 1, 2).TryParse("xx", options);
+        AssertThat(result.Success).IsTrue();
+        AssertThat(result.Value).ContainsExactly('x', 'x');
+        AssertThat(result.NextPosition).IsEqualTo(2);
+    }
+
+    /// <summary>
+    /// Checks that parsing many works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MultipleParserVerifyMinMaxWithoutDelimiterIncorrect1(ParseOptions options)
+    {
+        var result = Multiple(Char('x'), 1, 2).TryParse("", options);
+        AssertThat(result.Success).IsFalse();
+    }
+
+    /// <summary>
+    /// Checks that parsing many works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MultipleParserVerifyMinMaxWithoutDelimiterIncorrect2(ParseOptions options)
+    {
+        var result = Multiple(Char('x'), 1, 2).ThenEnd().TryParse("xxx", options);
+        AssertThat(result.Success).IsFalse();
+    }
+
+    /// <summary>
+    /// Checks that parsing many works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
     public static void ManyParserCorrectMore(ParseOptions options)
         => AssertThat(Many(Char('x')).Parse("xxxyz", options)).ContainsExactly('x', 'x', 'x');
 
