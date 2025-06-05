@@ -22,7 +22,7 @@ public sealed record AggregateParser<TSource, TDelimiter, TAccumulator>(
 
         var pastFirst = false;
 
-        while (max < 0)
+        while (max > 0)
         {
             if (Delimiter is { })
             {
