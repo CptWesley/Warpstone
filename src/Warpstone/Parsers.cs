@@ -1,20 +1,49 @@
-using Warpstone.ParserImplementations;
-
 namespace Warpstone;
 
+/// <summary>
+/// Provides access to a series of basic parsers.
+/// </summary>
 public static class Parsers
 {
+    /// <summary>
+    /// A parser matching the end of an input stream.
+    /// </summary>
     public static IParser<string> End { get; } = EndParser.Instance;
 
+    /// <summary>
+    /// Creates a parser parsing the given character.
+    /// </summary>
+    /// <param name="value">The character to parse.</param>
+    /// <returns>A parser parsing the given character.</returns>
     public static IParser<char> Char(char value)
         => new CharacterParser(value);
 
+    /// <summary>
+    /// Creates a parser that parses a string, configuring the used <paramref name="culture"/> and compare <paramref name="options"/>.
+    /// </summary>
+    /// <param name="value">The string to parse.</param>
+    /// <param name="culture">The used culture.</param>
+    /// <param name="options">The used compare options.</param>
+    /// <returns>A parser parsing a string.</returns>
     public static IParser<string> String(string value, CultureInfo? culture, CompareOptions options)
         => new StringParser(value.MustNotBeNull(), culture ?? CultureInfo.CurrentCulture, options);
 
+    /// <summary>
+    /// Creates a parser that parses a string, configuring the case-sensitivity and used <paramref name="culture"/>.
+    /// </summary>
+    /// <param name="value">The string to parse.</param>
+    /// <param name="ignoreCase">Indicates if the matching should be case-insensitive.</param>
+    /// <param name="culture">The used culture.</param>
+    /// <returns>A parser parsing a string.</returns>
     public static IParser<string> String(string value, bool ignoreCase, CultureInfo? culture)
         => String(value: value.MustNotBeNull(), culture: culture, options: ignoreCase ? CompareOptions.IgnoreCase : CompareOptions.None);
 
+    /// <summary>
+    /// Creates a parser that parses a string, using the specified string comparison method.
+    /// </summary>
+    /// <param name="value">The string to parse.</param>
+    /// <param name="comparisonType">The string comparison method to use.</param>
+    /// <returns>A parser parsing a string.</returns>
     public static IParser<string> String(string value, StringComparison comparisonType)
     {
         var (culture, options) = comparisonType switch
@@ -31,28 +60,86 @@ public static class Parsers
         return String(value: value.MustNotBeNull(), culture: culture, options: options);
     }
 
+    /// <summary>
+    /// Creates a parser that parses a string, configuring the case-sensitivity.
+    /// </summary>
+    /// <param name="value">The string to parse.</param>
+    /// <param name="ignoreCase">Indicates if the matching should be case-insensitive.</param>
+    /// <returns>A parser parsing a string.</returns>
     public static IParser<string> String(string value, bool ignoreCase)
         => String(value: value.MustNotBeNull(), ignoreCase: ignoreCase, culture: null);
 
+    /// <summary>
+    /// Creates a parser that parses a string.
+    /// </summary>
+    /// <param name="value">The string to parse.</param>
+    /// <returns>A parser parsing a string.</returns>
     public static IParser<string> String(string value)
         => String(value: value.MustNotBeNull(), ignoreCase: false);
 
+    /// <summary>
+    /// Creates a parser which matches a regular expression <paramref name="pattern"/> with the given <paramref name="options"/>.
+    /// </summary>
+    /// <param name="pattern">The pattern to match.</param>
+    /// <param name="options">The regular expression options to use.</param>
+    /// <returns>A parser matching a regular expression.</returns>
     public static IParser<string> Regex([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
         => new RegexParser(pattern.MustNotBeNull(), options);
 
+    /// <summary>
+    /// Creates a parser which matches a regular expression <paramref name="pattern"/>.
+    /// </summary>
+    /// <param name="pattern">The pattern to match.</param>
+    /// <returns>A parser matching a regular expression.</returns>
     public static IParser<string> Regex([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
         => new RegexParser(pattern.MustNotBeNull());
 
+    /// <summary>
+    /// Creates a parser that lazily applies a given parser allowing for recursion.
+    /// </summary>
+    /// <typeparam name="T">The result type of the given parser.</typeparam>
+    /// <param name="parser">The given parser.</param>
+    /// <returns>A parser that lazily applies a given parser.</returns>
     public static IParser<T> Lazy<T>(Func<IParser<T>> parser)
         => new LazyParser<T>(parser.MustNotBeNull());
 
-    public static IParser<T> Or<T>(IParser<T> option1, IParser<T> option2, params IEnumerable<IParser<T>>? options)
-    {
-        var result = new OrParser<T>(option1.MustNotBeNull(), option2.MustNotBeNull());
+    /// <summary>
+    /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
+    /// </summary>
+    /// <typeparam name="T">The type of results of the given parsers.</typeparam>
+    /// <param name="parsers">The parsers to try.</param>
+    /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
+    public static IParser<T> Or<T>(params IParser<T>[]? parsers)
+        => Or((IEnumerable<IParser<T>>?)parsers);
 
-        foreach (var option in options ?? [])
+    /// <summary>
+    /// Creates a parser that tries to apply the given parsers in order and returns the result of the first successful one.
+    /// </summary>
+    /// <typeparam name="T">The type of results of the given parsers.</typeparam>
+    /// <param name="parsers">The parsers to try.</param>
+    /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
+    public static IParser<T> Or<T>(IEnumerable<IParser<T>>? parsers)
+    {
+        var result = Fail<T>();
+
+        if (parsers is null)
         {
-            result = new OrParser<T>(result, option);
+            return result;
+        }
+
+        var hasFirst = false;
+
+        foreach (var parser in parsers)
+        {
+            if (!hasFirst)
+            {
+                result = parser;
+                hasFirst = true;
+            }
+            else
+            {
+                result = new OrParser<T>(result, parser);
+            }
         }
 
         return result;
@@ -367,14 +454,30 @@ public static class Parsers
     public static IParser<T> Create<T>(T value)
         => new CreateParser<T>(value);
 
-    public static IParser<TAccumulator> Aggregate<TSource, TDelimiter, TAccumulator>(
+    /// <summary>
+    /// Creates a parser which aggregates a series with minimum length <paramref name="minCount"/>
+    /// and maximum length <paramref name="maxCount"/> of <paramref name="element"/> results,
+    /// optionally delimited by <paramref name="delimiter"/>.
+    /// Using the <paramref name="createSeed"/> function to create the seed accumulator and
+    /// the <paramref name="accumulate"/> function to accumulate the found values.
+    /// </summary>
+    /// <typeparam name="TSource">The type of values parsed by the <paramref name="element"/> parser.</typeparam>
+    /// <typeparam name="TAccumulator">The type of the accumulator.</typeparam>
+    /// <param name="element">The element parser.</param>
+    /// <param name="delimiter">The optional delimiter parser.</param>
+    /// <param name="minCount">The minimum count.</param>
+    /// <param name="maxCount">The maximum count.</param>
+    /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
+    /// <param name="accumulate">The function used to accumulate the found values.</param>
+    /// <returns>The newly created parser.</returns>
+    public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
         IParser<TSource> element,
-        IParser<TDelimiter>? delimiter,
+        IParser? delimiter,
         int minCount,
         int maxCount,
         Func<TAccumulator> createSeed,
         Func<TAccumulator, TSource, TAccumulator> accumulate)
-        => new AggregateParser<TSource, TDelimiter, TAccumulator>(
+        => new AggregateParser<TSource, TAccumulator>(
             element.MustNotBeNull(),
             delimiter,
             minCount.MustBeGreaterThanOrEqualTo(0),
@@ -382,9 +485,24 @@ public static class Parsers
             createSeed.MustNotBeNull(),
             accumulate.MustNotBeNull());
 
-    public static IParser<TAccumulator> Aggregate<TSource, TDelimiter, TAccumulator>(
+    /// <summary>
+    /// Creates a parser which aggregates a series with the exact length <paramref name="count"/>
+    /// of <paramref name="element"/> results,
+    /// optionally delimited by <paramref name="delimiter"/>.
+    /// Using the <paramref name="createSeed"/> function to create the seed accumulator and
+    /// the <paramref name="accumulate"/> function to accumulate the found values.
+    /// </summary>
+    /// <typeparam name="TSource">The type of values parsed by the <paramref name="element"/> parser.</typeparam>
+    /// <typeparam name="TAccumulator">The type of the accumulator.</typeparam>
+    /// <param name="element">The element parser.</param>
+    /// <param name="delimiter">The optionaldelimiter parser.</param>
+    /// <param name="count">The exact count.</param>
+    /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
+    /// <param name="accumulate">The function used to accumulate the found values.</param>
+    /// <returns>The newly created parser.</returns>
+    public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
         IParser<TSource> element,
-        IParser<TDelimiter>? delimiter,
+        IParser? delimiter,
         int count,
         Func<TAccumulator> createSeed,
         Func<TAccumulator, TSource, TAccumulator> accumulate)
@@ -396,13 +514,27 @@ public static class Parsers
             createSeed: createSeed.MustNotBeNull(),
             accumulate: accumulate.MustNotBeNull());
 
+    /// <summary>
+    /// Creates a parser which aggregates a series with minimum length <paramref name="minCount"/>
+    /// and maximum length <paramref name="maxCount"/> of <paramref name="element"/> results.
+    /// Using the <paramref name="createSeed"/> function to create the seed accumulator and
+    /// the <paramref name="accumulate"/> function to accumulate the found values.
+    /// </summary>
+    /// <typeparam name="TSource">The type of values parsed by the <paramref name="element"/> parser.</typeparam>
+    /// <typeparam name="TAccumulator">The type of the accumulator.</typeparam>
+    /// <param name="element">The element parser.</param>
+    /// <param name="minCount">The minimum count.</param>
+    /// <param name="maxCount">The maximum count.</param>
+    /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
+    /// <param name="accumulate">The function used to accumulate the found values.</param>
+    /// <returns>The newly created parser.</returns>
     public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
         IParser<TSource> element,
         int minCount,
         int maxCount,
         Func<TAccumulator> createSeed,
         Func<TAccumulator, TSource, TAccumulator> accumulate)
-        => Aggregate<TSource, object?, TAccumulator>(
+        => Aggregate(
             element: element.MustNotBeNull(),
             delimiter: null,
             minCount: minCount.MustBeGreaterThanOrEqualTo(0),
@@ -410,6 +542,19 @@ public static class Parsers
             createSeed: createSeed.MustNotBeNull(),
             accumulate: accumulate.MustNotBeNull());
 
+    /// <summary>
+    /// Creates a parser which aggregates a series with the exact length <paramref name="count"/>
+    /// of <paramref name="element"/> results.
+    /// Using the <paramref name="createSeed"/> function to create the seed accumulator and
+    /// the <paramref name="accumulate"/> function to accumulate the found values.
+    /// </summary>
+    /// <typeparam name="TSource">The type of values parsed by the <paramref name="element"/> parser.</typeparam>
+    /// <typeparam name="TAccumulator">The type of the accumulator.</typeparam>
+    /// <param name="element">The element parser.</param>
+    /// <param name="count">The exact count.</param>
+    /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
+    /// <param name="accumulate">The function used to accumulate the found values.</param>
+    /// <returns>The newly created parser.</returns>
     public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
         IParser<TSource> element,
         int count,
@@ -479,18 +624,17 @@ public static class Parsers
     /// Creates a parser applying the given parser multiple times and collects all results.
     /// </summary>
     /// <typeparam name="TSource">The type of results collected.</typeparam>
-    /// <typeparam name="TDelimiter">The type of delimiters.</typeparam>
     /// <param name="element">The parser to apply multiple times.</param>
     /// <param name="delimiter">The delimiter seperating the different elements.</param>
     /// <param name="minCount">The minimum number of matches.</param>
     /// <param name="maxCount">The maximum number of matches.</param>
     /// <returns>A parser applying the given parser multiple times.</returns>
-    public static IParser<IImmutableList<TSource>> Multiple<TSource, TDelimiter>(
+    public static IParser<IImmutableList<TSource>> Multiple<TSource>(
         IParser<TSource> element,
-        IParser<TDelimiter>? delimiter,
+        IParser? delimiter,
         int minCount,
         int maxCount)
-        => Aggregate<TSource, TDelimiter, IImmutableList<TSource>>(
+        => Aggregate<TSource, IImmutableList<TSource>>(
             element: element.MustNotBeNull(),
             delimiter: delimiter,
             minCount: minCount.MustBeGreaterThanOrEqualTo(0),

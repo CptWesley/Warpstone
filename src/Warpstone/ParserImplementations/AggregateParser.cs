@@ -4,7 +4,6 @@ namespace Warpstone.ParserImplementations;
 /// Represents a parser that parses a repeated series of elements and aggregates the results.
 /// </summary>
 /// <typeparam name="TSource">The element type.</typeparam>
-/// <typeparam name="TDelimiter">The delimiter type.</typeparam>
 /// <typeparam name="TAccumulator">The accumulator type.</typeparam>
 /// <param name="Element">The element parser.</param>
 /// <param name="Delimiter">The optional delimiter parser.</param>
@@ -12,9 +11,9 @@ namespace Warpstone.ParserImplementations;
 /// <param name="MaxCount">The maximum number of parsed elements.</param>
 /// <param name="CreateSeed">The function to create the initial value of the accumulator.</param>
 /// <param name="Accumulate">The accumulation function.</param>
-internal sealed class AggregateParser<TSource, TDelimiter, TAccumulator>(
+internal sealed class AggregateParser<TSource, TAccumulator>(
     IParser<TSource> Element,
-    IParser<TDelimiter>? Delimiter,
+    IParser? Delimiter,
     int MinCount,
     int MaxCount,
     Func<TAccumulator> CreateSeed,
@@ -107,7 +106,7 @@ internal sealed class AggregateParser<TSource, TDelimiter, TAccumulator>(
 
     private sealed record ContinuationElement(
         IParser<TSource> Element,
-        IParser<TDelimiter>? Delimiter,
+        IParser? Delimiter,
         int StartPosition,
         int Length,
         int MinCount,
@@ -184,7 +183,7 @@ internal sealed class AggregateParser<TSource, TDelimiter, TAccumulator>(
 
     private sealed record ContinuationDelimiter(
         IParser<TSource> Element,
-        IParser<TDelimiter> Delimiter,
+        IParser Delimiter,
         int StartPosition,
         int Length,
         int MinCount,
