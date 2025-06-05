@@ -337,4 +337,221 @@ public static class Parsers
     /// <returns>A parser applying the given parser and then expects the input stream to end.</returns>
     public static IParser<T> ThenEnd<T>(this IParser<T> parser)
         => parser.ThenSkip(End);
+
+    /// <summary>
+    /// Creates a parser that always fails.
+    /// </summary>
+    /// <typeparam name="T">The return type of the parser.</typeparam>
+    /// <returns>A parser that always fails.</returns>
+    public static IParser<T> Fail<T>()
+        => FailParser<T>.Instance;
+
+    /// <summary>
+    /// Creates a parser that always passes and creates an object.
+    /// </summary>
+    /// <typeparam name="T">The type of the parser result.</typeparam>
+    /// <param name="value">The value to always return from the parser.</param>
+    /// <returns>A parser always returning the object.</returns>
+    public static IParser<T> Create<T>(T value)
+        => new CreateParser<T>(value);
+
+    public static IParser<TAccumulator> Aggregate<TSource, TDelimiter, TAccumulator>(
+        IParser<TSource> element,
+        IParser<TDelimiter>? delimiter,
+        int minCount,
+        int maxCount,
+        Func<TAccumulator> createSeed,
+        Func<TAccumulator, TSource, TAccumulator> accumulate)
+        => new AggregateParser<TSource, TDelimiter, TAccumulator>(
+            element,
+            delimiter,
+            minCount.MustBeGreaterThanOrEqualTo(0),
+            maxCount.MustBeGreaterThanOrEqualTo(minCount),
+            createSeed,
+            accumulate);
+
+    public static IParser<TAccumulator> Aggregate<TSource, TDelimiter, TAccumulator>(
+        IParser<TSource> element,
+        IParser<TDelimiter>? delimiter,
+        int count,
+        Func<TAccumulator> createSeed,
+        Func<TAccumulator, TSource, TAccumulator> accumulate)
+        => Aggregate(
+            element: element,
+            delimiter: delimiter,
+            minCount: count,
+            maxCount: count,
+            createSeed: createSeed,
+            accumulate: accumulate);
+
+    public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
+        IParser<TSource> element,
+        int minCount,
+        int maxCount,
+        Func<TAccumulator> createSeed,
+        Func<TAccumulator, TSource, TAccumulator> accumulate)
+        => Aggregate<TSource, object?, TAccumulator>(
+            element: element,
+            delimiter: null,
+            minCount: minCount,
+            maxCount: maxCount,
+            createSeed: createSeed,
+            accumulate: accumulate);
+
+    public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
+        IParser<TSource> element,
+        int count,
+        Func<TAccumulator> createSeed,
+        Func<TAccumulator, TSource, TAccumulator> accumulate)
+        => Aggregate(
+            element: element,
+            minCount: count,
+            maxCount: count,
+            createSeed: createSeed,
+            accumulate: accumulate);
+
+    /// <summary>
+    /// Creates a parser applying the given parser multiple times and collects all results.
+    /// </summary>
+    /// <typeparam name="TSource">The type of results collected.</typeparam>
+    /// <param name="element">The parser to apply multiple times.</param>
+    /// <param name="count">The exact number of matches.</param>
+    /// <returns>A parser applying the given parser multiple times.</returns>
+    public static IParser<IImmutableList<TSource>> Multiple<TSource>(
+        IParser<TSource> element,
+        int count)
+        => Multiple(
+            element: element,
+            minCount: count.MustBeGreaterThanOrEqualTo(0),
+            maxCount: count);
+
+    /// <summary>
+    /// Creates a parser applying the given parser multiple times and collects all results.
+    /// </summary>
+    /// <typeparam name="TSource">The type of results collected.</typeparam>
+    /// <typeparam name="TDelimiter">The type of delimiters.</typeparam>
+    /// <param name="element">The parser to apply multiple times.</param>
+    /// <param name="delimiter">The delimiter seperating the different elements.</param>
+    /// <param name="count">The exact number of matches.</param>
+    /// <returns>A parser applying the given parser multiple times.</returns>
+    public static IParser<IImmutableList<TSource>> Multiple<TSource, TDelimiter>(
+        IParser<TSource> element,
+        IParser<TDelimiter>? delimiter,
+        int count)
+        => Multiple(
+            element: element,
+            delimiter: delimiter,
+            minCount: count.MustBeGreaterThanOrEqualTo(0),
+            maxCount: count);
+
+    /// <summary>
+    /// Creates a parser applying the given parser multiple times and collects all results.
+    /// </summary>
+    /// <typeparam name="TSource">The type of results collected.</typeparam>
+    /// <param name="element">The parser to apply multiple times.</param>
+    /// <param name="minCount">The minimum number of matches.</param>
+    /// <param name="maxCount">The maximum number of matches.</param>
+    /// <returns>A parser applying the given parser multiple times.</returns>
+    public static IParser<IImmutableList<TSource>> Multiple<TSource>(
+        IParser<TSource> element,
+        int minCount,
+        int maxCount)
+        => Aggregate<TSource, IImmutableList<TSource>>(
+            element: element,
+            minCount: minCount.MustBeGreaterThanOrEqualTo(0),
+            maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
+            createSeed: static () => ImmutableList<TSource>.Empty,
+            accumulate: static (acc, el) => acc.Add(el));
+
+    /// <summary>
+    /// Creates a parser applying the given parser multiple times and collects all results.
+    /// </summary>
+    /// <typeparam name="TSource">The type of results collected.</typeparam>
+    /// <typeparam name="TDelimiter">The type of delimiters.</typeparam>
+    /// <param name="element">The parser to apply multiple times.</param>
+    /// <param name="delimiter">The delimiter seperating the different elements.</param>
+    /// <param name="minCount">The minimum number of matches.</param>
+    /// <param name="maxCount">The maximum number of matches.</param>
+    /// <returns>A parser applying the given parser multiple times.</returns>
+    public static IParser<IImmutableList<TSource>> Multiple<TSource, TDelimiter>(
+        IParser<TSource> element,
+        IParser<TDelimiter>? delimiter,
+        int minCount,
+        int maxCount)
+        => Aggregate<TSource, TDelimiter, IImmutableList<TSource>>(
+            element: element,
+            delimiter: delimiter,
+            minCount: minCount.MustBeGreaterThanOrEqualTo(0),
+            maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
+            createSeed: static () => ImmutableList<TSource>.Empty,
+            accumulate: static (acc, el) => acc.Add(el));
+
+    /// <summary>
+    /// Creates a parser applying the given parser multiple times and collects all results.
+    /// </summary>
+    /// <typeparam name="TSource">The type of results collected.</typeparam>
+    /// <param name="element">The parser to apply multiple times.</param>
+    /// <returns>A parser applying the given parser multiple times.</returns>
+    public static IParser<IImmutableList<TSource>> Many<TSource>(
+        IParser<TSource> element)
+        => Multiple(
+            element: element,
+            minCount: 0,
+            maxCount: int.MaxValue);
+
+    /// <summary>
+    /// Creates a parser applying the given parser multiple times and collects all results.
+    /// </summary>
+    /// <typeparam name="TSource">The type of results collected.</typeparam>
+    /// <typeparam name="TDelimiter">The type of delimiters.</typeparam>
+    /// <param name="element">The parser to apply multiple times.</param>
+    /// <param name="delimiter">The delimiter seperating the different elements.</param>
+    /// <returns>A parser applying the given parser multiple times.</returns>
+    public static IParser<IImmutableList<TSource>> Many<TSource, TDelimiter>(
+        IParser<TSource> element,
+        IParser<TDelimiter>? delimiter)
+        => Multiple(
+            element: element,
+            delimiter: delimiter,
+            minCount: 0,
+            maxCount: int.MaxValue);
+
+    /// <summary>
+    /// Creates a parser which applies the given parser at least once and collects all results.
+    /// </summary>
+    /// <typeparam name="TSource">The result type of the parser.</typeparam>
+    /// <param name="element">The given parser.</param>
+    /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
+    public static IParser<IImmutableList<TSource>> OneOrMore<TSource>(
+        IParser<TSource> element)
+        => Multiple(
+            element: element,
+            minCount: 1,
+            maxCount: int.MaxValue);
+
+    /// <summary>
+    /// Creates a parser which applies the given parser at least once and collects all results.
+    /// </summary>
+    /// <typeparam name="TSource">The type of results collected.</typeparam>
+    /// <typeparam name="TDelimiter">The type of delimiters.</typeparam>
+    /// <param name="element">The parser to apply multiple times.</param>
+    /// <param name="delimiter">The delimiter seperating the different elements.</param>
+    /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
+    public static IParser<IImmutableList<TSource>> OneOrMore<TSource, TDelimiter>(
+        IParser<TSource> element,
+        IParser<TDelimiter>? delimiter)
+        => Multiple(
+            element: element,
+            delimiter: delimiter,
+            minCount: 1,
+            maxCount: int.MaxValue);
+
+    /// <summary>
+    /// Creates a parser that applies the given parser but does not consume the input.
+    /// </summary>
+    /// <typeparam name="T">The result type of the given parser.</typeparam>
+    /// <param name="parser">The given parser.</param>
+    /// <returns>A parser applying the given parser that does not consume the input.</returns>
+    public static IParser<T> Peek<T>(IParser<T> parser)
+        => new PositiveLookAheadParser<T>(parser);
 }
