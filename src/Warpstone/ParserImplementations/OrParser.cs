@@ -1,17 +1,37 @@
 namespace Warpstone.ParserImplementations;
 
 /// <summary>
-/// Represents a parser that parses either the provided <paramref name="First"/> or <paramref name="Second"/> option.
+/// Represents a parser that parses either the provided first or second option.
 /// </summary>
 /// <typeparam name="T">The result type of the parsers.</typeparam>
-/// <param name="First">The first parser to try.</param>
-/// <param name="Second">The second parser to try.</param>
-public sealed record OrParser<T>(IParser<T> First, IParser<T> Second) : IParser<T>
+public sealed record OrParser<T> : IParser<T>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OrParser{T}"/> class.
+    /// </summary>
+    /// <param name="first">The first parser to try.</param>
+    /// <param name="second">The second parser to try.</param>
+    public OrParser(IParser<T> first, IParser<T> second)
+    {
+        First = first;
+        Second = second;
+        Continue = new(this, second);
+    }
+
+    /// <summary>
+    /// The first parser to try.
+    /// </summary>
+    public IParser<T> First { get; }
+
+    /// <summary>
+    /// The second parser to try.
+    /// </summary>
+    public IParser<T> Second { get; }
+
     /// <summary>
     /// The continuation parser when executing in iterative mode.
     /// </summary>
-    public Continuation Continue { get; } = new(Second);
+    public Continuation Continue { get; }
 
     /// <inheritdoc />
     public Type ResultType => typeof(T);
@@ -40,19 +60,19 @@ public sealed record OrParser<T>(IParser<T> First, IParser<T> Second) : IParser<
             return right;
         }
 
-        return new(position, left.Errors!.Concat(right.Errors!));
+        return new(position, JoinErrors(context, this, left.Errors, right.Errors));
     }
 
     /// <summary>
     /// The continuation parser when executing in iterative mode.
     /// </summary>
     /// <param name="Second">The second parser to try.</param>
-    public sealed record Continuation(IParser Second) : IParser
+    public sealed record Continuation(IParser Root, IParser Second) : IParser
     {
         /// <summary>
         /// The second continuation of the sequential parser when executing in iterative mode.
         /// </summary>
-        public SecondContinuation Continue { get; } = new();
+        public SecondContinuation Continue { get; } = new(Root);
 
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();
@@ -79,7 +99,7 @@ public sealed record OrParser<T>(IParser<T> First, IParser<T> Second) : IParser<
     /// <summary>
     /// The second continuation of the choice parser when executing in iterative mode.
     /// </summary>
-    public sealed record SecondContinuation() : IParser
+    public sealed record SecondContinuation(IParser Root) : IParser
     {
         /// <inheritdoc />
         public Type ResultType => throw new NotSupportedException();
@@ -96,11 +116,60 @@ public sealed record OrParser<T>(IParser<T> First, IParser<T> Second) : IParser<
                 return;
             }
 
-            context.ResultStack.Push(new(left.Position, left.Errors!.Concat(right.Errors!)));
+            context.ResultStack.Push(new(left.Position, JoinErrors(context, Root, left.Errors, right.Errors)));
         }
 
         /// <inheritdoc />
         public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
             => throw new NotSupportedException();
+    }
+
+    private static IEnumerable<IParseError> JoinErrors(IParseContext context, IParser parser, IEnumerable<IParseError>? left, IEnumerable<IParseError>? right)
+    {
+        left ??= [];
+        right ??= [];
+
+        var joined = left.Concat(right);
+        var dict = new Dictionary<int, (HashSet<string> Set, HashSet<UnexpectedTokenError> Inner)>();
+        var other = new List<IParseError>();
+
+        foreach (var error in joined)
+        {
+            if (error is not UnexpectedTokenError te)
+            {
+                other.Add(error);
+            }
+            else
+            {
+                if (!dict.TryGetValue(te.Position, out var pair))
+                {
+                    pair = (new(), new());
+                    dict.Add(te.Position, pair);
+                }
+
+                pair.Inner.Add(te);
+
+                foreach (var e in te.Expected)
+                {
+                    pair.Set.Add(e);
+                }
+            }
+        }
+
+        foreach (var error in other)
+        {
+            yield return error;
+        }
+
+        foreach (var entry in dict)
+        {
+            yield return new UnexpectedTokenError(
+                context: context,
+                parser: parser,
+                position: entry.Key,
+                length: 1,
+                expected: entry.Value.Set,
+                innerErrors: entry.Value.Inner);
+        }
     }
 }
