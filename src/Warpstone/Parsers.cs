@@ -628,4 +628,14 @@ public static class Parsers
     /// <returns>A parser applying a parser, but returning a default value if it fails.</returns>
     public static IParser<T> Maybe<T>(IParser<T> parser, T defaultValue)
         => Or(parser.MustNotBeNull(), Create(defaultValue));
+
+    /// <summary>
+    /// Creates a parser that replaces the nested expected values with a given expected name.
+    /// </summary>
+    /// <typeparam name="T">The result type of the given parser.</typeparam>
+    /// <param name="parser">The given parser.</param>
+    /// <param name="name">The name.</param>
+    /// <returns>A parser that replaces the nested expected values with a given expected name.</returns>
+    public static IParser<T> WithName<T>(this IParser<T> parser, string name)
+        => new ExpectedParser<T>(parser.MustNotBeNull(), name.MustNotBeNull());
 }
