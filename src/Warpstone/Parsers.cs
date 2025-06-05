@@ -10,10 +10,10 @@ public static class Parsers
         => new CharacterParser(value);
 
     public static IParser<string> String(string value, CultureInfo? culture, CompareOptions options)
-        => new StringParser(value, culture ?? CultureInfo.CurrentCulture, options);
+        => new StringParser(value.MustNotBeNull(), culture ?? CultureInfo.CurrentCulture, options);
 
     public static IParser<string> String(string value, bool ignoreCase, CultureInfo? culture)
-        => String(value: value, culture: culture, options: ignoreCase ? CompareOptions.IgnoreCase : CompareOptions.None);
+        => String(value: value.MustNotBeNull(), culture: culture, options: ignoreCase ? CompareOptions.IgnoreCase : CompareOptions.None);
 
     public static IParser<string> String(string value, StringComparison comparisonType)
     {
@@ -28,29 +28,29 @@ public static class Parsers
             _ => throw new NotSupportedException($"Currently the comparison type '{comparisonType}' is not yet supported."),
         };
 
-        return String(value: value, culture: culture, options: options);
+        return String(value: value.MustNotBeNull(), culture: culture, options: options);
     }
 
     public static IParser<string> String(string value, bool ignoreCase)
-        => String(value: value, ignoreCase: ignoreCase, culture: null);
+        => String(value: value.MustNotBeNull(), ignoreCase: ignoreCase, culture: null);
 
     public static IParser<string> String(string value)
-        => String(value: value, ignoreCase: false);
+        => String(value: value.MustNotBeNull(), ignoreCase: false);
 
     public static IParser<string> Regex([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
-        => new RegexParser(pattern, options);
+        => new RegexParser(pattern.MustNotBeNull(), options);
 
     public static IParser<string> Regex([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
-        => new RegexParser(pattern);
+        => new RegexParser(pattern.MustNotBeNull());
 
     public static IParser<T> Lazy<T>(Func<IParser<T>> parser)
-        => new LazyParser<T>(parser);
+        => new LazyParser<T>(parser.MustNotBeNull());
 
-    public static IParser<T> Or<T>(IParser<T> option1, IParser<T> option2, params IEnumerable<IParser<T>> options)
+    public static IParser<T> Or<T>(IParser<T> option1, IParser<T> option2, params IEnumerable<IParser<T>>? options)
     {
-        var result = new OrParser<T>(option1, option2);
+        var result = new OrParser<T>(option1.MustNotBeNull(), option2.MustNotBeNull());
 
-        foreach (var option in options)
+        foreach (var option in options ?? [])
         {
             result = new OrParser<T>(result, option);
         }
@@ -68,6 +68,9 @@ public static class Parsers
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, Func<TInput, TOutput> transformation)
     {
+        parser.MustNotBeNull();
+        transformation.MustNotBeNull();
+
         var t = typeof(TInput);
         var boxed = t.IsValueType;
         var genericParserType = boxed ? typeof(MapBoxedParser<,>) : typeof(MapRefParser<,>);
@@ -86,7 +89,7 @@ public static class Parsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<T1, T2, TOutput>(this IParser<(T1 First, T2 Second)> parser, Func<T1, T2, TOutput> transformation)
-        => parser.Transform(x => transformation(x.First, x.Second));
+        => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second));
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -99,7 +102,7 @@ public static class Parsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<T1, T2, T3, TOutput>(this IParser<(T1 First, T2 Second, T3 Third)> parser, Func<T1, T2, T3, TOutput> transformation)
-        => parser.Transform(x => transformation(x.First, x.Second, x.Third));
+        => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third));
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -113,7 +116,7 @@ public static class Parsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<T1, T2, T3, T4, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> parser, Func<T1, T2, T3, T4, TOutput> transformation)
-        => parser.Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth));
+        => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth));
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -128,7 +131,7 @@ public static class Parsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> parser, Func<T1, T2, T3, T4, T5, TOutput> transformation)
-        => parser.Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth));
+        => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth));
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -144,7 +147,7 @@ public static class Parsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> parser, Func<T1, T2, T3, T4, T5, T6, TOutput> transformation)
-        => parser.Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth));
+        => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth));
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -161,7 +164,7 @@ public static class Parsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, T7, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> parser, Func<T1, T2, T3, T4, T5, T6, T7, TOutput> transformation)
-        => parser.Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth, x.Seventh));
+        => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth, x.Seventh));
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -179,7 +182,7 @@ public static class Parsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, T7, T8, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)> parser, Func<T1, T2, T3, T4, T5, T6, T7, T8, TOutput> transformation)
-        => parser.Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth, x.Seventh, x.Eigth));
+        => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth, x.Seventh, x.Eigth));
 
     /// <summary>
     /// Creates a parser that applies two parsers and combines the results.
@@ -191,6 +194,9 @@ public static class Parsers
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 Left, T2 Right)> ThenAdd<T1, T2>(this IParser<T1> first, IParser<T2> second)
     {
+        first.MustNotBeNull();
+        second.MustNotBeNull();
+
         var tLeft = typeof(T1);
         var tRight = typeof(T2);
 
@@ -220,8 +226,8 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second, T3 Third)> ThenAdd<T1, T2, T3>(this IParser<(T1 First, T2 Second)> first, IParser<T3> second)
-        => first
-        .ThenAdd<(T1, T2), T3>(second)
+        => first.MustNotBeNull()
+        .ThenAdd<(T1, T2), T3>(second.MustNotBeNull())
         .Transform(static (x, y) => (x.Item1, x.Item2, y));
 
     /// <summary>
@@ -235,8 +241,8 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> ThenAdd<T1, T2, T3, T4>(this IParser<(T1 First, T2 Second, T3 Third)> first, IParser<T4> second)
-        => first
-        .ThenAdd<(T1, T2, T3), T4>(second)
+        => first.MustNotBeNull()
+        .ThenAdd<(T1, T2, T3), T4>(second.MustNotBeNull())
         .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, y));
 
     /// <summary>
@@ -251,8 +257,8 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> ThenAdd<T1, T2, T3, T4, T5>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> first, IParser<T5> second)
-        => first
-        .ThenAdd<(T1, T2, T3, T4), T5>(second)
+        => first.MustNotBeNull()
+        .ThenAdd<(T1, T2, T3, T4), T5>(second.MustNotBeNull())
         .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, y));
 
     /// <summary>
@@ -268,8 +274,8 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> ThenAdd<T1, T2, T3, T4, T5, T6>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> first, IParser<T6> second)
-        => first
-        .ThenAdd<(T1, T2, T3, T4, T5), T6>(second)
+        => first.MustNotBeNull()
+        .ThenAdd<(T1, T2, T3, T4, T5), T6>(second.MustNotBeNull())
         .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, y));
 
     /// <summary>
@@ -286,8 +292,8 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> ThenAdd<T1, T2, T3, T4, T5, T6, T7>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> first, IParser<T7> second)
-        => first
-        .ThenAdd<(T1, T2, T3, T4, T5, T6), T7>(second)
+        => first.MustNotBeNull()
+        .ThenAdd<(T1, T2, T3, T4, T5, T6), T7>(second.MustNotBeNull())
         .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, y));
 
     /// <summary>
@@ -305,8 +311,8 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)> ThenAdd<T1, T2, T3, T4, T5, T6, T7, T8>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> first, IParser<T8> second)
-        => first
-        .ThenAdd<(T1, T2, T3, T4, T5, T6, T7), T8>(second)
+        => first.MustNotBeNull()
+        .ThenAdd<(T1, T2, T3, T4, T5, T6, T7), T8>(second.MustNotBeNull())
         .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, x.Item7, y));
 
     /// <summary>
@@ -318,7 +324,9 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser returning the result of the second parser.</returns>
     public static IParser<T2> Then<T1, T2>(this IParser<T1> first, IParser<T2> second)
-        => first.ThenAdd(second).Transform(static (_, r) => r);
+        => first.MustNotBeNull()
+        .ThenAdd(second.MustNotBeNull())
+        .Transform(static (_, r) => r);
 
     /// <summary>
     /// Creates a parser that applies two parsers and returns the result of the first one.
@@ -329,7 +337,9 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser returning the result of the first parser.</returns>
     public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, IParser<T2> second)
-        => first.ThenAdd(second).Transform(static (l, _) => l);
+        => first.MustNotBeNull()
+        .ThenAdd(second.MustNotBeNull())
+        .Transform(static (l, _) => l);
 
     /// <summary>
     /// Creates a parser that applies the given parser and then expects the input stream to end.
@@ -338,7 +348,7 @@ public static class Parsers
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser applying the given parser and then expects the input stream to end.</returns>
     public static IParser<T> ThenEnd<T>(this IParser<T> parser)
-        => parser.ThenSkip(End);
+        => parser.MustNotBeNull().ThenSkip(End);
 
     /// <summary>
     /// Creates a parser that always fails.
@@ -365,12 +375,12 @@ public static class Parsers
         Func<TAccumulator> createSeed,
         Func<TAccumulator, TSource, TAccumulator> accumulate)
         => new AggregateParser<TSource, TDelimiter, TAccumulator>(
-            element,
+            element.MustNotBeNull(),
             delimiter,
             minCount.MustBeGreaterThanOrEqualTo(0),
             maxCount.MustBeGreaterThanOrEqualTo(minCount),
-            createSeed,
-            accumulate);
+            createSeed.MustNotBeNull(),
+            accumulate.MustNotBeNull());
 
     public static IParser<TAccumulator> Aggregate<TSource, TDelimiter, TAccumulator>(
         IParser<TSource> element,
@@ -379,12 +389,12 @@ public static class Parsers
         Func<TAccumulator> createSeed,
         Func<TAccumulator, TSource, TAccumulator> accumulate)
         => Aggregate(
-            element: element,
+            element: element.MustNotBeNull(),
             delimiter: delimiter,
-            minCount: count,
+            minCount: count.MustBeGreaterThanOrEqualTo(0),
             maxCount: count,
-            createSeed: createSeed,
-            accumulate: accumulate);
+            createSeed: createSeed.MustNotBeNull(),
+            accumulate: accumulate.MustNotBeNull());
 
     public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
         IParser<TSource> element,
@@ -393,12 +403,12 @@ public static class Parsers
         Func<TAccumulator> createSeed,
         Func<TAccumulator, TSource, TAccumulator> accumulate)
         => Aggregate<TSource, object?, TAccumulator>(
-            element: element,
+            element: element.MustNotBeNull(),
             delimiter: null,
-            minCount: minCount,
-            maxCount: maxCount,
-            createSeed: createSeed,
-            accumulate: accumulate);
+            minCount: minCount.MustBeGreaterThanOrEqualTo(0),
+            maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
+            createSeed: createSeed.MustNotBeNull(),
+            accumulate: accumulate.MustNotBeNull());
 
     public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
         IParser<TSource> element,
@@ -406,11 +416,11 @@ public static class Parsers
         Func<TAccumulator> createSeed,
         Func<TAccumulator, TSource, TAccumulator> accumulate)
         => Aggregate(
-            element: element,
-            minCount: count,
+            element: element.MustNotBeNull(),
+            minCount: count.MustBeGreaterThanOrEqualTo(0),
             maxCount: count,
-            createSeed: createSeed,
-            accumulate: accumulate);
+            createSeed: createSeed.MustNotBeNull(),
+            accumulate: accumulate.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser applying the given parser multiple times and collects all results.
@@ -423,7 +433,7 @@ public static class Parsers
         IParser<TSource> element,
         int count)
         => Multiple(
-            element: element,
+            element: element.MustNotBeNull(),
             minCount: count.MustBeGreaterThanOrEqualTo(0),
             maxCount: count);
 
@@ -441,7 +451,7 @@ public static class Parsers
         IParser<TDelimiter>? delimiter,
         int count)
         => Multiple(
-            element: element,
+            element: element.MustNotBeNull(),
             delimiter: delimiter,
             minCount: count.MustBeGreaterThanOrEqualTo(0),
             maxCount: count);
@@ -459,7 +469,7 @@ public static class Parsers
         int minCount,
         int maxCount)
         => Aggregate<TSource, IImmutableList<TSource>>(
-            element: element,
+            element: element.MustNotBeNull(),
             minCount: minCount.MustBeGreaterThanOrEqualTo(0),
             maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
             createSeed: static () => ImmutableList<TSource>.Empty,
@@ -481,7 +491,7 @@ public static class Parsers
         int minCount,
         int maxCount)
         => Aggregate<TSource, TDelimiter, IImmutableList<TSource>>(
-            element: element,
+            element: element.MustNotBeNull(),
             delimiter: delimiter,
             minCount: minCount.MustBeGreaterThanOrEqualTo(0),
             maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
@@ -497,7 +507,7 @@ public static class Parsers
     public static IParser<IImmutableList<TSource>> Many<TSource>(
         IParser<TSource> element)
         => Multiple(
-            element: element,
+            element: element.MustNotBeNull(),
             minCount: 0,
             maxCount: int.MaxValue);
 
@@ -513,7 +523,7 @@ public static class Parsers
         IParser<TSource> element,
         IParser<TDelimiter>? delimiter)
         => Multiple(
-            element: element,
+            element: element.MustNotBeNull(),
             delimiter: delimiter,
             minCount: 0,
             maxCount: int.MaxValue);
@@ -527,7 +537,7 @@ public static class Parsers
     public static IParser<IImmutableList<TSource>> OneOrMore<TSource>(
         IParser<TSource> element)
         => Multiple(
-            element: element,
+            element: element.MustNotBeNull(),
             minCount: 1,
             maxCount: int.MaxValue);
 
@@ -543,7 +553,7 @@ public static class Parsers
         IParser<TSource> element,
         IParser<TDelimiter>? delimiter)
         => Multiple(
-            element: element,
+            element: element.MustNotBeNull(),
             delimiter: delimiter,
             minCount: 1,
             maxCount: int.MaxValue);
@@ -555,7 +565,7 @@ public static class Parsers
     /// <param name="parser">The given parser.</param>
     /// <returns>A parser applying the given parser that does not consume the input.</returns>
     public static IParser<T> Peek<T>(IParser<T> parser)
-        => new PositiveLookaheadParser<T>(parser);
+        => new PositiveLookaheadParser<T>(parser.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that fails if the specified parser succeeds.
@@ -565,4 +575,13 @@ public static class Parsers
     /// <returns>A parser trying the given parser, and failing if it succeeds.</returns>
     public static IParser<T?> Not<T>(IParser<T> not)
         => new NegativeLookaheadParser<T>(not.MustNotBeNull());
+
+    /// <summary>
+    /// Creates a parser that returns its inner <see cref="IParseResult{T}"/> directly.
+    /// </summary>
+    /// <typeparam name="T">The result type of the given parser.</typeparam>
+    /// <param name="parser">The given parser.</param>
+    /// <returns>A parser that returns its inner <see cref="IParseResult{T}"/> directly.</returns>
+    public static IParser<IParseResult<T>> AsResult<T>(this IParser<T> parser)
+        => new AsResultParser<T>(parser.MustNotBeNull());
 }

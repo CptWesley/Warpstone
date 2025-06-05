@@ -95,7 +95,7 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
                 InternalStep();
             }
 
-            result = resultStack.Pop().AsSafe(this);
+            result = resultStack.Pop().AsSafe<T>(this);
         }
 
         return result;
@@ -115,7 +115,7 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
                 InternalStep();
             }
 
-            result = resultStack.Pop().AsSafe(this);
+            result = resultStack.Pop().AsSafe<T>(this);
         }
 
         return result;
@@ -140,7 +140,7 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
 
             if (executionStack.Count <= 0)
             {
-                result = resultStack.Pop().AsSafe(this);
+                result = resultStack.Pop().AsSafe<T>(this);
             }
         }
 

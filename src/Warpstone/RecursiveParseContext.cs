@@ -77,7 +77,7 @@ public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParse
             }
 
             var unsafeResult = Parser.Apply(this, 0);
-            result = unsafeResult.AsSafe(this);
+            result = unsafeResult.AsSafe<T>(this);
 
             return true;
         }

@@ -77,7 +77,7 @@ public static class UnsafeParseResultExtensions
     /// <param name="result">The unsafe result.</param>
     /// <param name="context">The parsing context.</param>
     /// <returns>The safe result.</returns>
-    public static ParseResult<T> AsSafe<T>(this in UnsafeParseResult result, IParseContext<T> context)
+    public static ParseResult<T> AsSafe<T>(this in UnsafeParseResult result, IParseContext context)
     {
         if (result.Success)
         {
