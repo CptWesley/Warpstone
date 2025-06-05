@@ -11,7 +11,7 @@
     <PackageVersion Include="BenchmarkDotNet" Version="0.15.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.25" />
-    <PackageVersion Include="DotNetProjectFile.Analyzers" Version="1.6.0" />
+    <PackageVersion Include="DotNetProjectFile.Analyzers" Version="1.6.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="4.14.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0" />
     <PackageVersion Include="Microsoft.Sbom.Targets" Version="4.0.3" />
@@ -62,7 +62,6 @@
     <PackageVersion Include="Microsoft.TestPlatform.TestHost" Version="17.14.1" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.0" />
   </ItemGroup>
-
   <ItemGroup Label="Licenses">
     <ThirdPartyLicense Include="SonarAnalyzer.CSharp" Hash="IBM9yngU7omFyJOMSFSy0w" />
   </ItemGroup>

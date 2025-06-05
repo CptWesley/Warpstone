@@ -16,9 +16,9 @@
       },
       "DotNetProjectFile.Analyzers": {
         "type": "Direct",
-        "requested": "[1.6.0, )",
-        "resolved": "1.6.0",
-        "contentHash": "+N7pXNX4+45z0Pt1Gumo8AtMGXFxS5ihYuXPE6DUou1/kjPyNVeZpoD2qLv060YgB5sQWF1Ci1FNZtgfFcxP5Q=="
+        "requested": "[1.6.1, )",
+        "resolved": "1.6.1",
+        "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -79,9 +79,9 @@
       },
       "DotNetProjectFile.Analyzers": {
         "type": "Direct",
-        "requested": "[1.6.0, )",
-        "resolved": "1.6.0",
-        "contentHash": "+N7pXNX4+45z0Pt1Gumo8AtMGXFxS5ihYuXPE6DUou1/kjPyNVeZpoD2qLv060YgB5sQWF1Ci1FNZtgfFcxP5Q=="
+        "requested": "[1.6.1, )",
+        "resolved": "1.6.1",
+        "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -170,9 +170,9 @@
       },
       "DotNetProjectFile.Analyzers": {
         "type": "Direct",
-        "requested": "[1.6.0, )",
-        "resolved": "1.6.0",
-        "contentHash": "+N7pXNX4+45z0Pt1Gumo8AtMGXFxS5ihYuXPE6DUou1/kjPyNVeZpoD2qLv060YgB5sQWF1Ci1FNZtgfFcxP5Q=="
+        "requested": "[1.6.1, )",
+        "resolved": "1.6.1",
+        "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -224,9 +224,9 @@
       },
       "DotNetProjectFile.Analyzers": {
         "type": "Direct",
-        "requested": "[1.6.0, )",
-        "resolved": "1.6.0",
-        "contentHash": "+N7pXNX4+45z0Pt1Gumo8AtMGXFxS5ihYuXPE6DUou1/kjPyNVeZpoD2qLv060YgB5sQWF1Ci1FNZtgfFcxP5Q=="
+        "requested": "[1.6.1, )",
+        "resolved": "1.6.1",
+        "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -278,9 +278,9 @@
       },
       "DotNetProjectFile.Analyzers": {
         "type": "Direct",
-        "requested": "[1.6.0, )",
-        "resolved": "1.6.0",
-        "contentHash": "+N7pXNX4+45z0Pt1Gumo8AtMGXFxS5ihYuXPE6DUou1/kjPyNVeZpoD2qLv060YgB5sQWF1Ci1FNZtgfFcxP5Q=="
+        "requested": "[1.6.1, )",
+        "resolved": "1.6.1",
+        "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -332,9 +332,9 @@
       },
       "DotNetProjectFile.Analyzers": {
         "type": "Direct",
-        "requested": "[1.6.0, )",
-        "resolved": "1.6.0",
-        "contentHash": "+N7pXNX4+45z0Pt1Gumo8AtMGXFxS5ihYuXPE6DUou1/kjPyNVeZpoD2qLv060YgB5sQWF1Ci1FNZtgfFcxP5Q=="
+        "requested": "[1.6.1, )",
+        "resolved": "1.6.1",
+        "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
@@ -386,9 +386,9 @@
       },
       "DotNetProjectFile.Analyzers": {
         "type": "Direct",
-        "requested": "[1.6.0, )",
-        "resolved": "1.6.0",
-        "contentHash": "+N7pXNX4+45z0Pt1Gumo8AtMGXFxS5ihYuXPE6DUou1/kjPyNVeZpoD2qLv060YgB5sQWF1Ci1FNZtgfFcxP5Q=="
+        "requested": "[1.6.1, )",
+        "resolved": "1.6.1",
+        "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "Direct",
