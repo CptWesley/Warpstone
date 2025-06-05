@@ -56,7 +56,9 @@ public static class JsonParser
     private static readonly IParser<JsonObject> Object
         = Char('{')
         .ThenSkip(OptionalWhitespaces)
-        .Then(Many(Field, Char(','), OptionalWhitespaces.ThenSkip(Char('}'))))
+        .Then(Many(Field, Char(',')))
+        .ThenSkip(OptionalWhitespaces)
+        .ThenSkip(Char('}'))
         .Transform(x => new JsonObject(x.ToImmutableArray()));
 
     private static readonly IParser<IJsonValue> Json

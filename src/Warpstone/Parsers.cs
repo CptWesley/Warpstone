@@ -577,6 +577,17 @@ public static class Parsers
         => new NegativeLookaheadParser<T>(not.MustNotBeNull());
 
     /// <summary>
+    /// Creates a parser that parses the given parser, except if the exclusion parser succeedds, in which case it fails.
+    /// </summary>
+    /// <typeparam name="T1">The result type of condition the parser.</typeparam>
+    /// <typeparam name="T2">The result type of the nested parser.</typeparam>
+    /// <param name="parser">The nested parser. This parser is executed if exclusion parser fails.</param>
+    /// <param name="exclusion">The exclusion parser. If this parser succeeds, the expression fails. Otherwise, the value from the nested parser is produced.</param>
+    /// <returns>A parser trying the given parser, running the nested parser if the condition fails, or failing if the condition succeeds.</returns>
+    public static IParser<T2> Except<T1, T2>(this IParser<T2> parser, IParser<T1> exclusion)
+        => Not(exclusion.MustNotBeNull()).Then(parser.MustNotBeNull());
+
+    /// <summary>
     /// Creates a parser that returns its inner <see cref="IParseResult{T}"/> directly.
     /// </summary>
     /// <typeparam name="T">The result type of the given parser.</typeparam>
@@ -584,4 +595,37 @@ public static class Parsers
     /// <returns>A parser that returns its inner <see cref="IParseResult{T}"/> directly.</returns>
     public static IParser<IParseResult<T>> AsResult<T>(this IParser<T> parser)
         => new AsResultParser<T>(parser.MustNotBeNull());
+
+    /// <summary>
+    /// Creates a parser that applies a parser and then applies a different parser depending on the result.
+    /// </summary>
+    /// <typeparam name="TCondition">The result type of the attempted parser.</typeparam>
+    /// <typeparam name="TBranches">The result type of the branch parsers.</typeparam>
+    /// <param name="if">The condition parser.</param>
+    /// <param name="then">The then branch parser.</param>
+    /// <param name="else">The else branch parser.</param>
+    /// <returns>A parser applying a parser based on a condition.</returns>
+    public static IParser<TBranches> If<TCondition, TBranches>(IParser<TCondition> @if, IParser<TBranches> then, IParser<TBranches> @else)
+        => Or(
+            @if.MustNotBeNull().Then(then.MustNotBeNull()),
+            @else.MustNotBeNull());
+
+    /// <summary>
+    /// Creates a parser that tries to parse something, but still proceeds if it fails.
+    /// </summary>
+    /// <typeparam name="T">The result type of the parser.</typeparam>
+    /// <param name="parser">The parser.</param>
+    /// <returns>A parser trying to apply a parser, but always proceeding.</returns>
+    public static IParser<T?> Maybe<T>(IParser<T> parser)
+        => Maybe(parser, default(T));
+
+    /// <summary>
+    /// Creates a parser that tries to apply a given parser, but proceeds and returns a default value if it fails.
+    /// </summary>
+    /// <typeparam name="T">The result type of the parser.</typeparam>
+    /// <param name="parser">The given parser.</param>
+    /// <param name="defaultValue">The default value to return when the parser fails.</param>
+    /// <returns>A parser applying a parser, but returning a default value if it fails.</returns>
+    public static IParser<T> Maybe<T>(IParser<T> parser, T defaultValue)
+        => Or(parser.MustNotBeNull(), Create(defaultValue));
 }

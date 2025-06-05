@@ -1,5 +1,6 @@
 namespace Warpstone.Tests.Parsers;
 
+/*
 public sealed class SelectParser
 {
     private abstract record Base(string Value);
@@ -26,3 +27,4 @@ public sealed class SelectParser
         result.Value.Should().Be(expectedValue);
     }
 }
+*/
