@@ -34,11 +34,11 @@ public static class MemoParser
     [MemberData(nameof(Options))]
     public static void DetectInfiniteRecursion(ParseOptions options)
     {
-        IParser<string> exp = null!;
-        IParser<string> add = Memo(() => exp).ThenSkip(Char('+')).ThenAdd(Memo(() => exp)).Transform((l, r) => $"({l}+{r})");
-        exp = add;
+        IParser<string> num = Memo(Regex(@"[0-9]+"));
+        IParser<string> add = null!;
+        add = Memo(Lazy(() => add).ThenSkip(Char('+')).ThenAdd(num).Transform((l, r) => $"({l}+{r})"));
 
-        var result = exp.TryParse("1+2+3", options);
+        var result = add.TryParse("1+2+3", options);
         result.Success.Should().BeFalse();
         result.Errors.Should().HaveCount(1);
         result.Errors[0].Should().BeOfType<InfiniteRecursionError>();

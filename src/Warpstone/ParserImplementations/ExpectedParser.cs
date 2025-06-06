@@ -58,4 +58,8 @@ internal sealed class ExpectedParser<T>(IParser<T> Parser, string Expected) : IP
         public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
             => throw new NotSupportedException();
     }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => $"ExpectedParser({Expected})";
 }
