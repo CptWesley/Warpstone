@@ -16,12 +16,6 @@ public sealed record ParseOptions
     public ParserExecutionMode ExecutionMode { get; init; } = ParserExecutionMode.Auto;
 
     /// <summary>
-    /// Determines if lazy parsers should be eliminated to gain some performance
-    /// during parsing (default: <see langword="true"/>).
-    /// </summary>
-    public bool EnableLazyParserElimination { get; init; } = true;
-
-    /// <summary>
     /// Determines if left recursive grammars should automatically
     /// be transformed in a way to support left recursion
     /// (default: <see langword="true"/>).
