@@ -567,30 +567,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:Warpstone.Errors.InfiniteRecursionError</Target>
-    <Left>lib/netstandard2.0/Warpstone.dll</Left>
-    <Right>lib/net47/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:Warpstone.Errors.ParseError</Target>
-    <Left>lib/netstandard2.0/Warpstone.dll</Left>
-    <Right>lib/net47/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:Warpstone.Errors.TransformationError</Target>
-    <Left>lib/netstandard2.0/Warpstone.dll</Left>
-    <Right>lib/net47/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
-    <Target>T:Warpstone.Errors.UnexpectedTokenError</Target>
-    <Left>lib/netstandard2.0/Warpstone.dll</Left>
-    <Right>lib/net47/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0008</DiagnosticId>
     <Target>T:Warpstone.IParseResult`1</Target>
     <Left>lib/netstandard2.0/Warpstone.dll</Left>
     <Right>lib/netstandard2.0/Warpstone.dll</Right>
