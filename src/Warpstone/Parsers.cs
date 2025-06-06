@@ -783,9 +783,20 @@ public static class Parsers
     public static IParser<T> WithName<T>(this IParser<T> parser, string name)
         => new ExpectedParser<T>(parser.MustNotBeNull(), name.MustNotBeNull());
 
+    /// <summary>
+    /// Creates a parser which caches the results of the given
+    /// <paramref name="parser"/> per position in the input.
+    /// </summary>
+    /// <typeparam name="T">The return type of the <paramref name="parser"/>.</typeparam>
+    /// <param name="parser">The parser whose results to cache.</param>
+    /// <returns>
+    /// A parser which caches the results of the given
+    /// <paramref name="parser"/> per position in the input.
+    /// </returns>
     public static IParser<T> Memo<T>(IParser<T> parser)
         => new MemoParser<T>(parser.MustNotBeNull());
 
+    /// <inheritdoc cref="Memo{T}(IParser{T})" />
     public static IParser<T> Memo<T>(Func<IParser<T>> parser)
         => Memo(Lazy(parser));
 }
