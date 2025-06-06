@@ -23,10 +23,10 @@
   </ItemGroup>
 
   <ItemGroup Label="Build dependencies">
-    <PackageReference Include="coverlet.collector" PrivateAssets="all" ExcludeAssets="compile" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" ExcludeAssets="compile" />
+    <PackageReference Include="coverlet.collector" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
     <PackageReference Include="Microsoft.TestPlatform.TestHost" PrivateAssets="all" />
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" ExcludeAssets="compile" />
+    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Label="DefaultImports">
