@@ -1,12 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="../tests.props" />
 
   <ItemGroup>
     <ProjectReference Include="../Warpstone/Warpstone.csproj" />
   </ItemGroup>
-
-  <Target Name="DoSomethingBeforeRestore"
-        BeforeTargets="Restore">
-    <Message Text="Got here before Restore!" Importance="high" />
-  </Target>
 </Project>
