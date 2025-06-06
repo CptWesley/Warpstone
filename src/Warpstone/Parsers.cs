@@ -798,5 +798,22 @@ public static class Parsers
 
     /// <inheritdoc cref="Memo{T}(IParser{T})" />
     public static IParser<T> Memo<T>(Func<IParser<T>> parser)
-        => Memo(Lazy(parser));
+        => Memo(Lazy(parser.MustNotBeNull()));
+
+    /// <summary>
+    /// Creates a parser that allows left-recursive execution of the <paramref name="parser"/>
+    /// through a variant of memoization.
+    /// </summary>
+    /// <typeparam name="T">The return type of the <paramref name="parser"/>.</typeparam>
+    /// <param name="parser">The parser whose results to cache.</param>
+    /// <returns>
+    /// A parser which caches the results of the given
+    /// <paramref name="parser"/> per position in the input.
+    /// </returns>
+    public static IParser<T> LeftRecursive<T>(IParser<T> parser)
+        => new LeftRecursiveMemoParser<T>(parser.MustNotBeNull());
+
+    /// <inheritdoc cref="LeftRecursive{T}(IParser{T})" />
+    public static IParser<T> LeftRecursive<T>(Func<IParser<T>> parser)
+        => LeftRecursive(Lazy(parser.MustNotBeNull()));
 }
