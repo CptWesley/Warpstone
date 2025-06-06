@@ -1,6 +1,6 @@
-using static Legacy.Warpstone.Parsers.BasicParsers;
+using static Legacy.Warpstone1.Parsers.BasicParsers;
 
-namespace Legacy.Warpstone.Parsers
+namespace Legacy.Warpstone1.Parsers
 {
     /// <summary>
     /// Static class providing a number of common parsers.

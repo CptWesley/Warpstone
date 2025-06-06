@@ -1,6 +1,6 @@
 using System;
 
-namespace Legacy.Warpstone.Parsers.InternalParsers
+namespace Legacy.Warpstone1.Parsers.InternalParsers
 {
     /// <summary>
     /// A parser that is lazily instantiated.

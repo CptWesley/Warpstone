@@ -1,6 +1,8 @@
+#pragma warning disable S3257 // Declarations and initializations should be as concise as possible
+
 using System;
 
-namespace Legacy.Warpstone.Parsers.InternalParsers
+namespace Legacy.Warpstone1.Parsers.InternalParsers
 {
     /// <summary>
     /// Parser that checks for the end of the input stream.

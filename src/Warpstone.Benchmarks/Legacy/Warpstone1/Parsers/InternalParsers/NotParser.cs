@@ -1,4 +1,6 @@
-namespace Legacy.Warpstone.Parsers.InternalParsers
+#pragma warning disable S3257 // Declarations and initializations should be as concise as possible
+
+namespace Legacy.Warpstone1.Parsers.InternalParsers
 {
     /// <summary>
     /// A parser which parses a given parser, if the specified condition holds.

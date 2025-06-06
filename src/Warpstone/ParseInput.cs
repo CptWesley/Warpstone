@@ -97,7 +97,7 @@ public sealed class ParseInput : IParseInput
     /// </summary>
     /// <param name="input">The input string.</param>
     /// <returns>A new <see cref="IParseInput"/> instance.</returns>
-    [MethodImpl(InlinedOptimized)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IParseInput CreateFromMemory(string input)
         => Create(FromMemorySource.Instance, input);
 
@@ -109,7 +109,7 @@ public sealed class ParseInput : IParseInput
     /// <param name="path">The path to the source file.</param>
     /// <param name="content">The input string.</param>
     /// <returns>A new <see cref="IParseInput"/> instance.</returns>
-    [MethodImpl(InlinedOptimized)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IParseInput CreateFromFile(string path, string content)
         => Create(new FileSource(path), content);
 
@@ -119,7 +119,7 @@ public sealed class ParseInput : IParseInput
     /// </summary>
     /// <param name="path">The path to the source file.</param>
     /// <returns>A new <see cref="IParseInput"/> instance.</returns>
-    [MethodImpl(InlinedOptimized)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IParseInput CreateFromFile(string path)
         => CreateFromFile(path, File.ReadAllText(path));
 }

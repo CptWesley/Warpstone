@@ -1,4 +1,4 @@
-namespace Legacy.Warpstone.Expressions
+namespace Legacy.Warpstone1.Expressions
 {
     /// <summary>
     /// Represents a tuple of an operator and its used parser.

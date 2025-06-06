@@ -1,6 +1,8 @@
+#nullable enable
+
 using System.Collections.Generic;
 
-namespace Legacy.Warpstone.Expressions
+namespace Legacy.Warpstone1.Expressions
 {
     /// <summary>
     /// Delegate for operator transformations.

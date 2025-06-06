@@ -1,12 +1,15 @@
+#nullable enable
+#pragma warning disable
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Legacy.Warpstone.Expressions;
-using Legacy.Warpstone.Parsers.InternalParsers;
-using static Legacy.Warpstone.Parsers.BasicParsers;
+using Legacy.Warpstone1.Expressions;
+using Legacy.Warpstone1.Parsers.InternalParsers;
+using static Legacy.Warpstone1.Parsers.BasicParsers;
 
-namespace Legacy.Warpstone.Parsers
+namespace Legacy.Warpstone1.Parsers
 {
     /// <summary>
     /// Static class for dealing with expression parsers.
@@ -539,15 +542,15 @@ namespace Legacy.Warpstone.Parsers
         }
 
         private static BinaryOperatorTransform<TOperator, TExpression> ExpandTransform<TOperator, TExpression>(this BinaryOperatorTransform<TExpression> transformation)
-            => (d, l, r) => transformation(l, r);
+            => (_, l, r) => transformation(l, r);
 
         private static (IParser<TOperator> Op, BinaryOperatorTransform<TOperator, TExpression> Transformation) ExpandTransform<TOperator, TExpression>(this (IParser<TOperator> Op, BinaryOperatorTransform<TExpression> Transformation) pair)
-            => (pair.Op, (d, l, r) => pair.Transformation(l, r));
+            => (pair.Op, (_, l, r) => pair.Transformation(l, r));
 
         private static UnaryOperatorTransform<TOperator, TExpression> ExpandTransform<TOperator, TExpression>(this UnaryOperatorTransform<TExpression> transformation)
-            => (d, e) => transformation(e);
+            => (_, e) => transformation(e);
 
         private static (IParser<TOperator> Op, UnaryOperatorTransform<TOperator, TExpression> Transformation) ExpandTransform<TOperator, TExpression>(this (IParser<TOperator> Op, UnaryOperatorTransform<TExpression> Transformation) pair)
-            => (pair.Op, (d, e) => pair.Transformation(e));
+            => (pair.Op, (_, e) => pair.Transformation(e));
     }
 }

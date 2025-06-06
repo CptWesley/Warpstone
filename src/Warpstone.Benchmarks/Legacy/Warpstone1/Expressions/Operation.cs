@@ -1,6 +1,8 @@
+#nullable enable
+
 using System.Collections.Generic;
 
-namespace Legacy.Warpstone.Expressions
+namespace Legacy.Warpstone1.Expressions
 {
     /// <summary>
     /// Base class for all expression patterns.

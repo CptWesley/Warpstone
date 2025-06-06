@@ -1,6 +1,6 @@
 using System;
 
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Exception thrown when parsing fails.

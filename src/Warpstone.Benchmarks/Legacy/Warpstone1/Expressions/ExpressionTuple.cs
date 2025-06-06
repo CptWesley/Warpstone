@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Legacy.Warpstone.Expressions
+namespace Legacy.Warpstone1.Expressions
 {
     /// <summary>
     /// Represents a parsed expression tuple and its operators.

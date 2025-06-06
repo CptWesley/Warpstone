@@ -1,6 +1,8 @@
+#pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
+
 using System;
 
-namespace Legacy.Warpstone
+namespace Legacy.Warpstone1
 {
     /// <summary>
     /// Position of a parsed element in the source code.

@@ -6,6 +6,11 @@ namespace Warpstone;
 public interface IParseContext : IReadOnlyParseContext
 {
     /// <summary>
+    /// The used memo-table.
+    /// </summary>
+    public new IMemoTable MemoTable { get; }
+
+    /// <summary>
     /// Progress the parser through a single step of the parsing process.
     /// </summary>
     /// <returns><c>true</c> if progress was made, <c>false</c> if the parsing is finished.</returns>

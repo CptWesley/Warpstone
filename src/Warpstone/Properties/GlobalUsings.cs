@@ -1,8 +1,8 @@
-global using System.Collections.Immutable;
+global using Warpstone;
 global using Warpstone.Errors;
 global using Warpstone.Internal;
-global using Warpstone.IterativeExecution;
-global using Warpstone.Parsers;
-global using Warpstone.Parsers.Internal;
+global using Warpstone.ParserImplementations;
 
-global using static Warpstone.Internal.InternalMethodImplOptions;
+#if !NET9_0_OR_GREATER
+global using Lock = System.Object;
+#endif

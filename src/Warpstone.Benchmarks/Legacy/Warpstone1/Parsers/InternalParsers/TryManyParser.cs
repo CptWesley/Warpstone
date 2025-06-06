@@ -1,7 +1,9 @@
+#pragma warning disable
+
 using System;
 using System.Collections.Generic;
 
-namespace Legacy.Warpstone.Parsers.InternalParsers;
+namespace Legacy.Warpstone1.Parsers.InternalParsers;
 
 /// <summary>
 /// Parser which tries to parse many elements.

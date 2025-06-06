@@ -10,7 +10,7 @@ indent_style = space
 indent_size = 4
 
 # Project files
-[*.{csproj,props}]
+[*.{csproj,props,xml,slnx}]
 indent_style = space
 indent_size = 2
 
@@ -35,7 +35,9 @@ dotnet_diagnostic.CS8629.severity = error
 dotnet_diagnostic.CS8633.severity = error
 dotnet_diagnostic.CS8767.severity = error
 
-dotnet_diagnostic.CS8019.severity = none     # Unnecessary using directive
+dotnet_diagnostic.AsyncFixer01.severity = none
+
+dotnet_diagnostic.IDISP007.severity = none      # Don't dispose injected.
 
 dotnet_diagnostic.IDE1006.severity = none       # IDE1006: Naming Styles
 
@@ -53,6 +55,7 @@ dotnet_diagnostic.CA1860.severity = none        #  Prefer comparing 'Length' to 
 
 dotnet_diagnostic.QW0001.severity = none        # Use a testable Time Provider
 dotnet_diagnostic.QW0005.severity = none        # Seal class or make explicity inheritable
+dotnet_diagnostic.QW0016.severity = none        # Define * as a required property
 
 dotnet_diagnostic.S100.severity  = none         # Properties should be named in PascalCase
 dotnet_diagnostic.S101.severity  = none         # Types should be named in PascalCase
@@ -93,6 +96,7 @@ dotnet_diagnostic.SA1310.severity = none        # Fields should not contain unde
 dotnet_diagnostic.SA1311.severity = none        # Static read-only fields should begin with upper-case character.
 dotnet_diagnostic.SA1313.severity = none        # Parameters should begin with lower-case letter. (Due to FP on _)
 dotnet_diagnostic.SA1402.severity = none        # File may only contain a single type
+dotnet_diagnostic.SA1405.severity = none        # Debug assertions require message.
 dotnet_diagnostic.SA1601.severity = none        # Partial elements should be documented
 dotnet_diagnostic.SA1623.severity = none        # Property documentation should start with Gets
 dotnet_diagnostic.SA1633.severity = none        # The file header is missing or not located at the top of the file.
@@ -101,7 +105,6 @@ dotnet_diagnostic.SA1637.severity = none        # The file header should contain
 dotnet_diagnostic.SA1640.severity = none        # The copyright tag should contain a non-empty company attribute.
 
 dotnet_diagnostic.SA1401.severity = suggestion  # Fields should be private.
-dotnet_diagnostic.SA1402.severity = suggestion  # File may only contain one type.
 dotnet_diagnostic.SA1501.severity = suggestion  # Statement should not be on single line.
 dotnet_diagnostic.SA1502.severity = suggestion  # Element should not be on single line.
 dotnet_diagnostic.SA1512.severity = suggestion  # Single-line comment should be followed by blank line.

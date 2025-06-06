@@ -1,6 +1,8 @@
+#nullable enable
+
 using System.Collections.Generic;
 
-namespace Legacy.Warpstone.Expressions
+namespace Legacy.Warpstone1.Expressions
 {
     /// <summary>
     /// A pattern for matching expressions with two sub-expressions and a single operator.

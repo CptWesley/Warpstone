@@ -11,7 +11,7 @@ public static class MemoTableExtensions
     /// </summary>
     /// <param name="memo">The memo table to wrap.</param>
     /// <returns>A read-only variant of the given <paramref name="memo"/> table.</returns>
-    [MethodImpl(InlinedOptimized)]
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static IReadOnlyMemoTable AsReadOnly(this IReadOnlyMemoTable memo)
         => memo is ReadOnlyMemoTable
         ? memo

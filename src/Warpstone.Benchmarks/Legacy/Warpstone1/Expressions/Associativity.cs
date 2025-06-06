@@ -1,4 +1,4 @@
-namespace Legacy.Warpstone.Expressions
+namespace Legacy.Warpstone1.Expressions
 {
     /// <summary>
     /// Enum for indicating expression associativity.

@@ -6,10 +6,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Legacy\Warpstone1\" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Parlot" />
+    <PackageReference Include="ParsecSharp" />
     <PackageReference Include="Pidgin" />
   </ItemGroup>
 </Project>
