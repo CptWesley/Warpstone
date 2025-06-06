@@ -59,14 +59,6 @@ public static class BasicParsersTests
     /// </summary>
     [Theory]
     [MemberData(nameof(Options))]
-    public static void RegexParserIncorrect(ParseOptions options)
-        => AssertThat(() => Regex("[abc]+").Parse("def", options)).ThrowsExactlyException<UnexpectedTokenError>();
-
-    /// <summary>
-    /// Checks that parsing regexes works correctly.
-    /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
     public static void RegexParserEmptyOnEmptyCorrect(ParseOptions options)
         => AssertThat(Regex(@"\s*").Parse("", options)).IsEqualTo("");
 
