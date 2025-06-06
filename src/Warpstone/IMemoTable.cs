@@ -12,5 +12,5 @@ public interface IMemoTable : IReadOnlyMemoTable
     /// <param name="position">The position in the input.</param>
     /// <param name="parser">The parser used.</param>
     /// <returns>The stored result or <c>null</c> if not present.</returns>
-    public new IParseResult? this[int position, IParser parser] { get; set; }
+    public new UnsafeParseResult this[int position, IParser parser] { get; set; }
 }

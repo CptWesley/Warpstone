@@ -782,4 +782,10 @@ public static class Parsers
     /// <returns>A parser that replaces the nested expected values with a given expected name.</returns>
     public static IParser<T> WithName<T>(this IParser<T> parser, string name)
         => new ExpectedParser<T>(parser.MustNotBeNull(), name.MustNotBeNull());
+
+    public static IParser<T> Memo<T>(IParser<T> parser)
+        => new MemoParser<T>(parser.MustNotBeNull());
+
+    public static IParser<T> Memo<T>(Func<IParser<T>> parser)
+        => Memo(Lazy(parser));
 }

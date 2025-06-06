@@ -17,31 +17,35 @@ public sealed class ReadOnlyMemoTable : IReadOnlyMemoTable
     }
 
     /// <inheritdoc />
-    public IParseResult? this[(int, IParser) key] => memo[key];
+    public UnsafeParseResult this[(int, IParser) key] => memo[key];
 
     /// <inheritdoc />
-    public IParseResult? this[int position, IParser parser] => memo[position, parser];
+    public UnsafeParseResult this[int position, IParser parser] => memo[position, parser];
 
     /// <inheritdoc />
-    public IEnumerable<(int, IParser)> Keys => memo.Keys;
+    public IEnumerable<(int Position, IParser Parser)> Keys => memo.Keys;
 
     /// <inheritdoc />
-    public IEnumerable<IParseResult?> Values => memo.Values;
+    public IEnumerable<UnsafeParseResult> Values => memo.Values;
 
     /// <inheritdoc />
     public int Count => memo.Count;
 
     /// <inheritdoc />
-    public bool ContainsKey((int, IParser) key)
+    public bool ContainsKey((int Position, IParser Parser) key)
         => memo.ContainsKey(key);
 
     /// <inheritdoc />
-    public IEnumerator<KeyValuePair<(int, IParser), IParseResult?>> GetEnumerator()
+    public IEnumerator<KeyValuePair<(int Position, IParser Parser), UnsafeParseResult>> GetEnumerator()
         => memo.GetEnumerator();
 
     /// <inheritdoc />
-    public bool TryGetValue((int, IParser) key, out IParseResult? value)
+    public bool TryGetValue((int Position, IParser Parser) key, out UnsafeParseResult value)
         => memo.TryGetValue(key, out value);
+
+    /// <inheritdoc />
+    public bool TryGetValue(int position, IParser parser, [NotNullWhen(true)] out UnsafeParseResult value)
+        => memo.TryGetValue(position, parser, out value);
 
     /// <inheritdoc />
     IEnumerator IEnumerable.GetEnumerator()
