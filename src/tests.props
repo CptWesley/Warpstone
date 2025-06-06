@@ -34,12 +34,4 @@
     <Using Include="Xunit" />
     <Using Static="true" Include="AssertNet.Assertions" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net481'">
-    <PackageVersion Update="System.Collections.Immutable" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net481'">
-    <PackageReference Include="System.Collections.Immutable" />
-  </ItemGroup>
 </Project>
