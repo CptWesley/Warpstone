@@ -34,8 +34,8 @@ public static class ParseContext
     public static IParseContext<T> Create<T>(IParseInput input, IParser<T> parser, ParseOptions options)
         => options.ExecutionMode switch
         {
-            ParserExecutionMode.Iterative => new IterativeParseContext<T>(input, parser),
-            ParserExecutionMode.Recursive => new RecursiveParseContext<T>(input, parser),
+            ParserExecutionMode.Iterative => new IterativeParseContext<T>(input, parser, options),
+            ParserExecutionMode.Recursive => new RecursiveParseContext<T>(input, parser, options),
             _ => CreateAutomaticContext(input, parser),
         };
 
