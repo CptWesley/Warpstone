@@ -10,7 +10,6 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
 
     private readonly MemoTable memoTable;
     private readonly IReadOnlyMemoTable readOnlyMemoTable;
-    private readonly IParserImplementation<T> implementation;
 
     private readonly Stack<UnsafeParseResult> resultStack;
     private readonly Stack<(int Position, IParserImplementation Parser)> executionStack;
@@ -29,7 +28,7 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
         Input = input;
         Options = options;
 
-        implementation = parser.GetImplementation(options);
+        var implementation = parser.GetImplementation(options);
 
         memoTable = new MemoTable();
         readOnlyMemoTable = memoTable.AsReadOnly();

@@ -16,6 +16,19 @@ public interface IParser
     /// <param name="options">The options used for finding the correct parser implementation.</param>
     /// <returns>The found parser implementation.</returns>
     public IParserImplementation GetImplementation(ParseOptions options);
+
+    /// <summary>
+    /// Performs the analysis of the parser expression.
+    /// </summary>
+    /// <returns>The found analysis info.</returns>
+    public IReadOnlyParserAnalysisInfo Analyze();
+
+    /// <summary>
+    /// Performs an analysis step of the parser expression by updating the <paramref name="info"/> and <paramref name="trace"/> info.
+    /// </summary>
+    /// <param name="info">The resulting info.</param>
+    /// <param name="trace">The trace to reach the current parser node.</param>
+    public void PerformAnalysisStep(IParserAnalysisInfo info, IReadOnlyList<IParser> trace);
 }
 
 /// <summary>

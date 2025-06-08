@@ -15,10 +15,18 @@ public static class ParseContext
             && m.GetParameters()[0].ParameterType == typeof(IParseInput)
             && m.GetParameters()[2].ParameterType == typeof(ParseOptions));
 
-    private static IParseContext<T> CreateAutomaticContext<T>(IParseInput input, IParser<T> parser)
+    private static IParseContext<T> CreateAutomaticContext<T>(IParseInput input, IParser<T> parser, ParseOptions options)
     {
-        // TODO: determine if recursive is safe and use recursive.
-        return new IterativeParseContext<T>(input, parser);
+        var analysis = parser.Analyze();
+
+        if (analysis.HasRecursiveParsers || analysis.MaximumNestedParserDepth > 100)
+        {
+            return new IterativeParseContext<T>(input, parser, options);
+        }
+        else
+        {
+            return new RecursiveParseContext<T>(input, parser, options);
+        }
     }
 
     /// <summary>
@@ -36,7 +44,7 @@ public static class ParseContext
         {
             ParserExecutionMode.Iterative => new IterativeParseContext<T>(input, parser, options),
             ParserExecutionMode.Recursive => new RecursiveParseContext<T>(input, parser, options),
-            _ => CreateAutomaticContext(input, parser),
+            _ => CreateAutomaticContext(input, parser, options),
         };
 
     /// <summary>
