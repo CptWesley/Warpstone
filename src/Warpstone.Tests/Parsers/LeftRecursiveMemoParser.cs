@@ -61,13 +61,13 @@ public static class LeftRecursiveMemoParser
 
         e0r = n;
 
-        var mul = BinOp(e1, '*', e0);
-        var div = BinOp(e1, '/', e0);
+        var mul = BinOp(e1, '*', e0).WithName("mul");
+        var div = BinOp(e1, '/', e0).WithName("div");
 
         e1r = Or(mul, div, e0);
 
         var add = BinOp(e2, '+', e1).WithName("add");
-        var sub = BinOp(e2, '-', e1);
+        var sub = BinOp(e2, '-', e1).WithName("sub");
 
         e2r = Or(add, sub, e1);
 

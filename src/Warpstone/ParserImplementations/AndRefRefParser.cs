@@ -40,7 +40,7 @@ internal sealed class AndRefRefParser<TFirst, TSecond>(IParser<TFirst> First, IP
 
         if (!right.Success)
         {
-            return right;
+            return new(position, right.Errors!);
         }
 
 #if NETCOREAPP3_0_OR_GREATER
