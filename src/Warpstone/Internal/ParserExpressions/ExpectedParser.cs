@@ -4,8 +4,26 @@ namespace Warpstone.Internal.ParserExpressions;
 /// Represents a parser that can override the expected token message.
 /// </summary>
 /// <typeparam name="T">The result type of the wrapped parser.</typeparam>
-/// <param name="Parser">The wrapped parser.</param>
-/// <param name="Expected">The expected string.</param>
-internal sealed class ExpectedParser<T>(IParser<T> Parser, string Expected) : ParserBase<T>
+internal sealed class ExpectedParser<T> : ParserBase<T>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExpectedParser{T}"/> class.
+    /// </summary>
+    /// <param name="parser">The internal parser.</param>
+    /// <param name="expected">The expected string.</param>
+    public ExpectedParser(IParser<T> parser, string expected)
+    {
+        Parser = parser;
+        Expected = expected;
+    }
+
+    /// <summary>
+    /// The internal parser.
+    /// </summary>
+    public IParser<T> Parser { get; }
+
+    /// <summary>
+    /// The expected string.
+    /// </summary>
+    public string Expected { get; }
 }
