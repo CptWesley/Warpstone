@@ -56,4 +56,8 @@ internal sealed class StringParser(string Value, CultureInfo Culture, CompareOpt
         var result = string.Compare(input, position, Value, 0, Value.Length, Culture, Options);
         return result == 0;
     }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => $"StringParser({expected})";
 }

@@ -38,4 +38,8 @@ internal sealed class CharacterParser(char Value) : IParser<char>
             context.ResultStack.Push(new(position, 1, Value));
         }
     }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => $"CharacterParser({expected})";
 }

@@ -30,4 +30,17 @@ internal sealed class LazyParser<T>(Lazy<IParser<T>> Element) : IParser<T>
     {
         return Element.Value.Apply(context, position);
     }
+
+    /// <inheritdoc />
+    public override string ToString()
+    {
+        if (Element.IsValueCreated)
+        {
+            return $"LazyParser({Element.Value})";
+        }
+        else
+        {
+            return $"LazyParser({typeof(IParser<T>)})";
+        }
+    }
 }

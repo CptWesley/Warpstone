@@ -74,4 +74,8 @@ internal sealed class RegexParser : IParser<string>
             context.ResultStack.Push(new(position, [new UnexpectedTokenError(context, this, position, 1, expected)]));
         }
     }
+
+    /// <inheritdoc />
+    public override string ToString()
+        => $"RegexParser({expected}, {Options})";
 }
