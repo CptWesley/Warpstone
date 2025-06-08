@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone;
 
 /// <summary>
