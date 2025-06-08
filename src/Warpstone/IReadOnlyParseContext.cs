@@ -11,6 +11,11 @@ public interface IReadOnlyParseContext
     public IParser Parser { get; }
 
     /// <summary>
+    /// The used parser options.
+    /// </summary>
+    public ParseOptions Options { get; }
+
+    /// <summary>
     /// The provided input.
     /// </summary>
     public IParseInput Input { get; }
