@@ -12,7 +12,7 @@ public sealed class TransformationError : ParseError
     /// <param name="parser">The parser.</param>
     /// <param name="position">The position in the input string.</param>
     /// <param name="length">The length of the error.</param>
-    public TransformationError(IReadOnlyParseContext context, IParser parser, int position, int length)
+    public TransformationError(IReadOnlyParseContext context, IParserImplementation parser, int position, int length)
         : base(context, parser, position, length)
     {
     }
@@ -25,7 +25,7 @@ public sealed class TransformationError : ParseError
     /// <param name="position">The position in the input string.</param>
     /// <param name="length">The length of the error.</param>
     /// <param name="message">The custom message.</param>
-    public TransformationError(IReadOnlyParseContext context, IParser parser, int position, int length, string? message)
+    public TransformationError(IReadOnlyParseContext context, IParserImplementation parser, int position, int length, string? message)
         : base(context, parser, position, length, message)
     {
     }
@@ -39,12 +39,12 @@ public sealed class TransformationError : ParseError
     /// <param name="length">The length of the error.</param>
     /// <param name="message">The custom message.</param>
     /// <param name="innerException">The inner exception that caused this exception.</param>
-    public TransformationError(IReadOnlyParseContext context, IParser parser, int position, int length, string? message, Exception? innerException)
+    public TransformationError(IReadOnlyParseContext context, IParserImplementation parser, int position, int length, string? message, Exception? innerException)
         : base(context, parser, position, length, message, innerException)
     {
     }
 
     /// <inheritdoc />
-    public override IParseError Retarget(IParser parser)
+    public override IParseError Retarget(IParserImplementation parser)
         => new TransformationError(Context, parser, Position, Length, Message, InnerException);
 }

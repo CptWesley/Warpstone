@@ -17,7 +17,8 @@ public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParse
     /// </summary>
     /// <param name="input">The input to parse.</param>
     /// <param name="parser">The parser to run.</param>
-    public RecursiveParseContext(IParseInput input, IParser<T> parser)
+    /// <param name="options">The options used for parsing.</param>
+    public RecursiveParseContext(IParseInput input, IParser<T> parser, ParseOptions options)
     {
         Parser = parser;
         Input = input;

@@ -15,7 +15,7 @@ public sealed class UnexpectedTokenError : ParseError
     /// <param name="expected">The expected input.</param>
     public UnexpectedTokenError(
         IReadOnlyParseContext context,
-        IParser parser,
+        IParserImplementation parser,
         int position,
         int length,
         string expected)
@@ -40,7 +40,7 @@ public sealed class UnexpectedTokenError : ParseError
     /// <param name="innerErrors">The errors that caused this error to occur.</param>
     public UnexpectedTokenError(
         IReadOnlyParseContext context,
-        IParser parser,
+        IParserImplementation parser,
         int position,
         int length,
         IEnumerable<string> expected,
@@ -57,7 +57,7 @@ public sealed class UnexpectedTokenError : ParseError
 
     private UnexpectedTokenError(
         IReadOnlyParseContext context,
-        IParser parser,
+        IParserImplementation parser,
         int position,
         int length,
         ImmutableSortedSet<string> expected,
@@ -86,7 +86,7 @@ public sealed class UnexpectedTokenError : ParseError
     /// <param name="message">The custom message.</param>
     public UnexpectedTokenError(
         IReadOnlyParseContext context,
-        IParser parser,
+        IParserImplementation parser,
         int position,
         int length,
         IEnumerable<string> expected,
@@ -109,7 +109,7 @@ public sealed class UnexpectedTokenError : ParseError
     /// <param name="innerException">The inner exception that caused this exception.</param>
     public UnexpectedTokenError(
         IReadOnlyParseContext context,
-        IParser parser,
+        IParserImplementation parser,
         int position,
         int length,
         IEnumerable<string> expected,
@@ -183,6 +183,6 @@ public sealed class UnexpectedTokenError : ParseError
     }
 
     /// <inheritdoc />
-    public override IParseError Retarget(IParser parser)
+    public override IParseError Retarget(IParserImplementation parser)
         => new UnexpectedTokenError(Context, parser, Position, Length, Expected, InnerErrors, Message, InnerException);
 }

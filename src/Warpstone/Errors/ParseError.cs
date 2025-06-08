@@ -14,7 +14,7 @@ public abstract class ParseError : Exception, IParseError
     /// <param name="length">The length of the error.</param>
     protected ParseError(
         IReadOnlyParseContext context,
-        IParser parser,
+        IParserImplementation parser,
         int position,
         int length)
         : this(context, parser, position, length, null, null)
@@ -31,7 +31,7 @@ public abstract class ParseError : Exception, IParseError
     /// <param name="message">The custom message.</param>
     protected ParseError(
         IReadOnlyParseContext context,
-        IParser parser,
+        IParserImplementation parser,
         int position,
         int length,
         string? message)
@@ -50,7 +50,7 @@ public abstract class ParseError : Exception, IParseError
     /// <param name="innerException">The inner exception that caused this exception.</param>
     protected ParseError(
         IReadOnlyParseContext context,
-        IParser parser,
+        IParserImplementation parser,
         int position,
         int length,
         string? message,
@@ -67,7 +67,7 @@ public abstract class ParseError : Exception, IParseError
     public IReadOnlyParseContext Context { get; }
 
     /// <inheritdoc />
-    public IParser Parser { get; }
+    public IParserImplementation Parser { get; }
 
     /// <inheritdoc />
     public int Position { get; }
@@ -82,5 +82,5 @@ public abstract class ParseError : Exception, IParseError
     public ParseInputPosition InputEndPosition => Context.Input.GetPosition(Position + Length - 1);
 
     /// <inheritdoc />
-    public abstract IParseError Retarget(IParser parser);
+    public abstract IParseError Retarget(IParserImplementation parser);
 }

@@ -116,7 +116,7 @@ internal sealed class OrParser<T> : IParserImplementation<T>
             => throw new NotSupportedException();
     }
 
-    private static IEnumerable<IParseError> JoinErrors(IParseContext context, IParser parser, IEnumerable<IParseError>? left, IEnumerable<IParseError>? right)
+    private static IEnumerable<IParseError> JoinErrors(IParseContext context, IParserImplementation parser, IEnumerable<IParseError>? left, IEnumerable<IParseError>? right)
     {
         left ??= [];
         right ??= [];
