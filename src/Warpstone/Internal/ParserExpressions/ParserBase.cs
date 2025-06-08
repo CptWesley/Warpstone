@@ -40,5 +40,47 @@ internal abstract class ParserBase<T> : IParser<T>
         => lazyAnalsysis.Value;
 
     /// <inheritdoc />
-    public abstract void PerformAnalysisStep(IParserAnalysisInfo info, IReadOnlyList<IParser> trace);
+    public void PerformAnalysisStep(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        var updatedTrace = new IParser[trace.Count + 1];
+        CopyTo(trace, updatedTrace);
+        updatedTrace[updatedTrace.Length - 1] = this;
+
+        var oldLength = info.MaximumNestedParserDepth;
+        if (updatedTrace.Length > oldLength)
+        {
+            info.MaximumNestedParserDepth = updatedTrace.Length;
+        }
+
+        var oldCount = info.OccurrenceCounts.TryGetValue(this, out var cnt) ? cnt : 0;
+        var newCount = oldCount + 1;
+        info.OccurrenceCounts[this] = newCount;
+
+        if (trace.Contains(this))
+        {
+            info.HasRecursiveParsers = true;
+            return;
+        }
+
+        throw new NotImplementedException();
+    }
+
+    private static void CopyTo(IReadOnlyList<IParser> trace, IParser[] updated)
+    {
+        if (trace is IParser[] arr)
+        {
+            Array.Copy(arr, updated, arr.Length);
+        }
+        else if (trace is ICollection<IParser> list)
+        {
+            list.CopyTo(updated, 0);
+        }
+        else
+        {
+            for (var i = 0; i < trace.Count; i++)
+            {
+                updated[i] = trace[i];
+            }
+        }
+    }
 }
