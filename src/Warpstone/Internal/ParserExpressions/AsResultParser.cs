@@ -5,8 +5,6 @@ namespace Warpstone.Internal.ParserExpressions;
 /// </summary>
 /// <typeparam name="T">The type of the result value.</typeparam>
 /// <param name="Parser">The internal parser.</param>
-internal sealed class AsResultParser<T>(IParser<T> Parser) : IParser<IParseResult<T>>
+internal sealed class AsResultParser<T>(IParser<T> Parser) : ParserBase<IParseResult<T>>
 {
-    /// <inheritdoc />
-    public Type ResultType => typeof(IParseResult<T>);
 }

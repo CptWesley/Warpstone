@@ -5,8 +5,6 @@ namespace Warpstone.Internal.ParserExpressions;
 /// </summary>
 /// <typeparam name="T">The type of the value that is always returned.</typeparam>
 /// <param name="Value">The value that is always returned.</param>
-internal sealed class CreateParser<T>(T Value) : IParser<T>
+internal sealed class CreateParser<T>(T Value) : ParserBase<T>
 {
-    /// <inheritdoc />
-    public Type ResultType => typeof(T);
 }

@@ -4,7 +4,7 @@ namespace Warpstone.Internal.ParserExpressions;
 /// Represents a parser that parses either the provided first or second option.
 /// </summary>
 /// <typeparam name="T">The result type of the parsers.</typeparam>
-internal sealed class OrParser<T> : IParser<T>
+internal sealed class OrParser<T> : ParserBase<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OrParser{T}"/> class.
@@ -26,7 +26,4 @@ internal sealed class OrParser<T> : IParser<T>
     /// The second parser to try.
     /// </summary>
     public IParser<T> Second { get; }
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(T);
 }

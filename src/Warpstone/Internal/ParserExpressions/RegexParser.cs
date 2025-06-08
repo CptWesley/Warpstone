@@ -3,11 +3,8 @@ namespace Warpstone.Internal.ParserExpressions;
 /// <summary>
 /// Represents a parser that matches regular expressions in the input.
 /// </summary>
-internal sealed class RegexParser : IParser<string>
+internal sealed class RegexParser : ParserBase<string>
 {
-    private readonly string expected;
-    private readonly Regex regex;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="RegexParser"/> class.
     /// </summary>
@@ -17,8 +14,6 @@ internal sealed class RegexParser : IParser<string>
     {
         Pattern = pattern;
         Options = options | RegexOptions.ExplicitCapture;
-        expected = Regex.Escape(pattern);
-        regex = new Regex(@$"\G({pattern})", options);
     }
 
     /// <summary>
@@ -39,7 +34,4 @@ internal sealed class RegexParser : IParser<string>
     /// Gets the string comparison method.
     /// </summary>
     public RegexOptions Options { get; }
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(string);
 }

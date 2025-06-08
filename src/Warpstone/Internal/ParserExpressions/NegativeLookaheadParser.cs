@@ -5,8 +5,6 @@ namespace Warpstone.Internal.ParserExpressions;
 /// </summary>
 /// <typeparam name="T">The type of the parser used to peek forward.</typeparam>
 /// <param name="Parser">The parser used to peek forward.</param>
-public sealed class NegativeLookaheadParser<T>(IParser<T> Parser) : IParser<T?>
+public sealed class NegativeLookaheadParser<T>(IParser<T> Parser) : ParserBase<T?>
 {
-    /// <inheritdoc />
-    public Type ResultType => typeof(T);
 }

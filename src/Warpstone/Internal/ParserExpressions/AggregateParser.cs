@@ -17,8 +17,6 @@ internal sealed class AggregateParser<TSource, TAccumulator>(
     int MinCount,
     int MaxCount,
     Func<TAccumulator> CreateSeed,
-    Func<TAccumulator, TSource, TAccumulator> Accumulate) : IParser<TAccumulator>
+    Func<TAccumulator, TSource, TAccumulator> Accumulate) : ParserBase<TAccumulator>
 {
-    /// <inheritdoc />
-    public Type ResultType => typeof(TAccumulator);
 }
