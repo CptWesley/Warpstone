@@ -66,8 +66,23 @@ internal sealed class LeftRecursiveMemoParser<T>(IParser<T> Parser) : IParser<T>
 
         public void Apply(IIterativeParseContext context, int position)
         {
-            var result = context.ResultStack.Peek();
-            context.MemoTable[position, Parser] = result;
+            var newResult = context.ResultStack.Pop();
+            var lastResult = context.MemoTable[position, Parser];
+
+            if (!newResult.Success || newResult.NextPosition <= lastResult.NextPosition)
+            {
+                context.ResultStack.Push(lastResult);
+                return;
+            }
+
+            if (newResult.NextPosition <= lastResult.NextPosition)
+            {
+                return;
+            }
+
+            context.MemoTable[position, Parser] = newResult;
+            context.ExecutionStack.Push((position, this));
+            context.ExecutionStack.Push((position, Parser));
         }
     }
 }
