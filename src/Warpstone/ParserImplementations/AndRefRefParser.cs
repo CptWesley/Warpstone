@@ -108,7 +108,7 @@ internal sealed class AndRefRefParser<TFirst, TSecond>(IParser<TFirst> First, IP
 
                 if (!right.Success)
                 {
-                    context.ResultStack.Push(right);
+                    context.ResultStack.Push(new(left.Position, right.Errors!));
                     return;
                 }
 
