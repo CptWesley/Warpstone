@@ -4,12 +4,9 @@ namespace Warpstone.ParserImplementations;
 /// Represents a parser that parses a character.
 /// </summary>
 /// <param name="Value">The character to be parsed.</param>
-internal sealed class CharacterParser(char Value) : IParser<char>
+internal sealed class CharacterParser(char Value) : IParserImplementation<char>
 {
     private readonly string expected = $"'{Value}'";
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(char);
 
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)

@@ -7,13 +7,10 @@ namespace Warpstone.ParserImplementations;
 /// <typeparam name="TSecond">The result type of the <paramref name="Second"/> parser.</typeparam>
 /// <param name="First">The parser that is executed first.</param>
 /// <param name="Second">The parser that is executed after the first one has succeeded.</param>
-internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParser<TFirst> First, IParser<TSecond> Second) : IParser<(TFirst First, TSecond Second)>
+internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParserImplementation<TFirst> First, IParserImplementation<TSecond> Second) : IParserImplementation<(TFirst First, TSecond Second)>
     where TFirst : struct
     where TSecond : class
 {
-    /// <inheritdoc />
-    public Type ResultType => typeof((TFirst, TSecond));
-
     /// <summary>
     /// The first continuation of the sequential parser when executing in iterative mode.
     /// </summary>
@@ -59,11 +56,8 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParser<TFirst> First, 
     /// <summary>
     /// The first continuation of the sequential parser when executing in iterative mode.
     /// </summary>
-    private sealed class Continuation(IParser<TSecond> Second) : IParser
+    private sealed class Continuation(IParserImplementation<TSecond> Second) : IParserImplementation
     {
-        /// <inheritdoc />
-        public Type ResultType => throw new NotSupportedException();
-
         /// <inheritdoc />
         public void Apply(IIterativeParseContext context, int position)
         {
@@ -87,7 +81,7 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParser<TFirst> First, 
         /// <summary>
         /// The second continuation of the sequential parser when executing in iterative mode.
         /// </summary>
-        private sealed class SecondContinuation : IParser
+        private sealed class SecondContinuation : IParserImplementation
         {
 #pragma warning disable S2743 // Static fields should not be used in generic types
             public static readonly SecondContinuation Instance = new();
@@ -96,9 +90,6 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParser<TFirst> First, 
             private SecondContinuation()
             {
             }
-
-            /// <inheritdoc />
-            public Type ResultType => throw new NotSupportedException();
 
             /// <inheritdoc />
             public void Apply(IIterativeParseContext context, int position)

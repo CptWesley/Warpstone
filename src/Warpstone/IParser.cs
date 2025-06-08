@@ -9,21 +9,6 @@ public interface IParser
     /// Gets the result type of the parser.
     /// </summary>
     public Type ResultType { get; }
-
-    /// <summary>
-    /// Applies the parser recursively.
-    /// </summary>
-    /// <param name="context">The parsing context.</param>
-    /// <param name="position">The position to apply it to.</param>
-    /// <returns>The found result.</returns>
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position);
-
-    /// <summary>
-    /// Applies the parser iteratively.
-    /// </summary>
-    /// <param name="context">The parsing context.</param>
-    /// <param name="position">The position to apply it to.</param>
-    public void Apply(IIterativeParseContext context, int position);
 }
 
 /// <summary>

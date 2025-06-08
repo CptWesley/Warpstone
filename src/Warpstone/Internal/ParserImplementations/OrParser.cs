@@ -4,14 +4,14 @@ namespace Warpstone.ParserImplementations;
 /// Represents a parser that parses either the provided first or second option.
 /// </summary>
 /// <typeparam name="T">The result type of the parsers.</typeparam>
-internal sealed class OrParser<T> : IParser<T>
+internal sealed class OrParser<T> : IParserImplementation<T>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="OrParser{T}"/> class.
     /// </summary>
     /// <param name="first">The first parser to try.</param>
     /// <param name="second">The second parser to try.</param>
-    public OrParser(IParser<T> first, IParser<T> second)
+    public OrParser(IParserImplementation<T> first, IParserImplementation<T> second)
     {
         First = first;
         Second = second;
@@ -21,20 +21,17 @@ internal sealed class OrParser<T> : IParser<T>
     /// <summary>
     /// The first parser to try.
     /// </summary>
-    public IParser<T> First { get; }
+    public IParserImplementation<T> First { get; }
 
     /// <summary>
     /// The second parser to try.
     /// </summary>
-    public IParser<T> Second { get; }
+    public IParserImplementation<T> Second { get; }
 
     /// <summary>
     /// The continuation parser when executing in iterative mode.
     /// </summary>
     private Continuation Continue { get; }
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(T);
 
     /// <inheritdoc />
     public void Apply(IIterativeParseContext context, int position)
@@ -68,15 +65,12 @@ internal sealed class OrParser<T> : IParser<T>
     /// </summary>
     /// <param name="Root">The root parser.</param>
     /// <param name="Second">The second parser to try.</param>
-    private sealed class Continuation(IParser Root, IParser Second) : IParser
+    private sealed class Continuation(IParserImplementation Root, IParserImplementation Second) : IParserImplementation
     {
         /// <summary>
         /// The second continuation of the sequential parser when executing in iterative mode.
         /// </summary>
         public SecondContinuation Continue { get; } = new(Root);
-
-        /// <inheritdoc />
-        public Type ResultType => throw new NotSupportedException();
 
         /// <inheritdoc />
         public void Apply(IIterativeParseContext context, int position)
@@ -100,11 +94,8 @@ internal sealed class OrParser<T> : IParser<T>
     /// <summary>
     /// The second continuation of the choice parser when executing in iterative mode.
     /// </summary>
-    private sealed class SecondContinuation(IParser Root) : IParser
+    private sealed class SecondContinuation(IParserImplementation Root) : IParserImplementation
     {
-        /// <inheritdoc />
-        public Type ResultType => throw new NotSupportedException();
-
         /// <inheritdoc />
         public void Apply(IIterativeParseContext context, int position)
         {

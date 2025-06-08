@@ -3,7 +3,7 @@ namespace Warpstone.ParserImplementations;
 /// <summary>
 /// Parser used for detecting the end of the input stream.
 /// </summary>
-internal sealed class EndParser : IParser<string>
+internal sealed class EndParser : IParserImplementation<string>
 {
     /// <summary>
     /// Singleton instance of the parser.
@@ -13,9 +13,6 @@ internal sealed class EndParser : IParser<string>
     private EndParser()
     {
     }
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(string);
 
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)

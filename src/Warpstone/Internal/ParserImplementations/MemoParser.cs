@@ -6,7 +6,7 @@ namespace Warpstone.ParserImplementations;
 /// </summary>
 /// <typeparam name="T">The return type of the cached parser.</typeparam>
 /// <param name="Parser">The parser to be cached.</param>
-internal sealed class MemoParser<T>(IParser<T> Parser) : IParser<T>
+internal sealed class MemoParser<T>(IParserImplementation<T> Parser) : IParserImplementation<T>
 {
     private Continuation Continue { get; } = new(Parser);
 
@@ -41,10 +41,8 @@ internal sealed class MemoParser<T>(IParser<T> Parser) : IParser<T>
         context.ExecutionStack.Push((position, Parser));
     }
 
-    private sealed class Continuation(IParser Parser) : IParser
+    private sealed class Continuation(IParserImplementation Parser) : IParserImplementation
     {
-        public Type ResultType => throw new NotImplementedException();
-
         public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
             throw new NotImplementedException();

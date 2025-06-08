@@ -13,5 +13,5 @@ public interface IIterativeParseContext : IParseContext
     /// <summary>
     /// The execution stack.
     /// </summary>
-    public Stack<(int Position, IParser Parser)> ExecutionStack { get; }
+    public Stack<(int Position, IParserImplementation Parser)> ExecutionStack { get; }
 }

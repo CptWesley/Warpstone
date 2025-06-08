@@ -6,12 +6,9 @@ namespace Warpstone.ParserImplementations;
 /// <typeparam name="T">The result type of the wrapped parser.</typeparam>
 /// <param name="Parser">The wrapped parser.</param>
 /// <param name="Expected">The expected string.</param>
-internal sealed class ExpectedParser<T>(IParser<T> Parser, string Expected) : IParser<T>
+internal sealed class ExpectedParser<T>(IParserImplementation<T> Parser, string Expected) : IParserImplementation<T>
 {
     private Continuation Continue { get; } = new(Expected);
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(T);
 
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
@@ -35,11 +32,8 @@ internal sealed class ExpectedParser<T>(IParser<T> Parser, string Expected) : IP
         context.ExecutionStack.Push((position, Parser));
     }
 
-    private sealed class Continuation(string Expected) : IParser
+    private sealed class Continuation(string Expected) : IParserImplementation
     {
-        /// <inheritdoc />
-        public Type ResultType => throw new NotSupportedException();
-
         /// <inheritdoc />
         public void Apply(IIterativeParseContext context, int position)
         {

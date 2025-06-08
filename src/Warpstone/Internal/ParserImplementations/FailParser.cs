@@ -4,7 +4,7 @@ namespace Warpstone.ParserImplementations;
 /// Represents a parser that always fails.
 /// </summary>
 /// <typeparam name="T">The result type of the parser.</typeparam>
-internal sealed class FailParser<T> : IParser<T>
+internal sealed class FailParser<T> : IParserImplementation<T>
 {
     /// <summary>
     /// The singleton instance of the parser.
@@ -14,9 +14,6 @@ internal sealed class FailParser<T> : IParser<T>
     private FailParser()
     {
     }
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(T);
 
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)

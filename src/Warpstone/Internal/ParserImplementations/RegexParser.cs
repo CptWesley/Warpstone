@@ -3,7 +3,7 @@ namespace Warpstone.ParserImplementations;
 /// <summary>
 /// Represents a parser that matches regular expressions in the input.
 /// </summary>
-internal sealed class RegexParser : IParser<string>
+internal sealed class RegexParser : IParserImplementation<string>
 {
     private readonly string expected;
     private readonly Regex regex;
@@ -39,9 +39,6 @@ internal sealed class RegexParser : IParser<string>
     /// Gets the string comparison method.
     /// </summary>
     public RegexOptions Options { get; }
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(string);
 
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)

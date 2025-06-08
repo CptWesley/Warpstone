@@ -5,11 +5,8 @@ namespace Warpstone.ParserImplementations;
 /// </summary>
 /// <typeparam name="T">The type of the result value.</typeparam>
 /// <param name="Parser">The internal parser.</param>
-internal sealed class AsResultParser<T>(IParser<T> Parser) : IParser<IParseResult<T>>
+internal sealed class AsResultParser<T>(IParserImplementation<T> Parser) : IParserImplementation<IParseResult<T>>
 {
-    /// <inheritdoc />
-    public Type ResultType => typeof(IParseResult<T>);
-
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
@@ -25,7 +22,7 @@ internal sealed class AsResultParser<T>(IParser<T> Parser) : IParser<IParseResul
         context.ExecutionStack.Push((position, Parser));
     }
 
-    private sealed class Continuation : IParser
+    private sealed class Continuation : IParserImplementation
     {
 #pragma warning disable S2743 // Static fields should not be used in generic types
         public static readonly Continuation Instance = new();
@@ -34,9 +31,6 @@ internal sealed class AsResultParser<T>(IParser<T> Parser) : IParser<IParseResul
         private Continuation()
         {
         }
-
-        /// <inheritdoc />
-        public Type ResultType => throw new NotSupportedException();
 
         /// <inheritdoc />
         public void Apply(IIterativeParseContext context, int position)

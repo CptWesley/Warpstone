@@ -6,13 +6,10 @@ namespace Warpstone.ParserImplementations;
 /// <param name="Value">The string to be parsed.</param>
 /// <param name="Culture">The culture used for comparing.</param>
 /// <param name="Options">The options used for comparing.</param>
-internal sealed class StringParser(string Value, CultureInfo Culture, CompareOptions Options) : IParser<string>
+internal sealed class StringParser(string Value, CultureInfo Culture, CompareOptions Options) : IParserImplementation<string>
 {
     private readonly string expected = @$"""{Value}""";
     private readonly bool useValue = Options is CompareOptions.Ordinal;
-
-    /// <inheritdoc />
-    public Type ResultType => typeof(string);
 
     /// <inheritdoc />
     public void Apply(IIterativeParseContext context, int position)
