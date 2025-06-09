@@ -83,4 +83,14 @@ internal abstract class ParserBase<T> : IParser<T>
             }
         }
     }
+
+    /// <inheritdoc />
+    public IParserImplementation<T> CreateUninitializedImplementation()
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    IParserImplementation IParser.CreateUninitializedImplementation()
+        => CreateUninitializedImplementation();
 }

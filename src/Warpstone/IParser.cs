@@ -29,6 +29,13 @@ public interface IParser
     /// <param name="info">The resulting info.</param>
     /// <param name="trace">The trace to reach the current parser node.</param>
     public void PerformAnalysisStep(IParserAnalysisInfo info, IReadOnlyList<IParser> trace);
+
+    /// <summary>
+    /// Creates a new uninitialized instance of the <see cref="IParserImplementation"/> that corresponds
+    /// to this <see cref="IParser"/> expression.
+    /// </summary>
+    /// <returns>The newly created uninitialized <see cref="IParserImplementation"/> instance.</returns>
+    public IParserImplementation CreateUninitializedImplementation();
 }
 
 /// <summary>
@@ -39,4 +46,7 @@ public interface IParser<out T> : IParser
 {
     /// <inheritdoc cref="IParser.GetImplementation(ParseOptions)" />
     public new IParserImplementation<T> GetImplementation(ParseOptions options);
+
+    /// <inheritdoc cref="IParser.CreateUninitializedImplementation()" />
+    public new IParserImplementation<T> CreateUninitializedImplementation();
 }

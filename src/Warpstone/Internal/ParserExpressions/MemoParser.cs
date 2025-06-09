@@ -5,7 +5,19 @@ namespace Warpstone.Internal.ParserExpressions;
 /// so that it can be reused later if the same parser is executed at the same position again.
 /// </summary>
 /// <typeparam name="T">The return type of the cached parser.</typeparam>
-/// <param name="Parser">The parser to be cached.</param>
-internal sealed class MemoParser<T>(IParser<T> Parser) : ParserBase<T>
+internal sealed class MemoParser<T> : ParserBase<T>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MemoParser{T}"/> class.
+    /// </summary>
+    /// <param name="parser">The parser to be cached.</param>
+    public MemoParser(IParser<T> parser)
+    {
+        Parser = parser;
+    }
+
+    /// <summary>
+    /// The parser to be cached.
+    /// </summary>
+    public IParser<T> Parser { get; }
 }

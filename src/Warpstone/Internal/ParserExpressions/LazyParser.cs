@@ -1,12 +1,20 @@
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
-/// Represents a parser that lazily executed the given <paramref name="Element"/> parser.
+/// Represents a parser that lazily executed the given <see name="Parser"/>.
 /// </summary>
-/// <typeparam name="T">The result type of the <paramref name="Element"/> parser.</typeparam>
-/// <param name="Element">The lazily executed parser.</param>
-internal sealed class LazyParser<T>(Lazy<IParser<T>> Element) : ParserBase<T>
+/// <typeparam name="T">The result type of the <see name="Parser"/>.</typeparam>
+internal sealed class LazyParser<T> : ParserBase<T>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
+    /// </summary>
+    /// <param name="parser">The lazily executed parser.</param>
+    public LazyParser(Lazy<IParser<T>> parser)
+    {
+        Parser = parser;
+    }
+
     /// <summary>
     /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
     /// </summary>
@@ -15,4 +23,9 @@ internal sealed class LazyParser<T>(Lazy<IParser<T>> Element) : ParserBase<T>
         : this(new Lazy<IParser<T>>(get))
     {
     }
+
+    /// <summary>
+    /// The lazily executed parser.
+    /// </summary>
+    public Lazy<IParser<T>> Parser { get; }
 }

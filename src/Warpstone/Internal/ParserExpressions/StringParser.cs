@@ -3,9 +3,33 @@ namespace Warpstone.Internal.ParserExpressions;
 /// <summary>
 /// Represents a parser that parses a string.
 /// </summary>
-/// <param name="Value">The string to be parsed.</param>
-/// <param name="Culture">The culture used for comparing.</param>
-/// <param name="Options">The options used for comparing.</param>
-internal sealed class StringParser(string Value, CultureInfo Culture, CompareOptions Options) : ParserBase<string>
+internal sealed class StringParser : ParserBase<string>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="StringParser"/> class.
+    /// </summary>
+    /// <param name="str">The string to be parsed.</param>
+    /// <param name="culture">The culture used for comparing.</param>
+    /// <param name="options">The options used for comparing.</param>
+    public StringParser(string str, CultureInfo culture, CompareOptions options)
+    {
+        String = str;
+        Culture = culture;
+        Options = options;
+    }
+
+    /// <summary>
+    /// The string to be parsed.
+    /// </summary>
+    public string String { get; }
+
+    /// <summary>
+    /// The culture used for comparing.
+    /// </summary>
+    public CultureInfo Culture { get; }
+
+    /// <summary>
+    /// The options used for comparing.
+    /// </summary>
+    public CompareOptions Options { get; }
 }

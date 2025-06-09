@@ -4,7 +4,19 @@ namespace Warpstone.Internal.ParserExpressions;
 /// Parser which represents a positive lookahead (peek). Which does not consume any length of the input.
 /// </summary>
 /// <typeparam name="T">The type of the parser used to peek forward.</typeparam>
-/// <param name="Parser">The parser used to peek forward.</param>
-internal sealed class PositiveLookaheadParser<T>(IParser<T> Parser) : ParserBase<T>
+internal sealed class PositiveLookaheadParser<T> : ParserBase<T>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="PositiveLookaheadParser{T}"/> class.
+    /// </summary>
+    /// <param name="parser">The parser used to peek forward.</param>
+    public PositiveLookaheadParser(IParser<T> parser)
+    {
+        Parser = parser;
+    }
+
+    /// <summary>
+    /// The parser used to peek forward.
+    /// </summary>
+    public IParser<T> Parser { get; }
 }

@@ -6,7 +6,19 @@ namespace Warpstone.Internal.ParserExpressions;
 /// This variant of the <see cref="MemoParser{T}"/> keeps growing the result while possible.
 /// </summary>
 /// <typeparam name="T">The return type of the cached parser.</typeparam>
-/// <param name="Parser">The parser to be cached.</param>
-internal sealed class LeftRecursiveMemoParser<T>(IParser<T> Parser) : ParserBase<T>
+internal sealed class LeftRecursiveMemoParser<T> : ParserBase<T>
 {
+    /// <summary>
+    /// Initializes a new instance of the <see cref="LeftRecursiveMemoParser{T}"/> class.
+    /// </summary>
+    /// <param name="parser">The parser to be cached.</param>
+    public LeftRecursiveMemoParser(IParser<T> parser)
+    {
+        Parser = parser;
+    }
+
+    /// <summary>
+    /// The parser to be cached.
+    /// </summary>
+    public IParser<T> Parser { get; }
 }
