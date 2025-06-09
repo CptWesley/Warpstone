@@ -61,4 +61,17 @@ internal sealed class AggregateParser<TSource, TAccumulator> : ParserBase<TAccum
     /// The accumulation function.
     /// </summary>
     public Func<TAccumulator, TSource, TAccumulator> Accumulate { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<TAccumulator> CreateUninitializedImplementation()
+    {
+        throw new NotImplementedException();
+    }
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        Element.PerformAnalysisStep(info, trace);
+        Delimiter?.PerformAnalysisStep(info, trace);
+    }
 }

@@ -6,6 +6,11 @@ namespace Warpstone;
 public interface IParserImplementation
 {
     /// <summary>
+    /// The parser expression that represents this implementation.
+    /// </summary>
+    public IParser ParserExpression { get; }
+
+    /// <summary>
     /// Applies the parser recursively.
     /// </summary>
     /// <param name="context">The parsing context.</param>
@@ -21,17 +26,37 @@ public interface IParserImplementation
     public void Apply(IIterativeParseContext context, int position);
 
     /// <summary>
-    /// The parser expression that represents this implementation.
+    /// Initializes the parser implementation.
     /// </summary>
-    public IParser ParserExpression { get; }
+    /// <param name="parser">The parser to initialize from.</param>
+    /// <param name="parserLookup">The lookup table for looking up referenced parsers.</param>
+    public void Initialize(IParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup);
 }
 
 /// <summary>
 /// Interface for all typed parser implementations.
 /// </summary>
 /// <typeparam name="T">The result type being parsed.</typeparam>
-public interface IParserImplementation<out T> : IParserImplementation
+public interface IParserImplementation<T> : IParserImplementation
 {
     /// <inheritdoc cref="IParserImplementation.ParserExpression" />
     public new IParser<T> ParserExpression { get; }
+
+    /// <inheritdoc cref="IParserImplementation.Initialize(IParser, IReadOnlyDictionary{IParser, IParserImplementation})" />
+    public void Initialize(IParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup);
+}
+
+/// <summary>
+/// Interface for all typed parser implementations.
+/// </summary>
+/// <typeparam name="TParser">The type of the corresponding parser expression.</typeparam>
+/// <typeparam name="TResult">The result type being parsed.</typeparam>
+public interface IParserImplementation<TParser, TResult> : IParserImplementation<TResult>
+    where TParser : IParser<TResult>
+{
+    /// <inheritdoc cref="IParserImplementation.ParserExpression" />
+    public new TParser ParserExpression { get; }
+
+    /// <inheritdoc cref="IParserImplementation.Initialize(IParser, IReadOnlyDictionary{IParser, IParserImplementation})" />
+    public void Initialize(TParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup);
 }

@@ -1,14 +1,27 @@
-namespace Warpstone.ParserImplementations;
+using Warpstone.Internal.ParserExpressions;
+using Warpstone.Internal.ParserImplementations;
+
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that unwraps the result as a <see cref="IParseResult{T}"/> during the parsing.
 /// </summary>
 /// <typeparam name="T">The type of the result value.</typeparam>
-/// <param name="Parser">The internal parser.</param>
-internal sealed class AsResultParser<T>(IParserImplementation<T> Parser) : IParserImplementation<IParseResult<T>>
+internal sealed class AsResultParserImpl<T> : ParserImplementationBase<AsResultParser<T>, IParseResult<T>>
 {
+    /// <summary>
+    /// The internal parser.
+    /// </summary>
+    public IParserImplementation<T> Parser { get; private set; } = default!;
+
     /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    protected override void InitializeInternal(AsResultParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+    {
+        Parser = (IParserImplementation<T>)parserLookup[parser.Parser];
+    }
+
+    /// <inheritdoc />
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
         var result = Parser.Apply(context, position);
         var typed = result.AsSafe<T>(context);
@@ -16,13 +29,13 @@ internal sealed class AsResultParser<T>(IParserImplementation<T> Parser) : IPars
     }
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    public override void Apply(IIterativeParseContext context, int position)
     {
         context.ExecutionStack.Push((position, Continuation.Instance));
         context.ExecutionStack.Push((position, Parser));
     }
 
-    private sealed class Continuation : IParserImplementation
+    private sealed class Continuation : ContinuationParserImplementationBase
     {
 #pragma warning disable S2743 // Static fields should not be used in generic types
         public static readonly Continuation Instance = new();
@@ -33,15 +46,11 @@ internal sealed class AsResultParser<T>(IParserImplementation<T> Parser) : IPars
         }
 
         /// <inheritdoc />
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var result = context.ResultStack.Pop();
             var typed = result.AsSafe<T>(context);
             context.ResultStack.Push(new(position, result.Length, typed));
         }
-
-        /// <inheritdoc />
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-            => throw new NotSupportedException();
     }
 }

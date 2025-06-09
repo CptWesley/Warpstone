@@ -1,19 +1,19 @@
-namespace Warpstone.ParserImplementations;
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that matches regular expressions in the input.
 /// </summary>
-internal sealed class RegexParser : IParserImplementation<string>
+internal sealed class RegexParserImpl : IParserImplementation<string>
 {
     private readonly string expected;
     private readonly Regex regex;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RegexParser"/> class.
+    /// Initializes a new instance of the <see cref="RegexParserImpl"/> class.
     /// </summary>
     /// <param name="pattern">The pattern to be matched.</param>
     /// <param name="options">The options used by the regex engine.</param>
-    public RegexParser([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
+    public RegexParserImpl([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
     {
         Pattern = pattern;
         Options = options | RegexOptions.ExplicitCapture;
@@ -22,10 +22,10 @@ internal sealed class RegexParser : IParserImplementation<string>
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="RegexParser"/> class.
+    /// Initializes a new instance of the <see cref="RegexParserImpl"/> class.
     /// </summary>
     /// <param name="pattern">The pattern to be matched.</param>
-    public RegexParser([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
+    public RegexParserImpl([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
         : this(pattern, RegexOptions.Compiled)
     {
     }

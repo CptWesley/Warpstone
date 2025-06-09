@@ -1,4 +1,4 @@
-namespace Warpstone.ParserImplementations;
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that converts the value of the given <paramref name="Element"/> parser
@@ -8,7 +8,7 @@ namespace Warpstone.ParserImplementations;
 /// <typeparam name="TOut">The result type of the <paramref name="Map"/> function.</typeparam>
 /// <param name="Element">The input parser.</param>
 /// <param name="Map">The map function.</param>
-internal sealed class MapRefParser<TIn, TOut>(IParserImplementation<TIn> Element, Func<TIn, TOut> Map) : IParserImplementation<TOut>
+internal sealed class MapRefParserImpl<TIn, TOut>(IParserImplementation<TIn> Element, Func<TIn, TOut> Map) : IParserImplementation<TOut>
     where TIn : class
 {
     /// <summary>

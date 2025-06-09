@@ -1,16 +1,16 @@
-namespace Warpstone.ParserImplementations;
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Parser used for detecting the end of the input stream.
 /// </summary>
-internal sealed class EndParser : IParserImplementation<string>
+internal sealed class EndParserImpl : IParserImplementation<string>
 {
     /// <summary>
     /// Singleton instance of the parser.
     /// </summary>
-    public static readonly EndParser Instance = new();
+    public static readonly EndParserImpl Instance = new();
 
-    private EndParser()
+    private EndParserImpl()
     {
     }
 

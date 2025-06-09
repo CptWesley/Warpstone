@@ -1,30 +1,49 @@
-namespace Warpstone.ParserImplementations;
+using Warpstone.Internal.ParserExpressions;
+using Warpstone.Internal.ParserImplementations;
+
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that performs two parse operations sequentially and combines the result.
 /// </summary>
-/// <typeparam name="TFirst">The result type of the <paramref name="First"/> parser.</typeparam>
-/// <typeparam name="TSecond">The result type of the <paramref name="Second"/> parser.</typeparam>
-/// <param name="First">The parser that is executed first.</param>
-/// <param name="Second">The parser that is executed after the first one has succeeded.</param>
-internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParserImplementation<TFirst> First, IParserImplementation<TSecond> Second) : IParserImplementation<(TFirst First, TSecond Second)>
-    where TFirst : struct
+/// <typeparam name="TFirst">The result type of the <see name="First"/> parser.</typeparam>
+/// <typeparam name="TSecond">The result type of the <see name="Second"/> parser.</typeparam>
+internal sealed class AndRefRefParserImpl<TFirst, TSecond> : ParserImplementationBase<AndParser<TFirst, TSecond>, (TFirst First, TSecond Second)>
+    where TFirst : class
     where TSecond : class
 {
     /// <summary>
+    /// The parser that is executed first.
+    /// </summary>
+    public IParserImplementation<TFirst> First { get; private set; } = default!;
+
+    /// <summary>
+    /// The parser that is executed after the first one has succeeded.
+    /// </summary>
+    public IParserImplementation<TSecond> Second { get; private set; } = default!;
+
+    /// <summary>
     /// The first continuation of the sequential parser when executing in iterative mode.
     /// </summary>
-    private Continuation Continue { get; } = new(Second);
+    private Continuation Continue { get; set; } = default!;
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    protected override void InitializeInternal(AndParser<TFirst, TSecond> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+    {
+        First = (IParserImplementation<TFirst>)parserLookup[parser.First];
+        Second = (IParserImplementation<TSecond>)parserLookup[parser.Second];
+        Continue = new(Second);
+    }
+
+    /// <inheritdoc />
+    public override void Apply(IIterativeParseContext context, int position)
     {
         context.ExecutionStack.Push((position, Continue));
         context.ExecutionStack.Push((position, First));
     }
 
     /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
         var left = First.Apply(context, position);
 
@@ -41,7 +60,7 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParserImplementation<T
         }
 
 #if NETCOREAPP3_0_OR_GREATER
-        var leftValue = Unsafe.Unbox<TFirst>(left.Value!);
+        var leftValue = Unsafe.As<TFirst>(left.Value!);
         var rightValue = Unsafe.As<TSecond>(right.Value!);
 #else
         var leftValue = (TFirst)left.Value!;
@@ -56,10 +75,10 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParserImplementation<T
     /// <summary>
     /// The first continuation of the sequential parser when executing in iterative mode.
     /// </summary>
-    private sealed class Continuation(IParserImplementation<TSecond> Second) : IParserImplementation
+    private sealed class Continuation(IParserImplementation<TSecond> Second) : ContinuationParserImplementationBase
     {
         /// <inheritdoc />
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var leftResult = context.ResultStack.Peek();
 
@@ -74,14 +93,10 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParserImplementation<T
             context.ExecutionStack.Push((nextPos, Second));
         }
 
-        /// <inheritdoc />
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-            => throw new NotSupportedException();
-
         /// <summary>
         /// The second continuation of the sequential parser when executing in iterative mode.
         /// </summary>
-        private sealed class SecondContinuation : IParserImplementation
+        private sealed class SecondContinuation : ContinuationParserImplementationBase
         {
 #pragma warning disable S2743 // Static fields should not be used in generic types
             public static readonly SecondContinuation Instance = new();
@@ -92,7 +107,7 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParserImplementation<T
             }
 
             /// <inheritdoc />
-            public void Apply(IIterativeParseContext context, int position)
+            public override void Apply(IIterativeParseContext context, int position)
             {
                 var right = context.ResultStack.Pop();
                 var left = context.ResultStack.Pop();
@@ -104,7 +119,7 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParserImplementation<T
                 }
 
 #if NETCOREAPP3_0_OR_GREATER
-                var leftValue = Unsafe.Unbox<TFirst>(left.Value!);
+                var leftValue = Unsafe.As<TFirst>(left.Value!);
                 var rightValue = Unsafe.As<TSecond>(right.Value!);
 #else
                 var leftValue = (TFirst)left.Value!;
@@ -115,10 +130,6 @@ internal sealed class AndBoxedRefParser<TFirst, TSecond>(IParserImplementation<T
                 var newLength = left.Length + right.Length;
                 context.ResultStack.Push(new UnsafeParseResult(left.Position, newLength, newValue));
             }
-
-            /// <inheritdoc />
-            public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-                => throw new NotSupportedException();
         }
     }
 }

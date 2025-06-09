@@ -162,7 +162,7 @@ public static class Parsers
 
         var t = typeof(TInput);
         var boxed = t.IsValueType;
-        var genericParserType = boxed ? typeof(MapBoxedParser<,>) : typeof(MapRefParser<,>);
+        var genericParserType = boxed ? typeof(MapBoxedParserImpl<,>) : typeof(MapRefParserImpl<,>);
         var parserType = genericParserType.MakeGenericType(t, typeof(TOutput));
         var result = (IParser<TOutput>)Activator.CreateInstance(parserType, [parser, transformation])!;
         return result;
@@ -294,10 +294,10 @@ public static class Parsers
 
         var genericParserType = (leftBoxed, rightBoxed) switch
         {
-            (false, false) => typeof(AndRefRefParser<,>),
-            (false, true) => typeof(AndRefBoxedParser<,>),
-            (true, false) => typeof(AndBoxedRefParser<,>),
-            (true, true) => typeof(AndBoxedBoxedParser<,>),
+            (false, false) => typeof(AndRefRefParserImpl<,>),
+            (false, true) => typeof(AndRefBoxedParserImpl<,>),
+            (true, false) => typeof(AndBoxedRefParserImpl<,>),
+            (true, true) => typeof(AndBoxedBoxedParserImpl<,>),
         };
 
         var parserType = genericParserType.MakeGenericType(tLeft, tRight);

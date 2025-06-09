@@ -1,11 +1,11 @@
-namespace Warpstone.ParserImplementations;
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Parser which represents a positive lookahead (peek). Which does not consume any length of the input.
 /// </summary>
 /// <typeparam name="T">The type of the parser used to peek forward.</typeparam>
 /// <param name="Parser">The parser used to peek forward.</param>
-internal sealed class PositiveLookaheadParser<T>(IParserImplementation<T> Parser) : IParserImplementation<T>
+internal sealed class PositiveLookaheadParserImpl<T>(IParserImplementation<T> Parser) : IParserImplementation<T>
 {
     /// <inheritdoc />
     public UnsafeParseResult Apply(IRecursiveParseContext context, int position)

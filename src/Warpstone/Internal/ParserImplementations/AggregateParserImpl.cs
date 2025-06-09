@@ -1,27 +1,30 @@
-namespace Warpstone.ParserImplementations;
+using Warpstone.Internal.ParserExpressions;
+using Warpstone.Internal.ParserImplementations;
+
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that parses a repeated series of elements and aggregates the results.
 /// </summary>
 /// <typeparam name="TSource">The element type.</typeparam>
 /// <typeparam name="TAccumulator">The accumulator type.</typeparam>
-/// <param name="Element">The element parser.</param>
-/// <param name="Delimiter">The optional delimiter parser.</param>
-/// <param name="MinCount">The minimum number of parsed elements.</param>
-/// <param name="MaxCount">The maximum number of parsed elements.</param>
-/// <param name="CreateSeed">The function to create the initial value of the accumulator.</param>
-/// <param name="Accumulate">The accumulation function.</param>
-internal sealed class AggregateParser<TSource, TAccumulator>(
-    IParserImplementation<TSource> Element,
-    IParserImplementation? Delimiter,
-    int MinCount,
-    int MaxCount,
-    Func<TAccumulator> CreateSeed,
-    Func<TAccumulator, TSource, TAccumulator> Accumulate) : IParserImplementation<TAccumulator>
+internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImplementationBase<AggregateParser<TSource, TAccumulator>, TAccumulator>
 {
+    public IParserImplementation<TSource> Element { get; private set; } = default!;
+
+    public IParserImplementation? Delimiter { get; private set; } = default!;
+
+    public int MinCount { get; private set; } = default!;
+
+    public int MaxCount { get; private set; } = default!;
+
+    public Func<TAccumulator> CreateSeed { get; private set; } = default!;
+
+    public Func<TAccumulator, TSource, TAccumulator> Accumulate { get; private set; } = default!;
+
     /// <inheritdoc />
 #pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
 #pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
     {
         var acc = CreateSeed();
@@ -86,7 +89,7 @@ internal sealed class AggregateParser<TSource, TAccumulator>(
     }
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    public override void Apply(IIterativeParseContext context, int position)
     {
         var acc = CreateSeed();
         context.ExecutionStack.Push((position, new ContinuationElement(
@@ -101,7 +104,17 @@ internal sealed class AggregateParser<TSource, TAccumulator>(
         context.ExecutionStack.Push((position, Element));
     }
 
-    private sealed record ContinuationElement(
+    protected override void InitializeInternal(AggregateParser<TSource, TAccumulator> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+    {
+        Element = (IParserImplementation<TSource>)parserLookup[parser.Element];
+        Delimiter = parser.Delimiter is null ? null : parserLookup[parser.Delimiter];
+        MinCount = parser.MinCount;
+        MaxCount = parser.MaxCount;
+        CreateSeed = parser.CreateSeed;
+        Accumulate = parser.Accumulate;
+    }
+
+    private sealed class ContinuationElement(
         IParserImplementation<TSource> Element,
         IParserImplementation? Delimiter,
         int StartPosition,
@@ -109,14 +122,9 @@ internal sealed class AggregateParser<TSource, TAccumulator>(
         int MinCount,
         int MaxCount,
         TAccumulator Accumulator,
-        Func<TAccumulator, TSource, TAccumulator> Accumulate) : IParserImplementation
+        Func<TAccumulator, TSource, TAccumulator> Accumulate) : ContinuationParserImplementationBase
     {
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var result = context.ResultStack.Pop();
 
@@ -176,7 +184,7 @@ internal sealed class AggregateParser<TSource, TAccumulator>(
         }
     }
 
-    private sealed record ContinuationDelimiter(
+    private sealed class ContinuationDelimiter(
         IParserImplementation<TSource> Element,
         IParserImplementation Delimiter,
         int StartPosition,
@@ -184,14 +192,9 @@ internal sealed class AggregateParser<TSource, TAccumulator>(
         int MinCount,
         int MaxCount,
         TAccumulator Accumulator,
-        Func<TAccumulator, TSource, TAccumulator> Accumulate) : IParserImplementation
+        Func<TAccumulator, TSource, TAccumulator> Accumulate) : ContinuationParserImplementationBase
     {
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var result = context.ResultStack.Pop();
 

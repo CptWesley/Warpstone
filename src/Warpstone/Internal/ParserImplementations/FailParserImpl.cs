@@ -1,17 +1,17 @@
-namespace Warpstone.ParserImplementations;
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that always fails.
 /// </summary>
 /// <typeparam name="T">The result type of the parser.</typeparam>
-internal sealed class FailParser<T> : IParserImplementation<T>
+internal sealed class FailParserImpl<T> : IParserImplementation<T>
 {
     /// <summary>
     /// The singleton instance of the parser.
     /// </summary>
-    public static readonly FailParser<T> Instance = new();
+    public static readonly FailParserImpl<T> Instance = new();
 
-    private FailParser()
+    private FailParserImpl()
     {
     }
 

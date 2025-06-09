@@ -62,8 +62,11 @@ internal abstract class ParserBase<T> : IParser<T>
             return;
         }
 
-        throw new NotImplementedException();
+        PerformAnalysisStepInternal(info, trace);
     }
+
+    /// <inheritdoc cref="PerformAnalysisStep(IParserAnalysisInfo, IReadOnlyList{IParser})" />
+    protected abstract void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace);
 
     private static void CopyTo(IReadOnlyList<IParser> trace, IParser[] updated)
     {
@@ -85,10 +88,7 @@ internal abstract class ParserBase<T> : IParser<T>
     }
 
     /// <inheritdoc />
-    public IParserImplementation<T> CreateUninitializedImplementation()
-    {
-        throw new NotImplementedException();
-    }
+    public abstract IParserImplementation<T> CreateUninitializedImplementation();
 
     /// <inheritdoc />
     IParserImplementation IParser.CreateUninitializedImplementation()

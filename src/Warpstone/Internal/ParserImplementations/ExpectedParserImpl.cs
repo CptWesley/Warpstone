@@ -1,4 +1,4 @@
-namespace Warpstone.ParserImplementations;
+namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that can override the expected token message.
@@ -6,7 +6,7 @@ namespace Warpstone.ParserImplementations;
 /// <typeparam name="T">The result type of the wrapped parser.</typeparam>
 /// <param name="Parser">The wrapped parser.</param>
 /// <param name="Expected">The expected string.</param>
-internal sealed class ExpectedParser<T>(IParserImplementation<T> Parser, string Expected) : IParserImplementation<T>
+internal sealed class ExpectedParserImpl<T>(IParserImplementation<T> Parser, string Expected) : IParserImplementation<T>
 {
     private Continuation Continue { get; } = new(Expected);
 
