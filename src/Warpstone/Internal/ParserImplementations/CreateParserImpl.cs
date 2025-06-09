@@ -5,7 +5,7 @@ namespace Warpstone.Internal.ParserImplementations;
 /// <summary>
 /// Represents a parser that always passes.
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">The type of the value that is always returned.</typeparam>
 internal sealed class CreateParserImpl<T> : ParserImplementationBase<CreateParser<T>, T>
 {
     /// <summary>
