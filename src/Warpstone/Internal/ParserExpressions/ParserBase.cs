@@ -36,12 +36,10 @@ internal abstract class ParserBase<T> : IParser<T>
         return implementations.GetOrAdd(simplified, o =>
         {
             var analysis = Analyze();
-            var lookupRaw = new Dictionary<IParser, IParserImplementation>();
             var lookup = new Dictionary<IParser, IParserImplementation>();
             var lazyTargets = new Dictionary<ILazyParser, IParser>();
             var lazy = new List<ILazyParser>();
             var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
-            var initializeableRaw = new List<(IParser Parser, IParserImplementation Implementation)>();
 
             var requiresMemo = new HashSet<IParser>();
             var requiresGrow = new HashSet<IParser>();
@@ -70,7 +68,6 @@ internal abstract class ParserBase<T> : IParser<T>
 
                 var impl = parser.CreateUninitializedImplementation();
                 initializeable.Add((parser, impl));
-                lookupRaw[parser] = impl;
                 lookup[parser] = impl;
             }
 
@@ -121,8 +118,8 @@ internal abstract class ParserBase<T> : IParser<T>
                     var type = typeof(MemoParser<>).MakeGenericType(parser.ResultType);
                     var wrapped = (IParser)Activator.CreateInstance(type, args: [parser])!;
                     var impl = wrapped.CreateUninitializedImplementation();
+                    impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
                     lookup[parser] = impl;
-                    initializeableRaw.Add((wrapped, impl));
                 }
             }
 
@@ -133,8 +130,8 @@ internal abstract class ParserBase<T> : IParser<T>
                     var type = typeof(GrowParser<>).MakeGenericType(parser.ResultType);
                     var wrapped = (IParser)Activator.CreateInstance(type, args: [parser])!;
                     var impl = wrapped.CreateUninitializedImplementation();
+                    impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
                     lookup[parser] = impl;
-                    initializeableRaw.Add((wrapped, impl));
                 }
             }
 
@@ -142,15 +139,9 @@ internal abstract class ParserBase<T> : IParser<T>
             foreach (var entry in lazyTargets)
             {
                 lookup[entry.Key] = lookup[entry.Value];
-                lookupRaw[entry.Key] = lookupRaw[entry.Value];
             }
 
             // Initialize the implementations.
-
-            foreach (var entry in initializeableRaw)
-            {
-                entry.Implementation.Initialize(entry.Parser, lookupRaw);
-            }
 
             foreach (var entry in initializeable)
             {
