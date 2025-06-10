@@ -36,11 +36,11 @@ internal abstract class ParserImplementationBase<TParser, TResult> : IParserImpl
     /// <inheritdoc />
     public void Initialize(IParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        if (parser is TParser typedParser)
+        if (parser is not TParser typedParser)
         {
-            Initialize(typedParser, parserLookup);
+            throw new ArgumentException("Parser is of wrong type.", nameof(parser));
         }
 
-        throw new ArgumentException("Parser is of wrong type.", nameof(parser));
+        Initialize(typedParser, parserLookup);
     }
 }

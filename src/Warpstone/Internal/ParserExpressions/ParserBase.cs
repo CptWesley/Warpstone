@@ -38,6 +38,7 @@ internal abstract class ParserBase<T> : IParser<T>
             var analysis = Analyze();
             var lookup = new Dictionary<IParser, IParserImplementation>();
             var lazy = new List<ILazyParser>();
+            var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
 
             foreach (var entry in analysis.OccurrenceCounts)
             {
@@ -50,6 +51,7 @@ internal abstract class ParserBase<T> : IParser<T>
                 }
 
                 var impl = parser.CreateUninitializedImplementation();
+                initializeable.Add((parser, impl));
                 lookup[parser] = impl;
             }
 
@@ -71,7 +73,14 @@ internal abstract class ParserBase<T> : IParser<T>
                 lookup[parser] = lookup[target];
             }
 
-            throw new NotImplementedException();
+            foreach (var entry in initializeable)
+            {
+                entry.Implementation.Initialize(entry.Parser, lookup);
+            }
+
+            var untypedResult = lookup[this];
+            var typedResult = (IParserImplementation<T>)untypedResult;
+            return typedResult;
         });
     }
 
