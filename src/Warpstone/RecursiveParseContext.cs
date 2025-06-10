@@ -9,6 +9,7 @@ public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParse
     private readonly Lock lck = new();
     private readonly MemoTable memoTable;
     private readonly IReadOnlyMemoTable readOnlyMemoTable;
+    private readonly IParserImplementation<T> implementation;
 
     private IParseResult<T>? result;
 
@@ -17,10 +18,14 @@ public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParse
     /// </summary>
     /// <param name="input">The input to parse.</param>
     /// <param name="parser">The parser to run.</param>
-    public RecursiveParseContext(IParseInput input, IParser<T> parser)
+    /// <param name="options">The options used for parsing.</param>
+    public RecursiveParseContext(IParseInput input, IParser<T> parser, ParseOptions options)
     {
         Parser = parser;
         Input = input;
+        Options = options;
+
+        implementation = parser.GetImplementation(options);
 
         memoTable = new MemoTable();
         readOnlyMemoTable = memoTable.AsReadOnly();
@@ -28,6 +33,9 @@ public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParse
 
     /// <inheritdoc />
     public IParser<T> Parser { get; }
+
+    /// <inheritdoc />
+    public ParseOptions Options { get; }
 
     /// <inheritdoc />
     IParser IReadOnlyParseContext.Parser => Parser;
@@ -76,7 +84,7 @@ public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParse
                 return false;
             }
 
-            var unsafeResult = Parser.Apply(this, 0);
+            var unsafeResult = implementation.Apply(this, 0);
             result = unsafeResult.AsSafe<T>(this);
 
             return true;

@@ -1,0 +1,47 @@
+namespace Warpstone.Internal.ParserExpressions;
+
+/// <summary>
+/// Represents a parser that matches regular expressions in the input.
+/// </summary>
+internal sealed class RegexParser : ParserBase<string>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RegexParser"/> class.
+    /// </summary>
+    /// <param name="pattern">The pattern to be matched.</param>
+    /// <param name="options">The options used by the regex engine.</param>
+    public RegexParser([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
+    {
+        Pattern = pattern;
+        Options = options | RegexOptions.ExplicitCapture;
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RegexParser"/> class.
+    /// </summary>
+    /// <param name="pattern">The pattern to be matched.</param>
+    public RegexParser([StringSyntax(StringSyntaxAttribute.Regex)] string pattern)
+        : this(pattern, RegexOptions.Compiled)
+    {
+    }
+
+    /// <summary>
+    /// The expected pattern.
+    /// </summary>
+    public string Pattern { get; }
+
+    /// <summary>
+    /// Gets the string comparison method.
+    /// </summary>
+    public RegexOptions Options { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<string> CreateUninitializedImplementation()
+        => new RegexParserImpl(Pattern, Options);
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        // Do nothing.
+    }
+}

@@ -1,0 +1,121 @@
+namespace Warpstone.Internal.ParserImplementations;
+
+/// <summary>
+/// Represents a parser that performs two parse operations sequentially and combines the result.
+/// </summary>
+/// <typeparam name="TFirst">The result type of the <see name="First"/> parser.</typeparam>
+/// <typeparam name="TSecond">The result type of the <see name="Second"/> parser.</typeparam>
+internal sealed class AndBoxedBoxedParserImpl<TFirst, TSecond> : ParserImplementationBase<AndParser<TFirst, TSecond>, (TFirst First, TSecond Second)>
+    where TFirst : struct
+    where TSecond : struct
+{
+    private IParserImplementation<TFirst> first = default!;
+    private IParserImplementation<TSecond> second = default!;
+    private Continuation continuation = default!;
+
+    /// <inheritdoc />
+    protected override void InitializeInternal(AndParser<TFirst, TSecond> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+    {
+        first = (IParserImplementation<TFirst>)parserLookup[parser.First];
+        second = (IParserImplementation<TSecond>)parserLookup[parser.Second];
+        continuation = new(second);
+    }
+
+    /// <inheritdoc />
+    public override void Apply(IIterativeParseContext context, int position)
+    {
+        context.ExecutionStack.Push((position, continuation));
+        context.ExecutionStack.Push((position, first));
+    }
+
+    /// <inheritdoc />
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    {
+        var left = first.Apply(context, position);
+
+        if (!left.Success)
+        {
+            return left;
+        }
+
+        var right = second.Apply(context, left.NextPosition);
+
+        if (!right.Success)
+        {
+            return new(position, right.Errors!);
+        }
+
+#if NETCOREAPP3_0_OR_GREATER
+        var leftValue = Unsafe.Unbox<TFirst>(left.Value!);
+        var rightValue = Unsafe.Unbox<TSecond>(right.Value!);
+#else
+        var leftValue = (TFirst)left.Value!;
+        var rightValue = (TSecond)right.Value!;
+#endif
+        var newValue = (leftValue, rightValue);
+
+        var newLength = left.Length + right.Length;
+        return new UnsafeParseResult(left.Position, newLength, newValue);
+    }
+
+    /// <summary>
+    /// The first continuation of the sequential parser when executing in iterative mode.
+    /// </summary>
+    private sealed class Continuation(IParserImplementation<TSecond> Second) : ContinuationParserImplementationBase
+    {
+        /// <inheritdoc />
+        public override void Apply(IIterativeParseContext context, int position)
+        {
+            var leftResult = context.ResultStack.Peek();
+
+            if (!leftResult.Success)
+            {
+                return;
+            }
+
+            var nextPos = leftResult.NextPosition;
+
+            context.ExecutionStack.Push((nextPos, SecondContinuation.Instance));
+            context.ExecutionStack.Push((nextPos, Second));
+        }
+
+        /// <summary>
+        /// The second continuation of the sequential parser when executing in iterative mode.
+        /// </summary>
+        private sealed class SecondContinuation : ContinuationParserImplementationBase
+        {
+#pragma warning disable S2743 // Static fields should not be used in generic types
+            public static readonly SecondContinuation Instance = new();
+#pragma warning restore S2743 // Static fields should not be used in generic types
+
+            private SecondContinuation()
+            {
+            }
+
+            /// <inheritdoc />
+            public override void Apply(IIterativeParseContext context, int position)
+            {
+                var right = context.ResultStack.Pop();
+                var left = context.ResultStack.Pop();
+
+                if (!right.Success)
+                {
+                    context.ResultStack.Push(new(left.Position, right.Errors!));
+                    return;
+                }
+
+#if NETCOREAPP3_0_OR_GREATER
+                var leftValue = Unsafe.Unbox<TFirst>(left.Value!);
+                var rightValue = Unsafe.Unbox<TSecond>(right.Value!);
+#else
+                var leftValue = (TFirst)left.Value!;
+                var rightValue = (TSecond)right.Value!;
+#endif
+                var newValue = (leftValue, rightValue);
+
+                var newLength = left.Length + right.Length;
+                context.ResultStack.Push(new UnsafeParseResult(left.Position, newLength, newValue));
+            }
+        }
+    }
+}

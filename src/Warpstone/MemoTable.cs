@@ -5,13 +5,13 @@ namespace Warpstone;
 /// </summary>
 public sealed class MemoTable : IMemoTable
 {
-    private readonly Dictionary<int, Dictionary<IParser, UnsafeParseResult>> table = new();
+    private readonly Dictionary<int, Dictionary<IParserImplementation, UnsafeParseResult>> table = new();
 
     /// <inheritdoc />
-    public UnsafeParseResult this[(int, IParser) key] => this[key.Item1, key.Item2];
+    public UnsafeParseResult this[(int, IParserImplementation) key] => this[key.Item1, key.Item2];
 
     /// <inheritdoc />
-    public UnsafeParseResult this[int position, IParser parser]
+    public UnsafeParseResult this[int position, IParserImplementation parser]
     {
         get
         {
@@ -36,10 +36,10 @@ public sealed class MemoTable : IMemoTable
     }
 
     /// <inheritdoc />
-    UnsafeParseResult IReadOnlyMemoTable.this[int position, IParser parser] => this[position, parser];
+    UnsafeParseResult IReadOnlyMemoTable.this[int position, IParserImplementation parser] => this[position, parser];
 
     /// <inheritdoc />
-    public IEnumerable<(int, IParser)> Keys => table.SelectMany(x => x.Value.Select(y => (x.Key, y.Key)));
+    public IEnumerable<(int, IParserImplementation)> Keys => table.SelectMany(x => x.Value.Select(y => (x.Key, y.Key)));
 
     /// <inheritdoc />
     public IEnumerable<UnsafeParseResult> Values => table.SelectMany(x => x.Value.Select(y => y.Value));
@@ -48,15 +48,15 @@ public sealed class MemoTable : IMemoTable
     public int Count => table.Sum(x => x.Value.Count);
 
     /// <inheritdoc />
-    public bool ContainsKey((int Position, IParser Parser) key)
+    public bool ContainsKey((int Position, IParserImplementation Parser) key)
         => TryGetValue(key, out _);
 
     /// <inheritdoc />
-    public bool TryGetValue((int Position, IParser Parser) key, [NotNullWhen(true)] out UnsafeParseResult value)
+    public bool TryGetValue((int Position, IParserImplementation Parser) key, [NotNullWhen(true)] out UnsafeParseResult value)
         => TryGetValue(key.Position, key.Parser, out value);
 
     /// <inheritdoc />
-    public bool TryGetValue(int position, IParser parser, [NotNullWhen(true)] out UnsafeParseResult value)
+    public bool TryGetValue(int position, IParserImplementation parser, [NotNullWhen(true)] out UnsafeParseResult value)
     {
         if (!table.TryGetValue(position, out var expressions) || !expressions.TryGetValue(parser, out value))
         {
@@ -68,8 +68,8 @@ public sealed class MemoTable : IMemoTable
     }
 
     /// <inheritdoc />
-    public IEnumerator<KeyValuePair<(int Position, IParser Parser), UnsafeParseResult>> GetEnumerator()
-        => table.SelectMany(x => x.Value.Select(y => new KeyValuePair<(int, IParser), UnsafeParseResult>((x.Key, y.Key), y.Value)))
+    public IEnumerator<KeyValuePair<(int Position, IParserImplementation Parser), UnsafeParseResult>> GetEnumerator()
+        => table.SelectMany(x => x.Value.Select(y => new KeyValuePair<(int, IParserImplementation), UnsafeParseResult>((x.Key, y.Key), y.Value)))
             .GetEnumerator();
 
     /// <inheritdoc />

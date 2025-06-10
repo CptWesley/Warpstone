@@ -13,7 +13,7 @@ public interface IParseError
     /// <summary>
     /// The parser that caused this error.
     /// </summary>
-    public IParser Parser { get; }
+    public IParserImplementation Parser { get; }
 
     /// <summary>
     /// The position in the <see cref="Context"/> where this error occurred.
@@ -40,5 +40,5 @@ public interface IParseError
     /// </summary>
     /// <param name="parser">The new parser.</param>
     /// <returns>The newly created <see cref="IParseError"/>.</returns>
-    public IParseError Retarget(IParser parser);
+    public IParseError Retarget(IParserImplementation parser);
 }

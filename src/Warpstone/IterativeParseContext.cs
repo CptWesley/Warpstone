@@ -12,7 +12,7 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
     private readonly IReadOnlyMemoTable readOnlyMemoTable;
 
     private readonly Stack<UnsafeParseResult> resultStack;
-    private readonly Stack<(int Position, IParser Parser)> executionStack;
+    private readonly Stack<(int Position, IParserImplementation Parser)> executionStack;
 
     private IParseResult<T>? result;
 
@@ -21,21 +21,28 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
     /// </summary>
     /// <param name="input">The input to parse.</param>
     /// <param name="parser">The parser to run.</param>
-    public IterativeParseContext(IParseInput input, IParser<T> parser)
+    /// <param name="options">The options used for parsing.</param>
+    public IterativeParseContext(IParseInput input, IParser<T> parser, ParseOptions options)
     {
         Parser = parser;
         Input = input;
+        Options = options;
+
+        var implementation = parser.GetImplementation(options);
 
         memoTable = new MemoTable();
         readOnlyMemoTable = memoTable.AsReadOnly();
 
         resultStack = new();
         executionStack = new();
-        executionStack.Push((0, parser));
+        executionStack.Push((0, implementation));
     }
 
     /// <inheritdoc />
     public IParser<T> Parser { get; }
+
+    /// <inheritdoc />
+    public ParseOptions Options { get; }
 
     /// <inheritdoc />
     IParser IReadOnlyParseContext.Parser => Parser;
@@ -62,10 +69,10 @@ public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParse
     public IReadOnlyCollection<UnsafeParseResult> ResultStack => resultStack;
 
     /// <inheritdoc />
-    Stack<(int Position, IParser Parser)> IIterativeParseContext.ExecutionStack => executionStack;
+    Stack<(int Position, IParserImplementation Parser)> IIterativeParseContext.ExecutionStack => executionStack;
 
     /// <inheritdoc cref="IIterativeParseContext.ExecutionStack" />
-    public IReadOnlyCollection<(int Position, IParser Parser)> ExecutionStack => executionStack;
+    public IReadOnlyCollection<(int Position, IParserImplementation Parser)> ExecutionStack => executionStack;
 
     /// <inheritdoc />
     public bool Done => result is { };

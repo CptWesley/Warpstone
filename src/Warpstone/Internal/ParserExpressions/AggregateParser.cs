@@ -1,0 +1,75 @@
+namespace Warpstone.Internal.ParserExpressions;
+
+/// <summary>
+/// Represents a parser that parses a repeated series of elements and aggregates the results.
+/// </summary>
+/// <typeparam name="TSource">The element type.</typeparam>
+/// <typeparam name="TAccumulator">The accumulator type.</typeparam>
+internal sealed class AggregateParser<TSource, TAccumulator> : ParserBase<TAccumulator>
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="AggregateParser{TSource, TAccumulator}"/> class.
+    /// </summary>
+    /// <param name="element">The element parser.</param>
+    /// <param name="delimiter">The optional delimiter parser.</param>
+    /// <param name="minCount">The minimum number of parsed elements.</param>
+    /// <param name="maxCount">The maximum number of parsed elements.</param>
+    /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
+    /// <param name="accumulate">The accumulation function.</param>
+    public AggregateParser(
+        IParser<TSource> element,
+        IParser? delimiter,
+        int minCount,
+        int maxCount,
+        Func<TAccumulator> createSeed,
+        Func<TAccumulator, TSource, TAccumulator> accumulate)
+    {
+        Element = element;
+        Delimiter = delimiter;
+        MinCount = minCount;
+        MaxCount = maxCount;
+        CreateSeed = createSeed;
+        Accumulate = accumulate;
+    }
+
+    /// <summary>
+    /// The element parser.
+    /// </summary>
+    public IParser<TSource> Element { get; }
+
+    /// <summary>
+    /// The optional delimiter parser.
+    /// </summary>
+    public IParser? Delimiter { get; }
+
+    /// <summary>
+    /// The minimum number of parsed elements.
+    /// </summary>
+    public int MinCount { get; }
+
+    /// <summary>
+    /// The maximum number of parsed elements.
+    /// </summary>
+    public int MaxCount { get; }
+
+    /// <summary>
+    /// The function to create the initial value of the accumulator.
+    /// </summary>
+    public Func<TAccumulator> CreateSeed { get; }
+
+    /// <summary>
+    /// The accumulation function.
+    /// </summary>
+    public Func<TAccumulator, TSource, TAccumulator> Accumulate { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<TAccumulator> CreateUninitializedImplementation()
+        => new AggregateParserImpl<TSource, TAccumulator>();
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        Element.PerformAnalysisStep(info, trace);
+        Delimiter?.PerformAnalysisStep(info, trace);
+    }
+}
