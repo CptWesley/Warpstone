@@ -25,7 +25,7 @@ public sealed record ParseOptions
     /// <summary>
     /// Determines if grammars should automatically
     /// be transformed to support memoization
-    /// (default: <see langword="true"/>).
+    /// (default: <see langword="false"/>).
     /// </summary>
-    public bool EnableAutomaticMemoization { get; init; } = true;
+    public bool EnableAutomaticMemoization { get; init; } = false;
 }

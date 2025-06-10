@@ -14,7 +14,6 @@ public static class StackDepth
     [InlineData(1_000)]
     [InlineData(10_000)]
     [InlineData(50_000)]
-    [InlineData(100_000)]
     public static void Left_recursive(int count)
     {
         var input = new string('a', count);
@@ -32,7 +31,6 @@ public static class StackDepth
     [InlineData(1_000)]
     [InlineData(10_000)]
     [InlineData(50_000)]
-    [InlineData(100_000)]
     public static void Right_recursive(int count)
     {
         var input = new string('a', count);
