@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -12,5 +14,15 @@ internal sealed class EndParser : ParserBase<string>
 
     private EndParser()
     {
+    }
+
+    /// <inheritdoc />
+    public override IParserImplementation<string> CreateUninitializedImplementation()
+        => EndParserImpl.Instance;
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        // Do nothing.
     }
 }

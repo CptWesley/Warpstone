@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -19,4 +21,14 @@ internal sealed class PositiveLookaheadParser<T> : ParserBase<T>
     /// The parser used to peek forward.
     /// </summary>
     public IParser<T> Parser { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<T> CreateUninitializedImplementation()
+        => new PositiveLookaheadParserImpl<T>();
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        Parser.PerformAnalysisStep(info, trace);
+    }
 }

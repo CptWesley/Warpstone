@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -64,9 +66,7 @@ internal sealed class AggregateParser<TSource, TAccumulator> : ParserBase<TAccum
 
     /// <inheritdoc />
     public override IParserImplementation<TAccumulator> CreateUninitializedImplementation()
-    {
-        throw new NotImplementedException();
-    }
+        => new AggregateParserImpl<TSource, TAccumulator>();
 
     /// <inheritdoc />
     protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

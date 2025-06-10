@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -27,4 +29,33 @@ internal sealed class AndParser<TFirst, TSecond> : ParserBase<(TFirst First, TSe
     /// The parser that is executed after the first one has succeeded.
     /// </summary>
     public IParser<TSecond> Second { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<(TFirst First, TSecond Second)> CreateUninitializedImplementation()
+    {
+        var tLeft = typeof(TFirst);
+        var tRight = typeof(TSecond);
+
+        var leftBoxed = tLeft.IsValueType;
+        var rightBoxed = tRight.IsValueType;
+
+        var genericParserType = (leftBoxed, rightBoxed) switch
+        {
+            (false, false) => typeof(AndRefRefParserImpl<,>),
+            (false, true) => typeof(AndRefBoxedParserImpl<,>),
+            (true, false) => typeof(AndBoxedRefParserImpl<,>),
+            (true, true) => typeof(AndBoxedBoxedParserImpl<,>),
+        };
+
+        var parserType = genericParserType.MakeGenericType(tLeft, tRight);
+        var parser = (IParserImplementation<(TFirst, TSecond)>)Activator.CreateInstance(parserType, args: null)!;
+        return parser;
+    }
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        First.PerformAnalysisStep(info, trace);
+        Second.PerformAnalysisStep(info, trace);
+    }
 }

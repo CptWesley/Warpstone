@@ -1,3 +1,4 @@
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -26,4 +27,14 @@ internal sealed class ExpectedParser<T> : ParserBase<T>
     /// The expected string.
     /// </summary>
     public string Expected { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<T> CreateUninitializedImplementation()
+        => new ExpectedParserImpl<T>();
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        Parser.PerformAnalysisStep(info, trace);
+    }
 }

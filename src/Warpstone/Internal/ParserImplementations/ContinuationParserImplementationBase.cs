@@ -6,20 +6,14 @@ namespace Warpstone.Internal.ParserImplementations;
 internal abstract class ContinuationParserImplementationBase : IParserImplementation
 {
     /// <inheritdoc />
-    public IParser ParserExpression => throw new NotImplementedException();
+    public IParser ParserExpression => throw new NotSupportedException();
 
     /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-    {
-        throw new NotImplementedException();
-    }
+    public UnsafeParseResult Apply(IRecursiveParseContext context, int position) => throw new NotSupportedException();
+
+    /// <inheritdoc />
+    public void Initialize(IParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup) => throw new NotSupportedException();
 
     /// <inheritdoc />
     public abstract void Apply(IIterativeParseContext context, int position);
-
-    /// <inheritdoc />
-    public void Initialize(IParser parser)
-    {
-        throw new NotImplementedException();
-    }
 }

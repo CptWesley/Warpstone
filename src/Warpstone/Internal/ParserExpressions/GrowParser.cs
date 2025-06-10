@@ -1,3 +1,6 @@
+
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -21,4 +24,14 @@ internal sealed class GrowParser<T> : ParserBase<T>
     /// The parser to be cached.
     /// </summary>
     public IParser<T> Parser { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<T> CreateUninitializedImplementation()
+        => new GrowParserImpl<T>();
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        Parser.PerformAnalysisStep(info, trace);
+    }
 }

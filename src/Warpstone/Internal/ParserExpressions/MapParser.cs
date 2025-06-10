@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -28,4 +30,21 @@ internal sealed class MapParser<TIn, TOut> : ParserBase<TOut>
     /// The map function.
     /// </summary>
     public Func<TIn, TOut> Map { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<TOut> CreateUninitializedImplementation()
+    {
+        var t = typeof(TIn);
+        var boxed = t.IsValueType;
+        var genericParserType = boxed ? typeof(MapBoxedParserImpl<,>) : typeof(MapRefParserImpl<,>);
+        var parserType = genericParserType.MakeGenericType(t, typeof(TOut));
+        var result = (IParserImplementation<TOut>)Activator.CreateInstance(parserType, args: null)!;
+        return result;
+    }
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        Element.PerformAnalysisStep(info, trace);
+    }
 }

@@ -17,6 +17,6 @@ public interface IParserAnalysisInfo : IReadOnlyParserAnalysisInfo
     /// <inheritdoc cref="IReadOnlyParserAnalysisInfo.OccurrenceCounts" />
     public new IDictionary<IParser, int> OccurrenceCounts { get; }
 
-    /// <inheritdoc cref="IReadOnlyParserAnalysisInfo.LeftRecursiveOccurrenceCounts" />
-    public new IDictionary<IParser, int> LeftRecursiveOccurrenceCounts { get; }
+    /// <inheritdoc cref="IReadOnlyParserAnalysisInfo.RecursiveOccurrenceCounts" />
+    public new IDictionary<IParser, int> RecursiveOccurrenceCounts { get; }
 }

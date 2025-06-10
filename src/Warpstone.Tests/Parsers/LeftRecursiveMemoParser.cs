@@ -8,7 +8,7 @@ public static class LeftRecursiveMemoParser
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Auto,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = false,
             }
         ],
@@ -16,7 +16,7 @@ public static class LeftRecursiveMemoParser
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Recursive,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = false,
             }
         ],
@@ -24,7 +24,7 @@ public static class LeftRecursiveMemoParser
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Iterative,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = false,
             }
         ],

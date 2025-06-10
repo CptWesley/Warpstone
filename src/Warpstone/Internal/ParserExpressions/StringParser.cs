@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -32,4 +34,14 @@ internal sealed class StringParser : ParserBase<string>
     /// The options used for comparing.
     /// </summary>
     public CompareOptions Options { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<string> CreateUninitializedImplementation()
+        => new StringParserImpl(String, Culture, Options);
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        // Do nothing.
+    }
 }

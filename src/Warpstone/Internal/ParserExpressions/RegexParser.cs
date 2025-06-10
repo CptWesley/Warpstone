@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -34,4 +36,14 @@ internal sealed class RegexParser : ParserBase<string>
     /// Gets the string comparison method.
     /// </summary>
     public RegexOptions Options { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<string> CreateUninitializedImplementation()
+        => new RegexParserImpl(Pattern, Options);
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        // Do nothing.
+    }
 }

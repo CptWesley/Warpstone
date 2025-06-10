@@ -58,8 +58,4 @@ internal sealed class ExpectedParserImpl<T> : ParserImplementationBase<ExpectedP
             context.ResultStack.Push(new(position, [new UnexpectedTokenError(context, this, position, 1, Expected)]));
         }
     }
-
-    /// <inheritdoc />
-    public override string ToString()
-        => $"ExpectedParser({expected})";
 }

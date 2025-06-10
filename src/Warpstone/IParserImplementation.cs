@@ -37,13 +37,10 @@ public interface IParserImplementation
 /// Interface for all typed parser implementations.
 /// </summary>
 /// <typeparam name="T">The result type being parsed.</typeparam>
-public interface IParserImplementation<T> : IParserImplementation
+public interface IParserImplementation<out T> : IParserImplementation
 {
     /// <inheritdoc cref="IParserImplementation.ParserExpression" />
     public new IParser<T> ParserExpression { get; }
-
-    /// <inheritdoc cref="IParserImplementation.Initialize(IParser, IReadOnlyDictionary{IParser, IParserImplementation})" />
-    public void Initialize(IParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup);
 }
 
 /// <summary>
@@ -51,7 +48,7 @@ public interface IParserImplementation<T> : IParserImplementation
 /// </summary>
 /// <typeparam name="TParser">The type of the corresponding parser expression.</typeparam>
 /// <typeparam name="TResult">The result type being parsed.</typeparam>
-public interface IParserImplementation<TParser, TResult> : IParserImplementation<TResult>
+public interface IParserImplementation<TParser, out TResult> : IParserImplementation<TResult>
     where TParser : IParser<TResult>
 {
     /// <inheritdoc cref="IParserImplementation.ParserExpression" />

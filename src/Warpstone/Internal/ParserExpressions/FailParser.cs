@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -13,5 +15,15 @@ internal sealed class FailParser<T> : ParserBase<T>
 
     private FailParser()
     {
+    }
+
+    /// <inheritdoc />
+    public override IParserImplementation<T> CreateUninitializedImplementation()
+        => FailParserImpl<T>.Instance;
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        // Do nothing.
     }
 }

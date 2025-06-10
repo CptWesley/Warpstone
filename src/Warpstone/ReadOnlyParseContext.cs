@@ -30,6 +30,9 @@ public class ReadOnlyParseContext : IReadOnlyParseContext
 
     /// <inheritdoc />
     public IParseResult Result => context.Result;
+
+    /// <inheritdoc />
+    public ParseOptions Options => context.Options;
 }
 
 /// <summary>

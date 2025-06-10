@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -19,4 +21,14 @@ internal sealed class CreateParser<T> : ParserBase<T>
     /// The value that is always returned.
     /// </summary>
     public T Value { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<T> CreateUninitializedImplementation()
+        => new CreateParserImpl<T>(Value);
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        // Do nothing.
+    }
 }

@@ -9,7 +9,7 @@ namespace Warpstone;
 public sealed class ParserAnalysisInfo : IParserAnalysisInfo
 {
     private readonly Dictionary<IParser, int> occurrenceCounts = new();
-    private readonly Dictionary<IParser, int> leftRecursiveOccurrenceCounts = new();
+    private readonly Dictionary<IParser, int> recursiveOccurrenceCounts = new();
 
     /// <inheritdoc />
     public int MaximumNestedParserDepth { get; set; }
@@ -21,11 +21,11 @@ public sealed class ParserAnalysisInfo : IParserAnalysisInfo
     public IDictionary<IParser, int> OccurrenceCounts => occurrenceCounts;
 
     /// <inheritdoc />
-    public IDictionary<IParser, int> LeftRecursiveOccurrenceCounts => leftRecursiveOccurrenceCounts;
+    public IDictionary<IParser, int> RecursiveOccurrenceCounts => recursiveOccurrenceCounts;
 
     /// <inheritdoc />
     IReadOnlyDictionary<IParser, int> IReadOnlyParserAnalysisInfo.OccurrenceCounts => occurrenceCounts;
 
     /// <inheritdoc />
-    IReadOnlyDictionary<IParser, int> IReadOnlyParserAnalysisInfo.LeftRecursiveOccurrenceCounts => leftRecursiveOccurrenceCounts;
+    IReadOnlyDictionary<IParser, int> IReadOnlyParserAnalysisInfo.RecursiveOccurrenceCounts => recursiveOccurrenceCounts;
 }

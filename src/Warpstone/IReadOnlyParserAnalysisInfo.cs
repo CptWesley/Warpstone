@@ -21,7 +21,7 @@ public interface IReadOnlyParserAnalysisInfo
     public IReadOnlyDictionary<IParser, int> OccurrenceCounts { get; }
 
     /// <summary>
-    /// Provides the number of left-recursive occurrences that each parser has in the represented grammar.
+    /// Provides the number of recursive occurrences that each parser has in the represented grammar.
     /// </summary>
-    public IReadOnlyDictionary<IParser, int> LeftRecursiveOccurrenceCounts { get; }
+    public IReadOnlyDictionary<IParser, int> RecursiveOccurrenceCounts { get; }
 }

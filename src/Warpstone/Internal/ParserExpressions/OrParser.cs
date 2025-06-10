@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -26,4 +28,15 @@ internal sealed class OrParser<T> : ParserBase<T>
     /// The second parser to try.
     /// </summary>
     public IParser<T> Second { get; }
+
+    /// <inheritdoc />
+    public override IParserImplementation<T> CreateUninitializedImplementation()
+        => new OrParserImpl<T>();
+
+    /// <inheritdoc />
+    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+    {
+        First.PerformAnalysisStep(info, trace);
+        Second.PerformAnalysisStep(info, trace);
+    }
 }

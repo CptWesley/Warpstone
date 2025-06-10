@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>
@@ -7,6 +9,8 @@ namespace Warpstone.Internal.ParserExpressions;
 internal abstract class ParserBase<T> : IParser<T>
 {
     private readonly Lazy<IReadOnlyParserAnalysisInfo> lazyAnalsysis;
+    private readonly ConcurrentDictionary<ParseOptions, ParseOptions> simplifiedOptions = new();
+    private readonly ConcurrentDictionary<ParseOptions, IParserImplementation<T>> implementations = new();
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ParserBase{T}"/> class.
@@ -28,7 +32,47 @@ internal abstract class ParserBase<T> : IParser<T>
     /// <inheritdoc />
     public IParserImplementation<T> GetImplementation(ParseOptions options)
     {
-        throw new NotImplementedException();
+        var simplified = GetSimplifiedOptions(options);
+        return implementations.GetOrAdd(simplified, o =>
+        {
+            var analysis = Analyze();
+            var lookup = new Dictionary<IParser, IParserImplementation>();
+            var lazy = new List<ILazyParser>();
+
+            foreach (var entry in analysis.OccurrenceCounts)
+            {
+                var parser = entry.Key;
+
+                if (parser is ILazyParser lp)
+                {
+                    lazy.Add(lp);
+                    continue;
+                }
+
+                var impl = parser.CreateUninitializedImplementation();
+                lookup[parser] = impl;
+            }
+
+            foreach (var parser in lazy)
+            {
+                IParser target = parser;
+                var seen = new HashSet<IParser>();
+
+                while (target is ILazyParser lazyTarget)
+                {
+                    if (!seen.Add(lazyTarget))
+                    {
+                        throw new ArgumentException("Provided parser contains unsolvable recursive lazy parsers.");
+                    }
+
+                    target = lazyTarget.Parser.Value;
+                }
+
+                lookup[parser] = lookup[target];
+            }
+
+            throw new NotImplementedException();
+        });
     }
 
     /// <inheritdoc />
@@ -52,17 +96,21 @@ internal abstract class ParserBase<T> : IParser<T>
             info.MaximumNestedParserDepth = updatedTrace.Length;
         }
 
-        var oldCount = info.OccurrenceCounts.TryGetValue(this, out var cnt) ? cnt : 0;
+        var oldCount = info.OccurrenceCounts.TryGetValue(this, out var oldCountValue) ? oldCountValue : 0;
         var newCount = oldCount + 1;
         info.OccurrenceCounts[this] = newCount;
 
         if (trace.Contains(this))
         {
+            var oldRecCount = info.OccurrenceCounts.TryGetValue(this, out var oldRecCountValue) ? oldRecCountValue : 0;
+            var newRecCount = oldRecCount + 1;
+            info.RecursiveOccurrenceCounts[this] = newRecCount;
+
             info.HasRecursiveParsers = true;
             return;
         }
 
-        PerformAnalysisStepInternal(info, trace);
+        PerformAnalysisStepInternal(info, updatedTrace);
     }
 
     /// <inheritdoc cref="PerformAnalysisStep(IParserAnalysisInfo, IReadOnlyList{IParser})" />
@@ -93,4 +141,28 @@ internal abstract class ParserBase<T> : IParser<T>
     /// <inheritdoc />
     IParserImplementation IParser.CreateUninitializedImplementation()
         => CreateUninitializedImplementation();
+
+    private ParseOptions GetSimplifiedOptions(ParseOptions options)
+        => simplifiedOptions.GetOrAdd(options, o =>
+        {
+            var analysis = Analyze();
+
+            if (o.EnableAutomaticGrowingRecursion && !analysis.HasRecursiveParsers)
+            {
+                o = o with
+                {
+                    EnableAutomaticGrowingRecursion = false,
+                };
+            }
+
+            if (o.EnableAutomaticMemoization && !analysis.OccurrenceCounts.Any(static entry => entry.Value > 1))
+            {
+                o = o with
+                {
+                    EnableAutomaticMemoization = false,
+                };
+            }
+
+            return o;
+        });
 }

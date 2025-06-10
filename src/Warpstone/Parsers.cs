@@ -156,17 +156,7 @@ public static class Parsers
     /// <param name="transformation">The transformation to apply on the parser result.</param>
     /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
     public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, Func<TInput, TOutput> transformation)
-    {
-        parser.MustNotBeNull();
-        transformation.MustNotBeNull();
-
-        var t = typeof(TInput);
-        var boxed = t.IsValueType;
-        var genericParserType = boxed ? typeof(MapBoxedParserImpl<,>) : typeof(MapRefParserImpl<,>);
-        var parserType = genericParserType.MakeGenericType(t, typeof(TOutput));
-        var result = (IParser<TOutput>)Activator.CreateInstance(parserType, [parser, transformation])!;
-        return result;
-    }
+        => new MapParser<TInput, TOutput>(parser.MustNotBeNull(), transformation.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -282,28 +272,7 @@ public static class Parsers
     /// <param name="second">The second parser.</param>
     /// <returns>A parser combining the results of both parsers.</returns>
     public static IParser<(T1 Left, T2 Right)> ThenAdd<T1, T2>(this IParser<T1> first, IParser<T2> second)
-    {
-        first.MustNotBeNull();
-        second.MustNotBeNull();
-
-        var tLeft = typeof(T1);
-        var tRight = typeof(T2);
-
-        var leftBoxed = tLeft.IsValueType;
-        var rightBoxed = tRight.IsValueType;
-
-        var genericParserType = (leftBoxed, rightBoxed) switch
-        {
-            (false, false) => typeof(AndRefRefParserImpl<,>),
-            (false, true) => typeof(AndRefBoxedParserImpl<,>),
-            (true, false) => typeof(AndBoxedRefParserImpl<,>),
-            (true, true) => typeof(AndBoxedBoxedParserImpl<,>),
-        };
-
-        var parserType = genericParserType.MakeGenericType(tLeft, tRight);
-        var parser = (IParser<(T1, T2)>)Activator.CreateInstance(parserType, [first, second])!;
-        return parser;
-    }
+        => new AndParser<T1, T2>(first.MustNotBeNull(), second.MustNotBeNull());
 
     /// <summary>
     /// Creates a parser that applies two parsers and combines the results.
@@ -763,7 +732,7 @@ public static class Parsers
     /// <param name="parser">The parser.</param>
     /// <returns>A parser trying to apply a parser, but always proceeding.</returns>
     public static IParser<T?> Maybe<T>(IParser<T> parser)
-        => Maybe(parser, default(T));
+        => Maybe(parser!, default(T));
 
     /// <summary>
     /// Creates a parser that tries to apply a given parser, but proceeds and returns a default value if it fails.

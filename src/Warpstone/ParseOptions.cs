@@ -17,10 +17,10 @@ public sealed record ParseOptions
 
     /// <summary>
     /// Determines if left recursive grammars should automatically
-    /// be transformed in a way to support left recursion
+    /// be transformed in a way to support left-recursion
     /// (default: <see langword="true"/>).
     /// </summary>
-    public bool EnableAutomaticLeftRecursion { get; init; } = true;
+    public bool EnableAutomaticGrowingRecursion { get; init; } = true;
 
     /// <summary>
     /// Determines if grammars should automatically
