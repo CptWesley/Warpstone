@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
@@ -5,50 +7,50 @@ namespace Warpstone.Internal.ParserImplementations;
 /// so that it can be reused later if the same parser is executed at the same position again.
 /// </summary>
 /// <typeparam name="T">The return type of the cached parser.</typeparam>
-/// <param name="Parser">The parser to be cached.</param>
-internal sealed class MemoParserImpl<T>(IParserImplementation<T> Parser) : IParserImplementation<T>
+internal sealed class MemoParserImpl<T> : ParserImplementationBase<MemoParser<T>, T>
 {
-    private Continuation Continue { get; } = new(Parser);
+    private IParserImplementation<T> inner = default!;
+    private Continuation continuation = default!;
 
     /// <inheritdoc />
-    public Type ResultType => typeof(T);
-
-    /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    protected override void InitializeInternal(MemoParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        if (context.MemoTable.TryGetValue(position, Parser, out var result))
+        inner = (IParserImplementation<T>)parserLookup[parser.Parser];
+        continuation = new(inner);
+    }
+
+    /// <inheritdoc />
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    {
+        if (context.MemoTable.TryGetValue(position, inner, out var result))
         {
             return result;
         }
 
-        context.MemoTable[position, Parser] = new(position, [new InfiniteRecursionError(context, this, position, 1)]);
-        result = Parser.Apply(context, position);
-        context.MemoTable[position, Parser] = result;
+        context.MemoTable[position, inner] = new(position, [new InfiniteRecursionError(context, this, position, 1)]);
+        result = inner.Apply(context, position);
+        context.MemoTable[position, inner] = result;
         return result;
     }
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    public override void Apply(IIterativeParseContext context, int position)
     {
-        if (context.MemoTable.TryGetValue(position, Parser, out var result))
+        if (context.MemoTable.TryGetValue(position, inner, out var result))
         {
             context.ResultStack.Push(result);
             return;
         }
 
-        context.MemoTable[position, Parser] = new(position, [new InfiniteRecursionError(context, this, position, 1)]);
-        context.ExecutionStack.Push((position, Continue));
-        context.ExecutionStack.Push((position, Parser));
+        context.MemoTable[position, inner] = new(position, [new InfiniteRecursionError(context, this, position, 1)]);
+        context.ExecutionStack.Push((position, continuation));
+        context.ExecutionStack.Push((position, inner));
     }
 
-    private sealed class Continuation(IParserImplementation Parser) : IParserImplementation
+    private sealed class Continuation(IParserImplementation Parser) : ContinuationParserImplementationBase
     {
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Apply(IIterativeParseContext context, int position)
+        /// <inheritdoc />
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var result = context.ResultStack.Peek();
             context.MemoTable[position, Parser] = result;

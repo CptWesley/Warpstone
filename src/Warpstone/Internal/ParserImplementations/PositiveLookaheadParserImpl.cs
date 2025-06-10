@@ -1,16 +1,25 @@
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Parser which represents a positive lookahead (peek). Which does not consume any length of the input.
 /// </summary>
 /// <typeparam name="T">The type of the parser used to peek forward.</typeparam>
-/// <param name="Parser">The parser used to peek forward.</param>
-internal sealed class PositiveLookaheadParserImpl<T>(IParserImplementation<T> Parser) : IParserImplementation<T>
+internal sealed class PositiveLookaheadParserImpl<T> : ParserImplementationBase<PositiveLookaheadParser<T>, T>
 {
+    private IParserImplementation<T> inner = default!;
+
     /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    protected override void InitializeInternal(PositiveLookaheadParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        var result = Parser.Apply(context, position);
+        inner = (IParserImplementation<T>)parserLookup[parser.Parser];
+    }
+
+    /// <inheritdoc />
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    {
+        var result = inner.Apply(context, position);
 
         if (!result.Success)
         {
@@ -23,13 +32,13 @@ internal sealed class PositiveLookaheadParserImpl<T>(IParserImplementation<T> Pa
     }
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    public override void Apply(IIterativeParseContext context, int position)
     {
         context.ExecutionStack.Push((position, Continuation.Instance));
-        context.ExecutionStack.Push((position, Parser));
+        context.ExecutionStack.Push((position, inner));
     }
 
-    private sealed class Continuation : IParserImplementation
+    private sealed class Continuation : ContinuationParserImplementationBase
     {
 #pragma warning disable S2743 // Static fields should not be used in generic types
         public static readonly Continuation Instance = new();
@@ -40,7 +49,7 @@ internal sealed class PositiveLookaheadParserImpl<T>(IParserImplementation<T> Pa
         }
 
         /// <inheritdoc />
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var result = context.ResultStack.Peek();
 
@@ -52,9 +61,5 @@ internal sealed class PositiveLookaheadParserImpl<T>(IParserImplementation<T> Pa
             context.ResultStack.Pop();
             context.ResultStack.Push(new(result.Position, 0, result.Value));
         }
-
-        /// <inheritdoc />
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-            => throw new NotSupportedException();
     }
 }

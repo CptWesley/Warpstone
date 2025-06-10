@@ -1,32 +1,39 @@
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
-/// Represents a parser that converts the value of the given <paramref name="Element"/> parser
-/// using the provided <paramref name="Map"/> function.
+/// Represents a parser that converts the value of the given element parser
+/// using the provided map function.
 /// </summary>
-/// <typeparam name="TIn">The result type of the <paramref name="Element"/> parser.</typeparam>
-/// <typeparam name="TOut">The result type of the <paramref name="Map"/> function.</typeparam>
-/// <param name="Element">The input parser.</param>
-/// <param name="Map">The map function.</param>
-internal sealed class MapRefParserImpl<TIn, TOut>(IParserImplementation<TIn> Element, Func<TIn, TOut> Map) : IParserImplementation<TOut>
+/// <typeparam name="TIn">The result type of the element parser.</typeparam>
+/// <typeparam name="TOut">The result type of the map function.</typeparam>
+internal sealed class MapRefParserImpl<TIn, TOut> : ParserImplementationBase<MapParser<TIn, TOut>, TOut>
     where TIn : class
 {
-    /// <summary>
-    /// The continuation function when running in iterative mode.
-    /// </summary>
-    private Continuation Continue { get; } = new(Map);
+    private Continuation continuation = default!;
+    private IParserImplementation<TIn> element = default!;
+    private Func<TIn, TOut> map = default!;
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    protected override void InitializeInternal(MapParser<TIn, TOut> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        context.ExecutionStack.Push((position, Continue));
-        context.ExecutionStack.Push((position, Element));
+        element = (IParserImplementation<TIn>)parserLookup[parser.Element];
+        map = parser.Map;
+        continuation = new(map);
     }
 
     /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    public override void Apply(IIterativeParseContext context, int position)
     {
-        var prevResult = Element.Apply(context, position);
+        context.ExecutionStack.Push((position, continuation));
+        context.ExecutionStack.Push((position, element));
+    }
+
+    /// <inheritdoc />
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    {
+        var prevResult = element.Apply(context, position);
         if (!prevResult.Success)
         {
             return prevResult;
@@ -40,7 +47,7 @@ internal sealed class MapRefParserImpl<TIn, TOut>(IParserImplementation<TIn> Ele
 
         try
         {
-            var modified = Map(value);
+            var modified = map(value);
             return new UnsafeParseResult(prevResult.Position, prevResult.Length, modified!);
         }
         catch (Exception e)
@@ -53,10 +60,10 @@ internal sealed class MapRefParserImpl<TIn, TOut>(IParserImplementation<TIn> Ele
     /// The continuation function when running in iterative mode.
     /// </summary>
     /// <param name="Map">The map function.</param>
-    private sealed class Continuation(Func<TIn, TOut> Map) : IParserImplementation
+    private sealed class Continuation(Func<TIn, TOut> Map) : ContinuationParserImplementationBase
     {
         /// <inheritdoc />
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var prevResult = context.ResultStack.Peek();
 
@@ -83,9 +90,5 @@ internal sealed class MapRefParserImpl<TIn, TOut>(IParserImplementation<TIn> Ele
                 context.ResultStack.Push(new UnsafeParseResult(prevResult.Position, [new TransformationError(context, this, position, 0, null, e)]));
             }
         }
-
-        /// <inheritdoc />
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-            => throw new NotSupportedException();
     }
 }

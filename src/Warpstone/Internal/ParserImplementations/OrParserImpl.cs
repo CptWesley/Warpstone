@@ -1,56 +1,43 @@
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Represents a parser that parses either the provided first or second option.
 /// </summary>
 /// <typeparam name="T">The result type of the parsers.</typeparam>
-internal sealed class OrParserImpl<T> : IParserImplementation<T>
+internal sealed class OrParserImpl<T> : ParserImplementationBase<OrParser<T>, T>
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="OrParserImpl{T}"/> class.
-    /// </summary>
-    /// <param name="first">The first parser to try.</param>
-    /// <param name="second">The second parser to try.</param>
-    public OrParserImpl(IParserImplementation<T> first, IParserImplementation<T> second)
-    {
-        First = first;
-        Second = second;
-        Continue = new(this, second);
-    }
-
-    /// <summary>
-    /// The first parser to try.
-    /// </summary>
-    public IParserImplementation<T> First { get; }
-
-    /// <summary>
-    /// The second parser to try.
-    /// </summary>
-    public IParserImplementation<T> Second { get; }
-
-    /// <summary>
-    /// The continuation parser when executing in iterative mode.
-    /// </summary>
-    private Continuation Continue { get; }
+    private IParserImplementation<T> first = default!;
+    private IParserImplementation<T> second = default!;
+    private Continuation continuation = default!;
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    protected override void InitializeInternal(OrParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        context.ExecutionStack.Push((position, Continue));
-        context.ExecutionStack.Push((position, First));
+        first = (IParserImplementation<T>)parserLookup[parser.First];
+        second = (IParserImplementation<T>)parserLookup[parser.Second];
+        continuation = new(this, second);
     }
 
     /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    public override void Apply(IIterativeParseContext context, int position)
     {
-        var left = First.Apply(context, position);
+        context.ExecutionStack.Push((position, continuation));
+        context.ExecutionStack.Push((position, first));
+    }
+
+    /// <inheritdoc />
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    {
+        var left = first.Apply(context, position);
 
         if (left.Success)
         {
             return left;
         }
 
-        var right = Second.Apply(context, left.NextPosition);
+        var right = second.Apply(context, left.NextPosition);
 
         if (right.Success)
         {
@@ -65,7 +52,7 @@ internal sealed class OrParserImpl<T> : IParserImplementation<T>
     /// </summary>
     /// <param name="Root">The root parser.</param>
     /// <param name="Second">The second parser to try.</param>
-    private sealed class Continuation(IParserImplementation Root, IParserImplementation Second) : IParserImplementation
+    private sealed class Continuation(IParserImplementation Root, IParserImplementation Second) : ContinuationParserImplementationBase
     {
         /// <summary>
         /// The second continuation of the sequential parser when executing in iterative mode.
@@ -73,7 +60,7 @@ internal sealed class OrParserImpl<T> : IParserImplementation<T>
         public SecondContinuation Continue { get; } = new(Root);
 
         /// <inheritdoc />
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var leftResult = context.ResultStack.Peek();
 
@@ -85,19 +72,15 @@ internal sealed class OrParserImpl<T> : IParserImplementation<T>
             context.ExecutionStack.Push((position, Continue));
             context.ExecutionStack.Push((position, Second));
         }
-
-        /// <inheritdoc />
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-            => throw new NotSupportedException();
     }
 
     /// <summary>
     /// The second continuation of the choice parser when executing in iterative mode.
     /// </summary>
-    private sealed class SecondContinuation(IParserImplementation Root) : IParserImplementation
+    private sealed class SecondContinuation(IParserImplementation Root) : ContinuationParserImplementationBase
     {
         /// <inheritdoc />
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var right = context.ResultStack.Pop();
             var left = context.ResultStack.Pop();
@@ -110,10 +93,6 @@ internal sealed class OrParserImpl<T> : IParserImplementation<T>
 
             context.ResultStack.Push(new(left.Position, JoinErrors(context, Root, left.Errors, right.Errors)));
         }
-
-        /// <inheritdoc />
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-            => throw new NotSupportedException();
     }
 
     private static IEnumerable<IParseError> JoinErrors(IParseContext context, IParserImplementation parser, IEnumerable<IParseError>? left, IEnumerable<IParseError>? right)

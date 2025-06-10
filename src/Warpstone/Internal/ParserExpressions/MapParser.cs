@@ -7,7 +7,6 @@ namespace Warpstone.Internal.ParserExpressions;
 /// <typeparam name="TIn">The result type of the <see name="Element"/> parser.</typeparam>
 /// <typeparam name="TOut">The result type of the <see name="Map"/> function.</typeparam>
 internal sealed class MapParser<TIn, TOut> : ParserBase<TOut>
-    where TIn : struct
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="MapParser{TIn,TOut}"/> class.
