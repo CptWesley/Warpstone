@@ -9,21 +9,18 @@ namespace Warpstone.Internal.ParserImplementations;
 /// <typeparam name="T">The type of the result value.</typeparam>
 internal sealed class AsResultParserImpl<T> : ParserImplementationBase<AsResultParser<T>, IParseResult<T>>
 {
-    /// <summary>
-    /// The internal parser.
-    /// </summary>
-    public IParserImplementation<T> Parser { get; private set; } = default!;
+    private IParserImplementation<T> inner = default!;
 
     /// <inheritdoc />
     protected override void InitializeInternal(AsResultParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        Parser = (IParserImplementation<T>)parserLookup[parser.Parser];
+        inner = (IParserImplementation<T>)parserLookup[parser.Parser];
     }
 
     /// <inheritdoc />
     public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
-        var result = Parser.Apply(context, position);
+        var result = inner.Apply(context, position);
         var typed = result.AsSafe<T>(context);
         return new(position, result.Length, typed);
     }
@@ -32,7 +29,7 @@ internal sealed class AsResultParserImpl<T> : ParserImplementationBase<AsResultP
     public override void Apply(IIterativeParseContext context, int position)
     {
         context.ExecutionStack.Push((position, Continuation.Instance));
-        context.ExecutionStack.Push((position, Parser));
+        context.ExecutionStack.Push((position, inner));
     }
 
     private sealed class Continuation : ContinuationParserImplementationBase

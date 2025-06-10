@@ -12,47 +12,36 @@ internal sealed class AndBoxedRefParserImpl<TFirst, TSecond> : ParserImplementat
     where TFirst : struct
     where TSecond : class
 {
-    /// <summary>
-    /// The parser that is executed first.
-    /// </summary>
-    public IParserImplementation<TFirst> First { get; private set; } = default!;
-
-    /// <summary>
-    /// The parser that is executed after the first one has succeeded.
-    /// </summary>
-    public IParserImplementation<TSecond> Second { get; private set; } = default!;
-
-    /// <summary>
-    /// The first continuation of the sequential parser when executing in iterative mode.
-    /// </summary>
-    private Continuation Continue { get; set; } = default!;
+    private IParserImplementation<TFirst> first = default!;
+    private IParserImplementation<TSecond> second = default!;
+    private Continuation continuation = default!;
 
     /// <inheritdoc />
     protected override void InitializeInternal(AndParser<TFirst, TSecond> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        First = (IParserImplementation<TFirst>)parserLookup[parser.First];
-        Second = (IParserImplementation<TSecond>)parserLookup[parser.Second];
-        Continue = new(Second);
+        first = (IParserImplementation<TFirst>)parserLookup[parser.First];
+        second = (IParserImplementation<TSecond>)parserLookup[parser.Second];
+        continuation = new(second);
     }
 
     /// <inheritdoc />
     public override void Apply(IIterativeParseContext context, int position)
     {
-        context.ExecutionStack.Push((position, Continue));
-        context.ExecutionStack.Push((position, First));
+        context.ExecutionStack.Push((position, continuation));
+        context.ExecutionStack.Push((position, first));
     }
 
     /// <inheritdoc />
     public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
-        var left = First.Apply(context, position);
+        var left = first.Apply(context, position);
 
         if (!left.Success)
         {
             return left;
         }
 
-        var right = Second.Apply(context, left.NextPosition);
+        var right = second.Apply(context, left.NextPosition);
 
         if (!right.Success)
         {

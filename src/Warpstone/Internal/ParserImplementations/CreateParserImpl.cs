@@ -8,19 +8,16 @@ namespace Warpstone.Internal.ParserImplementations;
 /// <typeparam name="T">The type of the value that is always returned.</typeparam>
 internal sealed class CreateParserImpl<T> : ParserImplementationBase<CreateParser<T>, T>
 {
+    private readonly T value;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateParserImpl{T}"/> class.
     /// </summary>
     /// <param name="value">The value that is always returned.</param>
     public CreateParserImpl(T value)
     {
-        Value = value;
+        this.value = value;
     }
-
-    /// <summary>
-    /// The value that is always returned.
-    /// </summary>
-    public T Value { get; }
 
     /// <inheritdoc />
     protected override void InitializeInternal(CreateParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
@@ -31,12 +28,12 @@ internal sealed class CreateParserImpl<T> : ParserImplementationBase<CreateParse
     /// <inheritdoc />
     public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
-        return new(position, 0, Value);
+        return new(position, 0, value);
     }
 
     /// <inheritdoc />
     public override void Apply(IIterativeParseContext context, int position)
     {
-        context.ResultStack.Push(new(position, 0, Value));
+        context.ResultStack.Push(new(position, 0, value));
     }
 }

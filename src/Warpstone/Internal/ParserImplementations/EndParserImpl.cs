@@ -1,9 +1,11 @@
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
 /// Parser used for detecting the end of the input stream.
 /// </summary>
-internal sealed class EndParserImpl : IParserImplementation<string>
+internal sealed class EndParserImpl : ParserImplementationBase<EndParser, string>
 {
     /// <summary>
     /// Singleton instance of the parser.
@@ -15,7 +17,13 @@ internal sealed class EndParserImpl : IParserImplementation<string>
     }
 
     /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    protected override void InitializeInternal(EndParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+    {
+        // Do nothing.
+    }
+
+    /// <inheritdoc />
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
         if (position >= context.Input.Content.Length)
         {
@@ -28,7 +36,7 @@ internal sealed class EndParserImpl : IParserImplementation<string>
     }
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    public override void Apply(IIterativeParseContext context, int position)
     {
         if (position >= context.Input.Content.Length)
         {

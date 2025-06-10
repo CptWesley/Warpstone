@@ -8,6 +8,7 @@ namespace Warpstone.Internal.ParserImplementations;
 internal sealed class CharacterParserImpl : ParserImplementationBase<CharacterParser, char>
 {
     private readonly string expected;
+    private readonly char character;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CharacterParserImpl"/> class.
@@ -15,14 +16,9 @@ internal sealed class CharacterParserImpl : ParserImplementationBase<CharacterPa
     /// <param name="c">The character to be parsed.</param>
     public CharacterParserImpl(char c)
     {
-        Character = c;
+        character = c;
         expected = $"'{c}'";
     }
-
-    /// <summary>
-    /// The character to be parsed.
-    /// </summary>
-    public char Character { get; }
 
     /// <inheritdoc />
     protected override void InitializeInternal(CharacterParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
@@ -34,13 +30,13 @@ internal sealed class CharacterParserImpl : ParserImplementationBase<CharacterPa
     public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
     {
         var input = context.Input.Content;
-        if (position >= input.Length || input[position] != Character)
+        if (position >= input.Length || input[position] != character)
         {
             return new(position, [new UnexpectedTokenError(context, this, position, 1, expected)]);
         }
         else
         {
-            return new(position, 1, Character);
+            return new(position, 1, character);
         }
     }
 
@@ -48,13 +44,13 @@ internal sealed class CharacterParserImpl : ParserImplementationBase<CharacterPa
     public override void Apply(IIterativeParseContext context, int position)
     {
         var input = context.Input.Content;
-        if (position >= input.Length || input[position] != Character)
+        if (position >= input.Length || input[position] != character)
         {
             context.ResultStack.Push(new(position, [new UnexpectedTokenError(context, this, position, 1, expected)]));
         }
         else
         {
-            context.ResultStack.Push(new(position, 1, Character));
+            context.ResultStack.Push(new(position, 1, character));
         }
     }
 }

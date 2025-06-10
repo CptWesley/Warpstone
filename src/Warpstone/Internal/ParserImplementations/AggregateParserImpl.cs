@@ -10,26 +10,21 @@ namespace Warpstone.Internal.ParserImplementations;
 /// <typeparam name="TAccumulator">The accumulator type.</typeparam>
 internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImplementationBase<AggregateParser<TSource, TAccumulator>, TAccumulator>
 {
-    public IParserImplementation<TSource> Element { get; private set; } = default!;
-
-    public IParserImplementation? Delimiter { get; private set; } = default!;
-
-    public int MinCount { get; private set; } = default!;
-
-    public int MaxCount { get; private set; } = default!;
-
-    public Func<TAccumulator> CreateSeed { get; private set; } = default!;
-
-    public Func<TAccumulator, TSource, TAccumulator> Accumulate { get; private set; } = default!;
+    private IParserImplementation<TSource> element = default!;
+    private IParserImplementation? delimiter = default!;
+    private int minCount = default!;
+    private int maxCount = default!;
+    private Func<TAccumulator> createSeed = default!;
+    private Func<TAccumulator, TSource, TAccumulator> accumulate = default!;
 
     /// <inheritdoc />
 #pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
     public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
 #pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
     {
-        var acc = CreateSeed();
-        var min = MinCount;
-        var max = MaxCount;
+        var acc = createSeed();
+        var min = minCount;
+        var max = maxCount;
         var nextPos = position;
         var length = 0;
 
@@ -37,7 +32,7 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
 
         while (max > 0)
         {
-            if (Delimiter is { })
+            if (delimiter is { })
             {
                 if (!pastFirst)
                 {
@@ -45,7 +40,7 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
                 }
                 else
                 {
-                    var delimiterResult = Delimiter.Apply(context, nextPos);
+                    var delimiterResult = delimiter.Apply(context, nextPos);
 
                     if (!delimiterResult.Success)
                     {
@@ -63,7 +58,7 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
                 }
             }
 
-            var result = Element.Apply(context, nextPos);
+            var result = element.Apply(context, nextPos);
 
             if (!result.Success)
             {
@@ -78,7 +73,7 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
             }
 
             nextPos = result.NextPosition;
-            acc = Accumulate(acc, (TSource)result.Value!);
+            acc = accumulate(acc, (TSource)result.Value!);
             length = result.NextPosition - position;
 
             min--;
@@ -91,27 +86,27 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
     /// <inheritdoc />
     public override void Apply(IIterativeParseContext context, int position)
     {
-        var acc = CreateSeed();
+        var acc = createSeed();
         context.ExecutionStack.Push((position, new ContinuationElement(
-            Element: Element,
-            Delimiter: Delimiter,
+            Element: element,
+            Delimiter: delimiter,
             StartPosition: position,
             Length: 0,
-            MinCount: MinCount,
-            MaxCount: MaxCount,
+            MinCount: minCount,
+            MaxCount: maxCount,
             Accumulator: acc,
-            Accumulate: Accumulate)));
-        context.ExecutionStack.Push((position, Element));
+            Accumulate: accumulate)));
+        context.ExecutionStack.Push((position, element));
     }
 
     protected override void InitializeInternal(AggregateParser<TSource, TAccumulator> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        Element = (IParserImplementation<TSource>)parserLookup[parser.Element];
-        Delimiter = parser.Delimiter is null ? null : parserLookup[parser.Delimiter];
-        MinCount = parser.MinCount;
-        MaxCount = parser.MaxCount;
-        CreateSeed = parser.CreateSeed;
-        Accumulate = parser.Accumulate;
+        element = (IParserImplementation<TSource>)parserLookup[parser.Element];
+        delimiter = parser.Delimiter is null ? null : parserLookup[parser.Delimiter];
+        minCount = parser.MinCount;
+        maxCount = parser.MaxCount;
+        createSeed = parser.CreateSeed;
+        accumulate = parser.Accumulate;
     }
 
     private sealed class ContinuationElement(
