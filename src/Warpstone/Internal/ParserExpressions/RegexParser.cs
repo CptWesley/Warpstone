@@ -5,6 +5,8 @@ namespace Warpstone.Internal.ParserExpressions;
 /// </summary>
 internal sealed class RegexParser : ParserBase<string>
 {
+    private static readonly int baseHash = typeof(RegexParser).GetHashCode() * 31;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="RegexParser"/> class.
     /// </summary>
@@ -43,5 +45,20 @@ internal sealed class RegexParser : ParserBase<string>
     protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
     {
         // Do nothing.
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is RegexParser other
+        && other.Pattern == Pattern
+        && other.Options == Options;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hash = baseHash;
+        hash = (hash * 31) + Pattern.GetHashCode();
+        hash = (hash * 31) + Options.GetHashCode();
+        return hash;
     }
 }

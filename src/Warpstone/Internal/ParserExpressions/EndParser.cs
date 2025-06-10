@@ -5,6 +5,8 @@ namespace Warpstone.Internal.ParserExpressions;
 /// </summary>
 internal sealed class EndParser : ParserBase<string>
 {
+    private static readonly int baseHash = typeof(EndParser).GetHashCode() * 31;
+
     /// <summary>
     /// Singleton instance of the parser.
     /// </summary>
@@ -23,4 +25,12 @@ internal sealed class EndParser : ParserBase<string>
     {
         // Do nothing.
     }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is EndParser;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => baseHash;
 }

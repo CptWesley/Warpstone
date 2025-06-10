@@ -6,6 +6,8 @@ namespace Warpstone.Internal.ParserExpressions;
 /// <typeparam name="T">The type of the value that is always returned.</typeparam>
 internal sealed class CreateParser<T> : ParserBase<T>
 {
+    private static readonly int baseHash = typeof(CreateParser<T>).GetHashCode() * 31;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CreateParser{T}"/> class.
     /// </summary>
@@ -29,4 +31,13 @@ internal sealed class CreateParser<T> : ParserBase<T>
     {
         // Do nothing.
     }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is CreateParser<T> other
+        && Equals(other.Value, Value);
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => baseHash + (Value?.GetHashCode() ?? 0);
 }
