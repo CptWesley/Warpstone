@@ -1,3 +1,5 @@
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
@@ -6,32 +8,39 @@ namespace Warpstone.Internal.ParserImplementations;
 /// This variant of the <see cref="MemoParserImpl{T}"/> keeps growing the result while possible.
 /// </summary>
 /// <typeparam name="T">The return type of the cached parser.</typeparam>
-/// <param name="Parser">The parser to be cached.</param>
-internal sealed class LeftRecursiveMemoParserImpl<T>(IParserImplementation<T> Parser) : IParserImplementation<T>
+internal sealed class LeftRecursiveMemoParserImpl<T> : ParserImplementationBase<LeftRecursiveMemoParser<T>, T>
 {
-    private Continuation Continue { get; } = new(Parser);
+    private Continuation continuation = default!;
+    private IParserImplementation<T> inner = default!;
 
     /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    protected override void InitializeInternal(LeftRecursiveMemoParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
-        if (context.MemoTable.TryGetValue(position, Parser, out var result))
+        inner = (IParserImplementation<T>)parserLookup[parser.Parser];
+        continuation = new(inner);
+    }
+
+    /// <inheritdoc />
+    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+    {
+        if (context.MemoTable.TryGetValue(position, inner, out var result))
         {
             return result;
         }
 
         var lastRes = new UnsafeParseResult(position, [new InfiniteRecursionError(context, this, position, 1)]);
-        context.MemoTable[position, Parser] = lastRes;
+        context.MemoTable[position, inner] = lastRes;
 
         while (true)
         {
-            var newResult = Parser.Apply(context, position);
+            var newResult = inner.Apply(context, position);
             if (!newResult.Success || newResult.NextPosition <= lastRes.NextPosition)
             {
                 break;
             }
 
             lastRes = newResult;
-            context.MemoTable[position, Parser] = newResult;
+            context.MemoTable[position, inner] = newResult;
         }
 
         result = lastRes;
@@ -39,27 +48,22 @@ internal sealed class LeftRecursiveMemoParserImpl<T>(IParserImplementation<T> Pa
     }
 
     /// <inheritdoc />
-    public void Apply(IIterativeParseContext context, int position)
+    public override void Apply(IIterativeParseContext context, int position)
     {
-        if (context.MemoTable.TryGetValue(position, Parser, out var result))
+        if (context.MemoTable.TryGetValue(position, inner, out var result))
         {
             context.ResultStack.Push(result);
             return;
         }
 
-        context.MemoTable[position, Parser] = new(position, [new InfiniteRecursionError(context, this, position, 1)]);
-        context.ExecutionStack.Push((position, Continue));
-        context.ExecutionStack.Push((position, Parser));
+        context.MemoTable[position, inner] = new(position, [new InfiniteRecursionError(context, this, position, 1)]);
+        context.ExecutionStack.Push((position, continuation));
+        context.ExecutionStack.Push((position, inner));
     }
 
-    private sealed class Continuation(IParserImplementation Parser) : IParserImplementation
+    private sealed class Continuation(IParserImplementation Parser) : ContinuationParserImplementationBase
     {
-        public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-        {
-            throw new NotImplementedException();
-        }
-
-        public void Apply(IIterativeParseContext context, int position)
+        public override void Apply(IIterativeParseContext context, int position)
         {
             var newResult = context.ResultStack.Pop();
             var lastResult = context.MemoTable[position, Parser];

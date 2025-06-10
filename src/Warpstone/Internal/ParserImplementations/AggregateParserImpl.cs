@@ -18,6 +18,17 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
     private Func<TAccumulator, TSource, TAccumulator> accumulate = default!;
 
     /// <inheritdoc />
+    protected override void InitializeInternal(AggregateParser<TSource, TAccumulator> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+    {
+        element = (IParserImplementation<TSource>)parserLookup[parser.Element];
+        delimiter = parser.Delimiter is null ? null : parserLookup[parser.Delimiter];
+        minCount = parser.MinCount;
+        maxCount = parser.MaxCount;
+        createSeed = parser.CreateSeed;
+        accumulate = parser.Accumulate;
+    }
+
+    /// <inheritdoc />
 #pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
     public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
 #pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
@@ -97,16 +108,6 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
             Accumulator: acc,
             Accumulate: accumulate)));
         context.ExecutionStack.Push((position, element));
-    }
-
-    protected override void InitializeInternal(AggregateParser<TSource, TAccumulator> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
-    {
-        element = (IParserImplementation<TSource>)parserLookup[parser.Element];
-        delimiter = parser.Delimiter is null ? null : parserLookup[parser.Delimiter];
-        minCount = parser.MinCount;
-        maxCount = parser.MaxCount;
-        createSeed = parser.CreateSeed;
-        accumulate = parser.Accumulate;
     }
 
     private sealed class ContinuationElement(
