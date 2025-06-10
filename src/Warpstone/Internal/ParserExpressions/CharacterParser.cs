@@ -5,6 +5,8 @@ namespace Warpstone.Internal.ParserExpressions;
 /// </summary>
 internal sealed class CharacterParser : ParserBase<char>
 {
+    private static readonly int baseHash = typeof(CharacterParser).GetHashCode() * 31;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="CharacterParser"/> class.
     /// </summary>
@@ -28,4 +30,13 @@ internal sealed class CharacterParser : ParserBase<char>
     {
         // Do nothing.
     }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is CharacterParser other
+        && other.Character == Character;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => baseHash + Character.GetHashCode();
 }

@@ -228,6 +228,11 @@ internal abstract class ParserBase<T> : IParser<T>
         {
             var analysis = Analyze();
 
+            o = o with
+            {
+                ExecutionMode = ParserExecutionMode.Auto, // For purposes of finding the implementation this is irrelevant.
+            };
+
             if (o.EnableAutomaticGrowingRecursion && !analysis.HasRecursiveParsers)
             {
                 o = o with

@@ -6,6 +6,8 @@ namespace Warpstone.Internal.ParserExpressions;
 /// <typeparam name="T">The result type of the parser.</typeparam>
 internal sealed class FailParser<T> : ParserBase<T>
 {
+    private static readonly int baseHash = typeof(FailParser<T>).GetHashCode() * 31;
+
     /// <summary>
     /// The singleton instance of the parser.
     /// </summary>
@@ -24,4 +26,12 @@ internal sealed class FailParser<T> : ParserBase<T>
     {
         // Do nothing.
     }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is FailParser<T>;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+        => baseHash;
 }

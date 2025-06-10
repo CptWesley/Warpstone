@@ -5,6 +5,8 @@ namespace Warpstone.Internal.ParserExpressions;
 /// </summary>
 internal sealed class StringParser : ParserBase<string>
 {
+    private static readonly int baseHash = typeof(StringParser).GetHashCode() * 31;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="StringParser"/> class.
     /// </summary>
@@ -41,5 +43,22 @@ internal sealed class StringParser : ParserBase<string>
     protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
     {
         // Do nothing.
+    }
+
+    /// <inheritdoc />
+    public override bool Equals(object? obj)
+        => obj is StringParser other
+        && other.String == String
+        && Equals(other.Culture, Culture)
+        && other.Options == Options;
+
+    /// <inheritdoc />
+    public override int GetHashCode()
+    {
+        var hash = baseHash;
+        hash = (hash * 31) + String.GetHashCode();
+        hash = (hash * 31) + Culture.GetHashCode();
+        hash = (hash * 31) + Options.GetHashCode();
+        return hash;
     }
 }

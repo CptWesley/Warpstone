@@ -19,7 +19,7 @@ public static class ParseContext
     {
         var analysis = parser.Analyze();
 
-        if (analysis.HasRecursiveParsers || analysis.MaximumNestedParserDepth > 100)
+        if (analysis.HasRecursiveParsers || analysis.MaximumNestedParserDepth > 256)
         {
             return new IterativeParseContext<T>(input, parser, options);
         }
