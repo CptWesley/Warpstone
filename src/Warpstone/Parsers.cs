@@ -812,10 +812,10 @@ public static class Parsers
     /// A parser which caches the results of the given
     /// <paramref name="parser"/> per position in the input.
     /// </returns>
-    public static IParser<T> LeftRecursive<T>(IParser<T> parser)
-        => new LeftRecursiveMemoParser<T>(parser.MustNotBeNull());
+    public static IParser<T> Grow<T>(IParser<T> parser)
+        => new GrowParser<T>(parser.MustNotBeNull());
 
-    /// <inheritdoc cref="LeftRecursive{T}(IParser{T})" />
-    public static IParser<T> LeftRecursive<T>(Func<IParser<T>> parser)
-        => LeftRecursive(Lazy(parser.MustNotBeNull()));
+    /// <inheritdoc cref="Grow{T}(IParser{T})" />
+    public static IParser<T> Grow<T>(Func<IParser<T>> parser)
+        => Grow(Lazy(parser.MustNotBeNull()));
 }

@@ -37,7 +37,7 @@ public static class LeftRecursiveMemoParser
         IParser<string> num = Memo(Regex(@"[0-9]+"));
         IParser<string> exp = null!;
         IParser<string> add = Lazy(() => exp).ThenSkip(Char('+')).ThenAdd(num).Transform((l, r) => $"({l}+{r})");
-        exp = LeftRecursive(Or(add, num));
+        exp = Grow(Or(add, num));
 
         var result = exp.TryParse("1+2+3", options);
         result.Success.Should().BeTrue();
@@ -51,8 +51,8 @@ public static class LeftRecursiveMemoParser
         IParser<string> e2r = null!;
 
         var e0 = Memo(() => e0r.WithName("e0r")).WithName("e0");
-        var e1 = LeftRecursive(() => e1r.WithName("e1r")).WithName("e1");
-        var e2 = LeftRecursive(() => e2r.WithName("e2r")).WithName("e2");
+        var e1 = Grow(() => e1r.WithName("e1r")).WithName("e1");
+        var e2 = Grow(() => e2r.WithName("e2r")).WithName("e2");
 
         var n = Regex(@"[0-9]+").WithName("n");
 

@@ -8,13 +8,13 @@ namespace Warpstone.Internal.ParserImplementations;
 /// This variant of the <see cref="MemoParserImpl{T}"/> keeps growing the result while possible.
 /// </summary>
 /// <typeparam name="T">The return type of the cached parser.</typeparam>
-internal sealed class LeftRecursiveMemoParserImpl<T> : ParserImplementationBase<LeftRecursiveMemoParser<T>, T>
+internal sealed class GrowParserImpl<T> : ParserImplementationBase<GrowParser<T>, T>
 {
     private Continuation continuation = default!;
     private IParserImplementation<T> inner = default!;
 
     /// <inheritdoc />
-    protected override void InitializeInternal(LeftRecursiveMemoParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+    protected override void InitializeInternal(GrowParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
     {
         inner = (IParserImplementation<T>)parserLookup[parser.Parser];
         continuation = new(inner);
