@@ -28,22 +28,22 @@ internal sealed class GrowParserImpl<T> : ParserImplementationBase<GrowParser<T>
             return result;
         }
 
-        var lastRes = new UnsafeParseResult(position, [new InfiniteRecursionError(context, this, position, 1)]);
-        context.MemoTable[position, inner] = lastRes;
+        var lastResult = new UnsafeParseResult(position, [new InfiniteRecursionError(context, this, position, 1)]);
+        context.MemoTable[position, inner] = lastResult;
 
         while (true)
         {
             var newResult = inner.Apply(context, position);
-            if (!newResult.Success || newResult.NextPosition <= lastRes.NextPosition)
+            if (!ResultHasImproved(lastResult, newResult))
             {
                 break;
             }
 
-            lastRes = newResult;
+            lastResult = newResult;
             context.MemoTable[position, inner] = newResult;
         }
 
-        result = lastRes;
+        result = lastResult;
         return result;
     }
 
@@ -68,14 +68,9 @@ internal sealed class GrowParserImpl<T> : ParserImplementationBase<GrowParser<T>
             var newResult = context.ResultStack.Pop();
             var lastResult = context.MemoTable[position, Parser];
 
-            if (!newResult.Success || newResult.NextPosition <= lastResult.NextPosition)
+            if (!ResultHasImproved(lastResult, newResult))
             {
                 context.ResultStack.Push(lastResult);
-                return;
-            }
-
-            if (newResult.NextPosition <= lastResult.NextPosition)
-            {
                 return;
             }
 
@@ -83,5 +78,20 @@ internal sealed class GrowParserImpl<T> : ParserImplementationBase<GrowParser<T>
             context.ExecutionStack.Push((position, this));
             context.ExecutionStack.Push((position, Parser));
         }
+    }
+
+    private static bool ResultHasImproved(in UnsafeParseResult prev, in UnsafeParseResult cur)
+    {
+        if (!prev.Success)
+        {
+            return cur.Success;
+        }
+
+        if (!cur.Success)
+        {
+            return false;
+        }
+
+        return cur.NextPosition > prev.NextPosition;
     }
 }

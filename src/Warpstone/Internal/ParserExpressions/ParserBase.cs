@@ -36,9 +36,17 @@ internal abstract class ParserBase<T> : IParser<T>
         return implementations.GetOrAdd(simplified, o =>
         {
             var analysis = Analyze();
+            var lookupRaw = new Dictionary<IParser, IParserImplementation>();
             var lookup = new Dictionary<IParser, IParserImplementation>();
+            var lazyTargets = new Dictionary<ILazyParser, IParser>();
             var lazy = new List<ILazyParser>();
             var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
+            var initializeableRaw = new List<(IParser Parser, IParserImplementation Implementation)>();
+
+            var requiresMemo = new HashSet<IParser>();
+            var requiresGrow = new HashSet<IParser>();
+
+            // Build initial lookup table.
 
             foreach (var entry in analysis.OccurrenceCounts)
             {
@@ -50,10 +58,23 @@ internal abstract class ParserBase<T> : IParser<T>
                     continue;
                 }
 
+                if (entry.Value > 1)
+                {
+                    requiresMemo.Add(parser);
+                }
+
+                if (analysis.RecursiveOccurrenceCounts.TryGetValue(parser, out var recCount) && recCount >= 1)
+                {
+                    requiresGrow.Add(parser);
+                }
+
                 var impl = parser.CreateUninitializedImplementation();
                 initializeable.Add((parser, impl));
+                lookupRaw[parser] = impl;
                 lookup[parser] = impl;
             }
+
+            // Resolve the lazy parsers.
 
             foreach (var parser in lazy)
             {
@@ -70,7 +91,65 @@ internal abstract class ParserBase<T> : IParser<T>
                     target = lazyTarget.Parser.Value;
                 }
 
-                lookup[parser] = lookup[target];
+                lazyTargets[parser] = target;
+
+                var oc = analysis.OccurrenceCounts.TryGetValue(parser, out var ocv) ? ocv : 0;
+                var rc = analysis.RecursiveOccurrenceCounts.TryGetValue(parser, out var rcv) ? rcv : 0;
+
+                if (oc > 1)
+                {
+                    requiresMemo.Add(target);
+                }
+
+                if (rc >= 1)
+                {
+                    requiresGrow.Add(target);
+                }
+            }
+
+            // Handle memoization and left-recursion.
+
+            if (o.EnableAutomaticGrowingRecursion)
+            {
+                requiresMemo.ExceptWith(requiresGrow);
+            }
+
+            if (o.EnableAutomaticMemoization)
+            {
+                foreach (var parser in requiresMemo)
+                {
+                    var type = typeof(MemoParser<>).MakeGenericType(parser.ResultType);
+                    var wrapped = (IParser)Activator.CreateInstance(type, args: [parser])!;
+                    var impl = wrapped.CreateUninitializedImplementation();
+                    lookup[parser] = impl;
+                    initializeableRaw.Add((wrapped, impl));
+                }
+            }
+
+            if (o.EnableAutomaticGrowingRecursion)
+            {
+                foreach (var parser in requiresGrow)
+                {
+                    var type = typeof(GrowParser<>).MakeGenericType(parser.ResultType);
+                    var wrapped = (IParser)Activator.CreateInstance(type, args: [parser])!;
+                    var impl = wrapped.CreateUninitializedImplementation();
+                    lookup[parser] = impl;
+                    initializeableRaw.Add((wrapped, impl));
+                }
+            }
+
+            // Remove the lazy parser
+            foreach (var entry in lazyTargets)
+            {
+                lookup[entry.Key] = lookup[entry.Value];
+                lookupRaw[entry.Key] = lookupRaw[entry.Value];
+            }
+
+            // Initialize the implementations.
+
+            foreach (var entry in initializeableRaw)
+            {
+                entry.Implementation.Initialize(entry.Parser, lookupRaw);
             }
 
             foreach (var entry in initializeable)

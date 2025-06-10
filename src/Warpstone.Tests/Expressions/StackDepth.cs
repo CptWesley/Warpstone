@@ -19,6 +19,7 @@ public static class StackDepth
     {
         var input = new string('a', count);
         var output = LeftRecursive.TryParse(input);
+        output.Errors.Should().BeEmpty();
         output.Success.Should().BeTrue();
         output.Value.Should().Be(input);
     }
@@ -36,6 +37,7 @@ public static class StackDepth
     {
         var input = new string('a', count);
         var output = RightRecursive.TryParse(input);
+        output.Errors.Should().BeEmpty();
         output.Success.Should().BeTrue();
         output.Value.Should().Be(input);
     }
