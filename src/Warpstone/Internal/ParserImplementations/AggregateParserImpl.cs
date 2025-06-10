@@ -1,6 +1,3 @@
-using Warpstone.Internal.ParserExpressions;
-using Warpstone.Internal.ParserImplementations;
-
 namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
@@ -110,6 +107,7 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
         context.ExecutionStack.Push((position, element));
     }
 
+#pragma warning disable S107 // Methods should not have too many parameters
     private sealed class ContinuationElement(
         IParserImplementation<TSource> Element,
         IParserImplementation? Delimiter,
@@ -119,6 +117,7 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
         int MaxCount,
         TAccumulator Accumulator,
         Func<TAccumulator, TSource, TAccumulator> Accumulate) : ContinuationParserImplementationBase
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         public override void Apply(IIterativeParseContext context, int position)
         {
@@ -180,6 +179,7 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
         }
     }
 
+#pragma warning disable S107 // Methods should not have too many parameters
     private sealed class ContinuationDelimiter(
         IParserImplementation<TSource> Element,
         IParserImplementation Delimiter,
@@ -189,6 +189,7 @@ internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImpleme
         int MaxCount,
         TAccumulator Accumulator,
         Func<TAccumulator, TSource, TAccumulator> Accumulate) : ContinuationParserImplementationBase
+#pragma warning restore S107 // Methods should not have too many parameters
     {
         public override void Apply(IIterativeParseContext context, int position)
         {

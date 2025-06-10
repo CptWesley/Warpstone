@@ -30,7 +30,9 @@ internal abstract class ParserBase<T> : IParser<T>
     public Type ResultType => typeof(T);
 
     /// <inheritdoc />
+#pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
     public IParserImplementation<T> GetImplementation(ParseOptions options)
+#pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
     {
         var simplified = GetSimplifiedOptions(options);
         return implementations.GetOrAdd(simplified, o =>

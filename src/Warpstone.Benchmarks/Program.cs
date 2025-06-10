@@ -1,5 +1,4 @@
 using BenchmarkDotNet.Running;
-using Pidgin;
 
 namespace Warpstone.Benchmarks;
 

@@ -1,4 +1,3 @@
-
 namespace Warpstone.Internal.ParserExpressions;
 
 /// <summary>

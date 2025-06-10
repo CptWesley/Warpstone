@@ -2,14 +2,8 @@ using BenchmarkDotNet.Attributes;
 using Legacy.Warpstone1.Parsers;
 using Legacy.Warpstone2;
 using Legacy.Warpstone2.Parsers;
-using Parlot.Fluent;
 using ParsecSharp;
 using Pidgin;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using BasicParsers1 = Legacy.Warpstone1.Parsers.BasicParsers;
 using BasicParsers2 = Legacy.Warpstone2.Parsers.BasicParsers;

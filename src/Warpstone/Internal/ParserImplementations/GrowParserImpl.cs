@@ -1,5 +1,3 @@
-using Warpstone.Internal.ParserExpressions;
-
 namespace Warpstone.Internal.ParserImplementations;
 
 /// <summary>
@@ -8,6 +6,7 @@ namespace Warpstone.Internal.ParserImplementations;
 /// This variant of the <see cref="MemoParserImpl{T}"/> keeps growing the result while possible.
 /// </summary>
 /// <typeparam name="T">The return type of the cached parser.</typeparam>
+/// <seealso href="https://medium.com/@gvanrossum_83706/left-recursive-peg-grammars-65dab3c580e1"/>
 internal sealed class GrowParserImpl<T> : ParserImplementationBase<GrowParser<T>, T>
 {
     private Continuation continuation = default!;
