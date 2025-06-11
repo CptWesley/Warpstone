@@ -2,8 +2,4 @@
 
   <Import Project="../package.props" />
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net47' Or '$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Collections.Immutable" />
-  </ItemGroup>
-
 </Project>

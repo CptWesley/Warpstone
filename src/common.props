@@ -1,5 +1,5 @@
-
 <Project>
+
   <PropertyGroup>
     <Authors>Wesley Baartman</Authors>
     <Copyright>Copyright © Wesley Baartman 2023-current</Copyright>
@@ -54,6 +54,10 @@
     <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All" ExcludeAssets="compile" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net47' Or '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0'">
+    <PackageReference Include="System.Collections.Immutable" />
+  </ItemGroup>
+
   <ItemGroup>
     <AdditionalFiles Include="*.csproj" />
   </ItemGroup>
@@ -66,4 +70,5 @@
     <AdditionalFiles Include="../benchmarks.props" Link="Properties/benchmarks.props" Visible="false" />
     <AdditionalFiles Include="../tests.props" Link="Properties/tests.props" Visible="false" />
   </ItemGroup>
+  
 </Project>

@@ -183,8 +183,17 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "warpstone": {
-        "type": "Project"
+      "warpstone.sources": {
+        "type": "Project",
+        "dependencies": {
+          "System.Collections.Immutable": "[9.0.0, )"
+        }
+      },
+      "System.Collections.Immutable": {
+        "type": "CentralTransitive",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
       }
     },
     ".NETFramework,Version=v4.8.1": {
@@ -411,10 +420,10 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "warpstone": {
+      "warpstone.sources": {
         "type": "Project",
         "dependencies": {
-          "System.Collections.Immutable": "[1.5.0, )"
+          "System.Collections.Immutable": "[9.0.0, )"
         }
       }
     },
@@ -592,8 +601,17 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "warpstone": {
-        "type": "Project"
+      "warpstone.sources": {
+        "type": "Project",
+        "dependencies": {
+          "System.Collections.Immutable": "[9.0.0, )"
+        }
+      },
+      "System.Collections.Immutable": {
+        "type": "CentralTransitive",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
       }
     },
     "net6.0": {
@@ -770,8 +788,17 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "warpstone": {
-        "type": "Project"
+      "warpstone.sources": {
+        "type": "Project",
+        "dependencies": {
+          "System.Collections.Immutable": "[9.0.0, )"
+        }
+      },
+      "System.Collections.Immutable": {
+        "type": "CentralTransitive",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
       }
     },
     "net7.0": {
@@ -948,8 +975,17 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "warpstone": {
-        "type": "Project"
+      "warpstone.sources": {
+        "type": "Project",
+        "dependencies": {
+          "System.Collections.Immutable": "[9.0.0, )"
+        }
+      },
+      "System.Collections.Immutable": {
+        "type": "CentralTransitive",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
       }
     },
     "net8.0": {
@@ -1126,8 +1162,17 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "warpstone": {
-        "type": "Project"
+      "warpstone.sources": {
+        "type": "Project",
+        "dependencies": {
+          "System.Collections.Immutable": "[9.0.0, )"
+        }
+      },
+      "System.Collections.Immutable": {
+        "type": "CentralTransitive",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
       }
     },
     "net9.0": {
@@ -1304,7 +1349,7 @@
           "xunit.extensibility.core": "[2.9.3]"
         }
       },
-      "warpstone": {
+      "warpstone.sources": {
         "type": "Project"
       }
     }
