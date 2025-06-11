@@ -1,0 +1,108 @@
+//HintName: Warpstone.Sources.embedded.ParseInputPosition.cs
+using System;
+
+namespace Warpstone
+{
+    /// <summary>
+    /// Represents a position in an <see cref="IParseInput"/>.
+    /// </summary>
+    public readonly struct ParseInputPosition : IEquatable<ParseInputPosition>
+    {
+        private static readonly int baseHash = typeof(ParseInputPosition).GetHashCode() * 31;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParseInputPosition"/> struct.
+        /// </summary>
+        /// <param name="input">The input.</param>
+        /// <param name="index">The original index in the file.</param>
+        /// <param name="line">The line number in a file.</param>
+        /// <param name="column">The column position in given line.</param>
+        public ParseInputPosition(IParseInput input, int index, int line, int column)
+        {
+            Input = input;
+            Index = index;
+            Line = line;
+            Column = column;
+        }
+
+        /// <summary>
+        /// The input.
+        /// </summary>
+        public IParseInput Input { get; }
+
+        /// <summary>
+        /// The original index in the file.
+        /// </summary>
+        public int Index { get; }
+
+        /// <summary>
+        /// The line number in a file.
+        /// </summary>
+        public int Line { get; }
+
+        /// <summary>
+        /// The column position in given line.
+        /// </summary>
+        public int Column { get; }
+
+        /// <summary>
+        /// Indicates whether or not the input is valid.
+        /// </summary>
+        public bool IsValid => Line > 0;
+
+        /// <inheritdoc />
+        public bool Equals(ParseInputPosition other)
+            => Equals(other.Input, Input)
+            && other.Index == Index
+            && other.Line == Line
+            && other.Column == Column;
+
+        /// <inheritdoc />
+        public override bool Equals(object? obj)
+            => obj is ParseInputPosition other
+            && Equals(other);
+
+        /// <inheritdoc />
+        public override int GetHashCode()
+        {
+            var hash = baseHash;
+            hash = (hash * 31) + Input.GetHashCode();
+            hash = (hash * 31) + Index.GetHashCode();
+            hash = (hash * 31) + Line.GetHashCode();
+            hash = (hash * 31) + Column.GetHashCode();
+            return hash;
+        }
+
+        /// <inheritdoc />
+        public override string ToString()
+            => Input.Source is FromMemorySource
+            ? $"Index {Index} Line {Line} Column {Column}"
+            : $"Index {Index} Line {Line} Column {Column} in {Input.Source}";
+
+        /// <summary>
+        /// Compares if two instances (<paramref name="left"/> and <paramref name="right"/>)
+        /// of <see cref="ParseInputPosition"/> are equal.
+        /// </summary>
+        /// <param name="left">The first value.</param>
+        /// <param name="right">The second value.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> are equal;
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        public static bool operator ==(ParseInputPosition left, ParseInputPosition right)
+            => left.Equals(right);
+
+        /// <summary>
+        /// Compares if two instances (<paramref name="left"/> and <paramref name="right"/>)
+        /// of <see cref="ParseInputPosition"/> are not equal.
+        /// </summary>
+        /// <param name="left">The first value.</param>
+        /// <param name="right">The second value.</param>
+        /// <returns>
+        /// <see langword="true"/> if <paramref name="left"/> and <paramref name="right"/> are not equal;
+        /// <see langword="false"/> otherwise.
+        /// </returns>
+        public static bool operator !=(ParseInputPosition left, ParseInputPosition right)
+            => !(left == right);
+    }
+}

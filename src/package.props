@@ -2,6 +2,23 @@
   <Import Project="common.props" />
 
   <PropertyGroup Label="PackageInfo">
+    <Description>Packrat parser combinator supporting left-recursion with a focus on elegance.</Description>
+    <PackageTags>parser; combinator; language; parsing; parsercombinator; parser combinator; packrat; cfg; leftrecursion; left-recursion; left; recursion</PackageTags>
+    <Version>3.0.0-preview02</Version>
+    <PackageReleaseNotes>
+      <![CDATA[
+        ### v3.0.0
+        - Significantly improved performance.
+        - Reworked API interface.
+        ### v2.0.0
+        - Reworked library from scratch.
+        - Changed to Packrat parsing.
+        - Added support for left-recursion.
+      ]]>
+    </PackageReleaseNotes>
+  </PropertyGroup>
+
+  <PropertyGroup Label="PackageInfoTechnical">
     <IsPackable>true</IsPackable>
     <PackageId>$(AssemblyName)</PackageId>
     <ProductName>$(AssemblyName)</ProductName>
