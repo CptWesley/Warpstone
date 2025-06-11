@@ -26,7 +26,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
-    <DebugType>full</DebugType>
+    <DebugType>portable</DebugType>
     <IsPublishable>false</IsPublishable>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsTestProject>false</IsTestProject>
