@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
-<Suppressions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<Suppressions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:System.Runtime.CompilerServices.RequiresLocationAttribute</Target>
@@ -654,13 +654,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Regex(System.String,System.Text.RegularExpressions.RegexOptions)$0:[T:System.Diagnostics.CodeAnalysis.StringSyntaxAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Regex(System.String)$0:[T:System.Diagnostics.CodeAnalysis.StringSyntaxAttribute]</Target>
     <Left>lib/net6.0/Warpstone.dll</Left>
     <Right>lib/net7.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Regex(System.String)$0:[T:System.Diagnostics.CodeAnalysis.StringSyntaxAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Regex(System.String,System.Text.RegularExpressions.RegexOptions)$0:[T:System.Diagnostics.CodeAnalysis.StringSyntaxAttribute]</Target>
     <Left>lib/net6.0/Warpstone.dll</Left>
     <Right>lib/net7.0/Warpstone.dll</Right>
   </Suppression>
@@ -678,6 +678,18 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
+    <Target>F:Warpstone.UnsafeParseResult.Value:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Errors.InfiniteRecursionError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.String)$4:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Errors.InfiniteRecursionError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.String,System.Exception)$4:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
@@ -690,7 +702,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Errors.InfiniteRecursionError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.String)$4:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Errors.ParseError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.String)$4:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -708,7 +720,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Errors.ParseError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.String)$4:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Errors.TransformationError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.String)$4:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -726,7 +738,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Errors.TransformationError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.String)$4:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Errors.UnexpectedTokenError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{Warpstone.Errors.UnexpectedTokenError},System.String)$6:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -739,12 +751,6 @@
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Errors.UnexpectedTokenError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{Warpstone.Errors.UnexpectedTokenError},System.String,System.Exception)$7:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Errors.UnexpectedTokenError.#ctor(Warpstone.IReadOnlyParseContext,Warpstone.IParserImplementation,System.Int32,System.Int32,System.Collections.Generic.IEnumerable{System.String},System.Collections.Generic.IEnumerable{Warpstone.Errors.UnexpectedTokenError},System.String)$6:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -834,25 +840,25 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParseContext.Create``1(System.String,Warpstone.IParser{``0},Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.ParseContext.Create``1(System.String,Warpstone.IParser{``0})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParseContext.Create``1(Warpstone.IParseInput,Warpstone.IParser{``0},Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.ParseContext.Create``1(System.String,Warpstone.IParser{``0},Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.ParseContext.Create``1(Warpstone.IParseInput,Warpstone.IParser{``0})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.ParseContext.Create``1(Warpstone.IParseInput,Warpstone.IParser{``0},Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -906,19 +912,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParserExtensions.CreateContext``1(Warpstone.IParser{``0},System.String,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.ParserExtensions.CreateContext``1(Warpstone.IParser{``0},System.String)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParserExtensions.CreateContext``1(Warpstone.IParser{``0},Warpstone.IParseInput,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.ParserExtensions.CreateContext``1(Warpstone.IParser{``0},System.String,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -930,7 +930,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParserExtensions.Parse(Warpstone.IParser,System.String,Warpstone.ParseOptions)-&gt;object?:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.ParserExtensions.CreateContext``1(Warpstone.IParser{``0},Warpstone.IParseInput,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -942,7 +942,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParserExtensions.Parse(Warpstone.IParser,Warpstone.IParseInput,Warpstone.ParseOptions)-&gt;object?:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.ParserExtensions.Parse(Warpstone.IParser,System.String,Warpstone.ParseOptions)-&gt;object?:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -954,7 +954,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParserExtensions.Parse``1(Warpstone.IParser{``0},System.String,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.ParserExtensions.Parse(Warpstone.IParser,Warpstone.IParseInput,Warpstone.ParseOptions)-&gt;object?:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -966,7 +966,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParserExtensions.Parse``1(Warpstone.IParser{``0},Warpstone.IParseInput,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.ParserExtensions.Parse``1(Warpstone.IParser{``0},System.String,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -978,7 +978,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParserExtensions.TryParse``1(Warpstone.IParser{``0},System.String,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.ParserExtensions.Parse``1(Warpstone.IParser{``0},Warpstone.IParseInput,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -990,13 +990,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.ParserExtensions.TryParse``1(Warpstone.IParser{``0},Warpstone.IParseInput,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.ParserExtensions.TryParse``1(Warpstone.IParser{``0},System.String,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.ParserExtensions.TryParse``1(Warpstone.IParser{``0},Warpstone.IParseInput)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.ParserExtensions.TryParse``1(Warpstone.IParser{``0},Warpstone.IParseInput,Warpstone.ParseOptions)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1026,6 +1032,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Parsers.Aggregate``2(Warpstone.IParser{``0},Warpstone.IParser,System.Int32,System.Func{``1},System.Func{``1,``0,``1})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.Aggregate``2(Warpstone.IParser{``0},Warpstone.IParser,System.Int32,System.Func{``1},System.Func{``1,``0,``1})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
@@ -1038,7 +1050,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Aggregate``2(Warpstone.IParser{``0},Warpstone.IParser,System.Int32,System.Func{``1},System.Func{``1,``0,``1})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Aggregate``2(Warpstone.IParser{``0},Warpstone.IParser,System.Int32,System.Int32,System.Func{``1},System.Func{``1,``0,``1})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1051,12 +1063,6 @@
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.Aggregate``2(Warpstone.IParser{``0},Warpstone.IParser,System.Int32,System.Int32,System.Func{``1},System.Func{``1,``0,``1})&lt;1&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Aggregate``2(Warpstone.IParser{``0},Warpstone.IParser,System.Int32,System.Int32,System.Func{``1},System.Func{``1,``0,``1})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1128,6 +1134,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Parsers.Many``2(Warpstone.IParser{``0},Warpstone.IParser{``1})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.Many``2(Warpstone.IParser{``0},Warpstone.IParser{``1})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
@@ -1140,13 +1152,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Many``2(Warpstone.IParser{``0},Warpstone.IParser{``1})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Maybe``1(Warpstone.IParser{``0},``0)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Maybe``1(Warpstone.IParser{``0})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1158,7 +1164,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Maybe``1(Warpstone.IParser{``0})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Maybe``1(Warpstone.IParser{``0},``0)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1176,13 +1182,19 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Parsers.Multiple``1(Warpstone.IParser{``0},System.Int32)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.Multiple``1(Warpstone.IParser{``0},System.Int32,System.Int32)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Multiple``1(Warpstone.IParser{``0},System.Int32)&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Multiple``1(Warpstone.IParser{``0},Warpstone.IParser,System.Int32,System.Int32)$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1194,7 +1206,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Multiple``1(Warpstone.IParser{``0},Warpstone.IParser,System.Int32,System.Int32)$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Multiple``2(Warpstone.IParser{``0},Warpstone.IParser{``1},System.Int32)$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1212,7 +1224,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Multiple``2(Warpstone.IParser{``0},Warpstone.IParser{``1},System.Int32)$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Not``1(Warpstone.IParser{``0})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1224,13 +1236,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Not``1(Warpstone.IParser{``0})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.OneOrMore``1(Warpstone.IParser{``0})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.OneOrMore``1(Warpstone.IParser{``0})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.OneOrMore``2(Warpstone.IParser{``0},Warpstone.IParser{``1})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1248,7 +1260,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.OneOrMore``2(Warpstone.IParser{``0},Warpstone.IParser{``1})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Or``1(System.Collections.Generic.IEnumerable{Warpstone.IParser{``0}})$0:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1260,19 +1272,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Or``1(System.Collections.Generic.IEnumerable{Warpstone.IParser{``0}})$0:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Or``1(Warpstone.IParser{``0}[])$0:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.Or``1(Warpstone.IParser{``0}[])&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Or``1(Warpstone.IParser{``0}[])$0:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1308,12 +1314,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``2(Warpstone.IParser{``0},Warpstone.IParser{``1})-&gt;Warpstone.IParser&lt;(T1 Left, T2 Right)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.ThenAdd``2(Warpstone.IParser{``0},Warpstone.IParser{``1})&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
@@ -1326,13 +1326,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``3(Warpstone.IParser{System.ValueTuple{``0,``1}},Warpstone.IParser{``2})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``3(Warpstone.IParser{System.ValueTuple{``0,``1}},Warpstone.IParser{``2}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``2(Warpstone.IParser{``0},Warpstone.IParser{``1})-&gt;Warpstone.IParser&lt;(T1 Left, T2 Right)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1350,13 +1344,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``4(Warpstone.IParser{System.ValueTuple{``0,``1,``2}},Warpstone.IParser{``3})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``3(Warpstone.IParser{System.ValueTuple{``0,``1}},Warpstone.IParser{``2}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``4(Warpstone.IParser{System.ValueTuple{``0,``1,``2}},Warpstone.IParser{``3}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``3(Warpstone.IParser{System.ValueTuple{``0,``1}},Warpstone.IParser{``2})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1374,13 +1368,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``5(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3}},Warpstone.IParser{``4})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``4(Warpstone.IParser{System.ValueTuple{``0,``1,``2}},Warpstone.IParser{``3}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``5(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3}},Warpstone.IParser{``4}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``4(Warpstone.IParser{System.ValueTuple{``0,``1,``2}},Warpstone.IParser{``3})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1398,13 +1392,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``6(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4}},Warpstone.IParser{``5})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``5(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3}},Warpstone.IParser{``4}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``6(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4}},Warpstone.IParser{``5}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``5(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3}},Warpstone.IParser{``4})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1422,13 +1416,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``7(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5}},Warpstone.IParser{``6})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``6(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4}},Warpstone.IParser{``5}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``7(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5}},Warpstone.IParser{``6}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``6(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4}},Warpstone.IParser{``5})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1446,13 +1440,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},Warpstone.IParser{``7})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``7(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5}},Warpstone.IParser{``6}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.ThenAdd``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},Warpstone.IParser{``7}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.ThenAdd``7(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5}},Warpstone.IParser{``6})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1465,6 +1459,18 @@
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.ThenAdd``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},Warpstone.IParser{``7})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Parsers.ThenAdd``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},Warpstone.IParser{``7}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Parsers.ThenAdd``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},Warpstone.IParser{``7})-&gt;Warpstone.IParser&lt;(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1500,18 +1506,6 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``3(Warpstone.IParser{System.ValueTuple{``0,``1}},System.Func{``0,``1,``2})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``3(Warpstone.IParser{System.ValueTuple{``0,``1}},System.Func{``0,``1,``2}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
-    <Left>lib/net7.0/Warpstone.dll</Left>
-    <Right>lib/net8.0/Warpstone.dll</Right>
-  </Suppression>
-  <Suppression>
-    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.Transform``3(Warpstone.IParser{System.ValueTuple{``0,``1}},System.Func{``0,``1,``2})$0:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
@@ -1524,13 +1518,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``4(Warpstone.IParser{System.ValueTuple{``0,``1,``2}},System.Func{``0,``1,``2,``3})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``3(Warpstone.IParser{System.ValueTuple{``0,``1}},System.Func{``0,``1,``2}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``4(Warpstone.IParser{System.ValueTuple{``0,``1,``2}},System.Func{``0,``1,``2,``3}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``3(Warpstone.IParser{System.ValueTuple{``0,``1}},System.Func{``0,``1,``2})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1548,13 +1542,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``5(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3}},System.Func{``0,``1,``2,``3,``4})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``4(Warpstone.IParser{System.ValueTuple{``0,``1,``2}},System.Func{``0,``1,``2,``3}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``5(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3}},System.Func{``0,``1,``2,``3,``4}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``4(Warpstone.IParser{System.ValueTuple{``0,``1,``2}},System.Func{``0,``1,``2,``3})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1572,13 +1566,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``6(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4}},System.Func{``0,``1,``2,``3,``4,``5})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``5(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3}},System.Func{``0,``1,``2,``3,``4}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``6(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4}},System.Func{``0,``1,``2,``3,``4,``5}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``5(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3}},System.Func{``0,``1,``2,``3,``4})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1596,13 +1590,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``7(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5}},System.Func{``0,``1,``2,``3,``4,``5,``6})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``6(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4}},System.Func{``0,``1,``2,``3,``4,``5}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``7(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5}},System.Func{``0,``1,``2,``3,``4,``5,``6}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``6(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4}},System.Func{``0,``1,``2,``3,``4,``5})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1620,13 +1614,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``7(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5}},System.Func{``0,``1,``2,``3,``4,``5,``6}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``7(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5}},System.Func{``0,``1,``2,``3,``4,``5,``6})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1644,13 +1638,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``9(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6,System.ValueTuple{``7}}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.Parsers.Transform``9(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6,System.ValueTuple{``7}}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.Parsers.Transform``8(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1663,6 +1657,18 @@
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.Transform``9(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6,System.ValueTuple{``7}}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8})$1:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Parsers.Transform``9(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6,System.ValueTuple{``7}}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Parsers.Transform``9(Warpstone.IParser{System.ValueTuple{``0,``1,``2,``3,``4,``5,``6,System.ValueTuple{``7}}},System.Func{``0,``1,``2,``3,``4,``5,``6,``7,``8})-&gt;Warpstone.IParser&lt;TOutput&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
@@ -1704,7 +1710,7 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
-    <Target>M:Warpstone.UnsafeParseResult.#ctor(System.Int32,System.Collections.Generic.IEnumerable{Warpstone.Errors.IParseError}):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Target>M:Warpstone.UnsafeParseResult.#ctor(System.Int32,System.Int32,System.Object):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
