@@ -1,3 +1,8 @@
+using System.Collections.Generic;
+using System.Linq;
+using Warpstone.Errors;
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
@@ -45,17 +50,16 @@ namespace Warpstone.Internal.ParserImplementations
             return new(position, JoinErrors(context, this, left.Errors, right.Errors));
         }
 
-        /// <summary>
-        /// The continuation parser when executing in iterative mode.
-        /// </summary>
-        /// <param name="Root">The root parser.</param>
-        /// <param name="Second">The second parser to try.</param>
-        private sealed class Continuation(IParserImplementation Root, IParserImplementation Second) : ContinuationParserImplementationBase
+        private sealed class Continuation : ContinuationParserImplementationBase
         {
-            /// <summary>
-            /// The second continuation of the sequential parser when executing in iterative mode.
-            /// </summary>
-            public SecondContinuation Continue { get; } = new(Root);
+            private readonly IParserImplementation second;
+            private readonly SecondContinuation continuation;
+
+            public Continuation(IParserImplementation root, IParserImplementation second)
+            {
+                this.second = second;
+                continuation = new(root);
+            }
 
             /// <inheritdoc />
             public override void Apply(IIterativeParseContext context, int position)
@@ -67,16 +71,20 @@ namespace Warpstone.Internal.ParserImplementations
                     return;
                 }
 
-                context.ExecutionStack.Push((position, Continue));
-                context.ExecutionStack.Push((position, Second));
+                context.ExecutionStack.Push((position, continuation));
+                context.ExecutionStack.Push((position, second));
             }
         }
 
-        /// <summary>
-        /// The second continuation of the choice parser when executing in iterative mode.
-        /// </summary>
-        private sealed class SecondContinuation(IParserImplementation Root) : ContinuationParserImplementationBase
+        private sealed class SecondContinuation : ContinuationParserImplementationBase
         {
+            private readonly IParserImplementation root;
+
+            public SecondContinuation(IParserImplementation root)
+            {
+                this.root = root;
+            }
+
             /// <inheritdoc />
             public override void Apply(IIterativeParseContext context, int position)
             {
@@ -89,14 +97,14 @@ namespace Warpstone.Internal.ParserImplementations
                     return;
                 }
 
-                context.ResultStack.Push(new(left.Position, JoinErrors(context, Root, left.Errors, right.Errors)));
+                context.ResultStack.Push(new(left.Position, JoinErrors(context, root, left.Errors, right.Errors)));
             }
         }
 
         private static IEnumerable<IParseError> JoinErrors(IParseContext context, IParserImplementation parser, IEnumerable<IParseError>? left, IEnumerable<IParseError>? right)
         {
-            left ??= [];
-            right ??= [];
+            left ??= Enumerable.Empty<IParseError>();
+            right ??= Enumerable.Empty<IParseError>();
 
             var joined = left.Concat(right);
             var dict = new Dictionary<int, (HashSet<string> Set, HashSet<UnexpectedTokenError> Inner)>();

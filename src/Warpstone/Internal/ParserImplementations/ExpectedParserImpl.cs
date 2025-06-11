@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using Warpstone.Errors;
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
@@ -29,7 +33,7 @@ namespace Warpstone.Internal.ParserImplementations
             }
             else
             {
-                return new(position, [new UnexpectedTokenError(context, this, position, 1, expected)]);
+                return new(position, new UnexpectedTokenError(context, this, position, 1, expected));
             }
         }
 
@@ -40,8 +44,15 @@ namespace Warpstone.Internal.ParserImplementations
             context.ExecutionStack.Push((position, inner));
         }
 
-        private sealed class Continuation(string Expected) : ContinuationParserImplementationBase
+        private sealed class Continuation : ContinuationParserImplementationBase
         {
+            private readonly string expected;
+
+            public Continuation(string expected)
+            {
+                this.expected = expected;
+            }
+
             /// <inheritdoc />
             public override void Apply(IIterativeParseContext context, int position)
             {
@@ -53,7 +64,7 @@ namespace Warpstone.Internal.ParserImplementations
                 }
 
                 context.ResultStack.Pop();
-                context.ResultStack.Push(new(position, [new UnexpectedTokenError(context, this, position, 1, Expected)]));
+                context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, expected)));
             }
         }
     }

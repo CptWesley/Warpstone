@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -118,7 +121,7 @@ namespace Warpstone.Internal.ParserExpressions
                     foreach (var parser in requiresMemo)
                     {
                         var type = typeof(MemoParser<>).MakeGenericType(parser.ResultType);
-                        var wrapped = (IParser)Activator.CreateInstance(type, args: [parser])!;
+                        var wrapped = (IParser)Activator.CreateInstance(type, parser)!;
                         var impl = wrapped.CreateUninitializedImplementation();
                         impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
                         lookup[parser] = impl;
@@ -130,7 +133,7 @@ namespace Warpstone.Internal.ParserExpressions
                     foreach (var parser in requiresGrow)
                     {
                         var type = typeof(GrowParser<>).MakeGenericType(parser.ResultType);
-                        var wrapped = (IParser)Activator.CreateInstance(type, args: [parser])!;
+                        var wrapped = (IParser)Activator.CreateInstance(type, parser)!;
                         var impl = wrapped.CreateUninitializedImplementation();
                         impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
                         lookup[parser] = impl;

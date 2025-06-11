@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using Warpstone.Errors;
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
@@ -29,7 +33,7 @@ namespace Warpstone.Internal.ParserImplementations
             }
             else
             {
-                return new(position, [new UnexpectedTokenError(context, this, position, 1, "EOF")]);
+                return new(position, new UnexpectedTokenError(context, this, position, 1, "EOF"));
             }
         }
 
@@ -42,7 +46,7 @@ namespace Warpstone.Internal.ParserImplementations
             }
             else
             {
-                context.ResultStack.Push(new(position, [new UnexpectedTokenError(context, this, position, 1, "EOF")]));
+                context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, "EOF")));
             }
         }
     }

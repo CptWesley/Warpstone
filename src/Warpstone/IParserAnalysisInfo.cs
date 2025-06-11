@@ -1,6 +1,8 @@
 #pragma warning disable QW0011
 #pragma warning disable QW0012
 
+using System.Collections.Generic;
+
 namespace Warpstone
 {
     /// <summary>

@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
@@ -96,38 +100,59 @@ namespace Warpstone.Internal.ParserImplementations
         {
             var acc = createSeed();
             context.ExecutionStack.Push((position, new ContinuationElement(
-                Element: element,
-                Delimiter: delimiter,
-                StartPosition: position,
-                Length: 0,
-                MinCount: minCount,
-                MaxCount: maxCount,
-                Accumulator: acc,
-                Accumulate: accumulate)));
+                element: element,
+                delimiter: delimiter,
+                startPosition: position,
+                length: 0,
+                minCount: minCount,
+                maxCount: maxCount,
+                accumulator: acc,
+                accumulate: accumulate)));
             context.ExecutionStack.Push((position, element));
         }
 
-#pragma warning disable S107 // Methods should not have too many parameters
-        private sealed class ContinuationElement(
-            IParserImplementation<TSource> Element,
-            IParserImplementation? Delimiter,
-            int StartPosition,
-            int Length,
-            int MinCount,
-            int MaxCount,
-            TAccumulator Accumulator,
-            Func<TAccumulator, TSource, TAccumulator> Accumulate) : ContinuationParserImplementationBase
-#pragma warning restore S107 // Methods should not have too many parameters
+        private sealed class ContinuationElement : ContinuationParserImplementationBase
         {
+            private readonly IParserImplementation<TSource> element;
+            private readonly IParserImplementation? delimiter;
+            private readonly int startPosition;
+            private readonly int length;
+            private readonly int minCount;
+            private readonly int maxCount;
+            private readonly TAccumulator accumulator;
+            private readonly Func<TAccumulator, TSource, TAccumulator> accumulate;
+
+#pragma warning disable S107 // Methods should not have too many parameters
+            public ContinuationElement(
+                IParserImplementation<TSource> element,
+                IParserImplementation? delimiter,
+                int startPosition,
+                int length,
+                int minCount,
+                int maxCount,
+                TAccumulator accumulator,
+                Func<TAccumulator, TSource, TAccumulator> accumulate)
+#pragma warning restore S107 // Methods should not have too many parameters
+            {
+                this.element = element;
+                this.delimiter = delimiter;
+                this.startPosition = startPosition;
+                this.length = length;
+                this.minCount = minCount;
+                this.maxCount = maxCount;
+                this.accumulator = accumulator;
+                this.accumulate = accumulate;
+            }
+
             public override void Apply(IIterativeParseContext context, int position)
             {
                 var result = context.ResultStack.Pop();
 
                 if (!result.Success)
                 {
-                    if (MinCount <= 0)
+                    if (minCount <= 0)
                     {
-                        context.ResultStack.Push(new(StartPosition, Length, Accumulator));
+                        context.ResultStack.Push(new(startPosition, length, accumulator));
                     }
                     else
                     {
@@ -138,68 +163,89 @@ namespace Warpstone.Internal.ParserImplementations
                 }
 
                 var nextPos = result.NextPosition;
-                var newAccumulator = Accumulate(Accumulator, (TSource)result.Value!);
-                var newLength = result.NextPosition - StartPosition;
+                var newAccumulator = accumulate(accumulator, (TSource)result.Value!);
+                var newLength = result.NextPosition - startPosition;
 
-                var newMin = MinCount - 1;
-                var newMax = MaxCount - 1;
+                var newMin = minCount - 1;
+                var newMax = maxCount - 1;
 
                 if (newMax <= 0)
                 {
-                    context.ResultStack.Push(new(StartPosition, newLength, newAccumulator));
+                    context.ResultStack.Push(new(startPosition, newLength, newAccumulator));
                     return;
                 }
 
-                if (Delimiter is { })
+                if (delimiter is { })
                 {
                     context.ExecutionStack.Push((nextPos, new ContinuationDelimiter(
-                        Element: Element,
-                        Delimiter: Delimiter,
-                        StartPosition: StartPosition,
-                        Length: newLength,
-                        MinCount: newMin,
-                        MaxCount: newMax,
-                        Accumulator: newAccumulator,
-                        Accumulate: Accumulate)));
-                    context.ExecutionStack.Push((nextPos, Delimiter));
+                        element: element,
+                        delimiter: delimiter,
+                        startPosition: startPosition,
+                        length: newLength,
+                        minCount: newMin,
+                        maxCount: newMax,
+                        accumulator: newAccumulator,
+                        accumulate: accumulate)));
+                    context.ExecutionStack.Push((nextPos, delimiter));
                 }
                 else
                 {
                     context.ExecutionStack.Push((nextPos, new ContinuationElement(
-                        Element: Element,
-                        Delimiter: Delimiter,
-                        StartPosition: StartPosition,
-                        Length: newLength,
-                        MinCount: newMin,
-                        MaxCount: newMax,
-                        Accumulator: newAccumulator,
-                        Accumulate: Accumulate)));
-                    context.ExecutionStack.Push((nextPos, Element));
+                        element: element,
+                        delimiter: delimiter,
+                        startPosition: startPosition,
+                        length: newLength,
+                        minCount: newMin,
+                        maxCount: newMax,
+                        accumulator: newAccumulator,
+                        accumulate: accumulate)));
+                    context.ExecutionStack.Push((nextPos, element));
                 }
             }
         }
 
-#pragma warning disable S107 // Methods should not have too many parameters
-        private sealed class ContinuationDelimiter(
-            IParserImplementation<TSource> Element,
-            IParserImplementation Delimiter,
-            int StartPosition,
-            int Length,
-            int MinCount,
-            int MaxCount,
-            TAccumulator Accumulator,
-            Func<TAccumulator, TSource, TAccumulator> Accumulate) : ContinuationParserImplementationBase
-#pragma warning restore S107 // Methods should not have too many parameters
+        private sealed class ContinuationDelimiter : ContinuationParserImplementationBase
         {
+            private readonly IParserImplementation<TSource> element;
+            private readonly IParserImplementation? delimiter;
+            private readonly int startPosition;
+            private readonly int length;
+            private readonly int minCount;
+            private readonly int maxCount;
+            private readonly TAccumulator accumulator;
+            private readonly Func<TAccumulator, TSource, TAccumulator> accumulate;
+
+#pragma warning disable S107 // Methods should not have too many parameters
+            public ContinuationDelimiter(
+                IParserImplementation<TSource> element,
+                IParserImplementation? delimiter,
+                int startPosition,
+                int length,
+                int minCount,
+                int maxCount,
+                TAccumulator accumulator,
+                Func<TAccumulator, TSource, TAccumulator> accumulate)
+#pragma warning restore S107 // Methods should not have too many parameters
+            {
+                this.element = element;
+                this.delimiter = delimiter;
+                this.startPosition = startPosition;
+                this.length = length;
+                this.minCount = minCount;
+                this.maxCount = maxCount;
+                this.accumulator = accumulator;
+                this.accumulate = accumulate;
+            }
+
             public override void Apply(IIterativeParseContext context, int position)
             {
                 var result = context.ResultStack.Pop();
 
                 if (!result.Success)
                 {
-                    if (MinCount <= 0)
+                    if (minCount <= 0)
                     {
-                        context.ResultStack.Push(new(StartPosition, Length, Accumulator));
+                        context.ResultStack.Push(new(startPosition, length, accumulator));
                     }
                     else
                     {
@@ -211,15 +257,15 @@ namespace Warpstone.Internal.ParserImplementations
 
                 var nextPos = result.NextPosition;
                 context.ExecutionStack.Push((nextPos, new ContinuationElement(
-                    Element: Element,
-                    Delimiter: Delimiter,
-                    StartPosition: StartPosition,
-                    Length: Length,
-                    MinCount: MinCount,
-                    MaxCount: MaxCount,
-                    Accumulator: Accumulator,
-                    Accumulate: Accumulate)));
-                context.ExecutionStack.Push((nextPos, Element));
+                    element: element,
+                    delimiter: delimiter,
+                    startPosition: startPosition,
+                    length: length,
+                    minCount: minCount,
+                    maxCount: maxCount,
+                    accumulator: accumulator,
+                    accumulate: accumulate)));
+                context.ExecutionStack.Push((nextPos, element));
             }
         }
     }

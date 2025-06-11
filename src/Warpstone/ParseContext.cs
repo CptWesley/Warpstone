@@ -1,3 +1,8 @@
+using System;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.CompilerServices;
+
 namespace Warpstone
 {
     /// <summary>
@@ -78,7 +83,7 @@ namespace Warpstone
             }
 
             var method = createMethodInfo.MakeGenericMethod(parser.ResultType);
-            return (IParseContext)method.Invoke(null, [input, parser, options])!;
+            return (IParseContext)method.Invoke(null, new object[] { input, parser, options })!;
         }
 
         /// <summary>

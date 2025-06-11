@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Runtime.CompilerServices;
+using System.Threading;
+
 namespace Warpstone
 {
     /// <summary>
@@ -6,7 +10,11 @@ namespace Warpstone
     /// <typeparam name="T">The result type of the parsing.</typeparam>
     public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParseContext
     {
+#if NET9_0_OR_GREATER
         private readonly Lock lck = new();
+#else
+        private readonly object lck = new();
+#endif
 
         private readonly MemoTable memoTable;
         private readonly IReadOnlyMemoTable readOnlyMemoTable;

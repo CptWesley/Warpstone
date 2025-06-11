@@ -1,3 +1,8 @@
+using System.Collections.Generic;
+using System.Globalization;
+using Warpstone.Errors;
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
@@ -39,7 +44,7 @@ namespace Warpstone.Internal.ParserImplementations
 
             if (!Matches(input, position))
             {
-                context.ResultStack.Push(new UnsafeParseResult(position, [new UnexpectedTokenError(context, this, position, 1, expected)]));
+                context.ResultStack.Push(new UnsafeParseResult(position, new UnexpectedTokenError(context, this, position, 1, expected)));
             }
             else
             {
@@ -54,7 +59,7 @@ namespace Warpstone.Internal.ParserImplementations
 
             if (!Matches(input, position))
             {
-                return new(position, [new UnexpectedTokenError(context, this, position, 1, expected)]);
+                return new(position, new UnexpectedTokenError(context, this, position, 1, expected));
             }
             else
             {

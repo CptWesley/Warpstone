@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using Warpstone.Errors;
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
@@ -21,7 +25,7 @@ namespace Warpstone.Internal.ParserImplementations
 
             if (result.Success)
             {
-                return new(position, [new UnexpectedTokenError(context, this, position, 1, "<not>")]);
+                return new(position, new UnexpectedTokenError(context, this, position, 1, "<not>"));
             }
             else
             {
@@ -53,7 +57,7 @@ namespace Warpstone.Internal.ParserImplementations
 
                 if (result.Success)
                 {
-                    context.ResultStack.Push(new(result.Position, [new UnexpectedTokenError(context, this, position, 1, "<not>")]));
+                    context.ResultStack.Push(new(result.Position, new UnexpectedTokenError(context, this, position, 1, "<not>")));
                 }
                 else
                 {

@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using Warpstone.Internal.ParserImplementations;
+
 namespace Warpstone.Internal.ParserExpressions
 {
     /// <summary>

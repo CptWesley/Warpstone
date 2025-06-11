@@ -1,3 +1,5 @@
+using System.Threading;
+
 namespace Warpstone
 {
     /// <summary>
@@ -6,7 +8,12 @@ namespace Warpstone
     /// <typeparam name="T">The result type of the parsing.</typeparam>
     public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParseContext
     {
-        private readonly Lock lck = new();
+#if NET9_0_OR_GREATER
+        private readonly System.Threading.Lock lck = new();
+#else
+        private readonly object lck = new();
+#endif
+
         private readonly MemoTable memoTable;
         private readonly IReadOnlyMemoTable readOnlyMemoTable;
         private readonly IParserImplementation<T> implementation;

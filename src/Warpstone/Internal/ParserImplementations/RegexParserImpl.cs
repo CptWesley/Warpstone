@@ -1,3 +1,9 @@
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
+using Warpstone.Errors;
+using Warpstone.Internal.ParserExpressions;
+
 namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
@@ -38,7 +44,7 @@ namespace Warpstone.Internal.ParserImplementations
             }
             else
             {
-                return new(position, [new UnexpectedTokenError(context, this, position, 1, expected)]);
+                return new(position, new UnexpectedTokenError(context, this, position, 1, expected));
             }
         }
 
@@ -54,7 +60,7 @@ namespace Warpstone.Internal.ParserImplementations
             }
             else
             {
-                context.ResultStack.Push(new(position, [new UnexpectedTokenError(context, this, position, 1, expected)]));
+                context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, expected)));
             }
         }
     }

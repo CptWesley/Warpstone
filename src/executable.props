@@ -6,4 +6,24 @@
     <TargetFrameworks>net481;netcoreapp3.0;net5.0;net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
+  <ItemGroup Label="DefaultImports">
+    <Using Include="System" />
+    <Using Include="System.Collections" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Collections.Immutable" />
+    <Using Include="System.Diagnostics" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.Diagnostics.Contracts" />
+    <Using Include="System.Globalization" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Reflection" />
+    <Using Include="System.Runtime.CompilerServices" />
+    <Using Include="System.Runtime.InteropServices" />
+    <Using Include="System.Text" />
+    <Using Include="System.Text.RegularExpressions" />
+    <Using Include="System.Threading" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
 </Project>

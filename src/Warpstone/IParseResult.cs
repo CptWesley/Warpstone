@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using Warpstone.Errors;
+
 namespace Warpstone
 {
     /// <summary>
