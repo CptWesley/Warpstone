@@ -54,10 +54,6 @@
     <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All" ExcludeAssets="compile" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net47' Or '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0'">
-    <PackageReference Include="System.Collections.Immutable" />
-  </ItemGroup>
-
   <ItemGroup>
     <AdditionalFiles Include="*.csproj" />
   </ItemGroup>
