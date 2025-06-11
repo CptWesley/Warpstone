@@ -1,48 +1,49 @@
-namespace Warpstone.Internal.ParserImplementations;
-
-/// <summary>
-/// Parser used for detecting the end of the input stream.
-/// </summary>
-internal sealed class EndParserImpl : ParserImplementationBase<EndParser, string>
+namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
-    /// Singleton instance of the parser.
+    /// Parser used for detecting the end of the input stream.
     /// </summary>
-    public static readonly EndParserImpl Instance = new();
-
-    private EndParserImpl()
+    internal sealed class EndParserImpl : ParserImplementationBase<EndParser, string>
     {
-    }
+        /// <summary>
+        /// Singleton instance of the parser.
+        /// </summary>
+        public static readonly EndParserImpl Instance = new();
 
-    /// <inheritdoc />
-    protected override void InitializeInternal(EndParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
-    {
-        // Do nothing.
-    }
-
-    /// <inheritdoc />
-    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-    {
-        if (position >= context.Input.Content.Length)
+        private EndParserImpl()
         {
-            return new(position, 0, string.Empty);
         }
-        else
-        {
-            return new(position, [new UnexpectedTokenError(context, this, position, 1, "EOF")]);
-        }
-    }
 
-    /// <inheritdoc />
-    public override void Apply(IIterativeParseContext context, int position)
-    {
-        if (position >= context.Input.Content.Length)
+        /// <inheritdoc />
+        protected override void InitializeInternal(EndParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
-            context.ResultStack.Push(new(position, 0, string.Empty));
+            // Do nothing.
         }
-        else
+
+        /// <inheritdoc />
+        public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
-            context.ResultStack.Push(new(position, [new UnexpectedTokenError(context, this, position, 1, "EOF")]));
+            if (position >= context.Input.Content.Length)
+            {
+                return new(position, 0, string.Empty);
+            }
+            else
+            {
+                return new(position, [new UnexpectedTokenError(context, this, position, 1, "EOF")]);
+            }
+        }
+
+        /// <inheritdoc />
+        public override void Apply(IIterativeParseContext context, int position)
+        {
+            if (position >= context.Input.Content.Length)
+            {
+                context.ResultStack.Push(new(position, 0, string.Empty));
+            }
+            else
+            {
+                context.ResultStack.Push(new(position, [new UnexpectedTokenError(context, this, position, 1, "EOF")]));
+            }
         }
     }
 }

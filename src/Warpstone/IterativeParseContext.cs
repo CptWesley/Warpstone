@@ -1,163 +1,164 @@
-namespace Warpstone;
-
-/// <summary>
-/// Parsing context for iterative parsing.
-/// </summary>
-/// <typeparam name="T">The result type of the parsing.</typeparam>
-public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParseContext
+namespace Warpstone
 {
-    private readonly Lock lck = new();
-
-    private readonly MemoTable memoTable;
-    private readonly IReadOnlyMemoTable readOnlyMemoTable;
-
-    private readonly Stack<UnsafeParseResult> resultStack;
-    private readonly Stack<(int Position, IParserImplementation Parser)> executionStack;
-
-    private IParseResult<T>? result;
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="IterativeParseContext{T}"/> class.
+    /// Parsing context for iterative parsing.
     /// </summary>
-    /// <param name="input">The input to parse.</param>
-    /// <param name="parser">The parser to run.</param>
-    /// <param name="options">The options used for parsing.</param>
-    public IterativeParseContext(IParseInput input, IParser<T> parser, ParseOptions options)
+    /// <typeparam name="T">The result type of the parsing.</typeparam>
+    public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParseContext
     {
-        Parser = parser;
-        Input = input;
-        Options = options;
+        private readonly Lock lck = new();
 
-        var implementation = parser.GetImplementation(options);
+        private readonly MemoTable memoTable;
+        private readonly IReadOnlyMemoTable readOnlyMemoTable;
 
-        memoTable = new MemoTable();
-        readOnlyMemoTable = memoTable.AsReadOnly();
+        private readonly Stack<UnsafeParseResult> resultStack;
+        private readonly Stack<(int Position, IParserImplementation Parser)> executionStack;
 
-        resultStack = new();
-        executionStack = new();
-        executionStack.Push((0, implementation));
-    }
+        private IParseResult<T>? result;
 
-    /// <inheritdoc />
-    public IParser<T> Parser { get; }
-
-    /// <inheritdoc />
-    public ParseOptions Options { get; }
-
-    /// <inheritdoc />
-    IParser IReadOnlyParseContext.Parser => Parser;
-
-    /// <inheritdoc />
-    public IParseResult<T> Result => RunToEnd(default);
-
-    /// <inheritdoc />
-    IParseResult IReadOnlyParseContext.Result => Result;
-
-    /// <inheritdoc />
-    public IParseInput Input { get; }
-
-    /// <inheritdoc />
-    public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
-
-    /// <inheritdoc />
-    IMemoTable IParseContext.MemoTable => memoTable;
-
-    /// <inheritdoc />
-    Stack<UnsafeParseResult> IIterativeParseContext.ResultStack => resultStack;
-
-    /// <inheritdoc cref="IIterativeParseContext.ResultStack" />
-    public IReadOnlyCollection<UnsafeParseResult> ResultStack => resultStack;
-
-    /// <inheritdoc />
-    Stack<(int Position, IParserImplementation Parser)> IIterativeParseContext.ExecutionStack => executionStack;
-
-    /// <inheritdoc cref="IIterativeParseContext.ExecutionStack" />
-    public IReadOnlyCollection<(int Position, IParserImplementation Parser)> ExecutionStack => executionStack;
-
-    /// <inheritdoc />
-    public bool Done => result is { };
-
-    /// <inheritdoc />
-    public IParseResult<T> RunToEnd(CancellationToken cancellationToken)
-        => cancellationToken.CanBeCanceled
-        ? RunToEndWithCancellation(cancellationToken)
-        : RunToEndWithoutCancellation();
-
-    /// <inheritdoc />
-    IParseResult IParseContext.RunToEnd(CancellationToken cancellationToken)
-        => RunToEnd(cancellationToken);
-
-    private IParseResult<T> RunToEndWithCancellation(CancellationToken cancellationToken)
-    {
-        if (result is { })
+        /// <summary>
+        /// Initializes a new instance of the <see cref="IterativeParseContext{T}"/> class.
+        /// </summary>
+        /// <param name="input">The input to parse.</param>
+        /// <param name="parser">The parser to run.</param>
+        /// <param name="options">The options used for parsing.</param>
+        public IterativeParseContext(IParseInput input, IParser<T> parser, ParseOptions options)
         {
+            Parser = parser;
+            Input = input;
+            Options = options;
+
+            var implementation = parser.GetImplementation(options);
+
+            memoTable = new MemoTable();
+            readOnlyMemoTable = memoTable.AsReadOnly();
+
+            resultStack = new();
+            executionStack = new();
+            executionStack.Push((0, implementation));
+        }
+
+        /// <inheritdoc />
+        public IParser<T> Parser { get; }
+
+        /// <inheritdoc />
+        public ParseOptions Options { get; }
+
+        /// <inheritdoc />
+        IParser IReadOnlyParseContext.Parser => Parser;
+
+        /// <inheritdoc />
+        public IParseResult<T> Result => RunToEnd(default);
+
+        /// <inheritdoc />
+        IParseResult IReadOnlyParseContext.Result => Result;
+
+        /// <inheritdoc />
+        public IParseInput Input { get; }
+
+        /// <inheritdoc />
+        public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
+
+        /// <inheritdoc />
+        IMemoTable IParseContext.MemoTable => memoTable;
+
+        /// <inheritdoc />
+        Stack<UnsafeParseResult> IIterativeParseContext.ResultStack => resultStack;
+
+        /// <inheritdoc cref="IIterativeParseContext.ResultStack" />
+        public IReadOnlyCollection<UnsafeParseResult> ResultStack => resultStack;
+
+        /// <inheritdoc />
+        Stack<(int Position, IParserImplementation Parser)> IIterativeParseContext.ExecutionStack => executionStack;
+
+        /// <inheritdoc cref="IIterativeParseContext.ExecutionStack" />
+        public IReadOnlyCollection<(int Position, IParserImplementation Parser)> ExecutionStack => executionStack;
+
+        /// <inheritdoc />
+        public bool Done => result is { };
+
+        /// <inheritdoc />
+        public IParseResult<T> RunToEnd(CancellationToken cancellationToken)
+            => cancellationToken.CanBeCanceled
+            ? RunToEndWithCancellation(cancellationToken)
+            : RunToEndWithoutCancellation();
+
+        /// <inheritdoc />
+        IParseResult IParseContext.RunToEnd(CancellationToken cancellationToken)
+            => RunToEnd(cancellationToken);
+
+        private IParseResult<T> RunToEndWithCancellation(CancellationToken cancellationToken)
+        {
+            if (result is { })
+            {
+                return result;
+            }
+
+            lock (lck)
+            {
+                while (executionStack.Count > 0)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+                    InternalStep();
+                }
+
+                result = resultStack.Pop().AsSafe<T>(this);
+            }
+
             return result;
         }
 
-        lock (lck)
+        private IParseResult<T> RunToEndWithoutCancellation()
         {
-            while (executionStack.Count > 0)
+            if (result is { })
             {
-                cancellationToken.ThrowIfCancellationRequested();
-                InternalStep();
+                return result;
             }
 
-            result = resultStack.Pop().AsSafe<T>(this);
-        }
+            lock (lck)
+            {
+                while (executionStack.Count > 0)
+                {
+                    InternalStep();
+                }
 
-        return result;
-    }
+                result = resultStack.Pop().AsSafe<T>(this);
+            }
 
-    private IParseResult<T> RunToEndWithoutCancellation()
-    {
-        if (result is { })
-        {
             return result;
         }
 
-        lock (lck)
-        {
-            while (executionStack.Count > 0)
-            {
-                InternalStep();
-            }
-
-            result = resultStack.Pop().AsSafe<T>(this);
-        }
-
-        return result;
-    }
-
-    /// <inheritdoc />
-    public bool Step()
-    {
-        if (result is { })
-        {
-            return false;
-        }
-
-        lock (lck)
+        /// <inheritdoc />
+        public bool Step()
         {
             if (result is { })
             {
                 return false;
             }
 
-            InternalStep();
-
-            if (executionStack.Count <= 0)
+            lock (lck)
             {
-                result = resultStack.Pop().AsSafe<T>(this);
+                if (result is { })
+                {
+                    return false;
+                }
+
+                InternalStep();
+
+                if (executionStack.Count <= 0)
+                {
+                    result = resultStack.Pop().AsSafe<T>(this);
+                }
             }
+
+            return true;
         }
 
-        return true;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private void InternalStep()
-    {
-        var (pos, cur) = executionStack.Pop();
-        cur.Apply(this, pos);
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private void InternalStep()
+        {
+            var (pos, cur) = executionStack.Pop();
+            cur.Apply(this, pos);
+        }
     }
 }

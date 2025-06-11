@@ -1,4 +1,6 @@
-namespace Warpstone;
+namespace Warpstone
+{
+
 
 /// <summary>
 /// Options to configure how the parsing should be done.
@@ -28,4 +30,5 @@ public sealed record ParseOptions
     /// (default: <see langword="false"/>).
     /// </summary>
     public bool EnableAutomaticMemoization { get; init; } = false;
+}
 }

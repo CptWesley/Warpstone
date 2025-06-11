@@ -1,63 +1,64 @@
-namespace Warpstone.Internal.ParserImplementations;
-
-/// <summary>
-/// Parser which represents a positive lookahead (not). Which does not consume any length of the input.
-/// </summary>
-/// <typeparam name="T">The type of the parser used to peek forward.</typeparam>
-internal sealed class NegativeLookaheadParserImpl<T> : ParserImplementationBase<NegativeLookaheadParser<T>, T?>
+namespace Warpstone.Internal.ParserImplementations
 {
-    private IParserImplementation<T> inner = default!;
-
-    /// <inheritdoc />
-    protected override void InitializeInternal(NegativeLookaheadParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+    /// <summary>
+    /// Parser which represents a positive lookahead (not). Which does not consume any length of the input.
+    /// </summary>
+    /// <typeparam name="T">The type of the parser used to peek forward.</typeparam>
+    internal sealed class NegativeLookaheadParserImpl<T> : ParserImplementationBase<NegativeLookaheadParser<T>, T?>
     {
-        inner = (IParserImplementation<T>)parserLookup[parser.Parser];
-    }
+        private IParserImplementation<T> inner = default!;
 
-    /// <inheritdoc />
-    public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
-    {
-        var result = inner.Apply(context, position);
-
-        if (result.Success)
+        /// <inheritdoc />
+        protected override void InitializeInternal(NegativeLookaheadParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
-            return new(position, [new UnexpectedTokenError(context, this, position, 1, "<not>")]);
+            inner = (IParserImplementation<T>)parserLookup[parser.Parser];
         }
-        else
+
+        /// <inheritdoc />
+        public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
-            return new(position, 0, default(T?));
-        }
-    }
+            var result = inner.Apply(context, position);
 
-    /// <inheritdoc />
-    public override void Apply(IIterativeParseContext context, int position)
-    {
-        context.ExecutionStack.Push((position, Continuation.Instance));
-        context.ExecutionStack.Push((position, inner));
-    }
-
-    private sealed class Continuation : ContinuationParserImplementationBase
-    {
-#pragma warning disable S2743 // Static fields should not be used in generic types
-        public static readonly Continuation Instance = new();
-#pragma warning restore S2743 // Static fields should not be used in generic types
-
-        private Continuation()
-        {
+            if (result.Success)
+            {
+                return new(position, [new UnexpectedTokenError(context, this, position, 1, "<not>")]);
+            }
+            else
+            {
+                return new(position, 0, default(T?));
+            }
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            var result = context.ResultStack.Pop();
+            context.ExecutionStack.Push((position, Continuation.Instance));
+            context.ExecutionStack.Push((position, inner));
+        }
 
-            if (result.Success)
+        private sealed class Continuation : ContinuationParserImplementationBase
+        {
+#pragma warning disable S2743 // Static fields should not be used in generic types
+            public static readonly Continuation Instance = new();
+#pragma warning restore S2743 // Static fields should not be used in generic types
+
+            private Continuation()
             {
-                context.ResultStack.Push(new(result.Position, [new UnexpectedTokenError(context, this, position, 1, "<not>")]));
             }
-            else
+
+            /// <inheritdoc />
+            public override void Apply(IIterativeParseContext context, int position)
             {
-                context.ResultStack.Push(new(result.Position, 0, default(T?)));
+                var result = context.ResultStack.Pop();
+
+                if (result.Success)
+                {
+                    context.ResultStack.Push(new(result.Position, [new UnexpectedTokenError(context, this, position, 1, "<not>")]));
+                }
+                else
+                {
+                    context.ResultStack.Push(new(result.Position, 0, default(T?)));
+                }
             }
         }
     }

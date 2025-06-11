@@ -1,93 +1,94 @@
-namespace Warpstone;
-
-/// <summary>
-/// Parsing context for recursive parsing.
-/// </summary>
-/// <typeparam name="T">The result type of the parsing.</typeparam>
-public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParseContext
+namespace Warpstone
 {
-    private readonly Lock lck = new();
-    private readonly MemoTable memoTable;
-    private readonly IReadOnlyMemoTable readOnlyMemoTable;
-    private readonly IParserImplementation<T> implementation;
-
-    private IParseResult<T>? result;
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="RecursiveParseContext{T}"/> class.
+    /// Parsing context for recursive parsing.
     /// </summary>
-    /// <param name="input">The input to parse.</param>
-    /// <param name="parser">The parser to run.</param>
-    /// <param name="options">The options used for parsing.</param>
-    public RecursiveParseContext(IParseInput input, IParser<T> parser, ParseOptions options)
+    /// <typeparam name="T">The result type of the parsing.</typeparam>
+    public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParseContext
     {
-        Parser = parser;
-        Input = input;
-        Options = options;
+        private readonly Lock lck = new();
+        private readonly MemoTable memoTable;
+        private readonly IReadOnlyMemoTable readOnlyMemoTable;
+        private readonly IParserImplementation<T> implementation;
 
-        implementation = parser.GetImplementation(options);
+        private IParseResult<T>? result;
 
-        memoTable = new MemoTable();
-        readOnlyMemoTable = memoTable.AsReadOnly();
-    }
-
-    /// <inheritdoc />
-    public IParser<T> Parser { get; }
-
-    /// <inheritdoc />
-    public ParseOptions Options { get; }
-
-    /// <inheritdoc />
-    IParser IReadOnlyParseContext.Parser => Parser;
-
-    /// <inheritdoc />
-    public IParseResult<T> Result => RunToEnd(default);
-
-    /// <inheritdoc />
-    IParseResult IReadOnlyParseContext.Result => Result;
-
-    /// <inheritdoc />
-    public IParseInput Input { get; }
-
-    /// <inheritdoc />
-    public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
-
-    /// <inheritdoc />
-    public bool Done => result is { };
-
-    /// <inheritdoc />
-    IMemoTable IParseContext.MemoTable => memoTable;
-
-    /// <inheritdoc />
-    public IParseResult<T> RunToEnd(CancellationToken cancellationToken)
-    {
-        Step();
-        return result!;
-    }
-
-    /// <inheritdoc />
-    IParseResult IParseContext.RunToEnd(CancellationToken cancellationToken)
-        => RunToEnd(cancellationToken);
-
-    /// <inheritdoc />
-    public bool Step()
-    {
-        if (result is { })
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RecursiveParseContext{T}"/> class.
+        /// </summary>
+        /// <param name="input">The input to parse.</param>
+        /// <param name="parser">The parser to run.</param>
+        /// <param name="options">The options used for parsing.</param>
+        public RecursiveParseContext(IParseInput input, IParser<T> parser, ParseOptions options)
         {
-            return false;
+            Parser = parser;
+            Input = input;
+            Options = options;
+
+            implementation = parser.GetImplementation(options);
+
+            memoTable = new MemoTable();
+            readOnlyMemoTable = memoTable.AsReadOnly();
         }
 
-        lock (lck)
+        /// <inheritdoc />
+        public IParser<T> Parser { get; }
+
+        /// <inheritdoc />
+        public ParseOptions Options { get; }
+
+        /// <inheritdoc />
+        IParser IReadOnlyParseContext.Parser => Parser;
+
+        /// <inheritdoc />
+        public IParseResult<T> Result => RunToEnd(default);
+
+        /// <inheritdoc />
+        IParseResult IReadOnlyParseContext.Result => Result;
+
+        /// <inheritdoc />
+        public IParseInput Input { get; }
+
+        /// <inheritdoc />
+        public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
+
+        /// <inheritdoc />
+        public bool Done => result is { };
+
+        /// <inheritdoc />
+        IMemoTable IParseContext.MemoTable => memoTable;
+
+        /// <inheritdoc />
+        public IParseResult<T> RunToEnd(CancellationToken cancellationToken)
+        {
+            Step();
+            return result!;
+        }
+
+        /// <inheritdoc />
+        IParseResult IParseContext.RunToEnd(CancellationToken cancellationToken)
+            => RunToEnd(cancellationToken);
+
+        /// <inheritdoc />
+        public bool Step()
         {
             if (result is { })
             {
                 return false;
             }
 
-            var unsafeResult = implementation.Apply(this, 0);
-            result = unsafeResult.AsSafe<T>(this);
+            lock (lck)
+            {
+                if (result is { })
+                {
+                    return false;
+                }
 
-            return true;
+                var unsafeResult = implementation.Apply(this, 0);
+                result = unsafeResult.AsSafe<T>(this);
+
+                return true;
+            }
         }
     }
 }
