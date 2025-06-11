@@ -47,6 +47,12 @@
         "resolved": "1.6.1",
         "contentHash": "cNFJIQESLXEryIleIx4xqNxA++YtdfyFxkjvmKZygLmgFthb6054deJ20pSl2y92T6J1SRzLGyE4kVaD3cub1g=="
       },
+      "Microsoft.CodeAnalysis.Analyzers": {
+        "type": "Direct",
+        "requested": "[4.14.0, )",
+        "resolved": "4.14.0",
+        "contentHash": "fCj+MzjJxN/4iYAz7JPLONGKeTomaZNzx4UgGA0AerTrx4Ou6Rw2J5YF4V51vWW+aSQSCv1nnAkCZUw5Z9+3zw=="
+      },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "Direct",
         "requested": "[4.14.0, )",
@@ -254,12 +260,6 @@
       },
       "warpstone.sources": {
         "type": "Project"
-      },
-      "Microsoft.CodeAnalysis.Analyzers": {
-        "type": "CentralTransitive",
-        "requested": "[4.14.0, )",
-        "resolved": "4.14.0",
-        "contentHash": "fCj+MzjJxN/4iYAz7JPLONGKeTomaZNzx4UgGA0AerTrx4Ou6Rw2J5YF4V51vWW+aSQSCv1nnAkCZUw5Z9+3zw=="
       }
     }
   }
