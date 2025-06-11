@@ -52,6 +52,16 @@ namespace Warpstone
         /// <summary>
         /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct.
         /// </summary>
+        /// <param name="position">The position where the error occurred.</param>
+        /// <param name="error">The encountered error.</param>
+        public UnsafeParseResult(int position, IParseError error)
+            : this(position, new[] { error })
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct.
+        /// </summary>
         /// <param name="position">The position where the result was obtained.</param>
         /// <param name="length">The length of the value in the input.</param>
         /// <param name="value">The found value.</param>
@@ -97,7 +107,7 @@ namespace Warpstone
                     length: result.Length,
                     success: false,
                     value: default,
-                    errors: result.Errors?.ToArray() ?? []);
+                    errors: result.Errors?.ToArray() ?? Array.Empty<IParseError>());
             }
         }
     }

@@ -25,7 +25,7 @@ namespace Warpstone.Internal.ParserImplementations
                 return result;
             }
 
-            context.MemoTable[position, inner] = new(position, [new InfiniteRecursionError(context, this, position, 1)]);
+            context.MemoTable[position, inner] = new(position, new InfiniteRecursionError(context, this, position, 1));
             result = inner.Apply(context, position);
             context.MemoTable[position, inner] = result;
             return result;
@@ -40,7 +40,7 @@ namespace Warpstone.Internal.ParserImplementations
                 return;
             }
 
-            context.MemoTable[position, inner] = new(position, [new InfiniteRecursionError(context, this, position, 1)]);
+            context.MemoTable[position, inner] = new(position, new InfiniteRecursionError(context, this, position, 1));
             context.ExecutionStack.Push((position, continuation));
             context.ExecutionStack.Push((position, inner));
         }
