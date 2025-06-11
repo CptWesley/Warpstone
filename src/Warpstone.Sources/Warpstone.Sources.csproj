@@ -2,4 +2,11 @@
 
   <Import Project="../sourcegenerator.props" />
 
+  <ItemGroup>
+    <EmbeddedResource Include="../Warpstone/**/*.cs" LinkBase="embedded" />
+    <EmbeddedResource Remove="../Warpstone/bin/**" />
+    <EmbeddedResource Remove="../Warpstone/obj/**" />
+    <EmbeddedResource Remove="../Warpstone/Properties/**" />
+  </ItemGroup>
+
 </Project>
