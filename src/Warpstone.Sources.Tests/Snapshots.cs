@@ -3,8 +3,14 @@ namespace Warpstone.Sources.Tests;
 public static class Snapshots
 {
     [Fact]
-    public static void Foo()
+    public static void Generates()
     {
-        42.Should().Be(42);
+        GeneratorSnapshot.Verify<Generator>();
+    }
+
+    [Fact]
+    public static void Incremental()
+    {
+        GeneratorIncrementalCache.Verify<Generator>();
     }
 }

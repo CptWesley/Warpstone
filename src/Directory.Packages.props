@@ -25,6 +25,9 @@
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.10.0.116381" />
     <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.556" />
     <PackageVersion Include="System.Collections.Immutable" Version="1.5.0" />
+    <PackageVersion Include="Verify" Version="30.3.1" />
+    <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
+    <PackageVersion Include="Verify.Xunit" Version="30.3.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.analyzers" Version="1.21.0" />
   </ItemGroup>
