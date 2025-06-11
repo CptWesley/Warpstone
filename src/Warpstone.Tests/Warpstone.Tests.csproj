@@ -1,5 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="../tests.props" />
+  <ItemGroup>
+    <PackageReference Include="System.Reflection.Metadata" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../Warpstone/Warpstone.csproj" />
