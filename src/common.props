@@ -23,6 +23,7 @@
     <Nullable>enable</Nullable>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NuGetAudit>true</NuGetAudit>
     <NuGetAuditMode>all</NuGetAuditMode>
@@ -40,8 +41,6 @@
   <ItemGroup Label="Analyzers">
     <PackageReference Include="AsyncFixer" PrivateAssets="all" ExcludeAssets="compile" />
     <PackageReference Include="DotNetProjectFile.Analyzers" PrivateAssets="all" ExcludeAssets="compile" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" PrivateAssets="all" ExcludeAssets="compile" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" PrivateAssets="all" ExcludeAssets="compile" />
     <PackageReference Include="Qowaiv.Analyzers.CSharp" PrivateAssets="all" ExcludeAssets="compile" />
     <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="all" ExcludeAssets="compile" />
   </ItemGroup>
