@@ -10,6 +10,7 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <EnablePackageValidation>false</EnablePackageValidation>
     <DevelopmentDependency>true</DevelopmentDependency>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
   </PropertyGroup>
 
   <ItemGroup Label="DefaultImports">
