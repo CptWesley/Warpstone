@@ -45,13 +45,20 @@ namespace Warpstone.Internal.ParserImplementations
             context.ExecutionStack.Push((position, inner));
         }
 
-        private sealed class Continuation(IParserImplementation Parser) : ContinuationParserImplementationBase
+        private sealed class Continuation : ContinuationParserImplementationBase
         {
+            private readonly IParserImplementation inner;
+
+            public Continuation(IParserImplementation inner)
+            {
+                this.inner = inner;
+            }
+
             /// <inheritdoc />
             public override void Apply(IIterativeParseContext context, int position)
             {
                 var result = context.ResultStack.Peek();
-                context.MemoTable[position, Parser] = result;
+                context.MemoTable[position, inner] = result;
             }
         }
     }

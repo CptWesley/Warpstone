@@ -61,8 +61,15 @@ namespace Warpstone.Internal.ParserImplementations
         /// <summary>
         /// The first continuation of the sequential parser when executing in iterative mode.
         /// </summary>
-        private sealed class Continuation(IParserImplementation<TSecond> Second) : ContinuationParserImplementationBase
+        private sealed class Continuation : ContinuationParserImplementationBase
         {
+            private readonly IParserImplementation<TSecond> second;
+
+            public Continuation(IParserImplementation<TSecond> second)
+            {
+                this.second = second;
+            }
+
             /// <inheritdoc />
             public override void Apply(IIterativeParseContext context, int position)
             {
@@ -76,7 +83,7 @@ namespace Warpstone.Internal.ParserImplementations
                 var nextPos = leftResult.NextPosition;
 
                 context.ExecutionStack.Push((nextPos, SecondContinuation.Instance));
-                context.ExecutionStack.Push((nextPos, Second));
+                context.ExecutionStack.Push((nextPos, second));
             }
 
             /// <summary>

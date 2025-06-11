@@ -60,12 +60,19 @@ namespace Warpstone.Internal.ParserImplementations
             context.ExecutionStack.Push((position, inner));
         }
 
-        private sealed class Continuation(IParserImplementation Parser) : ContinuationParserImplementationBase
+        private sealed class Continuation : ContinuationParserImplementationBase
         {
+            private readonly IParserImplementation inner;
+
+            public Continuation(IParserImplementation inner)
+            {
+                this.inner = inner;
+            }
+
             public override void Apply(IIterativeParseContext context, int position)
             {
                 var newResult = context.ResultStack.Pop();
-                var lastResult = context.MemoTable[position, Parser];
+                var lastResult = context.MemoTable[position, inner];
 
                 if (!ResultHasImproved(lastResult, newResult))
                 {
@@ -73,9 +80,9 @@ namespace Warpstone.Internal.ParserImplementations
                     return;
                 }
 
-                context.MemoTable[position, Parser] = newResult;
+                context.MemoTable[position, inner] = newResult;
                 context.ExecutionStack.Push((position, this));
-                context.ExecutionStack.Push((position, Parser));
+                context.ExecutionStack.Push((position, inner));
             }
         }
 

@@ -54,12 +54,15 @@ namespace Warpstone.Internal.ParserImplementations
             }
         }
 
-        /// <summary>
-        /// The continuation function when running in iterative mode.
-        /// </summary>
-        /// <param name="Map">The map function.</param>
-        private sealed class Continuation(Func<TIn, TOut> Map) : ContinuationParserImplementationBase
+        private sealed class Continuation : ContinuationParserImplementationBase
         {
+            private readonly Func<TIn, TOut> map;
+
+            public Continuation(Func<TIn, TOut> map)
+            {
+                this.map = map;
+            }
+
             /// <inheritdoc />
             public override void Apply(IIterativeParseContext context, int position)
             {
@@ -80,7 +83,7 @@ namespace Warpstone.Internal.ParserImplementations
 
                 try
                 {
-                    var modified = Map(value);
+                    var modified = map(value);
                     context.ResultStack.Push(new UnsafeParseResult(prevResult.Position, prevResult.Length, modified!));
                 }
                 catch (Exception e)
