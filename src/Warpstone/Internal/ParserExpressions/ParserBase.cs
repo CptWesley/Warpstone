@@ -1,254 +1,258 @@
+using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace Warpstone.Internal.ParserExpressions;
-
-/// <summary>
-/// Provides a base implementation for parsers.
-/// </summary>
-/// <typeparam name="T">The result type of the parser.</typeparam>
-internal abstract class ParserBase<T> : IParser<T>
+namespace Warpstone.Internal.ParserExpressions
 {
-    private readonly Lazy<IReadOnlyParserAnalysisInfo> lazyAnalsysis;
-    private readonly ConcurrentDictionary<ParseOptions, ParseOptions> simplifiedOptions = new();
-    private readonly ConcurrentDictionary<ParseOptions, IParserImplementation<T>> implementations = new();
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="ParserBase{T}"/> class.
+    /// Provides a base implementation for parsers.
     /// </summary>
-    protected ParserBase()
+    /// <typeparam name="T">The result type of the parser.</typeparam>
+    internal abstract class ParserBase<T> : IParser<T>
     {
-        lazyAnalsysis = new Lazy<IReadOnlyParserAnalysisInfo>(() =>
+        private readonly Lazy<IReadOnlyParserAnalysisInfo> lazyAnalsysis;
+        private readonly ConcurrentDictionary<ParseOptions, ParseOptions> simplifiedOptions = new();
+        private readonly ConcurrentDictionary<ParseOptions, IParserImplementation<T>> implementations = new();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ParserBase{T}"/> class.
+        /// </summary>
+        protected ParserBase()
         {
-            var info = new ParserAnalysisInfo();
-            var trace = Array.Empty<IParser>();
-            PerformAnalysisStep(info, trace);
-            return info;
-        });
-    }
+            lazyAnalsysis = new Lazy<IReadOnlyParserAnalysisInfo>(() =>
+            {
+                var info = new ParserAnalysisInfo();
+                var trace = Array.Empty<IParser>();
+                PerformAnalysisStep(info, trace);
+                return info;
+            });
+        }
 
-    /// <inheritdoc />
-    public Type ResultType => typeof(T);
+        /// <inheritdoc />
+        public Type ResultType => typeof(T);
 
-    /// <inheritdoc />
+        /// <inheritdoc />
 #pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
-    public IParserImplementation<T> GetImplementation(ParseOptions options)
+        public IParserImplementation<T> GetImplementation(ParseOptions options)
 #pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
-    {
-        var simplified = GetSimplifiedOptions(options);
-        return implementations.GetOrAdd(simplified, o =>
         {
-            var analysis = Analyze();
-            var lookup = new Dictionary<IParser, IParserImplementation>();
-            var lazyTargets = new Dictionary<ILazyParser, IParser>();
-            var lazy = new List<ILazyParser>();
-            var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
-
-            var requiresMemo = new HashSet<IParser>();
-            var requiresGrow = new HashSet<IParser>();
-
-            // Build initial lookup table.
-
-            foreach (var entry in analysis.OccurrenceCounts)
+            var simplified = GetSimplifiedOptions(options);
+            return implementations.GetOrAdd(simplified, o =>
             {
-                var parser = entry.Key;
+                var analysis = Analyze();
+                var lookup = new Dictionary<IParser, IParserImplementation>();
+                var lazyTargets = new Dictionary<ILazyParser, IParser>();
+                var lazy = new List<ILazyParser>();
+                var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
 
-                if (parser is ILazyParser lp)
+                var requiresMemo = new HashSet<IParser>();
+                var requiresGrow = new HashSet<IParser>();
+
+                // Build initial lookup table.
+
+                foreach (var entry in analysis.OccurrenceCounts)
                 {
-                    lazy.Add(lp);
-                    continue;
-                }
+                    var parser = entry.Key;
 
-                if (entry.Value > 1)
-                {
-                    requiresMemo.Add(parser);
-                }
-
-                if (analysis.RecursiveOccurrenceCounts.TryGetValue(parser, out var recCount) && recCount >= 1)
-                {
-                    requiresGrow.Add(parser);
-                }
-
-                var impl = parser.CreateUninitializedImplementation();
-                initializeable.Add((parser, impl));
-                lookup[parser] = impl;
-            }
-
-            // Resolve the lazy parsers.
-
-            foreach (var parser in lazy)
-            {
-                IParser target = parser;
-                var seen = new HashSet<IParser>();
-
-                while (target is ILazyParser lazyTarget)
-                {
-                    if (!seen.Add(lazyTarget))
+                    if (parser is ILazyParser lp)
                     {
-                        throw new ArgumentException("Provided parser contains unsolvable recursive lazy parsers.");
+                        lazy.Add(lp);
+                        continue;
                     }
 
-                    target = lazyTarget.Parser.Value;
-                }
+                    if (entry.Value > 1)
+                    {
+                        requiresMemo.Add(parser);
+                    }
 
-                lazyTargets[parser] = target;
+                    if (analysis.RecursiveOccurrenceCounts.TryGetValue(parser, out var recCount) && recCount >= 1)
+                    {
+                        requiresGrow.Add(parser);
+                    }
 
-                var oc = analysis.OccurrenceCounts.TryGetValue(parser, out var ocv) ? ocv : 0;
-                var rc = analysis.RecursiveOccurrenceCounts.TryGetValue(parser, out var rcv) ? rcv : 0;
-
-                if (oc > 1)
-                {
-                    requiresMemo.Add(target);
-                }
-
-                if (rc >= 1)
-                {
-                    requiresGrow.Add(target);
-                }
-            }
-
-            // Handle memoization and left-recursion.
-
-            if (o.EnableAutomaticGrowingRecursion)
-            {
-                requiresMemo.ExceptWith(requiresGrow);
-            }
-
-            if (o.EnableAutomaticMemoization)
-            {
-                foreach (var parser in requiresMemo)
-                {
-                    var type = typeof(MemoParser<>).MakeGenericType(parser.ResultType);
-                    var wrapped = (IParser)Activator.CreateInstance(type, args: [parser])!;
-                    var impl = wrapped.CreateUninitializedImplementation();
-                    impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
+                    var impl = parser.CreateUninitializedImplementation();
+                    initializeable.Add((parser, impl));
                     lookup[parser] = impl;
                 }
+
+                // Resolve the lazy parsers.
+
+                foreach (var parser in lazy)
+                {
+                    IParser target = parser;
+                    var seen = new HashSet<IParser>();
+
+                    while (target is ILazyParser lazyTarget)
+                    {
+                        if (!seen.Add(lazyTarget))
+                        {
+                            throw new ArgumentException("Provided parser contains unsolvable recursive lazy parsers.");
+                        }
+
+                        target = lazyTarget.Parser.Value;
+                    }
+
+                    lazyTargets[parser] = target;
+
+                    var oc = analysis.OccurrenceCounts.TryGetValue(parser, out var ocv) ? ocv : 0;
+                    var rc = analysis.RecursiveOccurrenceCounts.TryGetValue(parser, out var rcv) ? rcv : 0;
+
+                    if (oc > 1)
+                    {
+                        requiresMemo.Add(target);
+                    }
+
+                    if (rc >= 1)
+                    {
+                        requiresGrow.Add(target);
+                    }
+                }
+
+                // Handle memoization and left-recursion.
+
+                if (o.EnableAutomaticGrowingRecursion)
+                {
+                    requiresMemo.ExceptWith(requiresGrow);
+                }
+
+                if (o.EnableAutomaticMemoization)
+                {
+                    foreach (var parser in requiresMemo)
+                    {
+                        var type = typeof(MemoParser<>).MakeGenericType(parser.ResultType);
+                        var wrapped = (IParser)Activator.CreateInstance(type, parser)!;
+                        var impl = wrapped.CreateUninitializedImplementation();
+                        impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
+                        lookup[parser] = impl;
+                    }
+                }
+
+                if (o.EnableAutomaticGrowingRecursion)
+                {
+                    foreach (var parser in requiresGrow)
+                    {
+                        var type = typeof(GrowParser<>).MakeGenericType(parser.ResultType);
+                        var wrapped = (IParser)Activator.CreateInstance(type, parser)!;
+                        var impl = wrapped.CreateUninitializedImplementation();
+                        impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
+                        lookup[parser] = impl;
+                    }
+                }
+
+                // Remove the lazy parser
+                foreach (var entry in lazyTargets)
+                {
+                    lookup[entry.Key] = lookup[entry.Value];
+                }
+
+                // Initialize the implementations.
+
+                foreach (var entry in initializeable)
+                {
+                    entry.Implementation.Initialize(entry.Parser, lookup);
+                }
+
+                var untypedResult = lookup[this];
+                var typedResult = (IParserImplementation<T>)untypedResult;
+                return typedResult;
+            });
+        }
+
+        /// <inheritdoc />
+        IParserImplementation IParser.GetImplementation(ParseOptions options)
+            => GetImplementation(options);
+
+        /// <inheritdoc />
+        public IReadOnlyParserAnalysisInfo Analyze()
+            => lazyAnalsysis.Value;
+
+        /// <inheritdoc />
+        public void PerformAnalysisStep(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+        {
+            var updatedTrace = new IParser[trace.Count + 1];
+            CopyTo(trace, updatedTrace);
+            updatedTrace[updatedTrace.Length - 1] = this;
+
+            var oldLength = info.MaximumNestedParserDepth;
+            if (updatedTrace.Length > oldLength)
+            {
+                info.MaximumNestedParserDepth = updatedTrace.Length;
             }
 
-            if (o.EnableAutomaticGrowingRecursion)
+            var oldCount = info.OccurrenceCounts.TryGetValue(this, out var oldCountValue) ? oldCountValue : 0;
+            var newCount = oldCount + 1;
+            info.OccurrenceCounts[this] = newCount;
+
+            if (trace.Contains(this))
             {
-                foreach (var parser in requiresGrow)
+                var oldRecCount = info.OccurrenceCounts.TryGetValue(this, out var oldRecCountValue) ? oldRecCountValue : 0;
+                var newRecCount = oldRecCount + 1;
+                info.RecursiveOccurrenceCounts[this] = newRecCount;
+
+                info.HasRecursiveParsers = true;
+                return;
+            }
+
+            PerformAnalysisStepInternal(info, updatedTrace);
+        }
+
+        /// <inheritdoc cref="PerformAnalysisStep(IParserAnalysisInfo, IReadOnlyList{IParser})" />
+        protected abstract void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace);
+
+        private static void CopyTo(IReadOnlyList<IParser> trace, IParser[] updated)
+        {
+            if (trace is IParser[] arr)
+            {
+                Array.Copy(arr, updated, arr.Length);
+            }
+            else if (trace is ICollection<IParser> list)
+            {
+                list.CopyTo(updated, 0);
+            }
+            else
+            {
+                for (var i = 0; i < trace.Count; i++)
                 {
-                    var type = typeof(GrowParser<>).MakeGenericType(parser.ResultType);
-                    var wrapped = (IParser)Activator.CreateInstance(type, args: [parser])!;
-                    var impl = wrapped.CreateUninitializedImplementation();
-                    impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
-                    lookup[parser] = impl;
+                    updated[i] = trace[i];
                 }
             }
-
-            // Remove the lazy parser
-            foreach (var entry in lazyTargets)
-            {
-                lookup[entry.Key] = lookup[entry.Value];
-            }
-
-            // Initialize the implementations.
-
-            foreach (var entry in initializeable)
-            {
-                entry.Implementation.Initialize(entry.Parser, lookup);
-            }
-
-            var untypedResult = lookup[this];
-            var typedResult = (IParserImplementation<T>)untypedResult;
-            return typedResult;
-        });
-    }
-
-    /// <inheritdoc />
-    IParserImplementation IParser.GetImplementation(ParseOptions options)
-        => GetImplementation(options);
-
-    /// <inheritdoc />
-    public IReadOnlyParserAnalysisInfo Analyze()
-        => lazyAnalsysis.Value;
-
-    /// <inheritdoc />
-    public void PerformAnalysisStep(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
-    {
-        var updatedTrace = new IParser[trace.Count + 1];
-        CopyTo(trace, updatedTrace);
-        updatedTrace[updatedTrace.Length - 1] = this;
-
-        var oldLength = info.MaximumNestedParserDepth;
-        if (updatedTrace.Length > oldLength)
-        {
-            info.MaximumNestedParserDepth = updatedTrace.Length;
         }
 
-        var oldCount = info.OccurrenceCounts.TryGetValue(this, out var oldCountValue) ? oldCountValue : 0;
-        var newCount = oldCount + 1;
-        info.OccurrenceCounts[this] = newCount;
+        /// <inheritdoc />
+        public abstract IParserImplementation<T> CreateUninitializedImplementation();
 
-        if (trace.Contains(this))
-        {
-            var oldRecCount = info.OccurrenceCounts.TryGetValue(this, out var oldRecCountValue) ? oldRecCountValue : 0;
-            var newRecCount = oldRecCount + 1;
-            info.RecursiveOccurrenceCounts[this] = newRecCount;
+        /// <inheritdoc />
+        IParserImplementation IParser.CreateUninitializedImplementation()
+            => CreateUninitializedImplementation();
 
-            info.HasRecursiveParsers = true;
-            return;
-        }
-
-        PerformAnalysisStepInternal(info, updatedTrace);
-    }
-
-    /// <inheritdoc cref="PerformAnalysisStep(IParserAnalysisInfo, IReadOnlyList{IParser})" />
-    protected abstract void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace);
-
-    private static void CopyTo(IReadOnlyList<IParser> trace, IParser[] updated)
-    {
-        if (trace is IParser[] arr)
-        {
-            Array.Copy(arr, updated, arr.Length);
-        }
-        else if (trace is ICollection<IParser> list)
-        {
-            list.CopyTo(updated, 0);
-        }
-        else
-        {
-            for (var i = 0; i < trace.Count; i++)
+        private ParseOptions GetSimplifiedOptions(ParseOptions options)
+            => simplifiedOptions.GetOrAdd(options, o =>
             {
-                updated[i] = trace[i];
-            }
-        }
-    }
+                var analysis = Analyze();
 
-    /// <inheritdoc />
-    public abstract IParserImplementation<T> CreateUninitializedImplementation();
-
-    /// <inheritdoc />
-    IParserImplementation IParser.CreateUninitializedImplementation()
-        => CreateUninitializedImplementation();
-
-    private ParseOptions GetSimplifiedOptions(ParseOptions options)
-        => simplifiedOptions.GetOrAdd(options, o =>
-        {
-            var analysis = Analyze();
-
-            o = o with
-            {
-                ExecutionMode = ParserExecutionMode.Auto, // For purposes of finding the implementation this is irrelevant.
-            };
-
-            if (o.EnableAutomaticGrowingRecursion && !analysis.HasRecursiveParsers)
-            {
                 o = o with
                 {
-                    EnableAutomaticGrowingRecursion = false,
+                    ExecutionMode = ParserExecutionMode.Auto, // For purposes of finding the implementation this is irrelevant.
                 };
-            }
 
-            if (o.EnableAutomaticMemoization && !analysis.OccurrenceCounts.Any(static entry => entry.Value > 1))
-            {
-                o = o with
+                if (o.EnableAutomaticGrowingRecursion && !analysis.HasRecursiveParsers)
                 {
-                    EnableAutomaticMemoization = false,
-                };
-            }
+                    o = o with
+                    {
+                        EnableAutomaticGrowingRecursion = false,
+                    };
+                }
 
-            return o;
-        });
+                if (o.EnableAutomaticMemoization && !analysis.OccurrenceCounts.Any(static entry => entry.Value > 1))
+                {
+                    o = o with
+                    {
+                        EnableAutomaticMemoization = false,
+                    };
+                }
+
+                return o;
+            });
+    }
 }

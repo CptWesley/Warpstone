@@ -1,46 +1,50 @@
-namespace Warpstone.Internal.ParserExpressions;
+using System;
+using System.Collections.Generic;
 
-/// <summary>
-/// Represents a parser that lazily executed the given <see name="Parser"/>.
-/// </summary>
-/// <typeparam name="T">The result type of the <see name="Parser"/>.</typeparam>
-internal sealed class LazyParser<T> : ParserBase<T>, ILazyParser<T>
+namespace Warpstone.Internal.ParserExpressions
 {
-    private readonly Lazy<IParser<T>> typedLazy;
-    private readonly Lazy<IParser> untypedLazy;
-
     /// <summary>
-    /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
+    /// Represents a parser that lazily executed the given <see name="Parser"/>.
     /// </summary>
-    /// <param name="parser">The lazily executed parser.</param>
-    public LazyParser(Lazy<IParser<T>> parser)
+    /// <typeparam name="T">The result type of the <see name="Parser"/>.</typeparam>
+    internal sealed class LazyParser<T> : ParserBase<T>, ILazyParser<T>
     {
-        typedLazy = parser;
-        untypedLazy = new(() => typedLazy.Value);
-    }
+        private readonly Lazy<IParser<T>> typedLazy;
+        private readonly Lazy<IParser> untypedLazy;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
-    /// </summary>
-    /// <param name="get">The generator for the lazy parser.</param>
-    public LazyParser(Func<IParser<T>> get)
-        : this(new Lazy<IParser<T>>(get))
-    {
-    }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
+        /// </summary>
+        /// <param name="parser">The lazily executed parser.</param>
+        public LazyParser(Lazy<IParser<T>> parser)
+        {
+            typedLazy = parser;
+            untypedLazy = new(() => typedLazy.Value);
+        }
 
-    /// <inheritdoc />
-    public Lazy<IParser<T>> Parser => typedLazy;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="LazyParser{T}"/> class.
+        /// </summary>
+        /// <param name="get">The generator for the lazy parser.</param>
+        public LazyParser(Func<IParser<T>> get)
+            : this(new Lazy<IParser<T>>(get))
+        {
+        }
 
-    /// <inheritdoc />
-    Lazy<IParser> ILazyParser.Parser => untypedLazy;
+        /// <inheritdoc />
+        public Lazy<IParser<T>> Parser => typedLazy;
 
-    /// <inheritdoc />
-    public override IParserImplementation<T> CreateUninitializedImplementation()
-        => throw new NotSupportedException("Lazy parsers should not occur in the parsers implementations constructed from the expressions.");
+        /// <inheritdoc />
+        Lazy<IParser> ILazyParser.Parser => untypedLazy;
 
-    /// <inheritdoc />
-    protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
-    {
-        Parser.Value.PerformAnalysisStep(info, trace);
+        /// <inheritdoc />
+        public override IParserImplementation<T> CreateUninitializedImplementation()
+            => throw new NotSupportedException("Lazy parsers should not occur in the parsers implementations constructed from the expressions.");
+
+        /// <inheritdoc />
+        protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
+        {
+            Parser.Value.PerformAnalysisStep(info, trace);
+        }
     }
 }

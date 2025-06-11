@@ -1,19 +1,23 @@
-namespace Warpstone.Internal.ParserImplementations;
+using System;
+using System.Collections.Generic;
 
-/// <summary>
-/// Provides a base implementation for continuations.
-/// </summary>
-internal abstract class ContinuationParserImplementationBase : IParserImplementation
+namespace Warpstone.Internal.ParserImplementations
 {
-    /// <inheritdoc />
-    public IParser ParserExpression => throw new NotSupportedException();
+    /// <summary>
+    /// Provides a base implementation for continuations.
+    /// </summary>
+    internal abstract class ContinuationParserImplementationBase : IParserImplementation
+    {
+        /// <inheritdoc />
+        public IParser ParserExpression => throw new NotSupportedException();
 
-    /// <inheritdoc />
-    public UnsafeParseResult Apply(IRecursiveParseContext context, int position) => throw new NotSupportedException();
+        /// <inheritdoc />
+        public UnsafeParseResult Apply(IRecursiveParseContext context, int position) => throw new NotSupportedException();
 
-    /// <inheritdoc />
-    public void Initialize(IParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup) => throw new NotSupportedException();
+        /// <inheritdoc />
+        public void Initialize(IParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup) => throw new NotSupportedException();
 
-    /// <inheritdoc />
-    public abstract void Apply(IIterativeParseContext context, int position);
+        /// <inheritdoc />
+        public abstract void Apply(IIterativeParseContext context, int position);
+    }
 }
