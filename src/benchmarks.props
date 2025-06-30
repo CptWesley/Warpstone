@@ -11,10 +11,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Update="System.Collections.Immutable" Version="9.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" />
   </ItemGroup>
 </Project>
