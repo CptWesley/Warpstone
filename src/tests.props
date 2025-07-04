@@ -1,4 +1,3 @@
-
 <Project>
   <Import Project="executable.props" />
 
@@ -30,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup Label="DefaultImports">
-    <Using Include="FluentAssertions" />
+    <Using Include="AwesomeAssertions" />
     <Using Include="Xunit" />
     <Using Static="true" Include="AssertNet.Assertions" />
   </ItemGroup>

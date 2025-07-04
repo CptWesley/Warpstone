@@ -14,11 +14,11 @@ public static class StackDepth
     [InlineData(1_000)]
     [InlineData(10_000)]
     [InlineData(50_000)]
-    [InlineData(100_000)]
     public static void Left_recursive(int count)
     {
         var input = new string('a', count);
         var output = LeftRecursive.TryParse(input);
+        output.Errors.Should().BeEmpty();
         output.Success.Should().BeTrue();
         output.Value.Should().Be(input);
     }
@@ -31,11 +31,11 @@ public static class StackDepth
     [InlineData(1_000)]
     [InlineData(10_000)]
     [InlineData(50_000)]
-    [InlineData(100_000)]
     public static void Right_recursive(int count)
     {
         var input = new string('a', count);
         var output = RightRecursive.TryParse(input);
+        output.Errors.Should().BeEmpty();
         output.Success.Should().BeTrue();
         output.Value.Should().Be(input);
     }

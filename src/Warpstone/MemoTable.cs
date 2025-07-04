@@ -1,78 +1,84 @@
-namespace Warpstone;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
-/// <summary>
-/// Represents a packrat memotable.
-/// </summary>
-public sealed class MemoTable : IMemoTable
+namespace Warpstone
 {
-    private readonly Dictionary<int, Dictionary<IParser, IParseResult>> table = new();
-
-    /// <inheritdoc />
-    public IParseResult? this[(int, IParser) key] => this[key.Item1, key.Item2];
-
-    /// <inheritdoc />
-    public IParseResult? this[int position, IParser parser]
+    /// <summary>
+    /// Represents a packrat memotable.
+    /// </summary>
+    public sealed class MemoTable : IMemoTable
     {
-        get
+        private readonly Dictionary<int, Dictionary<IParserImplementation, UnsafeParseResult>> table = new();
+
+        /// <inheritdoc />
+        public UnsafeParseResult this[(int, IParserImplementation) key] => this[key.Item1, key.Item2];
+
+        /// <inheritdoc />
+        public UnsafeParseResult this[int position, IParserImplementation parser]
         {
-            if (!table.TryGetValue(position, out var expressions) || !expressions.TryGetValue(parser, out var result))
+            get
             {
-                return null;
+                if (!table.TryGetValue(position, out var expressions) || !expressions.TryGetValue(parser, out var result))
+                {
+                    throw new KeyNotFoundException("Could not find entry in memo table.");
+                }
+
+                return result;
             }
 
-            return result;
+            set
+            {
+                if (!table.TryGetValue(position, out var expressions))
+                {
+                    expressions = new();
+                    table.Add(position, expressions);
+                }
+
+                expressions[parser] = value;
+            }
         }
 
-        set
+        /// <inheritdoc />
+        UnsafeParseResult IReadOnlyMemoTable.this[int position, IParserImplementation parser] => this[position, parser];
+
+        /// <inheritdoc />
+        public IEnumerable<(int, IParserImplementation)> Keys => table.SelectMany(x => x.Value.Select(y => (x.Key, y.Key)));
+
+        /// <inheritdoc />
+        public IEnumerable<UnsafeParseResult> Values => table.SelectMany(x => x.Value.Select(y => y.Value));
+
+        /// <inheritdoc />
+        public int Count => table.Sum(x => x.Value.Count);
+
+        /// <inheritdoc />
+        public bool ContainsKey((int Position, IParserImplementation Parser) key)
+            => TryGetValue(key, out _);
+
+        /// <inheritdoc />
+        public bool TryGetValue((int Position, IParserImplementation Parser) key, [NotNullWhen(true)] out UnsafeParseResult value)
+            => TryGetValue(key.Position, key.Parser, out value);
+
+        /// <inheritdoc />
+        public bool TryGetValue(int position, IParserImplementation parser, [NotNullWhen(true)] out UnsafeParseResult value)
         {
-            if (value is null)
+            if (!table.TryGetValue(position, out var expressions) || !expressions.TryGetValue(parser, out value))
             {
-                throw new ArgumentNullException(nameof(value));
+                value = default!;
+                return false;
             }
 
-            if (!table.TryGetValue(position, out var expressions))
-            {
-                expressions = new();
-                table.Add(position, expressions);
-            }
-
-            expressions[parser] = value;
+            return true;
         }
+
+        /// <inheritdoc />
+        public IEnumerator<KeyValuePair<(int Position, IParserImplementation Parser), UnsafeParseResult>> GetEnumerator()
+            => table.SelectMany(x => x.Value.Select(y => new KeyValuePair<(int, IParserImplementation), UnsafeParseResult>((x.Key, y.Key), y.Value)))
+                .GetEnumerator();
+
+        /// <inheritdoc />
+        IEnumerator IEnumerable.GetEnumerator()
+            => GetEnumerator();
     }
-
-    /// <inheritdoc />
-    IParseResult? IReadOnlyMemoTable.this[int position, IParser parser] => this[position, parser];
-
-    /// <inheritdoc />
-    public IEnumerable<(int, IParser)> Keys => table.SelectMany(x => x.Value.Select(y => (x.Key, y.Key)));
-
-    /// <inheritdoc />
-    public IEnumerable<IParseResult> Values => table.SelectMany(x => x.Value.Select(y => y.Value));
-
-    /// <inheritdoc />
-    public int Count => table.Sum(x => x.Value.Count);
-
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool ContainsKey((int, IParser) key)
-        => this[key.Item1, key.Item2] is not null;
-
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetValue((int, IParser) key, [NotNullWhen(true)] out IParseResult? value)
-    {
-        value = this[key.Item1, key.Item2];
-        return value is not null;
-    }
-
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public IEnumerator<KeyValuePair<(int, IParser), IParseResult?>> GetEnumerator()
-        => table.SelectMany(x => x.Value.Select(y => new KeyValuePair<(int, IParser), IParseResult?>((x.Key, y.Key), y.Value)))
-            .GetEnumerator();
-
-    /// <inheritdoc />
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    IEnumerator IEnumerable.GetEnumerator()
-        => GetEnumerator();
 }

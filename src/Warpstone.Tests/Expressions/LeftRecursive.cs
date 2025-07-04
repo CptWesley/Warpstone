@@ -30,9 +30,6 @@ public sealed class LeftRecursive
         public int Value => Left.Value * Right.Value;
     }
 
-    public static readonly IParser<string> OptionalWhitespaces
-        = Regex(@"\s*");
-
     private static readonly IParser<IExp> ParenthesisParser
         = Char('(')
         .ThenSkip(OptionalWhitespaces)

@@ -1,1 +1,1 @@
-[module: SkipLocalsInit]
+[module: System.Runtime.CompilerServices.SkipLocalsInit]

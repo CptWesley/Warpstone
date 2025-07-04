@@ -55,6 +55,7 @@ dotnet_diagnostic.CA1860.severity = none        #  Prefer comparing 'Length' to 
 
 dotnet_diagnostic.QW0001.severity = none        # Use a testable Time Provider
 dotnet_diagnostic.QW0005.severity = none        # Seal class or make explicity inheritable
+dotnet_diagnostic.QW0007.severity = none        # Use a file-scoped namespace declaration instead
 dotnet_diagnostic.QW0016.severity = none        # Define * as a required property
 
 dotnet_diagnostic.S100.severity  = none         # Properties should be named in PascalCase

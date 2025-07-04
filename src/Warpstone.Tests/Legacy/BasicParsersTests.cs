@@ -13,7 +13,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Auto,
-                EnableAutomaticLeftRecursion = true,
+                EnableAutomaticGrowingRecursion = true,
                 EnableAutomaticMemoization = true,
             }
         ],
@@ -21,7 +21,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Auto,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = true,
             }
         ],
@@ -29,7 +29,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Auto,
-                EnableAutomaticLeftRecursion = true,
+                EnableAutomaticGrowingRecursion = true,
                 EnableAutomaticMemoization = false,
             }
         ],
@@ -37,7 +37,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Auto,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = false,
             }
         ],
@@ -45,7 +45,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Recursive,
-                EnableAutomaticLeftRecursion = true,
+                EnableAutomaticGrowingRecursion = true,
                 EnableAutomaticMemoization = true,
             }
         ],
@@ -53,7 +53,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Recursive,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = true,
             }
         ],
@@ -61,7 +61,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Recursive,
-                EnableAutomaticLeftRecursion = true,
+                EnableAutomaticGrowingRecursion = true,
                 EnableAutomaticMemoization = false,
             }
         ],
@@ -69,7 +69,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Recursive,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = false,
             }
         ],
@@ -77,7 +77,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Iterative,
-                EnableAutomaticLeftRecursion = true,
+                EnableAutomaticGrowingRecursion = true,
                 EnableAutomaticMemoization = true,
             }
         ],
@@ -85,7 +85,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Iterative,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = true,
             }
         ],
@@ -93,7 +93,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Iterative,
-                EnableAutomaticLeftRecursion = true,
+                EnableAutomaticGrowingRecursion = true,
                 EnableAutomaticMemoization = false,
             }
         ],
@@ -101,7 +101,7 @@ public static class BasicParsersTests
             ParseOptions.Default with
             {
                 ExecutionMode = ParserExecutionMode.Iterative,
-                EnableAutomaticLeftRecursion = false,
+                EnableAutomaticGrowingRecursion = false,
                 EnableAutomaticMemoization = false,
             }
         ],
