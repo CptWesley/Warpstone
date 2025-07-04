@@ -101,6 +101,12 @@
         "resolved": "10.12.0.118525",
         "contentHash": "uP38bsYegQBk8WOM6LYIAht6hrA7tcJgep/WuifPJjhjtjysPUP/iM/c1+P2+llNIDmm1s8Xh86+WG3K71eycw=="
       },
+      "System.Reflection.Metadata": {
+        "type": "Direct",
+        "requested": "[9.0.6, )",
+        "resolved": "9.0.6",
+        "contentHash": "arbJ84A9lkaJMVUc3KCaG29Au8dfK6JceDMB86itqfAfXcSFrFXK1CTiKqfiJHdCz2SydEU6hPsUAewwOap69Q=="
+      },
       "Verify": {
         "type": "Direct",
         "requested": "[30.4.0, )",
