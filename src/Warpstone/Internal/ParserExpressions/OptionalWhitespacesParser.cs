@@ -13,6 +13,10 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         public static readonly OptionalWhitespacesParser Instance = new();
 
+        private OptionalWhitespacesParser()
+        {
+        }
+
         /// <inheritdoc />
         public override IParserImplementation<string> CreateUninitializedImplementation()
             => OptionalWhitespacesParserImpl.Instance;

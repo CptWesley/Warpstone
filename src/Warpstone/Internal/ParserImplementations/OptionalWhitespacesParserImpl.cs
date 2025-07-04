@@ -13,6 +13,10 @@ namespace Warpstone.Internal.ParserImplementations
         /// </summary>
         public static readonly OptionalWhitespacesParserImpl Instance = new();
 
+        private OptionalWhitespacesParserImpl()
+        {
+        }
+
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
