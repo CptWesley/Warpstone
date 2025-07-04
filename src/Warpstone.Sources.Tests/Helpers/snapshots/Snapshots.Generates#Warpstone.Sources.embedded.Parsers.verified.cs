@@ -25,6 +25,16 @@ namespace Warpstone
         public static IParser<string> End { get; } = EndParser.Instance;
 
         /// <summary>
+        /// A parser matching (optional) whitespaces.
+        /// </summary>
+        public static IParser<string> OptionalWhitespaces { get; } = OptionalWhitespacesParser.Instance;
+
+        /// <summary>
+        /// A parser matching whitespaces.
+        /// </summary>
+        public static IParser<string> Whitespaces { get; } = WhitespacesParser.Instance;
+
+        /// <summary>
         /// Creates a parser parsing the given character.
         /// </summary>
         /// <param name="value">The character to parse.</param>
