@@ -173,6 +173,12 @@
       },
       "warpstone": {
         "type": "Project"
+      },
+      "warpstone.ini": {
+        "type": "Project",
+        "dependencies": {
+          "Warpstone": "[3.0.0-preview03, )"
+        }
       }
     },
     ".NETFramework,Version=v4.8.1": {
@@ -392,6 +398,12 @@
         "dependencies": {
           "System.Collections.Immutable": "[1.5.0, )"
         }
+      },
+      "warpstone.ini": {
+        "type": "Project",
+        "dependencies": {
+          "Warpstone": "[3.0.0-preview03, )"
+        }
       }
     },
     ".NETCoreApp,Version=v5.0": {
@@ -558,6 +570,12 @@
       },
       "warpstone": {
         "type": "Project"
+      },
+      "warpstone.ini": {
+        "type": "Project",
+        "dependencies": {
+          "Warpstone": "[3.0.0-preview03, )"
+        }
       }
     },
     "net6.0": {
@@ -724,6 +742,12 @@
       },
       "warpstone": {
         "type": "Project"
+      },
+      "warpstone.ini": {
+        "type": "Project",
+        "dependencies": {
+          "Warpstone": "[3.0.0-preview03, )"
+        }
       }
     },
     "net7.0": {
@@ -890,6 +914,12 @@
       },
       "warpstone": {
         "type": "Project"
+      },
+      "warpstone.ini": {
+        "type": "Project",
+        "dependencies": {
+          "Warpstone": "[3.0.0-preview03, )"
+        }
       }
     },
     "net8.0": {
@@ -1056,6 +1086,12 @@
       },
       "warpstone": {
         "type": "Project"
+      },
+      "warpstone.ini": {
+        "type": "Project",
+        "dependencies": {
+          "Warpstone": "[3.0.0-preview03, )"
+        }
       }
     },
     "net9.0": {
@@ -1222,6 +1258,12 @@
       },
       "warpstone": {
         "type": "Project"
+      },
+      "warpstone.ini": {
+        "type": "Project",
+        "dependencies": {
+          "Warpstone": "[3.0.0-preview03, )"
+        }
       }
     }
   }

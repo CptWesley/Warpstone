@@ -14,6 +14,7 @@
     <File Path="tests.props" />
   </Folder>
   <Project Path="Warpstone.Benchmarks/Warpstone.Benchmarks.csproj" />
+  <Project Path="Warpstone.Ini/Warpstone.Ini.csproj" Id="8046713d-ee1a-4457-9cce-141510880c50" />
   <Project Path="Warpstone.Sandbox/Warpstone.Sandbox.csproj" />
   <Project Path="Warpstone.Sources.Tests/Warpstone.Sources.Tests.csproj" Id="5d7ac409-e96c-4e3d-977a-86446cc9d7ef" />
   <Project Path="Warpstone.Sources/Warpstone.Sources.csproj" Id="c154fdf9-4f5c-4f9b-9fa4-39881127ca5a" />

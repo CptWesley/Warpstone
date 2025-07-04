@@ -719,6 +719,16 @@ namespace Warpstone
             => new AsResultParser<T>(parser.MustNotBeNull());
 
         /// <summary>
+        /// Creates a parser that returns its inner <see cref="IParseResult{T}"/> directly;
+        /// but only if the result was successful.
+        /// </summary>
+        /// <typeparam name="T">The result type of the given parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <returns>A parser that returns its inner <see cref="IParseResult{T}"/> directly.</returns>
+        public static IParser<IParseResult<T>> AsSuccessfulResult<T>(this IParser<T> parser)
+            => new AsSuccessfulResultParser<T>(parser.MustNotBeNull());
+
+        /// <summary>
         /// Creates a parser that applies a parser and then applies a different parser depending on the result.
         /// </summary>
         /// <typeparam name="TCondition">The result type of the attempted parser.</typeparam>

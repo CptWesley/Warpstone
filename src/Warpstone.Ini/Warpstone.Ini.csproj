@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="../package.props" />
+
+  <PropertyGroup>
+    <EnablePackageValidation>false</EnablePackageValidation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Warpstone/Warpstone.csproj" />
+  </ItemGroup>
+
+</Project>
