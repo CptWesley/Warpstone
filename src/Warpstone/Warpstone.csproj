@@ -19,7 +19,7 @@
     </PackageReleaseNotes>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'net47' Or '$(TargetFramework)' == 'net481' Or '$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup>
     <PackageReference Include="System.Collections.Immutable" />
   </ItemGroup>
 

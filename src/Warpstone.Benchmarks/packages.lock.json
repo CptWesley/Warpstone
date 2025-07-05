@@ -195,7 +195,10 @@
         }
       },
       "warpstone": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "System.Collections.Immutable": "[9.0.6, )"
+        }
       },
       "Microsoft.CodeAnalysis.Analyzers": {
         "type": "CentralTransitive",

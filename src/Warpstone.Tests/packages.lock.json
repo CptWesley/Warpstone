@@ -173,7 +173,10 @@
         }
       },
       "warpstone": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "System.Collections.Immutable": "[9.0.6, )"
+        }
       },
       "System.Collections.Immutable": {
         "type": "CentralTransitive",
