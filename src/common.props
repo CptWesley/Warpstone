@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <ItemGroup Label="BuildTools">
-    <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All" ExcludeAssets="compile" />
+    <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup>

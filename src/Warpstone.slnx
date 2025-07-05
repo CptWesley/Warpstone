@@ -9,6 +9,7 @@
     <File Path="default_imports.props" />
     <File Path="Directory.Packages.props" />
     <File Path="executable.props" />
+    <File Path="nuget.config" />
     <File Path="package.props" />
     <File Path="sourcegenerator.props" />
     <File Path="tests.props" />

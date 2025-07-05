@@ -2,9 +2,9 @@ name: Build & Test
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "main" ]
 
 jobs:
   build:
@@ -20,10 +20,16 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: |
-          6.0.x
+          9.0.x
           8.0.x
+          7.0.x
+          6.0.x
+          5.0.x
+          3.0.x
+        cache: true
+        cache-dependency-path: "**/packages.lock.json"
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore --force --force-evaluate #TODO: use locked mode
     - name: Build
       run: dotnet build --no-restore
     - name: Test

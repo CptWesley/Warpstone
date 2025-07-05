@@ -2,6 +2,7 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="AssertNet" Version="2.0.0" />
@@ -24,7 +25,6 @@
     <PackageVersion Include="Qowaiv.Analyzers.CSharp" Version="2.0.5" />
     <PackageVersion Include="SonarAnalyzer.CSharp" Version="10.12.0.118525" />
     <PackageVersion Include="StyleCop.Analyzers.Unstable" Version="1.2.0.556" />
-    <PackageVersion Include="System.Collections.Immutable" Version="9.0.6" />
     <PackageVersion Include="Verify" Version="30.4.0" />
     <PackageVersion Include="Verify.SourceGenerators" Version="2.5.0" />
     <PackageVersion Include="Verify.Xunit" Version="30.4.0" />
