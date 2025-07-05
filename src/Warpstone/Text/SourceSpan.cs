@@ -91,13 +91,9 @@ public readonly struct SourceSpan(Source source, TextSpan textSpan) : IEquatable
     /// </returns>
     [Pure]
     public TextSpan? StartsWith(char ch)
-    {
-        var result = !TextSpan.IsEmpty && Source.Text[TextSpan.Start] == ch
-            ? new TextSpan(TextSpan.Start, 1)
-            : NoMatch;
-
-        return result;
-    }
+        => !TextSpan.IsEmpty && Source.Text[TextSpan.Start] == ch
+        ? new TextSpan(TextSpan.Start, 1)
+        : NoMatch;
 
     /// <summary>Indicates that the text span starts with the specified string.</summary>
     /// <param name="str">
@@ -108,26 +104,9 @@ public readonly struct SourceSpan(Source source, TextSpan textSpan) : IEquatable
     /// </returns>
     [Pure]
     public TextSpan? StartsWith(string str)
-    {
-        if (TextSpan.Length >= str.Length)
-        {
-            var pos = TextSpan.Start;
-
-            for (var i = 0; i < str.Length; i++)
-            {
-                if (Source[pos++] != str[i])
-                {
-                    return NoMatch;
-                }
-            }
-
-            return new TextSpan(TextSpan.Start, str.Length);
-        }
-        else
-        {
-            return NoMatch;
-        }
-    }
+        => AsSpan().StartsWith(str.AsSpan())
+        ? new TextSpan(TextSpan.Start, str.Length)
+        : NoMatch;
 
     /// <summary>Matches the predicate.</summary>
     /// <param name="match">
