@@ -85,15 +85,6 @@
         "resolved": "10.12.0.118525",
         "contentHash": "uP38bsYegQBk8WOM6LYIAht6hrA7tcJgep/WuifPJjhjtjysPUP/iM/c1+P2+llNIDmm1s8Xh86+WG3K71eycw=="
       },
-      "System.Reflection.Metadata": {
-        "type": "Direct",
-        "requested": "[9.0.6, )",
-        "resolved": "9.0.6",
-        "contentHash": "arbJ84A9lkaJMVUc3KCaG29Au8dfK6JceDMB86itqfAfXcSFrFXK1CTiKqfiJHdCz2SydEU6hPsUAewwOap69Q==",
-        "dependencies": {
-          "System.Collections.Immutable": "9.0.6"
-        }
-      },
       "xunit": {
         "type": "Direct",
         "requested": "[2.9.3, )",
@@ -173,16 +164,7 @@
         }
       },
       "warpstone": {
-        "type": "Project",
-        "dependencies": {
-          "System.Collections.Immutable": "[9.0.6, )"
-        }
-      },
-      "System.Collections.Immutable": {
-        "type": "CentralTransitive",
-        "requested": "[9.0.6, )",
-        "resolved": "9.0.6",
-        "contentHash": "lqvXJBZ9KtKKffQt9PgHj5aCdm8HGpPOZQgN3sHRN8j2Yjh+KANkdomhv8QybsBk3/YDDG83OdIWcsfQfdRglw=="
+        "type": "Project"
       }
     }
   }

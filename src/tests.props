@@ -25,7 +25,6 @@
     <PackageReference Include="coverlet.collector" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
     <PackageReference Include="Microsoft.TestPlatform.TestHost" PrivateAssets="all" />
-    <PackageReference Include="System.Reflection.Metadata" />
     <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
   </ItemGroup>
 
