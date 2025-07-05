@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -562,7 +561,7 @@ namespace Warpstone
         /// <param name="element">The parser to apply multiple times.</param>
         /// <param name="count">The exact number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IImmutableList<TSource>> Multiple<TSource>(
+        public static IParser<IReadOnlyList<TSource>> Multiple<TSource>(
             IParser<TSource> element,
             int count)
             => Multiple(
@@ -579,7 +578,7 @@ namespace Warpstone
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <param name="count">The exact number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IImmutableList<TSource>> Multiple<TSource, TDelimiter>(
+        public static IParser<IReadOnlyList<TSource>> Multiple<TSource, TDelimiter>(
             IParser<TSource> element,
             IParser<TDelimiter>? delimiter,
             int count)
@@ -597,16 +596,20 @@ namespace Warpstone
         /// <param name="minCount">The minimum number of matches.</param>
         /// <param name="maxCount">The maximum number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IImmutableList<TSource>> Multiple<TSource>(
+        public static IParser<IReadOnlyList<TSource>> Multiple<TSource>(
             IParser<TSource> element,
             int minCount,
             int maxCount)
-            => Aggregate<TSource, IImmutableList<TSource>>(
+            => Aggregate<TSource, IReadOnlyList<TSource>>(
                 element: element.MustNotBeNull(),
                 minCount: minCount.MustBeGreaterThanOrEqualTo(0),
                 maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
-                createSeed: static () => ImmutableList<TSource>.Empty,
-                accumulate: static (acc, el) => acc.Add(el));
+                createSeed: static () => new List<TSource>(),
+                accumulate: static (acc, el) =>
+                {
+                    ((List<TSource>)acc).Add(el);
+                    return acc;
+                });
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -617,18 +620,22 @@ namespace Warpstone
         /// <param name="minCount">The minimum number of matches.</param>
         /// <param name="maxCount">The maximum number of matches.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IImmutableList<TSource>> Multiple<TSource>(
+        public static IParser<IReadOnlyList<TSource>> Multiple<TSource>(
             IParser<TSource> element,
             IParser? delimiter,
             int minCount,
             int maxCount)
-            => Aggregate<TSource, IImmutableList<TSource>>(
+            => Aggregate<TSource, IReadOnlyList<TSource>>(
                 element: element.MustNotBeNull(),
                 delimiter: delimiter,
                 minCount: minCount.MustBeGreaterThanOrEqualTo(0),
                 maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
-                createSeed: static () => ImmutableList<TSource>.Empty,
-                accumulate: static (acc, el) => acc.Add(el));
+                createSeed: static () => new List<TSource>(),
+                accumulate: static (acc, el) =>
+                {
+                    ((List<TSource>)acc).Add(el);
+                    return acc;
+                });
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -636,7 +643,7 @@ namespace Warpstone
         /// <typeparam name="TSource">The type of results collected.</typeparam>
         /// <param name="element">The parser to apply multiple times.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IImmutableList<TSource>> Many<TSource>(
+        public static IParser<IReadOnlyList<TSource>> Many<TSource>(
             IParser<TSource> element)
             => Multiple(
                 element: element.MustNotBeNull(),
@@ -651,7 +658,7 @@ namespace Warpstone
         /// <param name="element">The parser to apply multiple times.</param>
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <returns>A parser applying the given parser multiple times.</returns>
-        public static IParser<IImmutableList<TSource>> Many<TSource, TDelimiter>(
+        public static IParser<IReadOnlyList<TSource>> Many<TSource, TDelimiter>(
             IParser<TSource> element,
             IParser<TDelimiter>? delimiter)
             => Multiple(
@@ -666,7 +673,7 @@ namespace Warpstone
         /// <typeparam name="TSource">The result type of the parser.</typeparam>
         /// <param name="element">The given parser.</param>
         /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
-        public static IParser<IImmutableList<TSource>> OneOrMore<TSource>(
+        public static IParser<IReadOnlyList<TSource>> OneOrMore<TSource>(
             IParser<TSource> element)
             => Multiple(
                 element: element.MustNotBeNull(),
@@ -681,7 +688,7 @@ namespace Warpstone
         /// <param name="element">The parser to apply multiple times.</param>
         /// <param name="delimiter">The delimiter seperating the different elements.</param>
         /// <returns>A parser applying the given parser at least once and collecting all results.</returns>
-        public static IParser<IImmutableList<TSource>> OneOrMore<TSource, TDelimiter>(
+        public static IParser<IReadOnlyList<TSource>> OneOrMore<TSource, TDelimiter>(
             IParser<TSource> element,
             IParser<TDelimiter>? delimiter)
             => Multiple(

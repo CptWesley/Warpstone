@@ -735,7 +735,7 @@ public static class BasicParsersTests
         IParseResult<string> result = parser.TryParse("y", options);
         AssertThat(result.Errors).HasSize(1);
         AssertThat(result.Errors[0]).IsExactlyInstanceOf<UnexpectedTokenError>();
-        AssertThat(((UnexpectedTokenError)result.Errors[0]).Expected).ContainsExactly("bahbah", "booboo");
+        AssertThat(((UnexpectedTokenError)result.Errors[0]).Expected).ContainsExactlyInAnyOrder("bahbah", "booboo");
     }
 
     /// <summary>

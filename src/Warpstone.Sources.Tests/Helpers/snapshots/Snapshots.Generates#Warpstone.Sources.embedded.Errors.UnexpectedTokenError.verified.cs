@@ -5,7 +5,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Linq;
 using System.Text;
 
 namespace Warpstone.Errors
@@ -34,8 +34,8 @@ namespace Warpstone.Errors
                   parser,
                   position,
                   length,
-                  ImmutableSortedSet.Create(expected),
-                  ImmutableSortedSet<UnexpectedTokenError>.Empty)
+                  [expected],
+                  [])
         {
         }
 
@@ -60,28 +60,11 @@ namespace Warpstone.Errors
                   parser,
                   position,
                   length,
-                  expected.ToImmutableSortedSet(),
-                  innerErrors.ToImmutableHashSet())
-        {
-        }
-
-        private UnexpectedTokenError(
-            IReadOnlyParseContext context,
-            IParserImplementation parser,
-            int position,
-            int length,
-            ImmutableSortedSet<string> expected,
-            ImmutableHashSet<UnexpectedTokenError> innerErrors)
-            : base(
-                  context,
-                  parser,
-                  position,
-                  length,
-                  GetMessage(context, position, expected),
+                  expected,
+                  innerErrors,
+                  null,
                   null)
         {
-            Expected = expected;
-            InnerErrors = innerErrors;
         }
 
         /// <summary>
@@ -128,19 +111,19 @@ namespace Warpstone.Errors
             Exception? innerException)
             : base(context, parser, position, length, message, innerException)
         {
-            Expected = expected.ToImmutableSortedSet();
-            InnerErrors = innerErrors.ToImmutableHashSet();
+            Expected = [..expected];
+            InnerErrors = [..innerErrors];
         }
 
         /// <summary>
         /// Gets the expected string.
         /// </summary>
-        public IImmutableSet<string> Expected { get; }
+        public IReadOnlyCollection<string> Expected { get; }
 
         /// <summary>
         /// Gets the inner errors.
         /// </summary>
-        public IImmutableSet<UnexpectedTokenError> InnerErrors { get; }
+        public IReadOnlyCollection<UnexpectedTokenError> InnerErrors { get; }
 
         /// <summary>
         /// Gets the found string.
@@ -164,7 +147,7 @@ namespace Warpstone.Errors
             return $"'{input[position]}'";
         }
 
-        private static string GetMessage(IReadOnlyParseContext context, int position, IReadOnlyList<string> expected)
+        private static string GetMessage(IReadOnlyParseContext context, int position, IReadOnlyCollection<string> expected)
         {
             var sb = new StringBuilder()
                 .Append("Expected ");
