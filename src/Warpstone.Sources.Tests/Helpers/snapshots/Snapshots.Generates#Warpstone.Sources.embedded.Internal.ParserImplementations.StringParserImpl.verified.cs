@@ -53,7 +53,7 @@ namespace Warpstone.Internal.ParserImplementations
             }
             else
             {
-                context.ResultStack.Push(new(position, value.Length, useValue ? value : input.Substring(position, value.Length)));
+                context.ResultStack.Push(new(position, value.Length, useValue ? value : new UnsafeSourceSpanResult(position, value.Length)));
             }
         }
 
@@ -68,7 +68,7 @@ namespace Warpstone.Internal.ParserImplementations
             }
             else
             {
-                return new(position, value.Length, useValue ? value : input.Substring(position, value.Length));
+                return new(position, value.Length, useValue ? value : new UnsafeSourceSpanResult(position, value.Length));
             }
         }
 

@@ -96,12 +96,16 @@ namespace Warpstone
         {
             if (result.Success)
             {
+                var value = result.Value is UnsafeSourceSpanResult span
+                    ? (T)(object)span.Resolve(context)
+                    : (T)result.Value!;
+
                 return new ParseResult<T>(
                     context: context,
                     position: result.Position,
                     length: result.Length,
                     success: true,
-                    value: (T)result.Value!,
+                    value: value,
                     errors: Array.Empty<IParseError>());
             }
             else

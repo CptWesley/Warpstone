@@ -1,0 +1,52 @@
+namespace Warpstone
+{
+    /// <summary>
+    /// Represents an unallocated source span.
+    /// </summary>
+    public readonly struct UnsafeSourceSpanResult
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnsafeSourceSpanResult"/> struct.
+        /// </summary>
+        /// <param name="position">The position in the input.</param>
+        /// <param name="length">The length in the input.</param>
+        public UnsafeSourceSpanResult(int position, int length)
+        {
+            Position = position;
+            Length = length;
+        }
+
+        /// <summary>
+        /// The position in the input.
+        /// </summary>
+        public int Position { get; }
+
+        /// <summary>
+        /// The length in the input.
+        /// </summary>
+        public int Length { get; }
+    }
+
+    /// <summary>
+    /// Provides extension methods for <see cref="UnsafeSourceSpanResult"/> values.
+    /// </summary>
+    public static class UnsafeSourceSpanResultExtensions
+    {
+        /// <summary>
+        /// Resolves the given <paramref name="span"/> in the given <paramref name="context"/>.
+        /// </summary>
+        /// <param name="span">The span to resolve.</param>
+        /// <param name="context">The context to resolve it in.</param>
+        /// <returns>The resolved string.</returns>
+        public static string Resolve(this UnsafeSourceSpanResult span, IParseContext context)
+        {
+            if (span.Length <= 0)
+            {
+                return string.Empty;
+            }
+
+            var result = context.Input.Content.Substring(span.Position, span.Length);
+            return result;
+        }
+    }
+}
