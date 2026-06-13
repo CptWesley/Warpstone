@@ -18,11 +18,12 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <LangVersion>13.0</LangVersion>
+    <LangVersion>14.0</LangVersion>
     <ImplicitUsings>disable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <CheckEolTargetFramework>false</CheckEolTargetFramework>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
     <AnalysisLevel>latest</AnalysisLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <NuGetAudit>true</NuGetAudit>
