@@ -40,21 +40,27 @@
       },
       "Parlot": {
         "type": "Direct",
-        "requested": "[1.4.0, )",
-        "resolved": "1.4.0",
-        "contentHash": "oMftmeCsDPXbBgYQsVG4yuedvTVwSkZZHkKH1F4CpBkS9O99GrAV2sA8t7cC5CoVFPprmAFZThJMXjwu3ybgNg=="
+        "requested": "[2.3.1, )",
+        "resolved": "2.3.1",
+        "contentHash": "wCNWERk46ATkXor8SK43dgpO8GCuH5BQnvwuVogEVWrYilDKA7QituNhq17iYyL0RAHTuIIyczfuV0AWSe8ZLw=="
+      },
+      "Parlot.SourceGenerator": {
+        "type": "Direct",
+        "requested": "[2.3.1, )",
+        "resolved": "2.3.1",
+        "contentHash": "cGwzSPDHxdAo/LKdd3cFl2XJnjAeUKKwcF7bir1+N9v2llpxNyia/dOIqxiIQpUskNjj6zT/lKGr0XwSLoNlFQ=="
       },
       "ParsecSharp": {
         "type": "Direct",
-        "requested": "[4.1.1, )",
-        "resolved": "4.1.1",
-        "contentHash": "+GFJsUEnt4vSUnsLUEodZMce1gI/mfMrlp4/ox/K2tsFDexsVaATjdEuba34jImYIbY2k7Wek8G9x4GOel3hIw=="
+        "requested": "[5.2.0, )",
+        "resolved": "5.2.0",
+        "contentHash": "r/ySNDAfdglmSaEPXG63lHNHXbmZ1UPjJwN/cz/2zI0aUGi0cJuoHua/OTXNgqi+q6yCUnuONp5Bf5Q5cnzcMA=="
       },
       "Pidgin": {
         "type": "Direct",
-        "requested": "[3.5.0, )",
-        "resolved": "3.5.0",
-        "contentHash": "S++zY+RdS4jvCn1/Lg9YIAoMZh6yUmKhRQWNpNOFSyntiHBpziGcPA4ImaTCS7BzRxv3L1LKB4lmmLmfg9YGNw=="
+        "requested": "[3.5.1, )",
+        "resolved": "3.5.1",
+        "contentHash": "zU7tkXlF3D6d2GLTjJDomAL3nnl4AwfZvSgSz8D4b+Ry21/clqedYlxBnEAkAU/bkGfEv6uRR7QCdWZUpKrB/g=="
       },
       "PolySharp": {
         "type": "Direct",
