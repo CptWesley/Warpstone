@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="MiniJava/Inputs/*.java" LogicalName="MiniJava.%(Filename).java" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Update="AsyncFixer">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
