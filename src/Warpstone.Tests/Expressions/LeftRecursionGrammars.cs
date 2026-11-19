@@ -222,8 +222,13 @@ public static class LeftRecursionGrammars
 
     [Theory]
     [MemberData(nameof(InterlockingData))]
-    public static void Interlocking_cycles_without_common_rule(ParseOptions options, string input)
-        => ShouldParse(Interlocking(manualLeaders: false), input, options);
+    public static void Interlocking_cycles_without_common_rule_are_rejected(ParseOptions options, string input)
+    {
+        // Like pegen: no single parser lies on every cycle, so automatic growing cannot pick a leader.
+        var parser = Interlocking(manualLeaders: false).ThenEnd();
+        Action act = () => parser.TryParse(input, options);
+        act.Should().Throw<ArgumentException>();
+    }
 
     [Theory]
     [MemberData(nameof(InterlockingManualData))]
@@ -234,4 +239,26 @@ public static class LeftRecursionGrammars
     [MemberData(nameof(RightRecursiveData))]
     public static void Right_recursion(ParseOptions options, string input)
         => ShouldParse(RightRecursive(), input, options);
+
+    public static IEnumerable<object[]> AutoOptionsData => AutoOptions.Select(o => new object[] { o });
+
+    [Theory]
+    [MemberData(nameof(AutoOptionsData))]
+    public static void Right_recursion_is_not_grown(ParseOptions options)
+    {
+        var count = 0;
+        IParser<string> e = null!;
+        e = Or(Seq(S("("), Lazy(() => e), S(")")), S("n").Transform(x => { count++; return x; }));
+
+        ShouldParse(e, "((n))", options);
+        count.Should().Be(1);
+    }
+
+    [Theory]
+    [MemberData(nameof(AutoOptionsData))]
+    public static void Explicit_grow_combined_with_automatic_growing(ParseOptions options)
+    {
+        ShouldParse(IndirectSA(manualLeader: true), "baabab", options);
+        ShouldParse(IndirectSAB(manualLeader: true), "babab-babab", options);
+    }
 }

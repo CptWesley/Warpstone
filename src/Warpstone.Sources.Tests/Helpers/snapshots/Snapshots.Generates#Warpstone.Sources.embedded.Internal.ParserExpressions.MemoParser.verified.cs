@@ -3,6 +3,7 @@
 #pragma warning disable
 #nullable enable annotations
 
+using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
 
@@ -37,6 +38,13 @@ namespace Warpstone.Internal.ParserExpressions
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
         {
             Parser.PerformAnalysisStep(info, trace);
+        }
+
+        /// <inheritdoc />
+        public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
+        {
+            leftEdge.Add(Parser);
+            return isNullable(Parser);
         }
     }
 }

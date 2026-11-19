@@ -3,6 +3,7 @@
 #pragma warning disable
 #nullable enable annotations
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
@@ -55,6 +56,12 @@ namespace Warpstone.Internal.ParserExpressions
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
         {
             // Do nothing.
+        }
+
+        /// <inheritdoc />
+        public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
+        {
+            return new Regex(@$"\G({Pattern})", Options).IsMatch(string.Empty);
         }
 
         /// <inheritdoc />

@@ -9,7 +9,7 @@ namespace Warpstone.Internal.ParserExpressions
     /// Provides a base implementation for parsers.
     /// </summary>
     /// <typeparam name="T">The result type of the parser.</typeparam>
-    internal abstract class ParserBase<T> : IParser<T>
+    internal abstract class ParserBase<T> : IParser<T>, ILeftEdgeParser
     {
         private readonly Lazy<IReadOnlyParserAnalysisInfo> lazyAnalsysis;
         private readonly ConcurrentDictionary<ParseOptions, ParseOptions> simplifiedOptions = new();
@@ -66,11 +66,6 @@ namespace Warpstone.Internal.ParserExpressions
                         requiresMemo.Add(parser);
                     }
 
-                    if (analysis.RecursiveOccurrenceCounts.TryGetValue(parser, out var recCount) && recCount >= 1)
-                    {
-                        requiresGrow.Add(parser);
-                    }
-
                     var impl = parser.CreateUninitializedImplementation();
                     initializeable.Add((parser, impl));
                     lookup[parser] = impl;
@@ -96,16 +91,10 @@ namespace Warpstone.Internal.ParserExpressions
                     lazyTargets[parser] = target;
 
                     var oc = analysis.OccurrenceCounts.TryGetValue(parser, out var ocv) ? ocv : 0;
-                    var rc = analysis.RecursiveOccurrenceCounts.TryGetValue(parser, out var rcv) ? rcv : 0;
 
                     if (oc > 1)
                     {
                         requiresMemo.Add(target);
-                    }
-
-                    if (rc >= 1)
-                    {
-                        requiresGrow.Add(target);
                     }
                 }
 
@@ -113,11 +102,19 @@ namespace Warpstone.Internal.ParserExpressions
 
                 if (o.EnableAutomaticGrowingRecursion)
                 {
-                    requiresMemo.ExceptWith(requiresGrow);
+                    var parsers = analysis.OccurrenceCounts.Keys.ToList();
+                    var (leaders, members) = LeftRecursionAnalysis.Analyze(parsers, new HashSet<IParser>(lazyTargets.Values));
+                    requiresGrow.UnionWith(leaders);
+
+                    // Members of a left-recursive cycle must not be memoized, or they keep returning results built from an outdated seed.
+                    requiresMemo.ExceptWith(members);
                 }
 
                 if (o.EnableAutomaticMemoization)
                 {
+                    // Explicit memo and grow parsers already memoize. Wrapping a grow parser would hide its growing seed.
+                    requiresMemo.RemoveWhere(p => LeftRecursionAnalysis.IsGrow(p) || LeftRecursionAnalysis.IsMemo(p));
+
                     foreach (var parser in requiresMemo)
                     {
                         var type = typeof(MemoParser<>).MakeGenericType(parser.ResultType);
@@ -186,7 +183,7 @@ namespace Warpstone.Internal.ParserExpressions
 
             if (trace.Contains(this))
             {
-                var oldRecCount = info.OccurrenceCounts.TryGetValue(this, out var oldRecCountValue) ? oldRecCountValue : 0;
+                var oldRecCount = info.RecursiveOccurrenceCounts.TryGetValue(this, out var oldRecCountValue) ? oldRecCountValue : 0;
                 var newRecCount = oldRecCount + 1;
                 info.RecursiveOccurrenceCounts[this] = newRecCount;
 
@@ -199,6 +196,9 @@ namespace Warpstone.Internal.ParserExpressions
 
         /// <inheritdoc cref="PerformAnalysisStep(IParserAnalysisInfo, IReadOnlyList{IParser})" />
         protected abstract void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace);
+
+        /// <inheritdoc />
+        public abstract bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge);
 
         private static void CopyTo(IReadOnlyList<IParser> trace, IParser[] updated)
         {

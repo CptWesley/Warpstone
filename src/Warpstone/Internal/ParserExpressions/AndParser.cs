@@ -60,5 +60,18 @@ namespace Warpstone.Internal.ParserExpressions
             First.PerformAnalysisStep(info, trace);
             Second.PerformAnalysisStep(info, trace);
         }
+
+        /// <inheritdoc />
+        public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
+        {
+            leftEdge.Add(First);
+            if (!isNullable(First))
+            {
+                return false;
+            }
+
+            leftEdge.Add(Second);
+            return isNullable(Second);
+        }
     }
 }
