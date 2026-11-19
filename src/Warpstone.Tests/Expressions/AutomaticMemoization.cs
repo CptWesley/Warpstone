@@ -27,6 +27,19 @@ public static class AutomaticMemoization
     }
 
     [TestCaseSource(nameof(Options))]
+    public static void Skips_retried_parsers_that_are_cheaper_to_run_again(ParseOptions options)
+    {
+        // Both alternatives retry the token at the same position, but a token and its whitespace cost less than a memo lookup.
+        var token = Char('a').ThenSkip(OptionalWhitespaces);
+        var parser = Or(token.ThenSkip(Char('+')), token.ThenSkip(Char('-')));
+
+        var context = ParseContext.Create(ParseInput.CreateFromMemory("a -"), parser.ThenEnd(), options);
+
+        context.RunToEnd(default).Success.Should().BeTrue();
+        context.MemoTable.Count.Should().Be(0);
+    }
+
+    [TestCaseSource(nameof(Options))]
     public static void Skips_shared_parsers_that_are_never_retried(ParseOptions options)
     {
         // Whitespace and the recursive value are shared, but no alternative retries them at the same position.

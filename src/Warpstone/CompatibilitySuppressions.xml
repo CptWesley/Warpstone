@@ -732,6 +732,12 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0014</DiagnosticId>
+    <Target>M:Warpstone.MemoTable.GetEnumerator:[T:System.Runtime.CompilerServices.IteratorStateMachineAttribute]</Target>
+    <Left>lib/net8.0/Warpstone.dll</Left>
+    <Right>lib/net9.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0014</DiagnosticId>
     <Target>M:Warpstone.ParseResult`1.get_Value:[T:System.Runtime.CompilerServices.CompilerGeneratedAttribute]</Target>
     <Left>lib/netstandard2.0/Warpstone.dll</Left>
     <Right>lib/netstandard2.0/Warpstone.dll</Right>
@@ -932,6 +938,12 @@
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.MemoTable.GetEnumerator-&gt;System.Collections.Generic.IEnumerator&lt;System.Collections.Generic.KeyValuePair&lt;(int Position, Warpstone.IParserImplementation Parser), Warpstone.UnsafeParseResult&gt;&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.MemoTable.GetEnumerator:[T:System.Runtime.CompilerServices.IteratorStateMachineAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>

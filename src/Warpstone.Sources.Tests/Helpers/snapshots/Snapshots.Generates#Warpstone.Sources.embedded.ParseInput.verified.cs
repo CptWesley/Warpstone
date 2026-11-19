@@ -3,7 +3,6 @@
 #pragma warning disable
 #nullable enable annotations
 
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -25,21 +24,7 @@ namespace Warpstone
         /// <param name="content">The input string.</param>
         /// <returns>A new <see cref="IParseInput"/> instance.</returns>
         public static IParseInput Create(IParseInputSource source, string content)
-        {
-            var lines = new List<int>
-            {
-                0,
-            };
-
-            var acc = 0;
-            foreach (var line in content.Split('\n'))
-            {
-                acc += line.Length + 1;
-                lines.Add(acc);
-            }
-
-            return new StringParseInput(source, content, lines.ToArray());
-        }
+            => new StringParseInput(source, content, null);
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance

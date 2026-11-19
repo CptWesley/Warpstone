@@ -171,7 +171,9 @@ namespace Warpstone
         /// <param name="transformation">The transformation to apply on the parser result.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
         public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, Func<TInput, TOutput> transformation)
-            => new MapParser<TInput, TOutput>(parser.MustNotBeNull(), transformation.MustNotBeNull());
+            => parser.MustNotBeNull() is ISequenceParser<TInput> sequence
+            ? sequence.Map(transformation.MustNotBeNull()) // A transformed sequence runs as one parser, without an intermediate result.
+            : new MapParser<TInput, TOutput>(parser, transformation.MustNotBeNull());
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -183,7 +185,9 @@ namespace Warpstone
         /// <param name="transformation">The transformation to apply on the parser result.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
         public static IParser<TOutput> Transform<T1, T2, TOutput>(this IParser<(T1 First, T2 Second)> parser, Func<T1, T2, TOutput> transformation)
-            => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second));
+            => parser.MustNotBeNull() is AndParser<T1, T2> and
+            ? new SequenceParser<T1, T2, TOutput>(and.First, and.Second, transformation.MustNotBeNull())
+            : parser.Transform(x => transformation(x.First, x.Second));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -299,9 +303,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third)> ThenAdd<T1, T2, T3>(this IParser<(T1 First, T2 Second)> first, IParser<T3> second)
-            => first.MustNotBeNull()
-            .ThenAdd<(T1, T2), T3>(second.MustNotBeNull())
-            .Transform(static (x, y) => (x.Item1, x.Item2, y));
+            => new SequenceParser<(T1, T2), T3, (T1, T2, T3)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -314,9 +316,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> ThenAdd<T1, T2, T3, T4>(this IParser<(T1 First, T2 Second, T3 Third)> first, IParser<T4> second)
-            => first.MustNotBeNull()
-            .ThenAdd<(T1, T2, T3), T4>(second.MustNotBeNull())
-            .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, y));
+            => new SequenceParser<(T1, T2, T3), T4, (T1, T2, T3, T4)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -330,9 +330,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> ThenAdd<T1, T2, T3, T4, T5>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> first, IParser<T5> second)
-            => first.MustNotBeNull()
-            .ThenAdd<(T1, T2, T3, T4), T5>(second.MustNotBeNull())
-            .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, y));
+            => new SequenceParser<(T1, T2, T3, T4), T5, (T1, T2, T3, T4, T5)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -347,9 +345,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> ThenAdd<T1, T2, T3, T4, T5, T6>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> first, IParser<T6> second)
-            => first.MustNotBeNull()
-            .ThenAdd<(T1, T2, T3, T4, T5), T6>(second.MustNotBeNull())
-            .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, y));
+            => new SequenceParser<(T1, T2, T3, T4, T5), T6, (T1, T2, T3, T4, T5, T6)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -365,9 +361,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> ThenAdd<T1, T2, T3, T4, T5, T6, T7>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> first, IParser<T7> second)
-            => first.MustNotBeNull()
-            .ThenAdd<(T1, T2, T3, T4, T5, T6), T7>(second.MustNotBeNull())
-            .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, y));
+            => new SequenceParser<(T1, T2, T3, T4, T5, T6), T7, (T1, T2, T3, T4, T5, T6, T7)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -384,9 +378,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)> ThenAdd<T1, T2, T3, T4, T5, T6, T7, T8>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> first, IParser<T8> second)
-            => first.MustNotBeNull()
-            .ThenAdd<(T1, T2, T3, T4, T5, T6, T7), T8>(second.MustNotBeNull())
-            .Transform(static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, x.Item7, y));
+            => new SequenceParser<(T1, T2, T3, T4, T5, T6, T7), T8, (T1, T2, T3, T4, T5, T6, T7, T8)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, x.Item7, y));
 
         /// <summary>
         /// Creates a parser that applies two parsers and returns the result of the second one.
@@ -397,9 +389,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser returning the result of the second parser.</returns>
         public static IParser<T2> Then<T1, T2>(this IParser<T1> first, IParser<T2> second)
-            => first.MustNotBeNull()
-            .ThenAdd(second.MustNotBeNull())
-            .Transform(static (_, r) => r);
+            => new SequenceParser<T1, T2, T2>(first.MustNotBeNull(), second.MustNotBeNull(), static (_, r) => r);
 
         /// <summary>
         /// Creates a parser that applies two parsers and returns the result of the first one.
@@ -410,9 +400,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser returning the result of the first parser.</returns>
         public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, IParser<T2> second)
-            => first.MustNotBeNull()
-            .ThenAdd(second.MustNotBeNull())
-            .Transform(static (l, _) => l);
+            => new SequenceParser<T1, T2, T1>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, _) => l);
 
         /// <summary>
         /// Creates a parser that applies the given parser and then expects the input stream to end.
@@ -554,6 +542,21 @@ namespace Warpstone
                 accumulate: accumulate.MustNotBeNull());
 
         /// <summary>
+        /// Starts from a shared empty array and only creates a list for the first element,
+        /// so repetitions that match nothing, which are the most common ones, don't allocate.
+        /// </summary>
+        private static IReadOnlyList<TSource> AddToList<TSource>(IReadOnlyList<TSource> acc, TSource element)
+        {
+            if (acc is not List<TSource> list)
+            {
+                return new List<TSource> { element };
+            }
+
+            list.Add(element);
+            return list;
+        }
+
+        /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
         /// </summary>
         /// <typeparam name="TSource">The type of results collected.</typeparam>
@@ -603,12 +606,8 @@ namespace Warpstone
                 element: element.MustNotBeNull(),
                 minCount: minCount.MustBeGreaterThanOrEqualTo(0),
                 maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
-                createSeed: static () => new List<TSource>(),
-                accumulate: static (acc, el) =>
-                {
-                    ((List<TSource>)acc).Add(el);
-                    return acc;
-                });
+                createSeed: static () => Array.Empty<TSource>(),
+                accumulate: AddToList);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -629,12 +628,8 @@ namespace Warpstone
                 delimiter: delimiter,
                 minCount: minCount.MustBeGreaterThanOrEqualTo(0),
                 maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
-                createSeed: static () => new List<TSource>(),
-                accumulate: static (acc, el) =>
-                {
-                    ((List<TSource>)acc).Add(el);
-                    return acc;
-                });
+                createSeed: static () => Array.Empty<TSource>(),
+                accumulate: AddToList);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
