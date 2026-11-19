@@ -1,4 +1,5 @@
 <Project>
+
   <Import Project="executable.props" />
 
   <PropertyGroup>
@@ -34,4 +35,5 @@
     <Using Include="NUnit.Framework" />
     <Using Static="true" Include="AssertNet.Assertions" />
   </ItemGroup>
+
 </Project>

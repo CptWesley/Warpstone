@@ -32,6 +32,8 @@
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <IsTestProject>false</IsTestProject>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(ContinuousIntegrationBuild)' == 'true'">
@@ -64,6 +66,7 @@
     <AdditionalFiles Include="../executable.props" Link="Properties/executable.props" Visible="false" />
     <AdditionalFiles Include="../benchmarks.props" Link="Properties/benchmarks.props" Visible="false" />
     <AdditionalFiles Include="../tests.props" Link="Properties/tests.props" Visible="false" />
+    <AdditionalFiles Include="../default_imports.props" Link="Properties/default_imports.props" Visible="false" />
   </ItemGroup>
-  
+
 </Project>
