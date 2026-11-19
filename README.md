@@ -24,6 +24,13 @@ This led me to create my own parser combinator library, with syntax inspired by 
 ## Why the name? (Or: What are all those strange words in the description?!?!?)
 Coming up with names is difficult, I wanted to get the project started and at the time I was consumed by the Warhammer Fantasy universe.
 
+## Where do the ideas come from?
+Warpstone's implementation draws on the following work:
+- [Packrat Parsing: Simple, Powerful, Lazy, Linear Time](https://arxiv.org/abs/cs/0603077) (Bryan Ford, ICFP 2002): the original packrat paper. It shows how memoizing every rule result makes a backtracking recursive-descent parser run in linear time.
+- [Packrat Parsers Can Support Left Recursion](https://web.cs.ucla.edu/~todd/research/pepm08.pdf) (Alessandro Warth, James R. Douglass and Todd Millstein, PEPM 2008): the "seed growing" technique for left-recursive rules that Warpstone's `Grow` parser is based on.
+- [Left-recursive PEG Grammars](https://medium.com/@gvanrossum_83706/left-recursive-peg-grammars-65dab3c580e1) (Guido van Rossum, 2019): part of the blog series behind Python's [pegen](https://github.com/gvanrossum/pegen) parser generator. Warpstone uses its approach of picking one "leader" rule per left-recursive cycle and growing only that rule. The leader selection itself is pegen's [`compute_left_recursives`](https://github.com/gvanrossum/pegen/blob/bc78cbc9d048ce389cf4d693b875726f56473a8b/pegen/parser_generator.py#L173-L200).
+- [Packrat Parsers Can Support Multiple Left-recursive Calls at the Same Position](https://doi.org/10.2197/ipsjjip.29.174) (Masaki Umeda and Atusi Maeda, Journal of Information Processing 29, 2021): handles several left-recursive calls at the same input position. Warpstone falls back to it for cycles that have no single leader.
+
 ## How does it compare?
 ✅ supported, 🟡 partially supported, ❌ not supported.
 
@@ -90,29 +97,97 @@ Memory allocated per parse:
 Measured with BenchmarkDotNet 0.15.8 (`InProcessEmitToolchain`) on .NET 11.0, AMD Ryzen 9 7950X3D, Windows 11. Reproduce from `src/` with `dotnet run -c Release --project Warpstone.Benchmarks -- --filter "*MiniJavaBenchmark*" --inProcess`.
 
 ## Usage
-It's useful to take a look at one of the available example projects for JSON parsing and expression parsing.
+Install the package. V3 is in preview, so include prereleases:
 
-To start off, one first needs to add (one of) the following imports:
+```sh
+dotnet add package Warpstone --prerelease
+```
 
-### V3 (Unstable)
+Or install `Warpstone.Sources` instead, which compiles the library's source code into your project, so your build output has no `Warpstone.dll` dependency.
+
+### Example: a calculator
+The program below parses and evaluates arithmetic such as `(1 + 2) * 3`. It's a complete console app: paste it into `Program.cs` and run it.
 
 ```cs
+using System;
 using Warpstone;
+using Warpstone.Errors;
 using static Warpstone.Parsers;
+
+// Parse() returns the value and throws if the input is invalid.
+Console.WriteLine(Calculator.Expression.Parse("1 + 2 * 3"));   // 7
+Console.WriteLine(Calculator.Expression.Parse("(1 + 2) * 3")); // 9
+Console.WriteLine(Calculator.Expression.Parse("10 - 4 - 3"));  // 3: '-' groups to the left
+
+// TryParse() doesn't throw. The result holds either a value or the errors.
+var result = Calculator.Expression.TryParse("1 + * 2");
+if (result.Success)
+{
+    Console.WriteLine(result.Value);
+}
+else
+{
+    foreach (var error in result.Errors)
+    {
+        Console.WriteLine($"Error at {error.InputStartPosition}");
+        if (error is UnexpectedTokenError unexpected)
+        {
+            Console.WriteLine($"Expected {string.Join(" or ", unexpected.Expected)} but found {unexpected.Found}");
+        }
+    }
+}
+
+public static class Calculator
+{
+    // A number is one or more digits. Regex() matches the text, Transform() converts it to an int.
+    // WithName() sets the name used in error messages instead of the regex pattern.
+    private static readonly IParser<int> Number
+        = Regex("[0-9]+").Transform(int.Parse).WithName("number");
+
+    // An atom is a number or a sum between parentheses.
+    // Sum is declared further down, so Lazy() postpones reading the field until parsing starts.
+    // The '!' tells the compiler the field will be set by then.
+    // Then() keeps only the right-hand result, ThenSkip() keeps only the left-hand result.
+    private static readonly IParser<int> Atom
+        = Or(
+            Number,
+            Char('(').Then(Lazy(() => Sum!)).ThenSkip(Char(')')));
+
+    // A term is atoms joined by '*' or '/'.
+    // The rule starts with itself (left recursion). Warpstone detects and supports this, so
+    // operators group to the left: 8 / 4 / 2 means (8 / 4) / 2.
+    // ThenAdd() keeps both results as a tuple, which Transform() unpacks into two arguments.
+    // Or() tries each alternative in order and returns the first that succeeds.
+    private static readonly IParser<int> Term
+        = Or(
+            Lazy(() => Term!).ThenSkip(Operator("*")).ThenAdd(Atom).Transform((left, right) => left * right),
+            Lazy(() => Term!).ThenSkip(Operator("/")).ThenAdd(Atom).Transform((left, right) => left / right),
+            Atom);
+
+    // A sum is terms joined by '+' or '-'. Because a sum is built from terms,
+    // '*' and '/' bind tighter than '+' and '-'.
+    private static readonly IParser<int> Sum
+        = Or(
+            Lazy(() => Sum!).ThenSkip(Operator("+")).ThenAdd(Term).Transform((left, right) => left + right),
+            Lazy(() => Sum!).ThenSkip(Operator("-")).ThenAdd(Term).Transform((left, right) => left - right),
+            Term);
+
+    // The entry point. ThenEnd() fails if any input is left over, so "1 + 2 abc" is rejected.
+    public static readonly IParser<int> Expression
+        = Sum.ThenEnd();
+
+    // An operator symbol with optional whitespace on both sides.
+    private static IParser<string> Operator(string symbol)
+        => OptionalWhitespaces.Then(String(symbol)).ThenSkip(OptionalWhitespaces);
+}
 ```
 
-### V2 (Unstable)
+Output:
 
-```cs
-using Warpstone;
-using static Warpstone.Parsers.BasicParsers;
 ```
-
-### V1 (Stable)
-
-```cs
-using Warpstone;
-using static Warpstone.Parsers.BasicParsers;
-using static Warpstone.Parsers.CommonParsers;
-using static Warpstone.Parsers.ExpressionParsers;
+7
+9
+3
+Error at Index 4 Line 1 Column 5
+Expected number or '(' but found '*'
 ```
