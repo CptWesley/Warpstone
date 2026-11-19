@@ -84,7 +84,9 @@ namespace Warpstone.Internal.Input
         public InputMatch Match(int index, string str, CultureInfo culture, CompareOptions options, out string? match)
         {
             if (index + str.Length > Content.Length
-                || string.Compare(Content, index, str, 0, str.Length, culture, options) != 0)
+                || (options == CompareOptions.Ordinal
+                    ? string.CompareOrdinal(Content, index, str, 0, str.Length) != 0
+                    : string.Compare(Content, index, str, 0, str.Length, culture, options) != 0))
             {
                 match = null;
                 return InputMatch.Failure;

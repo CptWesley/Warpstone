@@ -81,15 +81,17 @@ namespace Warpstone
 
         /// <summary>
         /// Creates a parser that parses a string, configuring the case-sensitivity.
+        /// The comparison is ordinal (<see cref="StringComparison.Ordinal"/> or <see cref="StringComparison.OrdinalIgnoreCase"/>),
+        /// so it doesn't depend on the current culture.
         /// </summary>
         /// <param name="value">The string to parse.</param>
         /// <param name="ignoreCase">Indicates if the matching should be case-insensitive.</param>
         /// <returns>A parser parsing a string.</returns>
         public static IParser<string> String(string value, bool ignoreCase)
-            => String(value: value.MustNotBeNull(), ignoreCase: ignoreCase, culture: null);
+            => String(value: value.MustNotBeNull(), comparisonType: ignoreCase ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 
         /// <summary>
-        /// Creates a parser that parses a string.
+        /// Creates a parser that parses a string, comparing it ordinally (<see cref="StringComparison.Ordinal"/>).
         /// </summary>
         /// <param name="value">The string to parse.</param>
         /// <returns>A parser parsing a string.</returns>

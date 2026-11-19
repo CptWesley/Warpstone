@@ -404,3 +404,6 @@ FodyWeavers.xsd
 
 # Old solution file
 *.sln
+
+# Swap files
+*.swp
