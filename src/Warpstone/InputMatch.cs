@@ -1,0 +1,25 @@
+namespace Warpstone
+{
+    /// <summary>
+    /// The outcome of matching against an <see cref="IParseInput"/>.
+    /// </summary>
+    public enum InputMatch
+    {
+        /// <summary>
+        /// The input does not match.
+        /// </summary>
+        Failure,
+
+        /// <summary>
+        /// The input matches.
+        /// </summary>
+        Success,
+
+        /// <summary>
+        /// More input is needed, and it is read asynchronously.
+        /// The parser has to retry the match once it is read.
+        /// Only returned while a parse runs asynchronously.
+        /// </summary>
+        Pending,
+    }
+}

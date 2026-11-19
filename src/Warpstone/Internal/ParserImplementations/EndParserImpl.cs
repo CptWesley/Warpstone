@@ -27,26 +27,25 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
-            if (position >= context.Input.Content.Length)
-            {
-                return new(position, 0, string.Empty);
-            }
-            else
-            {
-                return new(position, new UnexpectedTokenError(context, this, position, 1, "EOF"));
-            }
+            return context.Input.MatchEnd(position) == InputMatch.Success
+                ? new(position, 0, string.Empty)
+                : new(position, new UnexpectedTokenError(context, this, position, 1, "EOF"));
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            if (position >= context.Input.Content.Length)
+            switch (context.Input.MatchEnd(position))
             {
-                context.ResultStack.Push(new(position, 0, string.Empty));
-            }
-            else
-            {
-                context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, "EOF")));
+                case InputMatch.Success:
+                    context.ResultStack.Push(new(position, 0, string.Empty));
+                    break;
+                case InputMatch.Pending:
+                    context.ExecutionStack.Push((position, this));
+                    break;
+                default:
+                    context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, "EOF")));
+                    break;
             }
         }
     }

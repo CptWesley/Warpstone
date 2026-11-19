@@ -33,24 +33,23 @@ Coming up with names is difficult, I wanted to get the project started and at th
 | Packrat memoization                            | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌<sup>1</sup> |
 | Backtracking choice (no `Try` needed)          | ✅ | ✅ | ✅ | 🟡<sup>2</sup> | ✅ | ✅ | ❌<sup>1</sup> |
 | Lookahead (positive/negative)                  | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌<sup>1</sup> |
-| Deeply nested input without stack overflow     | ❌ | ✅ | ✅ | ❌ | 🟡<sup>3</sup> | ✅ | ✅ |
-| Step-wise execution / cancellation             | ❌ | ✅ | ✅ | ❌ | 🟡<sup>4</sup> | ❌ | ❌ |
+| Deeply nested input                            | ❌ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Cancellation                                   | ❌ | ✅ | ✅ | ❌ | ✅ | ❌ | ❌ |
+| Step-wise execution                            | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Regex parsers                                  | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Operator precedence helpers                    | ✅ | ❌ | ❌<sup>5</sup> | ✅ | ✅ | 🟡<sup>6</sup> | ✅ |
-| Monadic bind (context-sensitive parsing)       | ❌ | ✅ | ❌ | ✅ | 🟡<sup>7</sup> | ✅ | ❌ |
-| Non-`char` token input                         | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | 🟡<sup>8</sup> |
-| Streaming input (`TextReader`/`Stream`)        | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Operator precedence helpers                    | ✅ | ❌ | ❌<sup>3</sup> | ✅ | ✅ | 🟡<sup>4</sup> | ✅ |
+| Monadic bind (context-sensitive parsing)       | ❌ | ✅ | ❌ | ✅ | 🟡<sup>5</sup> | ✅ | ❌ |
+| Non-`char` token input                         | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | 🟡<sup>6</sup> |
+| Streaming input (`TextReader`/`Stream`)        | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Compiled / source-generated parsers            | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
 | Source-only package (no assembly dependency)   | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 1. Farkle is an LALR(1) parser generator, not a PEG/combinator library. It needs no memoization or backtracking and reports grammar conflicts when the grammar is built.
 2. A choice only backtracks over consumed input when the branch is wrapped in `Try`.
-3. Deep nesting fails the parse instead of overflowing the stack.
-4. Supports cancellation, but not step-wise execution.
-5. Not needed: write expressions as left-recursive rules.
-6. `ChainLeft`/`ChainRight` combinators, no precedence table.
-7. Via `Switch`.
-8. Custom tokenizers, input is still text.
+3. Not needed: write expressions as left-recursive rules.
+4. `ChainLeft`/`ChainRight` combinators, no precedence table.
+5. Via `Switch`.
+6. Custom tokenizers, input is still text.
 
 Third-party columns reflect each library's documentation and package API at the time of writing (Pidgin 3.5, Parlot 2.3, ParsecSharp 5.2, Farkle 7).
 

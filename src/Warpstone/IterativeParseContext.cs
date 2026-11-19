@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
+using System.Threading.Tasks;
+using Warpstone.Internal.Input;
 
 namespace Warpstone
 {
@@ -131,6 +133,53 @@ namespace Warpstone
                 }
 
                 result = resultStack.Pop().AsSafe<T>(this);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Runs the parser to the end, like <see cref="RunToEnd(CancellationToken)"/>,
+        /// but awaits more input instead of blocking when the input is read from a <see cref="System.IO.TextReader"/>
+        /// or <see cref="System.IO.Stream"/>.
+        /// </summary>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The parse result.</returns>
+        public async Task<IParseResult<T>> RunToEndAsync(CancellationToken cancellationToken = default)
+        {
+            if (Input is not TextReaderParseInput reader)
+            {
+                return RunToEnd(cancellationToken);
+            }
+
+            reader.IsAsynchronous = true;
+            try
+            {
+                while (result is null)
+                {
+                    lock (lck)
+                    {
+                        while (executionStack.Count > 0 && !reader.IsPending)
+                        {
+                            cancellationToken.ThrowIfCancellationRequested();
+                            InternalStep();
+                        }
+
+                        if (executionStack.Count <= 0 && result is null)
+                        {
+                            result = resultStack.Pop().AsSafe<T>(this);
+                        }
+                    }
+
+                    if (reader.IsPending)
+                    {
+                        await reader.ReadPendingAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                }
+            }
+            finally
+            {
+                reader.IsAsynchronous = false;
             }
 
             return result;

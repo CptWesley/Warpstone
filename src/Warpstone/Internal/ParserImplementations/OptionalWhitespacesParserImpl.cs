@@ -20,28 +20,21 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
-            var content = context.Input.Content;
-            var pos = position;
-
-            while (pos < content.Length && char.IsWhiteSpace(content[pos]))
-            {
-                pos++;
-            }
-
-            return new(position, pos - position, content[position..pos]);
+            context.Input.MatchWhitespaces(position, out var match);
+            return new(position, match!.Length, match);
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            var content = context.Input.Content;
-            var pos = position;
-
-            while (pos < content.Length && char.IsWhiteSpace(content[pos]))
+            if (context.Input.MatchWhitespaces(position, out var match) == InputMatch.Pending)
             {
-                pos++;
+                context.ExecutionStack.Push((position, this));
             }
-            context.ResultStack.Push(new(position, pos - position, content[position..pos]));
+            else
+            {
+                context.ResultStack.Push(new(position, match!.Length, match));
+            }
         }
 
         /// <inheritdoc />

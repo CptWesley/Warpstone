@@ -6,78 +6,20 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
+using Warpstone.Internal.Input;
 
 namespace Warpstone
 {
     /// <summary>
-    /// Represents information for inputs used by parsers.
-    /// Basic concrete implementation of the <see cref="IParseInput"/> interface.
+    /// Responsible for instantiating instances of the <see cref="IParseInput"/> interface.
     /// </summary>
-    public sealed class ParseInput : IParseInput
+    public static class ParseInput
     {
-        private readonly int[] lineLengths;
-
-        private ParseInput(IParseInputSource source, string content, int[] lineLengths)
-        {
-            Source = source;
-            Content = content;
-            this.lineLengths = lineLengths;
-        }
-
-        /// <inheritdoc />
-        public string Content { get; }
-
-        /// <inheritdoc />
-        public IParseInputSource Source { get; }
-
-        /// <inheritdoc />
-        public ParseInputPosition GetPosition(int index)
-        {
-            var start = 0;
-            var end = lineLengths.Length;
-            var range = end;
-
-            while (range > 1)
-            {
-                var halfRange = range / 2;
-                var pivot = start + halfRange;
-
-                var startIndex = lineLengths[pivot];
-
-                if (index < startIndex)
-                {
-                    end -= halfRange;
-                    range = end - start;
-                }
-                else if (index == startIndex)
-                {
-                    return new ParseInputPosition(this, index, pivot + 1, 1);
-                }
-                else if (index > startIndex)
-                {
-                    if (pivot == lineLengths.Length - 1)
-                    {
-                        return new ParseInputPosition(this, index, pivot + 1, index - startIndex + 1);
-                    }
-
-                    var nextStartIndex = lineLengths[pivot + 1];
-                    if (index < nextStartIndex)
-                    {
-                        return new ParseInputPosition(this, index, pivot + 1, index - startIndex + 1);
-                    }
-
-                    start += halfRange;
-                    range = end - start;
-                }
-            }
-
-            return new ParseInputPosition(this, index, start + 1, index - lineLengths[start] + 1);
-        }
-
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="content"/> string
-        /// with with the given <paramref name="source"/>.
+        /// with the given <paramref name="source"/>.
         /// </summary>
         /// <param name="source">The source of the input.</param>
         /// <param name="content">The input string.</param>
@@ -96,8 +38,39 @@ namespace Warpstone
                 lines.Add(acc);
             }
 
-            return new ParseInput(source, content, lines.ToArray());
+            return new StringParseInput(source, content, lines.ToArray());
         }
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// that reads from the given <paramref name="reader"/> as parsers need more input,
+        /// with the given <paramref name="source"/>.
+        /// Read input stays buffered, so parsers can backtrack into it.
+        /// A regex parser reads the rest of the input first, because a regex needs the whole string.
+        /// Parse it with <c>ParseAsync</c> or <c>TryParseAsync</c> to read without blocking.
+        /// The reader is not disposed.
+        /// </summary>
+        /// <param name="source">The source of the input.</param>
+        /// <param name="reader">The reader to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput Create(IParseInputSource source, TextReader reader)
+            => new TextReaderParseInput(source, reader);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// that reads from the given <paramref name="stream"/> as parsers need more input,
+        /// with the given <paramref name="source"/>.
+        /// The text encoding is detected from the byte order mark and defaults to UTF-8.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The stream is not disposed.
+        /// </summary>
+        /// <param name="source">The source of the input.</param>
+        /// <param name="stream">The stream to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput Create(IParseInputSource source, Stream stream)
+            => Create(source, new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096, leaveOpen: true));
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
@@ -109,6 +82,33 @@ namespace Warpstone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IParseInput CreateFromMemory(string input)
             => Create(FromMemorySource.Instance, input);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// from the given <paramref name="reader"/> text reader
+        /// with a from-memory source.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The reader is not disposed.
+        /// </summary>
+        /// <param name="reader">The reader to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromMemory(TextReader reader)
+            => Create(FromMemorySource.Instance, reader);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// from the given <paramref name="stream"/> stream
+        /// with a from-memory source.
+        /// The text encoding is detected from the byte order mark and defaults to UTF-8.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The stream is not disposed.
+        /// </summary>
+        /// <param name="stream">The stream to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromMemory(Stream stream)
+            => Create(FromMemorySource.Instance, stream);
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
@@ -124,6 +124,35 @@ namespace Warpstone
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
+        /// from the given <paramref name="reader"/> text reader
+        /// with a file source from the given <paramref name="path"/>.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The reader is not disposed.
+        /// </summary>
+        /// <param name="path">The path to the source file.</param>
+        /// <param name="reader">The reader to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromFile(string path, TextReader reader)
+            => Create(new FileSource(path), reader);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// from the given <paramref name="stream"/> stream
+        /// with a file source from the given <paramref name="path"/>.
+        /// The text encoding is detected from the byte order mark and defaults to UTF-8.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The stream is not disposed.
+        /// </summary>
+        /// <param name="path">The path to the source file.</param>
+        /// <param name="stream">The stream to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromFile(string path, Stream stream)
+            => Create(new FileSource(path), stream);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="path"/>.
         /// </summary>
         /// <param name="path">The path to the source file.</param>
@@ -131,6 +160,20 @@ namespace Warpstone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IParseInput CreateFromFile(string path)
             => CreateFromFile(path, File.ReadAllText(path));
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// that reads from the given <paramref name="stream"/> as parsers need more input,
+        /// with a from-memory source, or a file source when it is a <see cref="FileStream"/>.
+        /// The text encoding is detected from the byte order mark and defaults to UTF-8.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The stream is not disposed.
+        /// </summary>
+        /// <param name="stream">The stream to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromStream(Stream stream)
+            => Create(stream is FileStream file ? new FileSource(file.Name) : FromMemorySource.Instance, stream);
     }
 }
 

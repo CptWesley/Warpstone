@@ -137,14 +137,9 @@ namespace Warpstone.Errors
                 return "BOF";
             }
 
-            var input = context.Input.Content;
-
-            if (position >= input.Length)
-            {
-                return "EOF";
-            }
-
-            return $"'{input[position]}'";
+            return context.Input.TryGetChar(position, out var character)
+                ? $"'{character}'"
+                : "EOF";
         }
 
         private static string GetMessage(IReadOnlyParseContext context, int position, IReadOnlyCollection<string> expected)
