@@ -26,6 +26,10 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public abstract void Apply(IIterativeParseContext context, int position);
 
+        /// <inheritdoc />
+        public virtual FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => null;
+
         /// <summary>
         /// Reports that this parser expected <paramref name="expected"/> at <paramref name="position"/>.
         /// </summary>

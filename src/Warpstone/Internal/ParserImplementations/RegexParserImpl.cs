@@ -10,7 +10,7 @@ namespace Warpstone.Internal.ParserImplementations
     /// <summary>
     /// Represents a parser that matches regular expressions in the input.
     /// </summary>
-    internal sealed class RegexParserImpl : ParserImplementationBase<RegexParser, string>, IFirstCharsSource
+    internal sealed class RegexParserImpl : ParserImplementationBase<RegexParser, string>
     {
         private readonly string expected;
 
@@ -86,7 +86,7 @@ namespace Warpstone.Internal.ParserImplementations
         }
 
         /// <inheritdoc />
-        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
             => FirstChars.Leaf(firstChars, this, expected);
 
         /// <inheritdoc />

@@ -7,7 +7,7 @@ namespace Warpstone.Internal.ParserImplementations
     /// <summary>
     /// Represents a parser that parses a string.
     /// </summary>
-    internal sealed class StringParserImpl : ParserImplementationBase<StringParser, string>, IFirstCharsSource
+    internal sealed class StringParserImpl : ParserImplementationBase<StringParser, string>
     {
         private readonly string value;
         private readonly CultureInfo culture;
@@ -29,7 +29,7 @@ namespace Warpstone.Internal.ParserImplementations
         }
 
         /// <inheritdoc />
-        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
         {
             // Culture comparisons can match other first characters (ignorable ones, for one), and so can a letter with ignore case.
             var ordinal = options == CompareOptions.Ordinal

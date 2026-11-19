@@ -9,7 +9,7 @@ namespace Warpstone.Internal.ParserImplementations
     /// </summary>
     /// <typeparam name="TSource">The element type.</typeparam>
     /// <typeparam name="TAccumulator">The accumulator type.</typeparam>
-    internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImplementationBase<AggregateParser<TSource, TAccumulator>, TAccumulator>, IFirstCharsSource
+    internal sealed class AggregateParserImpl<TSource, TAccumulator> : ParserImplementationBase<AggregateParser<TSource, TAccumulator>, TAccumulator>
     {
         private IParserImplementation<TSource> element = default!;
         private IParserImplementation? delimiter = default!;
@@ -21,7 +21,7 @@ namespace Warpstone.Internal.ParserImplementations
 
         /// <inheritdoc />
         // A repetition fails with its first element, unless it may match nothing.
-        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
             => minCount > 0 ? FirstChars.Of(element, visiting) : null;
 
         /// <inheritdoc />

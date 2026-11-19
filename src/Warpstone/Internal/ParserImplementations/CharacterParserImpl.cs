@@ -6,7 +6,7 @@ namespace Warpstone.Internal.ParserImplementations
     /// <summary>
     /// Represents a parser that parses a character.
     /// </summary>
-    internal sealed class CharacterParserImpl : ParserImplementationBase<CharacterParser, char>, IFirstCharsSource
+    internal sealed class CharacterParserImpl : ParserImplementationBase<CharacterParser, char>
     {
         private readonly string expected;
         private readonly char character;
@@ -22,7 +22,7 @@ namespace Warpstone.Internal.ParserImplementations
         }
 
         /// <inheritdoc />
-        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
             => FirstChars.Leaf([character], this, expected);
 
         /// <inheritdoc />

@@ -17,7 +17,7 @@ namespace Warpstone.Internal.ParserImplementations
     /// </summary>
     /// <typeparam name="TIn">The result type of the element parser.</typeparam>
     /// <typeparam name="TOut">The result type of the map function.</typeparam>
-    internal sealed class MapRefParserImpl<TIn, TOut> : ParserImplementationBase<MapParser<TIn, TOut>, TOut>, IFirstCharsSource
+    internal sealed class MapRefParserImpl<TIn, TOut> : ParserImplementationBase<MapParser<TIn, TOut>, TOut>
         where TIn : class
     {
         private Continuation continuation = default!;
@@ -25,7 +25,7 @@ namespace Warpstone.Internal.ParserImplementations
         private Func<TIn, TOut> map = default!;
 
         /// <inheritdoc />
-        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
             => FirstChars.Of(element, visiting);
 
         /// <inheritdoc />

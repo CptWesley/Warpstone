@@ -2,47 +2,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 
-namespace Warpstone.Internal.ParserImplementations
+namespace Warpstone
 {
-    /// <summary>
-    /// Implemented by parser implementations that can tell which characters their matches start with.
-    /// </summary>
-    internal interface IFirstCharsSource
-    {
-        /// <summary>
-        /// Gets the first characters of the parser, or <see langword="null"/> when they are unknown.
-        /// Use <see cref="FirstChars.Of(IParserImplementation, ISet{IParserImplementation})"/> instead of calling this directly.
-        /// </summary>
-        /// <param name="visiting">The parsers whose first characters are being computed, to stop at cycles.</param>
-        /// <returns>The first characters, or <see langword="null"/>.</returns>
-        FirstChars? GetFirstChars(ISet<IParserImplementation> visiting);
-    }
-
     /// <summary>
     /// The ASCII characters every match of a parser starts with, and what the parser reports when it fails because the input
     /// starts with another character. Only parsers that never match empty input and never start with a non-ASCII character have them.
-    /// <see cref="OrParserImpl{T}"/> uses them to skip alternatives that are sure to fail, while reporting the same failures.
+    /// Choices use them to skip alternatives that are sure to fail, while reporting the same failures.
     /// </summary>
-    internal sealed class FirstChars
+    public sealed class FirstChars
     {
         /// <summary>
         /// The number of characters covered: ASCII.
         /// </summary>
-        public const int Count = 128;
+        internal const int Count = 128;
 
         // Computed once per parser: grammars share parsers, and walking every path through shared parsers is exponential.
         private static readonly ConditionalWeakTable<IParserImplementation, Cached> Cache = new();
 
+        private readonly bool[] chars;
+
         private FirstChars(bool[] chars, IReadOnlyList<(IParserImplementation Parser, string Expected)> reports)
         {
-            Chars = chars;
+            this.chars = chars;
             Reports = reports;
         }
 
         /// <summary>
-        /// Gets which of the ASCII characters a match can start with, indexed by character.
+        /// Gets which of the 128 ASCII characters a match can start with, indexed by character.
         /// </summary>
-        public bool[] Chars { get; }
+        public IReadOnlyList<bool> Chars => chars;
 
         /// <summary>
         /// Gets the <see cref="Errors.FailureTracker.AddExpected"/> calls, in order, that the parser makes when it fails
@@ -66,11 +54,6 @@ namespace Warpstone.Internal.ParserImplementations
         /// <returns>The first characters, or <see langword="null"/> when they are unknown.</returns>
         public static FirstChars? Of(IParserImplementation parser, ISet<IParserImplementation> visiting)
         {
-            if (parser is not IFirstCharsSource source)
-            {
-                return null;
-            }
-
             if (Cache.TryGetValue(parser, out var cached))
             {
                 return cached.Value;
@@ -84,7 +67,7 @@ namespace Warpstone.Internal.ParserImplementations
 
             try
             {
-                var value = source.GetFirstChars(visiting);
+                var value = parser.GetFirstChars(visiting);
                 return Cache.GetValue(parser, _ => new(value)).Value;
             }
             finally
@@ -100,7 +83,7 @@ namespace Warpstone.Internal.ParserImplementations
         /// <param name="target">The reports to add to.</param>
         /// <param name="seen">The reports already in <paramref name="target"/>.</param>
         /// <param name="reports">The reports to add.</param>
-        public static void AddDistinct(
+        internal static void AddDistinct(
             List<(IParserImplementation Parser, string Expected)> target,
             HashSet<(IParserImplementation Parser, string Expected)> seen,
             IEnumerable<(IParserImplementation Parser, string Expected)> reports)
@@ -112,7 +95,7 @@ namespace Warpstone.Internal.ParserImplementations
         /// Creates a set for <see cref="AddDistinct"/> that compares by reference, as the tracker does.
         /// </summary>
         /// <returns>The empty set.</returns>
-        public static HashSet<(IParserImplementation Parser, string Expected)> CreateSeen()
+        internal static HashSet<(IParserImplementation Parser, string Expected)> CreateSeen()
             => new(ReportComparer.Instance);
 
         /// <summary>
@@ -122,7 +105,7 @@ namespace Warpstone.Internal.ParserImplementations
         /// <param name="parser">The reporting parser.</param>
         /// <param name="expected">The expected value it reports.</param>
         /// <returns>The first characters, or <see langword="null"/> when <paramref name="chars"/> is.</returns>
-        public static FirstChars? Leaf(bool[]? chars, IParserImplementation parser, string expected)
+        internal static FirstChars? Leaf(bool[]? chars, IParserImplementation parser, string expected)
             => chars is null ? null : new(chars, [(parser, expected)]);
 
         /// <summary>
@@ -167,7 +150,7 @@ namespace Warpstone.Internal.ParserImplementations
 
                 for (var c = 0; c < Count; c++)
                 {
-                    set[c] |= alternative.Chars[c];
+                    set[c] |= alternative.chars[c];
                 }
 
                 AddDistinct(reports, seen, alternative.Reports);
@@ -177,13 +160,13 @@ namespace Warpstone.Internal.ParserImplementations
         }
 
         /// <summary>
-        /// Gets the same first characters, reported as one expected value, as <see cref="ExpectedParserImpl{T}"/> does.
+        /// Gets the same first characters, reported as one expected value, as a named parser (<c>WithName</c>) does.
         /// </summary>
         /// <param name="parser">The reporting parser.</param>
         /// <param name="expected">The expected value it reports.</param>
         /// <returns>The relabeled first characters.</returns>
         public FirstChars Relabel(IParserImplementation parser, string expected)
-            => new(Chars, [(parser, expected)]);
+            => new(chars, [(parser, expected)]);
 
         private sealed class Cached
         {

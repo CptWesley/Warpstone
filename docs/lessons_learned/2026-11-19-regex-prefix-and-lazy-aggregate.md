@@ -57,9 +57,9 @@ Allocations did not change.
 
 ### How it works
 
-- `FirstChars` (`Internal/ParserImplementations/FirstChars.cs`) holds the ASCII characters a match can start with, plus the exact
+- `FirstChars` (public, `src/Warpstone/FirstChars.cs`) holds the ASCII characters a match can start with, plus the exact
   `AddExpected` calls the parser makes when it fails on any other character. Only parsers that never match empty input have one.
-  Impls opt in through `IFirstCharsSource`: the Char, String (ordinal; ignore-case only when the first char is not a letter) and Regex
+  Impls override `IParserImplementation.GetFirstChars` (the base returns null): the Char, String (ordinal; ignore-case only when the first char is not a letter) and Regex
   leaves, pass-throughs (Sequence, the four And impls, both Map impls, Memo, StackGuard, Aggregate with `minCount > 0`), and Expected
   (its own name replaces the inner reports). `Or` takes the union. Everything else counts as unknown, so it always runs.
 - `RegexFirstChars` reads the first atom of simple patterns: a literal, an escaped punctuation character, or a class like `[A-Za-z_]`,
@@ -81,3 +81,20 @@ Allocations did not change.
 - Differential test `Parsers/FirstCharFilter.cs`: string input (filter on) against `StringReader` input (filter off), with the same results
   and the same ordered error descriptions. A mutation that drops the skipped reports made 45 tests fail.
 - New files in `src/Warpstone` add new `*.verified.cs` snapshots. Rename the per-TFM received file just as you would for edits.
+
+## Follow-up: interface folded, README tables rerun
+
+- `IFirstCharsSource` was folded into the public `IParserImplementation` as `GetFirstChars(ISet<IParserImplementation>)`, so `FirstChars`
+  became public in the `Warpstone` namespace. `Chars` is an `IReadOnlyList<bool>`; the helpers the impls use (`Leaf(bool[]?)`,
+  `AddDistinct`, `CreateSeen`, `Count`) stay internal. `ParserImplementationBase` returns null by default, and so do continuations.
+- `sed -i` over `Internal/ParserImplementations/*.cs` rewrote CRLF to LF in files it did not change. Restore those with
+  `git checkout --` after checking `git diff --ignore-all-space` is empty.
+- `dotnet pack Warpstone -c Release` regenerates `CompatibilitySuppressions.xml` (revert it). With
+  `-p:ApiCompatGenerateSuppressionFile=false`, HEAD already fails with 14 stale CP0001/CP0002 errors (`FailureTracker`,
+  `UnsafeParseResult.Errors`, `IParseContext.Failures`, ...) from the earlier failure-tracker work. The new interface member added none.
+  Regenerate the suppressions on purpose before a release.
+- Moving a file in `src/Warpstone` renames its snapshot: delete the old `*.verified.cs`.
+- README tables rerun with the full MiniJava suite (`--filter "*MiniJavaBenchmark*" --inProcess`, default job): 27 benchmarks took 9.5 min,
+  not the 25 min the older note says. BenchmarkDotNet is now 0.16.0-preview.2. V3 large went from 5.31 to 3.01 ms (1,139 to 1,027 KB),
+  and the left-recursive variant from 7.98 to 5.42 ms. BenchmarkDotNet's absolute numbers are about 25% above the stopwatch probe's.
+  Don't run other CPU-heavy work (tests, builds) while it runs.

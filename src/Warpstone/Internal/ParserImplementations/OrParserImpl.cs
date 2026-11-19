@@ -9,7 +9,7 @@ namespace Warpstone.Internal.ParserImplementations
     /// Represents a parser that tries the provided alternatives in order and returns the result of the first successful one.
     /// </summary>
     /// <typeparam name="T">The result type of the parsers.</typeparam>
-    internal sealed class OrParserImpl<T> : ParserImplementationBase<OrParser<T>, T>, IFirstCharsSource
+    internal sealed class OrParserImpl<T> : ParserImplementationBase<OrParser<T>, T>
     {
         private IParserImplementation<T>[] alternatives = default!;
         private Continuation[] continuations = default!;
@@ -70,7 +70,7 @@ namespace Warpstone.Internal.ParserImplementations
         }
 
         /// <inheritdoc />
-        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
             => FirstChars.Union(alternatives.Select(alternative => FirstChars.Of(alternative, visiting)));
 
         /// <summary>

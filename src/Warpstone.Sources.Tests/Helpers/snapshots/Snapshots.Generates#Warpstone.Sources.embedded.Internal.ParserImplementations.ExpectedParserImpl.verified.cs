@@ -12,7 +12,7 @@ namespace Warpstone.Internal.ParserImplementations
     /// Represents a parser that can override the expected token message.
     /// </summary>
     /// <typeparam name="T">The result type of the wrapped parser.</typeparam>
-    internal sealed class ExpectedParserImpl<T> : ParserImplementationBase<ExpectedParser<T>, T>, IFirstCharsSource
+    internal sealed class ExpectedParserImpl<T> : ParserImplementationBase<ExpectedParser<T>, T>
     {
         private Continuation continuation = default!;
         private IParserImplementation<T> inner = default!;
@@ -20,7 +20,7 @@ namespace Warpstone.Internal.ParserImplementations
 
         /// <inheritdoc />
         // Failing at its start, the label replaces whatever the inner parser reported there with its name.
-        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
             => FirstChars.Of(inner, visiting)?.Relabel(this, expected);
 
         /// <inheritdoc />

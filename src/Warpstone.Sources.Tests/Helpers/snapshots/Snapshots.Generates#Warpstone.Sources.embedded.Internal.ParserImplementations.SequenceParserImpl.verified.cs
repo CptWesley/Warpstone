@@ -17,7 +17,7 @@ namespace Warpstone.Internal.ParserImplementations
     /// <typeparam name="TFirst">The result type of the first parser.</typeparam>
     /// <typeparam name="TSecond">The result type of the second parser.</typeparam>
     /// <typeparam name="TResult">The combined result type.</typeparam>
-    internal sealed class SequenceParserImpl<TFirst, TSecond, TResult> : ParserImplementationBase<SequenceParser<TFirst, TSecond, TResult>, TResult>, IFirstCharsSource
+    internal sealed class SequenceParserImpl<TFirst, TSecond, TResult> : ParserImplementationBase<SequenceParser<TFirst, TSecond, TResult>, TResult>
     {
         private IParserImplementation<TFirst> first = default!;
         private IParserImplementation<TSecond> second = default!;
@@ -25,7 +25,7 @@ namespace Warpstone.Internal.ParserImplementations
         private Continuation continuation = default!;
 
         /// <inheritdoc />
-        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
             => FirstChars.Of(first, visiting);
 
         /// <inheritdoc />

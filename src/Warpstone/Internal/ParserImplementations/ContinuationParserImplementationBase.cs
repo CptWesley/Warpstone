@@ -19,5 +19,9 @@ namespace Warpstone.Internal.ParserImplementations
 
         /// <inheritdoc />
         public abstract void Apply(IIterativeParseContext context, int position);
+
+        /// <inheritdoc />
+        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => null;
     }
 }
