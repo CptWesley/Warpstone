@@ -21,8 +21,7 @@ public sealed class Numbers
         [1337],
     ];
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void Without_padding(int v)
     {
         Parse(@$"{v}").Value
@@ -30,8 +29,7 @@ public sealed class Numbers
             .BeEquivalentTo(new JsonInt(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_left_padding(int v)
     {
         Parse(@$"  {v}").Value
@@ -39,8 +37,7 @@ public sealed class Numbers
             .BeEquivalentTo(new JsonInt(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_right_padding(int v)
     {
         Parse(@$"{v}  ").Value
@@ -48,8 +45,7 @@ public sealed class Numbers
             .BeEquivalentTo(new JsonInt(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_padding(int v)
     {
         Parse(@$"  {v}  ").Value
@@ -67,8 +63,7 @@ public sealed class Strings
         ["Hello, world!"],
     ];
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void Without_padding(string v)
     {
         Parse(@$"""{v}""").Value
@@ -76,8 +71,7 @@ public sealed class Strings
             .BeEquivalentTo(new JsonString(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_left_padding(string v)
     {
         Parse(@$"  ""{v}""").Value
@@ -85,8 +79,7 @@ public sealed class Strings
             .BeEquivalentTo(new JsonString(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_right_padding(string v)
     {
         Parse(@$"""{v}""  ").Value
@@ -94,8 +87,7 @@ public sealed class Strings
             .BeEquivalentTo(new JsonString(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_padding(string v)
     {
         Parse(@$"  ""{v}""  ").Value
@@ -112,8 +104,7 @@ public sealed class Booleans
         [false],
     ];
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void Without_padding(bool v)
     {
         Parse(@$"{v.ToString().ToLowerInvariant()}").Value
@@ -121,8 +112,7 @@ public sealed class Booleans
             .BeEquivalentTo(new JsonBoolean(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_left_padding(bool v)
     {
         Parse(@$"  {v.ToString().ToLowerInvariant()}").Value
@@ -130,8 +120,7 @@ public sealed class Booleans
             .BeEquivalentTo(new JsonBoolean(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_right_padding(bool v)
     {
         Parse(@$"{v.ToString().ToLowerInvariant()}  ").Value
@@ -139,8 +128,7 @@ public sealed class Booleans
             .BeEquivalentTo(new JsonBoolean(v));
     }
 
-    [Theory]
-    [MemberData(nameof(Inputs))]
+    [TestCaseSource(nameof(Inputs))]
     public void With_padding(bool v)
     {
         Parse(@$"  {v.ToString().ToLowerInvariant()}  ").Value
@@ -151,7 +139,7 @@ public sealed class Booleans
 
 public sealed class Complex
 {
-    [Fact]
+    [Test]
     public void Simple_object()
     {
         var result = Parse(@"

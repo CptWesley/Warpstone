@@ -2,7 +2,7 @@ namespace Warpstone.Tests.Parsers;
 
 public static class MemoParser
 {
-    public static readonly IEnumerable<object[]> Options = new ParseOptions[][]
+    public static readonly IEnumerable<object[]> Options = new object[][]
     {
         [
             ParseOptions.Default with
@@ -30,8 +30,7 @@ public static class MemoParser
         ],
     };
 
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void DetectInfiniteRecursion(ParseOptions options)
     {
         IParser<string> num = Memo(Regex(@"[0-9]+"));

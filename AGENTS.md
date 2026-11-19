@@ -59,7 +59,7 @@ Shared MSBuild settings are split into `src/*.props`, which each project imports
 - `common.props`: imported by everything. Sets LangVersion 13, nullable, `ImplicitUsings` disabled, and the analyzers.
 - `package.props`: packable libraries. Sets target frameworks, version, SourceLink and package validation.
 - `sourcegenerator.props`: Roslyn generator, `netstandard2.0`.
-- `tests.props` and `executable.props`: xunit with AwesomeAssertions and AssertNet (`using static AssertNet.Assertions`), plus coverlet.
+- `tests.props` and `executable.props`: NUnit with AwesomeAssertions and AssertNet (`using static AssertNet.Assertions`), plus coverlet.
 - `benchmarks.props`: benchmark project settings.
 
 ## Architecture
@@ -83,7 +83,7 @@ Every implementation provides two `Apply` overloads:
 - `Apply(IRecursiveParseContext, int)`: direct recursive calls that return an `UnsafeParseResult`. This mode is fast but limited by stack depth.
 - `Apply(IIterativeParseContext, int)`: pushes work and continuations onto an explicit stack (`ContinuationParserImplementationBase` subclasses), so deep inputs don't overflow the stack.
 
-`ParseContext.Create` picks `IterativeParseContext` or `RecursiveParseContext` according to `ParseOptions.ExecutionMode`. In `Auto` mode it chooses iterative when the grammar is recursive or nested more than 256 deep. Tests usually run as `[Theory]` over all three modes (see `Warpstone.Tests/Parsers/MemoParser.cs`), and new parser tests should do the same.
+`ParseContext.Create` picks `IterativeParseContext` or `RecursiveParseContext` according to `ParseOptions.ExecutionMode`. In `Auto` mode it chooses iterative when the grammar is recursive or nested more than 256 deep. Tests usually run as `[TestCaseSource]` over all three modes (see `Warpstone.Tests/Parsers/MemoParser.cs`), and new parser tests should do the same.
 
 Value-type results are boxed. That is why some impls have Ref and Boxed variants, for example `AndRefRefParserImpl` and `MapBoxedParserImpl`, chosen at runtime by `CreateUninitializedImplementation`.
 

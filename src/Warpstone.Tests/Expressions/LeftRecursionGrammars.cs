@@ -180,65 +180,53 @@ public static class LeftRecursionGrammars
 
     public static IEnumerable<object[]> RightRecursiveData => Cross(AutoOptions, "n", "(n)", "((n))");
 
-    [Theory]
-    [MemberData(nameof(DirectData))]
+    [TestCaseSource(nameof(DirectData))]
     public static void Direct_left_recursion(ParseOptions options, string input)
         => ShouldParse(Direct(), input, options);
 
-    [Theory]
-    [MemberData(nameof(DirectRejectData))]
+    [TestCaseSource(nameof(DirectRejectData))]
     public static void Direct_left_recursion_rejects_invalid_input(ParseOptions options, string input)
         => ShouldNotParse(Direct(), input, options);
 
-    [Theory]
-    [MemberData(nameof(ExprNumData))]
+    [TestCaseSource(nameof(ExprNumData))]
     public static void Nested_left_recursion_at_different_positions(ParseOptions options, string input)
         => ShouldParse(ExprNum(), input, options);
 
-    [Theory]
-    [MemberData(nameof(IndirectSAData))]
+    [TestCaseSource(nameof(IndirectSAData))]
     public static void Indirect_left_recursion(ParseOptions options, string input)
         => ShouldParse(IndirectSA(manualLeader: false), input, options);
 
-    [Theory]
-    [MemberData(nameof(IndirectSAManualData))]
+    [TestCaseSource(nameof(IndirectSAManualData))]
     public static void Indirect_left_recursion_with_manual_leader(ParseOptions options, string input)
         => ShouldParse(IndirectSA(manualLeader: true), input, options);
 
-    [Theory]
-    [MemberData(nameof(IndirectSABData))]
+    [TestCaseSource(nameof(IndirectSABData))]
     public static void Indirect_left_recursion_reached_twice(ParseOptions options, string input)
         => ShouldParse(IndirectSAB(manualLeader: false), input, options);
 
-    [Theory]
-    [MemberData(nameof(IndirectSABManualData))]
+    [TestCaseSource(nameof(IndirectSABManualData))]
     public static void Indirect_left_recursion_reached_twice_with_manual_leader(ParseOptions options, string input)
         => ShouldParse(IndirectSAB(manualLeader: true), input, options);
 
-    [Theory]
-    [MemberData(nameof(JavaPrimaryData))]
+    [TestCaseSource(nameof(JavaPrimaryData))]
     public static void Java_primary(ParseOptions options, string input)
         => ShouldParse(JavaPrimary(), input, options);
 
-    [Theory]
-    [MemberData(nameof(InterlockingData))]
+    [TestCaseSource(nameof(InterlockingData))]
     public static void Interlocking_cycles_without_common_rule(ParseOptions options, string input)
         => ShouldParse(Interlocking(manualLeaders: false), input, options); // No leader: Umeda–Maeda fallback.
 
-    [Theory]
-    [MemberData(nameof(InterlockingManualData))]
+    [TestCaseSource(nameof(InterlockingManualData))]
     public static void Interlocking_cycles_with_manual_leaders(ParseOptions options, string input)
         => ShouldParse(Interlocking(manualLeaders: true), input, options);
 
-    [Theory]
-    [MemberData(nameof(RightRecursiveData))]
+    [TestCaseSource(nameof(RightRecursiveData))]
     public static void Right_recursion(ParseOptions options, string input)
         => ShouldParse(RightRecursive(), input, options);
 
     public static IEnumerable<object[]> AutoOptionsData => AutoOptions.Select(o => new object[] { o });
 
-    [Theory]
-    [MemberData(nameof(AutoOptionsData))]
+    [TestCaseSource(nameof(AutoOptionsData))]
     public static void Right_recursion_is_not_grown(ParseOptions options)
     {
         var count = 0;
@@ -249,16 +237,14 @@ public static class LeftRecursionGrammars
         count.Should().Be(1);
     }
 
-    [Theory]
-    [MemberData(nameof(AutoOptionsData))]
+    [TestCaseSource(nameof(AutoOptionsData))]
     public static void Explicit_grow_combined_with_automatic_growing(ParseOptions options)
     {
         ShouldParse(IndirectSA(manualLeader: true), "baabab", options);
         ShouldParse(IndirectSAB(manualLeader: true), "babab-babab", options);
     }
 
-    [Theory]
-    [MemberData(nameof(AutoOptionsData))]
+    [TestCaseSource(nameof(AutoOptionsData))]
     public static void Explicit_memo_inside_cycle_is_bypassed(ParseOptions options)
     {
         // S <- S 'a' / 'a', memoized by hand.
@@ -274,8 +260,7 @@ public static class LeftRecursionGrammars
         ShouldParse(s, "baabab", options);
     }
 
-    [Theory]
-    [MemberData(nameof(AutoOptionsData))]
+    [TestCaseSource(nameof(AutoOptionsData))]
     public static void Explicit_memo_inside_leaderless_cycle_is_bypassed(ParseOptions options)
     {
         IParser<string> a = null!;

@@ -2,7 +2,7 @@ namespace Warpstone.Tests.Expressions;
 
 public static class AnalysisScaling
 {
-    [Fact]
+    [Test]
     public static void Shared_parsers_are_analyzed_once()
     {
         // 64 levels of Or(p, p): a walk that follows every path visits the leaf 2^64 times.
@@ -21,7 +21,7 @@ public static class AnalysisScaling
         parser.TryParse("a").Success.Should().BeTrue();
     }
 
-    [Fact]
+    [Test]
     public static void Depth_counts_the_longest_path_through_shared_parsers()
     {
         // The shared parser is first reached through the short branch, then again through the long one.

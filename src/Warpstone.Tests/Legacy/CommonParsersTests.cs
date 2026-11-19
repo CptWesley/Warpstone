@@ -12,24 +12,21 @@ public static class CommonParsersTests
     /// <summary>
     /// Checks that parsing whitespaces works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(WhitespacesInputs))]
+    [TestCaseSource(nameof(WhitespacesInputs))]
     public static void WhitespacesCorrect(string input, ParseOptions options)
         => AssertThat(Whitespaces.Parse(input, options)).IsEqualTo(input);
 
     /// <summary>
     /// Checks that parsing whitespaces works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void WhitespacesParserIncorrect(ParseOptions options)
         => AssertThat(() => Whitespaces.Parse(string.Empty, options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing optional whitespaces works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(OptionalWhitespacesInputs))]
+    [TestCaseSource(nameof(OptionalWhitespacesInputs))]
     public static void OptionalWhitespacesCorrect(string input, ParseOptions options)
         => AssertThat(OptionalWhitespaces.Parse(input, options)).IsEqualTo(input);
 

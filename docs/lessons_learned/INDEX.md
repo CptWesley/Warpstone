@@ -6,3 +6,4 @@ Verify any file/type/command still exists before relying on an entry.
 
 - [2026-11-19-legacy-test-port.md](2026-11-19-legacy-test-port.md): V1/V2 test locations in git (`b27fb56`, `7d7113b`), what got ported to V3, and a two-project scratch runner that works around the `Warpstone.Tests` restore failure.
 - [2026-11-19-left-recursion-comparison.md](2026-11-19-left-recursion-comparison.md): Warpstone GrowParser vs pegen/Umeda–Maeda; test restore broke with `-f`, so probe via scratch project compiling `src/Warpstone` sources.
+- [2026-11-19-xunit-to-nunit.md](2026-11-19-xunit-to-nunit.md): xunit→NUnit migration; attribute mapping, covariant `ParseOptions[][]` data-source pitfall, Verify.NUnit version pin.

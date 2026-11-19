@@ -7,7 +7,7 @@ namespace Warpstone.Tests.Legacy;
 /// </summary>
 public static class BasicParsersTests
 {
-    public static readonly IEnumerable<object[]> Options = new ParseOptions[][]
+    public static readonly IEnumerable<object[]> Options = new object[][]
     {
         [
             ParseOptions.Default with
@@ -110,144 +110,126 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing chars works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void CharParserCorrect(ParseOptions options)
         => AssertThat(Char('x').Parse("xyz", options)).IsEqualTo('x');
 
     /// <summary>
     /// Checks that parsing chars works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void CharParserIncorrect(ParseOptions options)
         => AssertThat(() => Char('x').Parse("yz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing strings works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void StringParserCorrect(ParseOptions options)
         => AssertThat(String("abc").Parse("abcdef", options)).IsEqualTo("abc");
 
     /// <summary>
     /// Checks that parsing strings works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void StringParserIncorrect(ParseOptions options)
         => AssertThat(() => String("abc").Parse("def", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing regexes works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void RegexParserCorrect(ParseOptions options)
         => AssertThat(Regex("[abc]+").Parse("abcabcdef", options)).IsEqualTo("abcabc");
 
     /// <summary>
     /// Checks that parsing regexes works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void RegexParserEmptyOnEmptyCorrect(ParseOptions options)
         => AssertThat(Regex(@"\s*").Parse("", options)).IsEqualTo("");
 
     /// <summary>
     /// Checks that parsing regexes works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void RegexParserNonEmptyOnEmptyCorrect(ParseOptions options)
         => AssertThat(Regex(@"\s+").TryParse("", options).Success).IsFalse();
 
     /// <summary>
     /// Checks that parsing regexes works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void RegexParserIncorrect(ParseOptions options)
         => AssertThat(() => Regex("[abc]+").Parse("def", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that branch parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OrParserCorrectLeft(ParseOptions options)
         => AssertThat(Or(Char('x'), Char('y')).Parse("xyz", options)).IsEqualTo('x');
 
     /// <summary>
     /// Checks that branch parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OrParserCorrectRight(ParseOptions options)
         => AssertThat(Or(Char('x'), Char('y')).Parse("yz", options)).IsEqualTo('y');
 
     /// <summary>
     /// Checks that branch parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OrParserCorrect3(ParseOptions options)
         => AssertThat(Or(Char('x'), Char('y'), Char('z')).Parse("z", options)).IsEqualTo('z');
 
     /// <summary>
     /// Checks that branch parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OrParserIncorrect(ParseOptions options)
         => AssertThat(() => Or(Char('x'), Char('y')).Parse("zzz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing one or more works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OneOrMoreParserCorrectOne(ParseOptions options)
         => AssertThat(OneOrMore(Char('x')).Parse("xyz", options)).ContainsExactly('x');
 
     /// <summary>
     /// Checks that parsing one or more works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OneOrMoreParserCorrectMore(ParseOptions options)
         => AssertThat(OneOrMore(Char('x')).Parse("xxxyz", options)).ContainsExactly('x', 'x', 'x');
 
     /// <summary>
     /// Checks that parsing one or more works correctly with delimiters.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OneOrMoreParserCorrectMoreDelimited1(ParseOptions options)
         => AssertThat(OneOrMore(Char('x'), Char('y')).Parse("xyxyxzzz", options)).ContainsExactly('x', 'x', 'x');
 
     /// <summary>
     /// Checks that parsing one or more works correctly with delimiters.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OneOrMoreParserCorrectMoreDelimited2(ParseOptions options)
         => AssertThat(OneOrMore(Char('x'), Char('y')).Parse("xyxyxy", options)).ContainsExactly('x', 'x', 'x');
 
     /// <summary>
     /// Checks that parsing one or more works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OneOrMoreParserIncorrect(ParseOptions options)
         => AssertThat(() => OneOrMore(Char('x')).Parse("yz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing one or more works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void OneOrMoreParserFollowedByOtherCorrect(ParseOptions options)
     {
         var parser = OneOrMore(Char('x'), Char('y'))
@@ -259,24 +241,21 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ManyParserCorrectNone(ParseOptions options)
         => AssertThat(Many(Char('x')).Parse("yz", options)).IsEmpty();
 
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ManyParserCorrectOne(ParseOptions options)
         => AssertThat(Many(Char('x')).Parse("xyz", options)).ContainsExactly('x');
 
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ManyParserIgnoreLastDelimiter(ParseOptions options)
     {
         var result = Many(Char('x'), Char('y')).TryParse("xyxyxy", options);
@@ -288,8 +267,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MultipleParserVerifyMinWithoutDelimiterCorrect(ParseOptions options)
     {
         var result = Multiple(Char('x'), 10, 100).TryParse("xxxxxxxxxx", options);
@@ -301,8 +279,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MultipleParserVerifyMinWithoutDelimiterIncorrect(ParseOptions options)
     {
         var result = Multiple(Char('x'), 10, 100).TryParse("xxxxxxxxx", options);
@@ -312,8 +289,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MultipleParserVerifyMinMaxWithoutDelimiterCorrect1(ParseOptions options)
     {
         var result = Multiple(Char('x'), 1, 2).TryParse("x", options);
@@ -325,8 +301,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MultipleParserVerifyMinMaxWithoutDelimiterCorrect2(ParseOptions options)
     {
         var result = Multiple(Char('x'), 1, 2).TryParse("xx", options);
@@ -338,8 +313,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MultipleParserVerifyMinMaxWithoutDelimiterIncorrect1(ParseOptions options)
     {
         var result = Multiple(Char('x'), 1, 2).TryParse("", options);
@@ -349,8 +323,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MultipleParserVerifyMinMaxWithoutDelimiterIncorrect2(ParseOptions options)
     {
         var result = Multiple(Char('x'), 1, 2).ThenEnd().TryParse("xxx", options);
@@ -360,64 +333,56 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing many works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ManyParserCorrectMore(ParseOptions options)
         => AssertThat(Many(Char('x')).Parse("xxxyz", options)).ContainsExactly('x', 'x', 'x');
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenParserCorrect(ParseOptions options)
         => AssertThat(Char('x').Then(Char('y')).Parse("xyz", options)).IsEqualTo('y');
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenParserIncorrectLeft(ParseOptions options)
         => AssertThat(() => Char('x').Then(Char('y')).Parse("yz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenParserIncorrectRight(ParseOptions options)
         => AssertThat(() => Char('x').Then(Char('y')).Parse("xz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenSkipParserCorrect(ParseOptions options)
         => AssertThat(Char('x').ThenSkip(Char('y')).Parse("xyz", options)).IsEqualTo('x');
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenSkipParserIncorrectLeft(ParseOptions options)
         => AssertThat(() => Char('x').ThenSkip(Char('y')).Parse("yz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenSkipParserIncorrectRight(ParseOptions options)
         => AssertThat(() => Char('x').ThenSkip(Char('y')).Parse("xz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserCorrect2(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -426,8 +391,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserCorrect3(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -437,8 +401,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserCorrect4(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -449,8 +412,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserCorrect5(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -462,8 +424,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserCorrect6(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -476,8 +437,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserCorrect7(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -491,8 +451,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserCorrect8(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -507,8 +466,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrect1(ParseOptions options)
         => AssertThat(Char('a')
             .Transform(a => $"{a}")
@@ -517,8 +475,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrect2(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -528,8 +485,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrect3(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -540,8 +496,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrect4(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -553,8 +508,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrect5(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -567,8 +521,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrect6(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -582,8 +535,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrect7(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -598,8 +550,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing transformations works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrect8(ParseOptions options)
         => AssertThat(Char('a')
             .ThenAdd(Char('b'))
@@ -615,120 +566,105 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserIncorrectLeft(ParseOptions options)
         => AssertThat(() => Char('x').ThenAdd(Char('y')).Parse("yz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that parsing sequentially works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenAddParserIncorrectRight(ParseOptions options)
         => AssertThat(() => Char('x').ThenAdd(Char('y')).Parse("xz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that peek parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void PeekParserCorrect(ParseOptions options)
         => AssertThat(Peek(Char('x')).ThenAdd(Char('x')).Parse("xyz", options)).IsEqualTo(('x', 'x'));
 
     /// <summary>
     /// Checks that peek parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void PeekParserIncorrect(ParseOptions options)
         => AssertThat(() => Peek(Char('x')).Parse("yz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that end parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void EndParserCorrect(ParseOptions options)
         => AssertThat(End.Parse(string.Empty, options)).IsEqualTo(string.Empty);
 
     /// <summary>
     /// Checks that end parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void EndParserIncorrect(ParseOptions options)
         => AssertThat(() => End.Parse("yz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that end parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenEndParserCorrect(ParseOptions options)
         => AssertThat(Char('a').ThenEnd().Parse("a", options)).IsEqualTo('a');
 
     /// <summary>
     /// Checks that end parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenEndParserIncorrectLeft(ParseOptions options)
         => AssertThat(() => Char('a').ThenEnd().Parse("yz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that end parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ThenEndParserIncorrectRight(ParseOptions options)
         => AssertThat(() => Char('a').ThenEnd().Parse("ayz", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that creation parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void CreateParserCorrect(ParseOptions options)
         => AssertThat(Create("abc").Parse(string.Empty, options)).IsEqualTo("abc");
 
     /// <summary>
     /// Checks that conditional parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void IfParserCorrectTrue(ParseOptions options)
         => AssertThat(If(Char('x'), Char('y'), Char('z')).Parse("xyz", options)).IsEqualTo('y');
 
     /// <summary>
     /// Checks that conditional parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void IfParserCorrectFalse(ParseOptions options)
         => AssertThat(If(Char('x'), Char('y'), Char('z')).Parse("zd", options)).IsEqualTo('z');
 
     /// <summary>
     /// Checks that conditional parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void IfParserIncorrect(ParseOptions options)
         => AssertThat(() => If(Char('x'), Char('y'), Char('z')).Parse("g", options)).ThrowsExactlyException<UnexpectedTokenError>();
 
     /// <summary>
     /// Checks that lazy parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void LazyParserCorrect(ParseOptions options)
         => AssertThat(Lazy(() => Char('x')).Parse("xyz", options)).IsEqualTo('x');
 
     /// <summary>
     /// Checks that the expected parser works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ExpectedParserCorrect(ParseOptions options)
     {
         IParser<string> parser = Or(String("x").WithName("booboo"), String("z").WithName("bahbah"));
@@ -741,8 +677,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that the expected parser works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void StringComparisonCorrect(ParseOptions options)
     {
         IParser<string> parser = String("test-string", StringComparison.InvariantCultureIgnoreCase);
@@ -754,8 +689,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that the unary not parser works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void UnaryNotTest(ParseOptions options)
     {
         IParser<string?> parser = Not(String("test")).WithName("test");
@@ -768,8 +702,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that the binary not parser works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ExceptTest(ParseOptions options)
     {
         IParser<string?> identifier = Regex("[a-zA-Z_][a-zA-Z0-9_]*").Except(Or(String("if"), String("while"), String("for"))).WithName("a keyword");
@@ -786,8 +719,7 @@ public static class BasicParsersTests
     /// Ported from V1, where <c>IParsed</c> values got their position assigned automatically;
     /// V3 exposes the position through <see cref="Parsers.AsResult{T}(IParser{T})"/> instead.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void TransformParserCorrectIParsed(ParseOptions options)
     {
         IParseResult<char> parsed = Char('a').Then(Char('b').AsResult()).Parse("abc", options);
@@ -799,32 +731,28 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that optional parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MaybeParserCorrectExists(ParseOptions options)
         => AssertThat(Maybe(Char('x')).Parse("xyz", options)).IsEqualTo('x');
 
     /// <summary>
     /// Checks that optional parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MaybeParserCorrectDoesNotExist(ParseOptions options)
         => AssertThat(Maybe(Char('x')).Parse("yz", options)).IsEqualTo(default(char));
 
     /// <summary>
     /// Checks that optional parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MaybeParserCorrectExistsDefaultValue(ParseOptions options)
         => AssertThat(Maybe(Char('x'), '-').Parse("xyz", options)).IsEqualTo('x');
 
     /// <summary>
     /// Checks that optional parsing works correctly.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MaybeParserCorrectDoesNotExistDefaultValue(ParseOptions options)
         => AssertThat(Maybe(Char('x'), '-').Parse("yz", options)).IsEqualTo('-');
 
@@ -833,8 +761,7 @@ public static class BasicParsersTests
     /// Ported from V1, where the result was an <c>IOption</c>; V3 has no option type,
     /// so "has no value" is checked as "consumed nothing".
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void MaybeParserOptions(ParseOptions options)
     {
         IParser<char> parser = Maybe(Char('x'));
@@ -852,8 +779,8 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that exceptions thrown in transformations are reported correctly.
     /// </summary>
-    [Theory(Skip = "TODO")]
-    [MemberData(nameof(Options))]
+    [Ignore("TODO")]
+    [TestCaseSource(nameof(Options))]
     public static void TransformationExceptionCorrect(ParseOptions options)
     {
         IParser<int> parser = String("x").Transform(x => int.Parse(x, CultureInfo.InvariantCulture));
@@ -869,8 +796,7 @@ public static class BasicParsersTests
     /// <summary>
     /// Checks that result positions are correct.
     /// </summary>
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void PositionCorrect(ParseOptions options)
     {
         IParser<string> parser = Regex("\\s*").Then(String("hello"));

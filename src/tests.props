@@ -12,25 +12,25 @@
 
   <ItemGroup Label="Analyzers">
     <PackageReference Include="AwesomeAssertions.Analyzers" PrivateAssets="all" ExcludeAssets="compile" />
-    <PackageReference Include="xunit.analyzers" PrivateAssets="all" ExcludeAssets="compile" />
+    <PackageReference Include="NUnit.Analyzers" PrivateAssets="all" ExcludeAssets="compile" />
   </ItemGroup>
 
   <ItemGroup Label="Dependencies">
     <PackageReference Include="AssertNet" />
     <PackageReference Include="AwesomeAssertions" />
-    <PackageReference Include="xunit" />
+    <PackageReference Include="NUnit" />
   </ItemGroup>
 
   <ItemGroup Label="Build dependencies">
     <PackageReference Include="coverlet.collector" PrivateAssets="all" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" PrivateAssets="all" />
     <PackageReference Include="Microsoft.TestPlatform.TestHost" PrivateAssets="all" />
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
+    <PackageReference Include="NUnit3TestAdapter" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup Label="DefaultImports">
     <Using Include="AwesomeAssertions" />
-    <Using Include="Xunit" />
+    <Using Include="NUnit.Framework" />
     <Using Static="true" Include="AssertNet.Assertions" />
   </ItemGroup>
 </Project>
