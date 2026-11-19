@@ -70,6 +70,53 @@ namespace Warpstone.Internal.ParserExpressions
         }
 
         /// <summary>
+        /// Finds the parsers that backtracking can run more than once at the same position:
+        /// those reachable without consuming input through two different left-edge children of one parser,
+        /// such as two alternatives of a choice, or a nullable first part of a sequence and the part after it.
+        /// Only the first parser where two such paths meet is returned, memoizing it also covers everything below it.
+        /// </summary>
+        /// <param name="parsers">All parsers in the grammar.</param>
+        /// <returns>The parsers worth memoizing.</returns>
+        public static HashSet<IParser> FindRetried(IReadOnlyList<IParser> parsers)
+        {
+            var edges = BuildLeftEdges(parsers);
+            var retried = new HashSet<IParser>();
+            var owner = new Dictionary<IParser, int>();
+            var stack = new Stack<IParser>();
+
+            // ponytail: one walk of the left-edge closure per parser with several children, O(parsers * closure) on deep choice chains.
+            foreach (var children in edges.Values.Where(x => x.Count > 1))
+            {
+                owner.Clear();
+                for (var i = 0; i < children.Count; i++)
+                {
+                    stack.Push(children[i]);
+                    while (stack.Count > 0)
+                    {
+                        var current = stack.Pop();
+                        if (owner.TryGetValue(current, out var first))
+                        {
+                            if (first != i)
+                            {
+                                retried.Add(current);
+                            }
+
+                            continue;
+                        }
+
+                        owner[current] = i;
+                        foreach (var next in edges[current])
+                        {
+                            stack.Push(next);
+                        }
+                    }
+                }
+            }
+
+            return retried;
+        }
+
+        /// <summary>
         /// Checks whether the given parser is an explicit <see cref="GrowParser{T}"/>.
         /// </summary>
         /// <param name="parser">The parser to check.</param>

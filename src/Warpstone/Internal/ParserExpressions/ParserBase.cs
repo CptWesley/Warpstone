@@ -46,24 +46,16 @@ namespace Warpstone.Internal.ParserExpressions
                 var lazyTargets = new Dictionary<ILazyParser, IParser>();
                 var lazy = new List<ILazyParser>();
                 var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
-
-                var requiresMemo = new HashSet<IParser>();
+                var parsers = analysis.OccurrenceCounts.Keys.ToList();
 
                 // Build initial lookup table.
 
-                foreach (var entry in analysis.OccurrenceCounts)
+                foreach (var parser in parsers)
                 {
-                    var parser = entry.Key;
-
                     if (parser is ILazyParser lp)
                     {
                         lazy.Add(lp);
                         continue;
-                    }
-
-                    if (entry.Value > 1)
-                    {
-                        requiresMemo.Add(parser);
                     }
 
                     var impl = parser.CreateUninitializedImplementation();
@@ -89,13 +81,6 @@ namespace Warpstone.Internal.ParserExpressions
                     }
 
                     lazyTargets[parser] = target;
-
-                    var oc = analysis.OccurrenceCounts.TryGetValue(parser, out var ocv) ? ocv : 0;
-
-                    if (oc > 1)
-                    {
-                        requiresMemo.Add(target);
-                    }
                 }
 
                 // Handle memoization and left-recursion.
@@ -104,15 +89,21 @@ namespace Warpstone.Internal.ParserExpressions
 
                 if (o.EnableAutomaticGrowingRecursion)
                 {
-                    var parsers = analysis.OccurrenceCounts.Keys.ToList();
                     leftRecursion = LeftRecursionAnalysis.Analyze(parsers, new HashSet<IParser>(lazyTargets.Values));
-
-                    // Members of a left-recursive cycle must not be memoized, or they keep returning results built from an outdated seed.
-                    requiresMemo.ExceptWith(leftRecursion.Members);
                 }
 
                 if (o.EnableAutomaticMemoization)
                 {
+                    // Only memoize where backtracking can run a parser again at the same position.
+                    var requiresMemo = new HashSet<IParser>(LeftRecursionAnalysis.FindRetried(parsers)
+                        .Select(p => p is ILazyParser lp ? lazyTargets[lp] : p));
+
+                    // Members of a left-recursive cycle must not be memoized, or they keep returning results built from an outdated seed.
+                    if (leftRecursion is not null)
+                    {
+                        requiresMemo.ExceptWith(leftRecursion.Members);
+                    }
+
                     // Explicit memo and grow parsers already memoize. Wrapping a grow parser would hide its growing seed.
                     requiresMemo.RemoveWhere(p => LeftRecursionAnalysis.IsGrow(p) || LeftRecursionAnalysis.IsMemo(p));
 

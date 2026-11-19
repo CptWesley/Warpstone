@@ -28,8 +28,8 @@ namespace Warpstone
         public bool EnableAutomaticGrowingRecursion { get; init; } = true;
 
         /// <summary>
-        /// Determines if grammars should automatically
-        /// be transformed to support memoization
+        /// Determines if grammars should automatically memoize the parsers
+        /// that backtracking can run again at the same position
         /// (default: <see langword="true"/>).
         /// </summary>
         public bool EnableAutomaticMemoization { get; init; } = true;
