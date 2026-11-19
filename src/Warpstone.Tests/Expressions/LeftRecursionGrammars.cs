@@ -149,6 +149,36 @@ public static class LeftRecursionGrammars
         return a;
     }
 
+    // Disjoint cycles A<->B and C<->D, joined into one component by B->C and D->A: no rule lies on every cycle.
+    // The terminal after each recursive call picks the alternative, so ordered choice hides no cycle.
+    // Hand-placed Grow on A and C fails on the long cycle ("auwqx"): two growers in one component read each other's stale seeds.
+    // A <- B 'x' / 'a' ; B <- A 'y' / C 'q' ; C <- D 'w' / 'c' ; D <- C 'v' / A 'u'
+    private static IParser<string> DisjointCycles()
+    {
+        IParser<string> a = null!;
+        IParser<string> b = null!;
+        IParser<string> c = null!;
+        IParser<string> d = null!;
+        a = Or(Seq(Lazy(() => b), S("x")), S("a"));
+        b = Or(Seq(Lazy(() => a), S("y")), Seq(Lazy(() => c), S("q")));
+        c = Or(Seq(Lazy(() => d), S("w")), S("c"));
+        d = Or(Seq(Lazy(() => c), S("v")), Seq(Lazy(() => a), S("u")));
+        return a;
+    }
+
+    private static readonly string[] DisjointCyclesInputs =
+    [
+        "a",
+        "ayx",                                          // A<->B
+        "ayxyx",
+        "cqx",                                          // A->B->C
+        "cvwqx",                                        // C<->D
+        "cvwvwqx",
+        "auwqx",                                        // A->B->C->D->A
+        "auwqxyx",                                      // long cycle, then A<->B
+        "a" + string.Concat(Enumerable.Repeat("yx", 50)),
+    ];
+
     // E <- '(' E ')' / 'n'
     private static IParser<string> RightRecursive()
     {
@@ -219,6 +249,18 @@ public static class LeftRecursionGrammars
     [TestCaseSource(nameof(InterlockingManualData))]
     public static void Interlocking_cycles_with_manual_leaders(ParseOptions options, string input)
         => ShouldParse(Interlocking(manualLeaders: true), input, options);
+
+    public static IEnumerable<object[]> DisjointCyclesData => Cross(AutoOptions, DisjointCyclesInputs);
+
+    public static IEnumerable<object[]> DisjointCyclesRejectData => Cross(AutoOptions, "", "ay", "ax", "cq", "cvw", "auw", "ayxy");
+
+    [TestCaseSource(nameof(DisjointCyclesData))]
+    public static void Disjoint_cycles_grow_without_leader(ParseOptions options, string input)
+        => ShouldParse(DisjointCycles(), input, options); // No leader: Umeda–Maeda fallback.
+
+    [TestCaseSource(nameof(DisjointCyclesRejectData))]
+    public static void Disjoint_cycles_reject_invalid_input(ParseOptions options, string input)
+        => ShouldNotParse(DisjointCycles(), input, options);
 
     [TestCaseSource(nameof(RightRecursiveData))]
     public static void Right_recursion(ParseOptions options, string input)
