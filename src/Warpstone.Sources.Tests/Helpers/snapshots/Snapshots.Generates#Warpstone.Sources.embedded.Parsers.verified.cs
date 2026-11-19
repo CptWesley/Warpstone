@@ -146,20 +146,14 @@ namespace Warpstone
         /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
         public static IParser<T> Or<T>(IEnumerable<IParser<T>>? parsers)
         {
-            var list = parsers?.ToList();
-            return list is { Count: > 0 } ? Or(list, 0, list.Count) : Fail<T>();
-        }
-
-        // A balanced tree keeps many alternatives shallow, so the grammar analysis and the parser stay fast and within stack limits.
-        private static IParser<T> Or<T>(List<IParser<T>> parsers, int start, int count)
-        {
-            if (count == 1)
+            // One flat node keeps many alternatives shallow, so the grammar analysis and the parser stay fast and within stack limits.
+            var array = parsers?.ToArray();
+            return array switch
             {
-                return parsers[start];
-            }
-
-            var left = (count + 1) / 2;
-            return new OrParser<T>(Or(parsers, start, left), Or(parsers, start + left, count - left));
+                null or { Length: 0 } => Fail<T>(),
+                { Length: 1 } => array[0],
+                _ => new OrParser<T>(array),
+            };
         }
 
         /// <summary>

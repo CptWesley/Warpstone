@@ -4,46 +4,64 @@ using Warpstone.Internal.ParserExpressions;
 namespace Warpstone.Internal.ParserImplementations
 {
     /// <summary>
-    /// Represents a parser that parses either the provided first or second option.
+    /// Represents a parser that tries the provided alternatives in order and returns the result of the first successful one.
     /// </summary>
     /// <typeparam name="T">The result type of the parsers.</typeparam>
     internal sealed class OrParserImpl<T> : ParserImplementationBase<OrParser<T>, T>
     {
-        private IParserImplementation<T> first = default!;
-        private IParserImplementation<T> second = default!;
-        private Continuation continuation = default!;
+        private IParserImplementation<T>[] alternatives = default!;
+        private Continuation[] continuations = default!;
 
         /// <inheritdoc />
         protected override void InitializeInternal(OrParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
-            first = (IParserImplementation<T>)parserLookup[parser.First];
-            second = (IParserImplementation<T>)parserLookup[parser.Second];
-            continuation = new(second);
+            alternatives = new IParserImplementation<T>[parser.Alternatives.Count];
+            for (var i = 0; i < alternatives.Length; i++)
+            {
+                alternatives[i] = (IParserImplementation<T>)parserLookup[parser.Alternatives[i]];
+            }
+
+            // continuations[i] runs after alternative i failed, and tries alternative i + 1. The last alternative needs none.
+            continuations = new Continuation[alternatives.Length - 1];
+            for (var i = continuations.Length - 1; i >= 0; i--)
+            {
+                continuations[i] = new(alternatives[i + 1], i + 1 < continuations.Length ? continuations[i + 1] : null);
+            }
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            context.ExecutionStack.Push((position, continuation));
-            context.ExecutionStack.Push((position, first));
+            context.ExecutionStack.Push((position, continuations[0]));
+            context.ExecutionStack.Push((position, alternatives[0]));
         }
 
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
-            var left = first.Apply(context, position);
+            var last = alternatives.Length - 1;
+            for (var i = 0; i < last; i++)
+            {
+                var result = alternatives[i].Apply(context, position);
+                if (result.Success)
+                {
+                    return result;
+                }
+            }
 
-            // Both options report their own failures, so a failing second option's result is the result.
-            return left.Success ? left : second.Apply(context, position);
+            // Every alternative reports its own failures, so a failing last alternative's result is the result.
+            return alternatives[last].Apply(context, position);
         }
 
         private sealed class Continuation : ContinuationParserImplementationBase
         {
-            private readonly IParserImplementation second;
+            private readonly IParserImplementation alternative;
+            private readonly Continuation? next;
 
-            public Continuation(IParserImplementation second)
+            public Continuation(IParserImplementation alternative, Continuation? next)
             {
-                this.second = second;
+                this.alternative = alternative;
+                this.next = next;
             }
 
             /// <inheritdoc />
@@ -55,7 +73,13 @@ namespace Warpstone.Internal.ParserImplementations
                 }
 
                 context.ResultStack.Pop();
-                context.ExecutionStack.Push((position, second));
+
+                if (next is not null)
+                {
+                    context.ExecutionStack.Push((position, next));
+                }
+
+                context.ExecutionStack.Push((position, alternative));
             }
         }
     }
