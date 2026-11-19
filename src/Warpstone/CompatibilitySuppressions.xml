@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <!-- https://learn.microsoft.com/dotnet/fundamentals/package-validation/diagnostic-ids -->
 <Suppressions xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Suppression>
@@ -463,6 +463,27 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Warpstone.Text.Source</Target>
+    <Left>lib/netstandard2.0/Warpstone.dll</Left>
+    <Right>lib/netstandard2.0/Warpstone.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Warpstone.Text.SourceSpan</Target>
+    <Left>lib/netstandard2.0/Warpstone.dll</Left>
+    <Right>lib/netstandard2.0/Warpstone.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
+    <Target>T:Warpstone.Text.TextSpan</Target>
+    <Left>lib/netstandard2.0/Warpstone.dll</Left>
+    <Right>lib/netstandard2.0/Warpstone.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0001</DiagnosticId>
     <Target>T:Warpstone.TransformationError</Target>
     <Left>lib/netstandard2.0/Warpstone.dll</Left>
     <Right>lib/netstandard2.0/Warpstone.dll</Right>
@@ -637,6 +658,12 @@
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.Parsers.Regex(System.String,System.Text.RegularExpressions.RegexOptions)$0:[T:System.Diagnostics.CodeAnalysis.StringSyntaxAttribute]</Target>
+    <Left>lib/net6.0/Warpstone.dll</Left>
+    <Right>lib/net7.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Text.SourceSpan.Match(System.String)$0:[T:System.Diagnostics.CodeAnalysis.StringSyntaxAttribute]</Target>
     <Left>lib/net6.0/Warpstone.dll</Left>
     <Right>lib/net7.0/Warpstone.dll</Right>
   </Suppression>
@@ -1686,6 +1713,24 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Text.SourceSpan.Equals(System.Object):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Text.TextSpan.Equals(System.Object):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>M:Warpstone.Text.TextSpan.ToString:[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
     <Target>M:Warpstone.UnsafeParseResult.#ctor(System.Int32,System.Int32,System.Object):[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
@@ -2131,6 +2176,30 @@
   <Suppression>
     <DiagnosticId>CP0016</DiagnosticId>
     <Target>T:Warpstone.RecursiveParseContext`1&lt;0&gt;:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>T:Warpstone.Text.Source:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>T:Warpstone.Text.Source:[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>T:Warpstone.Text.SourceSpan:[T:System.Runtime.CompilerServices.NullableAttribute]</Target>
+    <Left>lib/net7.0/Warpstone.dll</Left>
+    <Right>lib/net8.0/Warpstone.dll</Right>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0016</DiagnosticId>
+    <Target>T:Warpstone.Text.SourceSpan:[T:System.Runtime.CompilerServices.NullableContextAttribute]</Target>
     <Left>lib/net7.0/Warpstone.dll</Left>
     <Right>lib/net8.0/Warpstone.dll</Right>
   </Suppression>
