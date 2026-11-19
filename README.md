@@ -24,6 +24,13 @@ This led me to create my own parser combinator library, with syntax inspired by 
 ## Why the name? (Or: What are all those strange words in the description?!?!?)
 Coming up with names is difficult, I wanted to get the project started and at the time I was consumed by the Warhammer Fantasy universe.
 
+## Where do the ideas come from?
+Warpstone's implementation draws on the following work:
+- [Packrat Parsing: Simple, Powerful, Lazy, Linear Time](https://arxiv.org/abs/cs/0603077) (Bryan Ford, ICFP 2002): the original packrat paper. It shows how memoizing every rule result makes a backtracking recursive-descent parser run in linear time.
+- [Packrat Parsers Can Support Left Recursion](https://web.cs.ucla.edu/~todd/research/pepm08.pdf) (Alessandro Warth, James R. Douglass and Todd Millstein, PEPM 2008): the "seed growing" technique for left-recursive rules that Warpstone's `Grow` parser is based on.
+- [Left-recursive PEG Grammars](https://medium.com/@gvanrossum_83706/left-recursive-peg-grammars-65dab3c580e1) (Guido van Rossum, 2019): part of the blog series behind Python's [pegen](https://github.com/gvanrossum/pegen) parser generator. Warpstone uses its approach of picking one "leader" rule per left-recursive cycle and growing only that rule. The leader selection itself is pegen's [`compute_left_recursives`](https://github.com/gvanrossum/pegen/blob/bc78cbc9d048ce389cf4d693b875726f56473a8b/pegen/parser_generator.py#L173-L200).
+- [Packrat Parsers Can Support Multiple Left-recursive Calls at the Same Position](https://doi.org/10.2197/ipsjjip.29.174) (Masaki Umeda and Atusi Maeda, Journal of Information Processing 29, 2021): handles several left-recursive calls at the same input position. Warpstone falls back to it for cycles that have no single leader.
+
 ## How does it compare?
 ✅ supported, 🟡 partially supported, ❌ not supported.
 
