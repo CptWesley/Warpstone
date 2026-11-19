@@ -1,8 +1,10 @@
 <Project>
+
   <Import Project="executable.props" />
 
   <PropertyGroup>
     <OutputType>Library</OutputType>
+    <TargetFrameworks>net8.0;net9.0;net10.0;net11.0</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <CollectCoverage>true</CollectCoverage>
     <CoverletOutputFormat>opencover</CoverletOutputFormat>
@@ -33,4 +35,5 @@
     <Using Include="NUnit.Framework" />
     <Using Static="true" Include="AssertNet.Assertions" />
   </ItemGroup>
+
 </Project>

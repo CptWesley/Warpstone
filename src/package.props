@@ -1,4 +1,5 @@
 <Project>
+
   <Import Project="common.props" />
 
   <PropertyGroup Label="PackageInfo">
@@ -58,7 +59,7 @@
   </ItemGroup>
 
   <ItemGroup Label="Other">
-    <PackageReference Include="Microsoft.Sbom.Targets" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.SourceLink.GitHub" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Sbom.Targets" PrivateAssets="all" />
   </ItemGroup>
+
 </Project>
