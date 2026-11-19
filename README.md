@@ -53,6 +53,42 @@ Coming up with names is difficult, I wanted to get the project started and at th
 
 Third-party columns reflect each library's documentation and package API at the time of writing (Pidgin 3.5, Parlot 2.3, ParsecSharp 5.2, Farkle 7).
 
+### Performance
+
+Every library parses the same MiniJava subset into the same AST ([`MiniJavaBenchmark`](src/Warpstone.Benchmarks/MiniJavaBenchmark.cs)). Inputs: small (619 chars), medium (7,286 chars) and large (73,241 chars). Lower is better.
+
+Mean CPU time per parse:
+
+| Library                          | Small     | Medium    | Large      |
+|----------------------------------|----------:|----------:|-----------:|
+| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 7.9 μs | 91.4 μs | 0.93 ms |
+| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.2 μs | 121.2 μs | 1.38 ms |
+| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 16.0 μs | 187.2 μs | 2.09 ms |
+| Warpstone V3                     | 41.1 μs   | 484.2 μs  | 5.31 ms    |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 59.8 μs | 717.4 μs | 7.98 ms |
+| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 96.9 μs | 1.21 ms | 13.49 ms |
+| Warpstone V1                     | 471.9 μs  | 5.72 ms   | 57.86 ms   |
+| [ParsecSharp](https://github.com/acple/ParsecSharp) | 536.5 μs | 6.62 ms | 68.00 ms |
+| Warpstone V2                     | 3.29 ms   | 83.45 ms  | 802.02 ms  |
+
+Memory allocated per parse:
+
+| Library                          | Small     | Medium    | Large      |
+|----------------------------------|----------:|----------:|-----------:|
+| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 6.5 KB | 65.0 KB | 650 KB |
+| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 6.5 KB | 67.5 KB | 673 KB |
+| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 6.6 KB | 67.5 KB | 673 KB |
+| Warpstone V3                     | 13.1 KB   | 115.8 KB  | 1,139 KB   |
+| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 21.8 KB | 252.0 KB | 2,523 KB |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 29.8 KB | 273.4 KB | 2,640 KB |
+| Warpstone V1                     | 1,579 KB  | 19,116 KB | 191,131 KB |
+| [ParsecSharp](https://github.com/acple/ParsecSharp) | 1,956 KB | 24,179 KB | 242,815 KB |
+| Warpstone V2                     | 9,069 KB  | 109,982 KB | 1,104,779 KB |
+
+7. Binary operators written as left-recursive rules instead of repetitions.
+
+Measured with BenchmarkDotNet 0.15.8 (`InProcessEmitToolchain`) on .NET 11.0, AMD Ryzen 9 7950X3D, Windows 11. Reproduce from `src/` with `dotnet run -c Release --project Warpstone.Benchmarks -- --filter "*MiniJavaBenchmark*" --inProcess`.
+
 ## Usage
 It's useful to take a look at one of the available example projects for JSON parsing and expression parsing.
 
