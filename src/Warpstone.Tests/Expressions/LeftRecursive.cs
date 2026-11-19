@@ -1,6 +1,7 @@
 namespace Warpstone.Tests.Expressions;
 
-public sealed class LeftRecursive
+[TestFixtureSource(typeof(TestOptions), nameof(TestOptions.All))]
+public sealed class LeftRecursive(ParseOptions options)
 {
     private interface IExp 
     {
@@ -71,43 +72,41 @@ public sealed class LeftRecursive
         .ThenSkip(OptionalWhitespaces)
         .ThenEnd();
 
-    [Theory]
-    [InlineData("0", "0")]
-    [InlineData(" 0", "0")]
-    [InlineData("0 ", "0")]
-    [InlineData(" 0 ", "0")]
-    [InlineData("(42)", "42")]
-    [InlineData("1 + 2", "(1 + 2)")]
-    [InlineData("1 * 2", "(1 * 2)")]
-    [InlineData("1 * 2 + 3", "((1 * 2) + 3)")]
-    [InlineData("1 + 2 * 3", "(1 + (2 * 3))")]
-    [InlineData("(1 + 2) * 3", "((1 + 2) * 3)")]
-    [InlineData("1 + 2 + 3", "((1 + 2) + 3)")]
-    [InlineData("1 * 2 * 3", "((1 * 2) * 3)")]
-    [InlineData("1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9", "((((1 + 2) + ((3 * 4) * 5)) + ((6 * 7) * 8)) + 9)")]
-    public static void Parse_correctly(string input, string expected)
+    [TestCase("0", "0")]
+    [TestCase(" 0", "0")]
+    [TestCase("0 ", "0")]
+    [TestCase(" 0 ", "0")]
+    [TestCase("(42)", "42")]
+    [TestCase("1 + 2", "(1 + 2)")]
+    [TestCase("1 * 2", "(1 * 2)")]
+    [TestCase("1 * 2 + 3", "((1 * 2) + 3)")]
+    [TestCase("1 + 2 * 3", "(1 + (2 * 3))")]
+    [TestCase("(1 + 2) * 3", "((1 + 2) * 3)")]
+    [TestCase("1 + 2 + 3", "((1 + 2) + 3)")]
+    [TestCase("1 * 2 * 3", "((1 * 2) * 3)")]
+    [TestCase("1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9", "((((1 + 2) + ((3 * 4) * 5)) + ((6 * 7) * 8)) + 9)")]
+    public void Parse_correctly(string input, string expected)
     {
-        var parsed = Exp.Parse(input);
+        var parsed = Exp.Parse(input, options);
         parsed.ToString().Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData("0", 0)]
-    [InlineData(" 0", 0)]
-    [InlineData("0 ", 0)]
-    [InlineData(" 0 ", 0)]
-    [InlineData("(42)", 42)]
-    [InlineData("1 + 2", 1 + 2)]
-    [InlineData("1 * 2", 1 * 2)]
-    [InlineData("1 * 2 + 3", 1 * 2 + 3)]
-    [InlineData("1 + 2 * 3", 1 + 2 * 3)]
-    [InlineData("(1 + 2) * 3", (1 + 2) * 3)]
-    [InlineData("1 + 2 + 3", 1 + 2 + 3)]
-    [InlineData("1 * 2 * 3", 1 * 2 * 3)]
-    [InlineData("1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9", 1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9)]
-    public static void Evalute_correctly(string input, int expected)
+    [TestCase("0", 0)]
+    [TestCase(" 0", 0)]
+    [TestCase("0 ", 0)]
+    [TestCase(" 0 ", 0)]
+    [TestCase("(42)", 42)]
+    [TestCase("1 + 2", 1 + 2)]
+    [TestCase("1 * 2", 1 * 2)]
+    [TestCase("1 * 2 + 3", 1 * 2 + 3)]
+    [TestCase("1 + 2 * 3", 1 + 2 * 3)]
+    [TestCase("(1 + 2) * 3", (1 + 2) * 3)]
+    [TestCase("1 + 2 + 3", 1 + 2 + 3)]
+    [TestCase("1 * 2 * 3", 1 * 2 * 3)]
+    [TestCase("1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9", 1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9)]
+    public void Evalute_correctly(string input, int expected)
     {
-        var parsed = Exp.Parse(input);
+        var parsed = Exp.Parse(input, options);
         parsed.Value.Should().Be(expected);
     }
 }

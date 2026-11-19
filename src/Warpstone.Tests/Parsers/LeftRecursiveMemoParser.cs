@@ -2,7 +2,7 @@ namespace Warpstone.Tests.Parsers;
 
 public static class LeftRecursiveMemoParser
 {
-    public static readonly IEnumerable<object[]> Options = new ParseOptions[][]
+    public static readonly IEnumerable<object[]> Options = new object[][]
     {
         [
             ParseOptions.Default with
@@ -30,8 +30,7 @@ public static class LeftRecursiveMemoParser
         ],
     };
 
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ParseCorrectlySimple(ParseOptions options)
     {
         IParser<string> num = Memo(Regex(@"[0-9]+"));
@@ -76,8 +75,7 @@ public static class LeftRecursiveMemoParser
         return e;
     }
 
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ParseCorrectlyArithmeticComplex(ParseOptions options)
     {
         var e = GetArithmeticParser();
@@ -87,8 +85,7 @@ public static class LeftRecursiveMemoParser
         result.Value.Should().Be("((((1+2)+((3*4)/2))-6)+3)");
     }
 
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ParseCorrectlyArithmeticMul(ParseOptions options)
     {
         var e = GetArithmeticParser();
@@ -98,8 +95,7 @@ public static class LeftRecursiveMemoParser
         result.Value.Should().Be("(((((1*2)*3)*4)*5)*6)");
     }
 
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ParseCorrectlyArithmeticDiv(ParseOptions options)
     {
         var e = GetArithmeticParser();
@@ -109,8 +105,7 @@ public static class LeftRecursiveMemoParser
         result.Value.Should().Be("(((((1/2)/3)/4)/5)/6)");
     }
 
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ParseCorrectlyArithmeticAdd(ParseOptions options)
     {
         var e = GetArithmeticParser();
@@ -120,8 +115,7 @@ public static class LeftRecursiveMemoParser
         result.Value.Should().Be("(((((1+2)+3)+4)+5)+6)");
     }
 
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ParseCorrectlyArithmeticSub(ParseOptions options)
     {
         var e = GetArithmeticParser();
@@ -131,8 +125,7 @@ public static class LeftRecursiveMemoParser
         result.Value.Should().Be("(((((1-2)-3)-4)-5)-6)");
     }
 
-    [Theory]
-    [MemberData(nameof(Options))]
+    [TestCaseSource(nameof(Options))]
     public static void ParseCorrectlyArithmeticAddSub(ParseOptions options)
     {
         var e = GetArithmeticParser();

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
 
@@ -39,6 +40,14 @@ namespace Warpstone.Internal.ParserExpressions
         {
             First.PerformAnalysisStep(info, trace);
             Second.PerformAnalysisStep(info, trace);
+        }
+
+        /// <inheritdoc />
+        public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
+        {
+            leftEdge.Add(First);
+            leftEdge.Add(Second);
+            return isNullable(First) || isNullable(Second);
         }
     }
 }

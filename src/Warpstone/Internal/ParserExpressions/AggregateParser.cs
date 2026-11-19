@@ -76,5 +76,18 @@ namespace Warpstone.Internal.ParserExpressions
             Element.PerformAnalysisStep(info, trace);
             Delimiter?.PerformAnalysisStep(info, trace);
         }
+
+        /// <inheritdoc />
+        public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
+        {
+            leftEdge.Add(Element);
+            var elementNullable = isNullable(Element);
+            if (elementNullable && Delimiter is not null)
+            {
+                leftEdge.Add(Delimiter);
+            }
+
+            return MinCount == 0 || (elementNullable && (MinCount == 1 || Delimiter is null || isNullable(Delimiter)));
+        }
     }
 }

@@ -95,7 +95,13 @@ namespace Warpstone.Internal.ParserImplementations
             }
         }
 
-        private static bool ResultHasImproved(in UnsafeParseResult prev, in UnsafeParseResult cur)
+        /// <summary>
+        /// Checks whether <paramref name="cur"/> is a better seed than <paramref name="prev"/>: a success, or a longer one.
+        /// </summary>
+        /// <param name="prev">The previous seed.</param>
+        /// <param name="cur">The new result.</param>
+        /// <returns><see langword="true"/> if the seed has improved.</returns>
+        internal static bool ResultHasImproved(in UnsafeParseResult prev, in UnsafeParseResult cur)
         {
             if (!prev.Success)
             {

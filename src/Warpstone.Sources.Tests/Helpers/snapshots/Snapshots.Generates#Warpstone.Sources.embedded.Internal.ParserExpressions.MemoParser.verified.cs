@@ -3,6 +3,7 @@
 #pragma warning disable
 #nullable enable annotations
 
+using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
 
@@ -13,7 +14,7 @@ namespace Warpstone.Internal.ParserExpressions
     /// so that it can be reused later if the same parser is executed at the same position again.
     /// </summary>
     /// <typeparam name="T">The return type of the cached parser.</typeparam>
-    internal sealed class MemoParser<T> : ParserBase<T>
+    internal sealed class MemoParser<T> : ParserBase<T>, IMemoParser
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="MemoParser{T}"/> class.
@@ -30,6 +31,9 @@ namespace Warpstone.Internal.ParserExpressions
         public IParser<T> Parser { get; }
 
         /// <inheritdoc />
+        IParser IMemoParser.Parser => Parser;
+
+        /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
             => new MemoParserImpl<T>();
 
@@ -38,6 +42,24 @@ namespace Warpstone.Internal.ParserExpressions
         {
             Parser.PerformAnalysisStep(info, trace);
         }
+
+        /// <inheritdoc />
+        public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
+        {
+            leftEdge.Add(Parser);
+            return isNullable(Parser);
+        }
+    }
+
+    /// <summary>
+    /// Untyped access to the parser cached by a <see cref="MemoParser{T}"/>.
+    /// </summary>
+    internal interface IMemoParser : IParser
+    {
+        /// <summary>
+        /// The parser to be cached.
+        /// </summary>
+        public IParser Parser { get; }
     }
 }
 

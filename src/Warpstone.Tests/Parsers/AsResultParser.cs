@@ -10,10 +10,9 @@ public sealed class AsResultParser
         .ThenSkip(Regex(@"\s*"))
         .Transform(result => new Value(result.Value, result.InputStartPosition, result.InputEndPosition));
 
-    [Theory]
-    [InlineData("simple", 0, 5)]
-    [InlineData(" simple", 1, 6)]
-    [InlineData("   simple", 3, 8)]
+    [TestCase("simple", 0, 5)]
+    [TestCase(" simple", 1, 6)]
+    [TestCase("   simple", 3, 8)]
     public void Parses(string input, int startIndex, int endIndex)
     {
         var result = parser.Parse(input);

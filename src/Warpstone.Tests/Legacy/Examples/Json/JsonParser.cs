@@ -62,8 +62,8 @@ public static class JsonParser
     private static readonly IParser<IJsonValue> Json
         = OptionalWhitespaces.Then(Or<IJsonValue>(Array, Object, String, Null, Double, Int, Boolean)).ThenSkip(OptionalWhitespaces);
 
-    public static IParseResult<IJsonValue> Parse(string input)
-        => Json.ThenEnd().TryParse(input);
+    public static IParseResult<IJsonValue> Parse(string input, ParseOptions? options = null)
+        => Json.ThenEnd().TryParse(input, options ?? ParseOptions.Default);
 
     private static IParser<string> Concat<T>(this IParser<IEnumerable<T>> chars)
         => chars.Transform(x => string.Join(string.Empty, x));

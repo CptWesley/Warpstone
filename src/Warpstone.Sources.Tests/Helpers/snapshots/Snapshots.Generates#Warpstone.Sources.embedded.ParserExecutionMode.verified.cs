@@ -14,24 +14,23 @@ namespace Warpstone
     {
         /// <summary>
         /// Automatically determines the execution mode.
-        /// This will prefer <see cref="Recursive"/> mode
-        /// if no recursive grammar were detected, otherwise
-        /// resorts to the safer (but slower) <see cref="Iterative"/>
-        /// mode.
+        /// This will prefer the faster <see cref="Recursive"/> mode, and
+        /// restarts in the safer (but slower) <see cref="Iterative"/> mode
+        /// when the input nests too deep for the stack.
         /// </summary>
         Auto = 0,
 
         /// <summary>
         /// Forces the execution mode to run in iterative mode,
         /// which guarantees that no <see cref="StackOverflowException"/>
-        /// will occur due to deep recursive grammar, at the cost of some performance.
+        /// will occur due to deeply nested input, at the cost of some performance.
         /// </summary>
         Iterative = 1,
 
         /// <summary>
         /// Forces the execution mode to run in recursive mode,
-        /// which might result in a <see cref="StackOverflowException"/>
-        /// if the grammar is recursively too deep.
+        /// which throws an <see cref="InsufficientExecutionStackException"/>
+        /// if the input nests too deep for the stack.
         /// </summary>
         Recursive = 2,
     }

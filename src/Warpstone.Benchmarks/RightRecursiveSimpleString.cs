@@ -13,7 +13,7 @@ namespace Warpstone.Benchmarks;
 
 [MemoryDiagnoser(true)]
 [ReturnValueValidator(failOnError: false)]
-public class RightRecursiveSimpleString
+public partial class RightRecursiveSimpleString
 {
     private static readonly Warpstone.IParser<string> Warpstone3Parser
         = BasicParsers3.Or(BasicParsers3.String("a", StringComparison.Ordinal).ThenAdd(BasicParsers3.Lazy(() => Warpstone3Parser!)).Transform(p => p.Left + p.Right), BasicParsers3.End);
@@ -36,7 +36,6 @@ public class RightRecursiveSimpleString
         });
 
     private static readonly Parlot.Fluent.Parser<string> ParlotParser = CreateParlotParser();
-    private static readonly Parlot.Fluent.Parser<string> ParlotCompiledParser = CreateParlotParser().Compile();
 
     [Params(10, 1_000, 100_000)]
     public int N;
@@ -53,6 +52,12 @@ public class RightRecursiveSimpleString
     public string Warpstone3_iterative_benchmark()
     {
         return Warpstone3Parser.Parse(input, ParseOptions.Default with { ExecutionMode = ParserExecutionMode.Iterative });
+    }
+
+    [Benchmark]
+    public string Warpstone3_auto_benchmark()
+    {
+        return Warpstone3Parser.Parse(input, ParseOptions.Default with { ExecutionMode = ParserExecutionMode.Auto });
     }
 
     [Benchmark]
@@ -92,10 +97,12 @@ public class RightRecursiveSimpleString
     }
 
     [Benchmark]
-    public string Parlot_compiled_benchmark()
+    public string Parlot_generated_benchmark()
     {
-        return ParlotCompiledParser.Parse(input)!;
+        return ParlotGeneratedTryParse(input, out var result) ? result : string.Empty;
     }
+
+    private static partial bool ParlotGeneratedTryParse(string input, out string value);
 
     private static Parlot.Fluent.Parser<string> CreateParlotParser()
     {
