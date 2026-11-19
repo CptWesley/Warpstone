@@ -25,9 +25,12 @@ Iterative mode (harness): 20.7 → 12.2 ms.
   showed 8.3 vs 7.2 ms, which was noise. Run the A/B pair alternately (`w3nomemo w3 w3nomemo w3`) before believing a difference.
 - `Transform` fusion gives a transformed `And` its own `SequenceParser` node. An `And` instance shared by two `Transform`s is no longer one
   shared node, but its children still are, so memoization still sees them.
-- The left-recursive MiniJava grammar got faster (15.0 → 9.2 ms) but now does many Gen2 collections. The flat memo dictionary grows
-  past 85 KB and lands on the large object heap. Follow-up: give each memoized parser a slot number and use smaller per-position arrays
-  or chunks.
+- The flat memo dictionary made the left-recursive grammar do one Gen2 collection per parse: its resize arrays grew past 85 KB and landed
+  on the large object heap. About 80% of the bytes were `Dictionary` resize arrays. Fix: `MemoTable` gives each parser a slot number
+  (a small parser → slot dictionary). Each position gets a row with one entry per slot, created when first needed, and rows are found through
+  chunks of 1024 positions (8 KB). An `Entry.IsSet` flag tells a stored failure apart from a missing entry. BenchmarkDotNet, large,
+  left-recursive: 9.2 → 7.8 ms, 4.6 → 2.7 MB, Gen2 969 → 0 per 1000 parses. `MemoTables.cs` tests the chunk and slot logic.
+- The scratch harness now prints `gen2/parse` (`GC.CollectionCount(2) / n`) and has a `w3lr` mode for the left-recursive grammar.
 - Python heredocs that contain `'\n'` wrote real line breaks into C# char literals. Use the Edit tool for C# text with escapes.
 - Set `DiffEngine_Disabled=true` when running `Warpstone.Sources.Tests`, or Verify opens vim and leaves `.swp` files behind.
 - `verify-minijava | grep -v "same AST"` also counts the three header lines (`... AST dump N chars`). Count the verdict lines instead.

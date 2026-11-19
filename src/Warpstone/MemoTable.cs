@@ -3,17 +3,28 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace Warpstone
 {
     /// <summary>
     /// Represents a packrat memotable.
     /// </summary>
+    /// <remarks>
+    /// Every memoized parser gets a slot number, and every position a row with one entry per slot.
+    /// Rows are found through chunks of a fixed number of positions. No array grows with the input,
+    /// so none of them ends up on the large object heap, which is only cleaned up by gen 2 collections.
+    /// </remarks>
     public sealed class MemoTable : IMemoTable
     {
-        // One flat table: a dictionary per position cost an allocation for every position that was memoized.
-        private readonly Dictionary<Key, UnsafeParseResult> table = new();
+        // 1024 positions per chunk: 8 KB of row references, far below the 85 KB at which arrays go to the large object heap.
+        private const int ChunkBits = 10;
+        private const int ChunkSize = 1 << ChunkBits;
+        private const int ChunkMask = ChunkSize - 1;
+
+        private readonly Dictionary<IParserImplementation, int> slots = new();
+        private readonly List<IParserImplementation> parsers = new();
+        private Entry[]?[]?[] chunks = new Entry[]?[]?[4];
+        private int count;
 
         /// <inheritdoc />
         public UnsafeParseResult this[(int, IParserImplementation) key] => this[key.Item1, key.Item2];
@@ -21,27 +32,27 @@ namespace Warpstone
         /// <inheritdoc />
         public UnsafeParseResult this[int position, IParserImplementation parser]
         {
-            get => table.TryGetValue(new(position, parser), out var result)
+            get => TryGetValue(position, parser, out var result)
                 ? result
                 : throw new KeyNotFoundException("Could not find entry in memo table.");
-            set => table[new(position, parser)] = value;
+            set => Set(position, parser, value);
         }
 
         /// <inheritdoc />
         UnsafeParseResult IReadOnlyMemoTable.this[int position, IParserImplementation parser] => this[position, parser];
 
         /// <inheritdoc />
-        public IEnumerable<(int, IParserImplementation)> Keys => table.Keys.Select(static x => (x.Position, x.Parser));
+        public IEnumerable<(int, IParserImplementation)> Keys => this.Select(static x => x.Key);
 
         /// <inheritdoc />
-        public IEnumerable<UnsafeParseResult> Values => table.Values;
+        public IEnumerable<UnsafeParseResult> Values => this.Select(static x => x.Value);
 
         /// <inheritdoc />
-        public int Count => table.Count;
+        public int Count => count;
 
         /// <inheritdoc />
         public bool ContainsKey((int Position, IParserImplementation Parser) key)
-            => table.ContainsKey(new(key.Position, key.Parser));
+            => TryGetValue(key.Position, key.Parser, out _);
 
         /// <inheritdoc />
         public bool TryGetValue((int Position, IParserImplementation Parser) key, [NotNullWhen(true)] out UnsafeParseResult value)
@@ -49,39 +60,106 @@ namespace Warpstone
 
         /// <inheritdoc />
         public bool TryGetValue(int position, IParserImplementation parser, [NotNullWhen(true)] out UnsafeParseResult value)
-            => table.TryGetValue(new(position, parser), out value);
+        {
+            var chunkIndex = position >> ChunkBits;
+            if (position >= 0
+                && chunkIndex < chunks.Length
+                && chunks[chunkIndex] is { } chunk
+                && chunk[position & ChunkMask] is { } row
+                && slots.TryGetValue(parser, out var slot)
+                && slot < row.Length
+                && row[slot].IsSet)
+            {
+                value = row[slot].Result;
+                return true;
+            }
+
+            value = default;
+            return false;
+        }
 
         /// <inheritdoc />
         public IEnumerator<KeyValuePair<(int Position, IParserImplementation Parser), UnsafeParseResult>> GetEnumerator()
-            => table
-                .Select(static x => new KeyValuePair<(int, IParserImplementation), UnsafeParseResult>((x.Key.Position, x.Key.Parser), x.Value))
-                .GetEnumerator();
+        {
+            for (var chunkIndex = 0; chunkIndex < chunks.Length; chunkIndex++)
+            {
+                if (chunks[chunkIndex] is not { } chunk)
+                {
+                    continue;
+                }
+
+                for (var offset = 0; offset < ChunkSize; offset++)
+                {
+                    if (chunk[offset] is not { } row)
+                    {
+                        continue;
+                    }
+
+                    for (var slot = 0; slot < row.Length; slot++)
+                    {
+                        if (row[slot].IsSet)
+                        {
+                            yield return new(((chunkIndex << ChunkBits) | offset, parsers[slot]), row[slot].Result);
+                        }
+                    }
+                }
+            }
+        }
 
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
 
-        private readonly struct Key : IEquatable<Key>
+        private void Set(int position, IParserImplementation parser, in UnsafeParseResult value)
         {
-            public Key(int position, IParserImplementation parser)
+            if (position < 0)
             {
-                Position = position;
-                Parser = parser;
+                throw new ArgumentOutOfRangeException(nameof(position), position, "Memo table positions can not be negative.");
             }
 
-            public int Position { get; }
+            if (!slots.TryGetValue(parser, out var slot))
+            {
+                slot = parsers.Count;
+                slots.Add(parser, slot);
+                parsers.Add(parser);
+            }
 
-            public IParserImplementation Parser { get; }
+            var chunkIndex = position >> ChunkBits;
+            if (chunkIndex >= chunks.Length)
+            {
+                Array.Resize(ref chunks, Math.Max(chunkIndex + 1, chunks.Length * 2));
+            }
 
-            public bool Equals(Key other)
-                => Position == other.Position && ReferenceEquals(Parser, other.Parser);
+            var chunk = chunks[chunkIndex] ??= new Entry[]?[ChunkSize];
+            ref var row = ref chunk[position & ChunkMask];
+            if (row is null)
+            {
+                row = new Entry[parsers.Count];
+            }
+            else if (slot >= row.Length)
+            {
+                Array.Resize(ref row, parsers.Count);
+            }
 
-            public override bool Equals(object? obj)
-                => obj is Key other && Equals(other);
+            if (!row[slot].IsSet)
+            {
+                count++;
+            }
 
-            // Parsers are compared by reference, so their identity hash code avoids a virtual GetHashCode call.
-            public override int GetHashCode()
-                => unchecked((Position * 486187739) ^ RuntimeHelpers.GetHashCode(Parser));
+            row[slot] = new(value);
+        }
+
+        private readonly struct Entry
+        {
+            public Entry(in UnsafeParseResult result)
+            {
+                Result = result;
+                IsSet = true;
+            }
+
+            public UnsafeParseResult Result { get; }
+
+            public bool IsSet { get; }
         }
     }
 }
