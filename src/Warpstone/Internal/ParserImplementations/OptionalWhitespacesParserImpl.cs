@@ -28,6 +28,11 @@ namespace Warpstone.Internal.ParserImplementations
                 pos++;
             }
 
+            if (pos == content.Length && ReaderParseInput.RequestMore(context.Input, pos + 1))
+            {
+                return Apply(context, position);
+            }
+
             return new(position, pos - position, content[position..pos]);
         }
 
@@ -41,6 +46,13 @@ namespace Warpstone.Internal.ParserImplementations
             {
                 pos++;
             }
+
+            if (pos == content.Length && ReaderParseInput.RequestMore(context.Input, pos + 1))
+            {
+                context.ExecutionStack.Push((position, this));
+                return;
+            }
+
             context.ResultStack.Push(new(position, pos - position, content[position..pos]));
         }
 

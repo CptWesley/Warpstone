@@ -1,4 +1,6 @@
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Warpstone
 {
@@ -279,5 +281,62 @@ namespace Warpstone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static T Parse<T>(this IParser<T> parser, string input)
             => parser.TryParse(input).Value;
+
+        /// <summary>
+        /// Parses the given <paramref name="input"/> with the given <paramref name="parser"/>,
+        /// awaiting more input instead of blocking when it is read from a <see cref="System.IO.TextReader"/>
+        /// or <see cref="System.IO.Stream"/>.
+        /// Always runs iteratively, whatever <see cref="ParseOptions.ExecutionMode"/> says,
+        /// because only iterative execution can pause while waiting for input.
+        /// </summary>
+        /// <typeparam name="T">The result type.</typeparam>
+        /// <param name="parser">The parser.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="options">The options to use for parsing.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The parse result.</returns>
+        public static Task<IParseResult<T>> TryParseAsync<T>(this IParser<T> parser, IParseInput input, ParseOptions options, CancellationToken cancellationToken = default)
+            => new IterativeParseContext<T>(input, parser, options).RunToEndAsync(cancellationToken);
+
+        /// <summary>
+        /// Parses the given <paramref name="input"/> with the given <paramref name="parser"/>,
+        /// awaiting more input instead of blocking when it is read from a <see cref="System.IO.TextReader"/>
+        /// or <see cref="System.IO.Stream"/>.
+        /// </summary>
+        /// <typeparam name="T">The result type.</typeparam>
+        /// <param name="parser">The parser.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The parse result.</returns>
+        public static Task<IParseResult<T>> TryParseAsync<T>(this IParser<T> parser, IParseInput input, CancellationToken cancellationToken = default)
+            => parser.TryParseAsync(input, ParseOptions.Default, cancellationToken);
+
+        /// <summary>
+        /// Parses the given <paramref name="input"/> with the given <paramref name="parser"/>,
+        /// awaiting more input instead of blocking when it is read from a <see cref="System.IO.TextReader"/>
+        /// or <see cref="System.IO.Stream"/>.
+        /// Always runs iteratively, whatever <see cref="ParseOptions.ExecutionMode"/> says.
+        /// </summary>
+        /// <typeparam name="T">The result type.</typeparam>
+        /// <param name="parser">The parser.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="options">The options to use for parsing.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The parse result.</returns>
+        public static async Task<T> ParseAsync<T>(this IParser<T> parser, IParseInput input, ParseOptions options, CancellationToken cancellationToken = default)
+            => (await parser.TryParseAsync(input, options, cancellationToken).ConfigureAwait(false)).Value;
+
+        /// <summary>
+        /// Parses the given <paramref name="input"/> with the given <paramref name="parser"/>,
+        /// awaiting more input instead of blocking when it is read from a <see cref="System.IO.TextReader"/>
+        /// or <see cref="System.IO.Stream"/>.
+        /// </summary>
+        /// <typeparam name="T">The result type.</typeparam>
+        /// <param name="parser">The parser.</param>
+        /// <param name="input">The input.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>The parse result.</returns>
+        public static Task<T> ParseAsync<T>(this IParser<T> parser, IParseInput input, CancellationToken cancellationToken = default)
+            => parser.ParseAsync(input, ParseOptions.Default, cancellationToken);
     }
 }

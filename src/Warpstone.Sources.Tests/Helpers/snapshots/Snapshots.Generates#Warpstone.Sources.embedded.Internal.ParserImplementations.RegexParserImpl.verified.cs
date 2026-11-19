@@ -53,6 +53,11 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
+            if (ReaderParseInput.RequestMore(context.Input, int.MaxValue))
+            {
+                return Apply(context, position);
+            }
+
             var input = context.Input.Content;
             var match = Regex.Match(input, position);
 
@@ -69,6 +74,12 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
+            if (ReaderParseInput.RequestMore(context.Input, int.MaxValue))
+            {
+                context.ExecutionStack.Push((position, this));
+                return;
+            }
+
             var input = context.Input.Content;
             var match = Regex.Match(input, position);
 

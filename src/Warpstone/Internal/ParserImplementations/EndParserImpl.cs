@@ -29,6 +29,11 @@ namespace Warpstone.Internal.ParserImplementations
         {
             if (position >= context.Input.Content.Length)
             {
+                if (ReaderParseInput.RequestMore(context.Input, position + 1))
+                {
+                    return Apply(context, position);
+                }
+
                 return new(position, 0, string.Empty);
             }
             else
@@ -42,6 +47,12 @@ namespace Warpstone.Internal.ParserImplementations
         {
             if (position >= context.Input.Content.Length)
             {
+                if (ReaderParseInput.RequestMore(context.Input, position + 1))
+                {
+                    context.ExecutionStack.Push((position, this));
+                    return;
+                }
+
                 context.ResultStack.Push(new(position, 0, string.Empty));
             }
             else

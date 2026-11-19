@@ -34,6 +34,11 @@ namespace Warpstone.Internal.ParserImplementations
                 pos++;
             }
 
+            if (pos == content.Length && ReaderParseInput.RequestMore(context.Input, pos + 1))
+            {
+                return Apply(context, position);
+            }
+
             return pos == position
                 ? new(position, new UnexpectedTokenError(context, this, position, 1, "whitespace"))
                 : new(position, pos - position, content[position..pos]);
@@ -48,6 +53,12 @@ namespace Warpstone.Internal.ParserImplementations
             while (pos < content.Length && char.IsWhiteSpace(content[pos]))
             {
                 pos++;
+            }
+
+            if (pos == content.Length && ReaderParseInput.RequestMore(context.Input, pos + 1))
+            {
+                context.ExecutionStack.Push((position, this));
+                return;
             }
 
             if (pos > position)

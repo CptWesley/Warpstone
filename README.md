@@ -39,7 +39,7 @@ Coming up with names is difficult, I wanted to get the project started and at th
 | Operator precedence helpers                    | ✅ | ❌ | ❌<sup>5</sup> | ✅ | ✅ | 🟡<sup>6</sup> | ✅ |
 | Monadic bind (context-sensitive parsing)       | ❌ | ✅ | ❌ | ✅ | 🟡<sup>7</sup> | ✅ | ❌ |
 | Non-`char` token input                         | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | 🟡<sup>8</sup> |
-| Streaming input (`TextReader`/`Stream`)        | ❌ | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ |
+| Streaming input (`TextReader`/`Stream`)        | ❌ | ❌ | 🟡<sup>9</sup> | ✅ | ✅ | ✅ | ✅ |
 | Compiled / source-generated parsers            | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
 | Source-only package (no assembly dependency)   | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 
@@ -51,6 +51,7 @@ Coming up with names is difficult, I wanted to get the project started and at th
 6. `ChainLeft`/`ChainRight` combinators, no precedence table.
 7. Via `Switch`.
 8. Custom tokenizers, input is still text.
+9. `ParseInput.CreateFromReader`/`CreateFromStream` read input as parsers need it, also asynchronously with `ParseAsync`. Read input stays in memory, and a `Regex` parser reads the rest of the input first.
 
 Third-party columns reflect each library's documentation and package API at the time of writing (Pidgin 3.5, Parlot 2.3, ParsecSharp 5.2, Farkle 7).
 

@@ -42,6 +42,12 @@ namespace Warpstone.Internal.ParserImplementations
         {
             var input = context.Input.Content;
 
+            if (position + value.Length > input.Length && ReaderParseInput.RequestMore(context.Input, position + value.Length))
+            {
+                context.ExecutionStack.Push((position, this));
+                return;
+            }
+
             if (!Matches(input, position))
             {
                 context.ResultStack.Push(new UnsafeParseResult(position, new UnexpectedTokenError(context, this, position, 1, expected)));
@@ -56,6 +62,11 @@ namespace Warpstone.Internal.ParserImplementations
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
             var input = context.Input.Content;
+
+            if (position + value.Length > input.Length && ReaderParseInput.RequestMore(context.Input, position + value.Length))
+            {
+                return Apply(context, position);
+            }
 
             if (!Matches(input, position))
             {

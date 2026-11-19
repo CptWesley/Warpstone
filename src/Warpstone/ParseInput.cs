@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 
 namespace Warpstone
 {
@@ -96,6 +97,37 @@ namespace Warpstone
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
+        /// that reads from the given <paramref name="reader"/> as parsers need more input,
+        /// with the given <paramref name="source"/>.
+        /// Read input stays buffered, so parsers can backtrack into it.
+        /// A regex parser reads the rest of the input first, because a regex needs the whole string.
+        /// Parse it with <c>ParseAsync</c> or <c>TryParseAsync</c> to read without blocking.
+        /// The reader is not disposed.
+        /// </summary>
+        /// <param name="source">The source of the input.</param>
+        /// <param name="reader">The reader to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput Create(IParseInputSource source, TextReader reader)
+            => new ReaderParseInput(source, reader);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// that reads from the given <paramref name="stream"/> as parsers need more input,
+        /// with the given <paramref name="source"/>.
+        /// The text encoding is detected from the byte order mark and defaults to UTF-8.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The stream is not disposed.
+        /// </summary>
+        /// <param name="source">The source of the input.</param>
+        /// <param name="stream">The stream to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput Create(IParseInputSource source, Stream stream)
+            => Create(source, new StreamReader(stream, Encoding.UTF8, detectEncodingFromByteOrderMarks: true, bufferSize: 4096, leaveOpen: true));
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="input"/> string
         /// with a from-memory source.
         /// </summary>
@@ -126,5 +158,32 @@ namespace Warpstone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IParseInput CreateFromFile(string path)
             => CreateFromFile(path, File.ReadAllText(path));
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// that reads from the given <paramref name="reader"/> as parsers need more input,
+        /// with a from-memory source.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The reader is not disposed.
+        /// </summary>
+        /// <param name="reader">The reader to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromReader(TextReader reader)
+            => Create(FromMemorySource.Instance, reader);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// that reads from the given <paramref name="stream"/> as parsers need more input,
+        /// with a from-memory source, or a file source when it is a <see cref="FileStream"/>.
+        /// The text encoding is detected from the byte order mark and defaults to UTF-8.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The stream is not disposed.
+        /// </summary>
+        /// <param name="stream">The stream to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromStream(Stream stream)
+            => Create(stream is FileStream file ? new FileSource(file.Name) : FromMemorySource.Instance, stream);
     }
 }
