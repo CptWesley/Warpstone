@@ -392,6 +392,24 @@ namespace Warpstone
             => new SequenceParser<T1, T2, T1>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, _) => l);
 
         /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="select"/> picks for its result,
+        /// so what is parsed next can depend on what was parsed before (monadic bind).
+        /// </summary>
+        /// <remarks>
+        /// <paramref name="select"/> runs while parsing and must be pure, because results are memoized by position.
+        /// Returning parsers of the grammar, or the same parser instances on every call, is fastest:
+        /// a new parser instance is prepared for parsing every time it is returned.
+        /// Left recursion through a selected parser is not supported and fails with an <see cref="Errors.InfiniteRecursionError"/>.
+        /// </remarks>
+        /// <typeparam name="T1">The result type of the given parser.</typeparam>
+        /// <typeparam name="T2">The result type of the selected parser.</typeparam>
+        /// <param name="parser">The given parser.</param>
+        /// <param name="select">The function that picks the parser to apply next.</param>
+        /// <returns>A parser returning the result of the selected parser.</returns>
+        public static IParser<T2> Bind<T1, T2>(this IParser<T1> parser, Func<T1, IParser<T2>> select)
+            => new BindParser<T1, T2>(parser.MustNotBeNull(), select.MustNotBeNull());
+
+        /// <summary>
         /// Creates a parser that applies the given parser and then expects the input stream to end.
         /// </summary>
         /// <typeparam name="T">The result type of the given parser.</typeparam>
