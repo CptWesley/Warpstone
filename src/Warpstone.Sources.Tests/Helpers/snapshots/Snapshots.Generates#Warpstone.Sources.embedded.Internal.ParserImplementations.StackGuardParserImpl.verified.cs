@@ -14,9 +14,13 @@ namespace Warpstone.Internal.ParserImplementations
     /// in recursive mode.
     /// </summary>
     /// <typeparam name="T">The return type of the guarded parser.</typeparam>
-    internal sealed class StackGuardParserImpl<T> : ParserImplementationBase<StackGuardParser<T>, T>
+    internal sealed class StackGuardParserImpl<T> : ParserImplementationBase<StackGuardParser<T>, T>, IFirstCharsSource
     {
         private IParserImplementation<T> inner = default!;
+
+        /// <inheritdoc />
+        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(inner, visiting);
 
         /// <inheritdoc />
         protected override void InitializeInternal(StackGuardParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)

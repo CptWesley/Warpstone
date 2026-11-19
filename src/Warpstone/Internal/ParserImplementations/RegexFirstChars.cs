@@ -1,0 +1,258 @@
+using System.Text.RegularExpressions;
+
+namespace Warpstone.Internal.ParserImplementations
+{
+    /// <summary>
+    /// Finds the ASCII characters a regex match can start with, for the simple patterns grammars use: a literal character, an escaped
+    /// punctuation character or a character class such as <c>[A-Za-z_]</c>, optionally after lookaheads. Anything else is unknown.
+    /// It may give more characters than the regex can start with, never fewer.
+    /// </summary>
+    internal static class RegexFirstChars
+    {
+        /// <summary>
+        /// Finds the ASCII characters a match of the pattern starts with.
+        /// </summary>
+        /// <param name="pattern">The pattern.</param>
+        /// <param name="options">The regex options.</param>
+        /// <returns>The characters, indexed by character, or <see langword="null"/> when unknown.</returns>
+        public static bool[]? Find(string pattern, RegexOptions options)
+        {
+            if ((options & (RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.RightToLeft)) != 0
+                || pattern.Contains("(?#")
+                || MayAlternateAtTopLevel(pattern))
+            {
+                return null;
+            }
+
+            // Lookaheads consume nothing. Skipping them can only allow more first characters.
+            var i = 0;
+            while (string.CompareOrdinal(pattern, i, "(?=", 0, 3) == 0 || string.CompareOrdinal(pattern, i, "(?!", 0, 3) == 0)
+            {
+                i = SkipGroup(pattern, i);
+                if (i < 0)
+                {
+                    return null;
+                }
+            }
+
+            var chars = new bool[FirstChars.Count];
+            var end = ReadAtom(pattern, i, chars);
+
+            // The first atom must be there: a quantifier that allows zero of it makes the next atom a possible start.
+            return end < 0 || (end < pattern.Length && pattern[end] is '*' or '?' or '{')
+                ? null
+                : chars;
+        }
+
+        private static bool MayAlternateAtTopLevel(string pattern)
+        {
+            var depth = 0;
+            var i = 0;
+            while (i < pattern.Length)
+            {
+                if (pattern[i] == '(')
+                {
+                    depth++;
+                }
+                else if (pattern[i] == ')' && --depth < 0)
+                {
+                    return true;
+                }
+                else if (pattern[i] == '|' && depth == 0)
+                {
+                    return true;
+                }
+
+                i = Next(pattern, i);
+                if (i < 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>Skips the group that starts at <paramref name="start"/>; returns the index after it, or -1.</summary>
+        private static int SkipGroup(string pattern, int start)
+        {
+            var depth = 0;
+            var i = start;
+            while (i < pattern.Length)
+            {
+                if (pattern[i] == '(')
+                {
+                    depth++;
+                }
+                else if (pattern[i] == ')' && --depth == 0)
+                {
+                    return i + 1;
+                }
+
+                i = Next(pattern, i);
+                if (i < 0)
+                {
+                    return -1;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>The index after the escape, class or character at <paramref name="i"/>, or -1 for a class it can't skip.</summary>
+        private static int Next(string pattern, int i)
+            => pattern[i] switch
+            {
+                '\\' => i + 2,
+                '[' => SkipClass(pattern, i),
+                _ => i + 1,
+            };
+
+        /// <summary>Skips the character class that starts at <paramref name="start"/>; returns the index after it, or -1.</summary>
+        private static int SkipClass(string pattern, int start)
+        {
+            var i = start + 1;
+            if (i < pattern.Length && pattern[i] == '^')
+            {
+                i++;
+            }
+
+            // A leading ']' is a literal, and '[' inside a class is a subtraction. Both are rare enough to give up on.
+            if (i < pattern.Length && pattern[i] == ']')
+            {
+                return -1;
+            }
+
+            while (i < pattern.Length)
+            {
+                switch (pattern[i])
+                {
+                    case '\\':
+                        i += 2;
+                        break;
+                    case '[':
+                        return -1;
+                    case ']':
+                        return i + 1;
+                    default:
+                        i++;
+                        break;
+                }
+            }
+
+            return -1;
+        }
+
+        /// <summary>Reads the atom at <paramref name="start"/> into <paramref name="chars"/>; returns the index after it, or -1.</summary>
+        private static int ReadAtom(string pattern, int start, bool[] chars)
+        {
+            if (start >= pattern.Length)
+            {
+                return -1;
+            }
+
+            if (pattern[start] == '[')
+            {
+                return ReadClass(pattern, start, chars);
+            }
+
+            var i = start;
+            if (!TryReadLiteral(pattern, ref i, out var c))
+            {
+                return -1;
+            }
+
+            chars[c] = true;
+            return i;
+        }
+
+        private static int ReadClass(string pattern, int start, bool[] chars)
+        {
+            var i = start + 1;
+            if (i >= pattern.Length || pattern[i] is '^' or ']')
+            {
+                return -1;
+            }
+
+            while (i < pattern.Length && pattern[i] != ']')
+            {
+                if (!TryReadClassChar(pattern, ref i, out var low))
+                {
+                    return -1;
+                }
+
+                var high = low;
+                if (i + 1 < pattern.Length && pattern[i] == '-' && pattern[i + 1] != ']')
+                {
+                    i++;
+                    if (!TryReadClassChar(pattern, ref i, out high) || high < low)
+                    {
+                        return -1;
+                    }
+                }
+
+                for (var c = low; c <= high; c++)
+                {
+                    chars[c] = true;
+                }
+            }
+
+            return i < pattern.Length ? i + 1 : -1;
+        }
+
+        /// <summary>A character outside a class: ASCII, not a regex metacharacter, or an escaped punctuation character.</summary>
+        private static bool TryReadLiteral(string pattern, ref int i, out char c)
+        {
+            c = pattern[i];
+            if (c == '\\')
+            {
+                return TryReadEscape(pattern, ref i, out c);
+            }
+
+            if (c >= FirstChars.Count || c is '^' or '$' or '.' or '|' or '?' or '*' or '+' or '(' or ')' or '[' or ']' or '{' or '}')
+            {
+                return false;
+            }
+
+            i++;
+            return true;
+        }
+
+        /// <summary>A character inside a class: ASCII and not '[', or an escaped punctuation character.</summary>
+        private static bool TryReadClassChar(string pattern, ref int i, out char c)
+        {
+            c = pattern[i];
+            if (c == '\\')
+            {
+                return TryReadEscape(pattern, ref i, out c);
+            }
+
+            if (c >= FirstChars.Count || c == '[')
+            {
+                return false;
+            }
+
+            i++;
+            return true;
+        }
+
+        /// <summary>An escaped ASCII punctuation character, such as <c>\(</c>. Escaped letters and digits mean classes, anchors and more.</summary>
+        private static bool TryReadEscape(string pattern, ref int i, out char c)
+        {
+            c = default;
+            if (i + 1 >= pattern.Length)
+            {
+                return false;
+            }
+
+            c = pattern[i + 1];
+            if (c >= FirstChars.Count || char.IsLetterOrDigit(c) || char.IsWhiteSpace(c))
+            {
+                return false;
+            }
+
+            i += 2;
+            return true;
+        }
+    }
+}

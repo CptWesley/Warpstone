@@ -1,0 +1,209 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+
+namespace Warpstone.Internal.ParserImplementations
+{
+    /// <summary>
+    /// Implemented by parser implementations that can tell which characters their matches start with.
+    /// </summary>
+    internal interface IFirstCharsSource
+    {
+        /// <summary>
+        /// Gets the first characters of the parser, or <see langword="null"/> when they are unknown.
+        /// Use <see cref="FirstChars.Of(IParserImplementation, ISet{IParserImplementation})"/> instead of calling this directly.
+        /// </summary>
+        /// <param name="visiting">The parsers whose first characters are being computed, to stop at cycles.</param>
+        /// <returns>The first characters, or <see langword="null"/>.</returns>
+        FirstChars? GetFirstChars(ISet<IParserImplementation> visiting);
+    }
+
+    /// <summary>
+    /// The ASCII characters every match of a parser starts with, and what the parser reports when it fails because the input
+    /// starts with another character. Only parsers that never match empty input and never start with a non-ASCII character have them.
+    /// <see cref="OrParserImpl{T}"/> uses them to skip alternatives that are sure to fail, while reporting the same failures.
+    /// </summary>
+    internal sealed class FirstChars
+    {
+        /// <summary>
+        /// The number of characters covered: ASCII.
+        /// </summary>
+        public const int Count = 128;
+
+        // Computed once per parser: grammars share parsers, and walking every path through shared parsers is exponential.
+        private static readonly ConditionalWeakTable<IParserImplementation, Cached> Cache = new();
+
+        private FirstChars(bool[] chars, IReadOnlyList<(IParserImplementation Parser, string Expected)> reports)
+        {
+            Chars = chars;
+            Reports = reports;
+        }
+
+        /// <summary>
+        /// Gets which of the ASCII characters a match can start with, indexed by character.
+        /// </summary>
+        public bool[] Chars { get; }
+
+        /// <summary>
+        /// Gets the <see cref="Errors.FailureTracker.AddExpected"/> calls, in order, that the parser makes when it fails
+        /// at a character it can't start with.
+        /// </summary>
+        public IReadOnlyList<(IParserImplementation Parser, string Expected)> Reports { get; }
+
+        /// <summary>
+        /// Gets the first characters of a parser.
+        /// </summary>
+        /// <param name="parser">The parser.</param>
+        /// <returns>The first characters, or <see langword="null"/> when they are unknown.</returns>
+        public static FirstChars? Of(IParserImplementation parser)
+            => Of(parser, new HashSet<IParserImplementation>());
+
+        /// <summary>
+        /// Gets the first characters of a parser, giving up on cycles.
+        /// </summary>
+        /// <param name="parser">The parser.</param>
+        /// <param name="visiting">The parsers whose first characters are being computed.</param>
+        /// <returns>The first characters, or <see langword="null"/> when they are unknown.</returns>
+        public static FirstChars? Of(IParserImplementation parser, ISet<IParserImplementation> visiting)
+        {
+            if (parser is not IFirstCharsSource source)
+            {
+                return null;
+            }
+
+            if (Cache.TryGetValue(parser, out var cached))
+            {
+                return cached.Value;
+            }
+
+            // A cycle gives up. A parser on the cycle may then cache null, which is safe: it is always run.
+            if (!visiting.Add(parser))
+            {
+                return null;
+            }
+
+            try
+            {
+                var value = source.GetFirstChars(visiting);
+                return Cache.GetValue(parser, _ => new(value)).Value;
+            }
+            finally
+            {
+                visiting.Remove(parser);
+            }
+        }
+
+        /// <summary>
+        /// Adds reports, leaving out ones already added. A repeated report in one run of reports changes nothing,
+        /// since the tracker already holds that parser and expected value at that position.
+        /// </summary>
+        /// <param name="target">The reports to add to.</param>
+        /// <param name="seen">The reports already in <paramref name="target"/>.</param>
+        /// <param name="reports">The reports to add.</param>
+        public static void AddDistinct(
+            List<(IParserImplementation Parser, string Expected)> target,
+            HashSet<(IParserImplementation Parser, string Expected)> seen,
+            IEnumerable<(IParserImplementation Parser, string Expected)> reports)
+        {
+            target.AddRange(reports.Where(seen.Add));
+        }
+
+        /// <summary>
+        /// Creates a set for <see cref="AddDistinct"/> that compares by reference, as the tracker does.
+        /// </summary>
+        /// <returns>The empty set.</returns>
+        public static HashSet<(IParserImplementation Parser, string Expected)> CreateSeen()
+            => new(ReportComparer.Instance);
+
+        /// <summary>
+        /// Creates first characters for a leaf parser that reports one expected value.
+        /// </summary>
+        /// <param name="chars">The characters a match can start with, or <see langword="null"/> when unknown.</param>
+        /// <param name="parser">The reporting parser.</param>
+        /// <param name="expected">The expected value it reports.</param>
+        /// <returns>The first characters, or <see langword="null"/> when <paramref name="chars"/> is.</returns>
+        public static FirstChars? Leaf(bool[]? chars, IParserImplementation parser, string expected)
+            => chars is null ? null : new(chars, [(parser, expected)]);
+
+        /// <summary>
+        /// Creates first characters for a leaf parser from the characters a match can start with.
+        /// </summary>
+        /// <param name="chars">The characters.</param>
+        /// <param name="parser">The reporting parser.</param>
+        /// <param name="expected">The expected value it reports.</param>
+        /// <returns>The first characters, or <see langword="null"/> when one of the characters is not ASCII.</returns>
+        public static FirstChars? Leaf(IEnumerable<char> chars, IParserImplementation parser, string expected)
+        {
+            var set = new bool[Count];
+            foreach (var c in chars)
+            {
+                if (c >= Count)
+                {
+                    return null;
+                }
+
+                set[c] = true;
+            }
+
+            return new(set, [(parser, expected)]);
+        }
+
+        /// <summary>
+        /// Combines the first characters of alternatives: a match starts like one of them, and a failure reports what each reports.
+        /// </summary>
+        /// <param name="alternatives">The first characters of the alternatives, in order.</param>
+        /// <returns>The combined first characters, or <see langword="null"/> when one of them is unknown.</returns>
+        public static FirstChars? Union(IEnumerable<FirstChars?> alternatives)
+        {
+            var set = new bool[Count];
+            var reports = new List<(IParserImplementation Parser, string Expected)>();
+            var seen = CreateSeen();
+            foreach (var alternative in alternatives)
+            {
+                if (alternative is null)
+                {
+                    return null;
+                }
+
+                for (var c = 0; c < Count; c++)
+                {
+                    set[c] |= alternative.Chars[c];
+                }
+
+                AddDistinct(reports, seen, alternative.Reports);
+            }
+
+            return new(set, reports);
+        }
+
+        /// <summary>
+        /// Gets the same first characters, reported as one expected value, as <see cref="ExpectedParserImpl{T}"/> does.
+        /// </summary>
+        /// <param name="parser">The reporting parser.</param>
+        /// <param name="expected">The expected value it reports.</param>
+        /// <returns>The relabeled first characters.</returns>
+        public FirstChars Relabel(IParserImplementation parser, string expected)
+            => new(Chars, [(parser, expected)]);
+
+        private sealed class Cached
+        {
+            public Cached(FirstChars? value)
+            {
+                Value = value;
+            }
+
+            public FirstChars? Value { get; }
+        }
+
+        private sealed class ReportComparer : IEqualityComparer<(IParserImplementation Parser, string Expected)>
+        {
+            public static readonly ReportComparer Instance = new();
+
+            public bool Equals((IParserImplementation Parser, string Expected) x, (IParserImplementation Parser, string Expected) y)
+                => ReferenceEquals(x.Parser, y.Parser) && ReferenceEquals(x.Expected, y.Expected);
+
+            public int GetHashCode((IParserImplementation Parser, string Expected) obj)
+                => (RuntimeHelpers.GetHashCode(obj.Parser) * 31) + RuntimeHelpers.GetHashCode(obj.Expected);
+        }
+    }
+}

@@ -10,12 +10,15 @@ namespace Warpstone.Internal.ParserImplementations
     /// <summary>
     /// Represents a parser that matches regular expressions in the input.
     /// </summary>
-    internal sealed class RegexParserImpl : ParserImplementationBase<RegexParser, string>
+    internal sealed class RegexParserImpl : ParserImplementationBase<RegexParser, string>, IFirstCharsSource
     {
         private readonly string expected;
 
         // Literal text that every match starts with, so most failing positions are rejected without running the regex.
         private readonly string prefix;
+
+        // The ASCII characters a match starts with, or null when unknown.
+        private readonly bool[]? firstChars;
 
         // The first text this regex matched, reused for later matches with the same text (see StringParseInput.Match).
         private string? first;
@@ -31,6 +34,7 @@ namespace Warpstone.Internal.ParserImplementations
             var o = options | RegexOptions.ExplicitCapture;
             expected = Regex.Escape(pattern);
             prefix = FindLiteralPrefix(pattern, options);
+            firstChars = RegexFirstChars.Find(pattern, options);
             if (timeout == TimeSpan.Zero || timeout == TimeSpan.MaxValue)
             {
                 Regex = new Regex(@$"\G({pattern})", o);
@@ -80,6 +84,10 @@ namespace Warpstone.Internal.ParserImplementations
 
             return pattern.Substring(0, end);
         }
+
+        /// <inheritdoc />
+        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Leaf(firstChars, this, expected);
 
         /// <inheritdoc />
         protected override void InitializeInternal(RegexParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)

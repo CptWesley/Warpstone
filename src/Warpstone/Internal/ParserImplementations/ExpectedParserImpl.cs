@@ -7,11 +7,16 @@ namespace Warpstone.Internal.ParserImplementations
     /// Represents a parser that can override the expected token message.
     /// </summary>
     /// <typeparam name="T">The result type of the wrapped parser.</typeparam>
-    internal sealed class ExpectedParserImpl<T> : ParserImplementationBase<ExpectedParser<T>, T>
+    internal sealed class ExpectedParserImpl<T> : ParserImplementationBase<ExpectedParser<T>, T>, IFirstCharsSource
     {
         private Continuation continuation = default!;
         private IParserImplementation<T> inner = default!;
         private string expected = default!;
+
+        /// <inheritdoc />
+        // Failing at its start, the label replaces whatever the inner parser reported there with its name.
+        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(inner, visiting)?.Relabel(this, expected);
 
         /// <inheritdoc />
         protected override void InitializeInternal(ExpectedParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)

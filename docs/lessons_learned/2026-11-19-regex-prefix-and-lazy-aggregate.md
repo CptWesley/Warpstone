@@ -29,8 +29,7 @@ Tests: `Warpstone.Tests/Parsers/RegexParser.cs` pins that the prefix check never
 
 - Iterative mode is still ~2.4× recursive. Every step goes through `IIterativeParseContext` interface properties and two BCL `Stack<T>`s.
   A concrete context type or array-backed stacks exposed to impls would cut dispatch; touches every impl.
-- First-char (FIRST set) prefilter on `Or` alternatives, like Parlot. Needs FIRST-set analysis on expressions; regex leaves have none
-  except the literal prefix above.
+- ~~First-char prefilter on `Or`~~: done, see below.
 - `MemoTable` does a slot-dictionary lookup per get/set; Memo/Grow do three per call. A per-impl slot assigned at graph build would
   remove them, but impls such as `RegexParserImpl` are shared between graphs.
 - Fused `Transform` on a sequence composes two delegates (`map(combine(a, b))`).
@@ -43,3 +42,42 @@ Tests: `Warpstone.Tests/Parsers/RegexParser.cs` pins that the prefix check never
 - Verify wrote received snapshots per TFM (`Snapshots.Generates.DotNet8_0#...received.cs`) while the verified file has no TFM
   suffix. Diff with `--strip-trailing-cr`, then rename one received file to the `Snapshots.Generates#...verified.cs` name and delete the rest.
 - `dotnet test Warpstone.Tests -f net481` fails with NETSDK1005 (assets file lacks net481); `-f net11.0` works.
+
+## Follow-up: first-character filter on `Or`
+
+The part above was committed as `2837858`. Then `Or` learned to skip alternatives that can't start with the next character.
+
+| Mode (probe, MiniJava large) | before | after |
+|---|---:|---:|
+| Recursive (Auto) | 3.31 ms | 2.38 ms (−28%) |
+| Left-recursive grammar | 4.93 ms | 3.99 ms (−19%) |
+| Iterative | 8.2 ms | 4.87 ms (−41%) |
+
+Allocations did not change.
+
+### How it works
+
+- `FirstChars` (`Internal/ParserImplementations/FirstChars.cs`) holds the ASCII characters a match can start with, plus the exact
+  `AddExpected` calls the parser makes when it fails on any other character. Only parsers that never match empty input have one.
+  Impls opt in through `IFirstCharsSource`: the Char, String (ordinal; ignore-case only when the first char is not a letter) and Regex
+  leaves, pass-throughs (Sequence, the four And impls, both Map impls, Memo, StackGuard, Aggregate with `minCount > 0`), and Expected
+  (its own name replaces the inner reports). `Or` takes the union. Everything else counts as unknown, so it always runs.
+- `RegexFirstChars` reads the first atom of simple patterns: a literal, an escaped punctuation character, or a class like `[A-Za-z_]`,
+  after any leading `(?=..)`/`(?!..)` lookaheads. It gives up on a top-level `|`, `*`/`?`/`{` after the atom, `\w`/`\d` (not ASCII), negated
+  classes, subtraction, `IgnoreCase` and so on.
+- `OrParserImpl` lazily builds one `Plan` per ASCII character plus one for any other character and the end of input, and shares equal plans.
+  A plan runs the possible alternatives and replays the skipped alternatives' reports where they would have run, in order. The
+  errors are therefore the same, in the same order. This only happens on `StringParseInput`, because a reader may not have the character yet.
+- Known difference: a skipped Memo-wrapped alternative reports its failure even where a memo hit would have reported nothing (the
+  ponytail note in `FailureTracker.CreateErrors`).
+
+### Pitfalls
+
+- `AnalysisScaling.Shared_parsers_are_analyzed_once` (64 levels of `Or(p, p)`) took 4 minutes and failed. Walking shared parsers is
+  exponential, and so is concatenating their reports. Fixes: cache `FirstChars` per impl in a `ConditionalWeakTable` (a null cached
+  because of a cycle is safe, since that parser always runs), and dedupe reports by reference. A repeated `(parser, expected)` in one
+  run of reports is a no-op in `FailureTracker`.
+- A heredoc in the Bash tool input collapsed the doubled backslash of a C# char literal for backslash into a single one (CS1010). Fix C# backslash literals with the Edit tool.
+- Differential test `Parsers/FirstCharFilter.cs`: string input (filter on) against `StringReader` input (filter off), with the same results
+  and the same ordered error descriptions. A mutation that drops the skipped reports made 45 tests fail.
+- New files in `src/Warpstone` add new `*.verified.cs` snapshots. Rename the per-TFM received file just as you would for edits.

@@ -9,10 +9,15 @@ namespace Warpstone.Internal.ParserImplementations
     /// so that it can be reused later if the same parser is executed at the same position again.
     /// </summary>
     /// <typeparam name="T">The return type of the cached parser.</typeparam>
-    internal sealed class MemoParserImpl<T> : ParserImplementationBase<MemoParser<T>, T>
+    internal sealed class MemoParserImpl<T> : ParserImplementationBase<MemoParser<T>, T>, IFirstCharsSource
     {
         private IParserImplementation<T> inner = default!;
         private Continuation continuation = default!;
+
+        /// <inheritdoc />
+        // A memo hit reports nothing, so skipping the inner parser can report failures it would have left out.
+        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(inner, visiting);
 
         /// <inheritdoc />
         protected override void InitializeInternal(MemoParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)

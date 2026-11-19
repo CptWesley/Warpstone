@@ -9,13 +9,17 @@ namespace Warpstone.Internal.ParserImplementations
     /// </summary>
     /// <typeparam name="TFirst">The result type of the <see name="First"/> parser.</typeparam>
     /// <typeparam name="TSecond">The result type of the <see name="Second"/> parser.</typeparam>
-    internal sealed class AndBoxedBoxedParserImpl<TFirst, TSecond> : ParserImplementationBase<AndParser<TFirst, TSecond>, (TFirst First, TSecond Second)>
+    internal sealed class AndBoxedBoxedParserImpl<TFirst, TSecond> : ParserImplementationBase<AndParser<TFirst, TSecond>, (TFirst First, TSecond Second)>, IFirstCharsSource
         where TFirst : struct
         where TSecond : struct
     {
         private IParserImplementation<TFirst> first = default!;
         private IParserImplementation<TSecond> second = default!;
         private Continuation continuation = default!;
+
+        /// <inheritdoc />
+        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(first, visiting);
 
         /// <inheritdoc />
         protected override void InitializeInternal(AndParser<TFirst, TSecond> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
