@@ -18,7 +18,8 @@ public class MiniJavaBenchmark
         ("Warpstone1", s => Warpstone1MiniJava.Parser.Parse(s)),
         ("Pidgin", s => PidginMiniJava.Parser.ParseOrThrow(s)),
         ("ParsecSharp", s => ParsecSharpMiniJava.Parser.Parse(s).Value),
-        ("Parlot", s => ParlotMiniJava.Parser.Parse(s) ?? throw new InvalidOperationException("Parlot failed to parse.")),
+        ("Parlot_runtime", s => ParlotMiniJava.Parser.Parse(s) ?? throw new InvalidOperationException("Parlot failed to parse.")),
+        ("Parlot_generated", s => ParlotGeneratedMiniJava.TryParse(s, out var unit) ? unit : throw new InvalidOperationException("Parlot failed to parse.")),
     ];
 
     [Params("small", "medium", "large")]
@@ -51,7 +52,14 @@ public class MiniJavaBenchmark
     public CompilationUnit ParsecSharp() => ParsecSharpMiniJava.Parser.Parse(input).Value;
 
     [Benchmark]
-    public CompilationUnit Parlot() => ParlotMiniJava.Parser.Parse(input)!;
+    public CompilationUnit Parlot_runtime() => ParlotMiniJava.Parser.Parse(input)!;
+
+    [Benchmark]
+    public CompilationUnit Parlot_generated()
+    {
+        ParlotGeneratedMiniJava.TryParse(input, out var unit);
+        return unit;
+    }
 
     /// <summary>Checks that every parser gives the same AST as Warpstone 3 for every input. Returns whether they all do.</summary>
     public static bool Verify()

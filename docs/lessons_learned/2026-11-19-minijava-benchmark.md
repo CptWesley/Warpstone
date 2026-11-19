@@ -28,7 +28,12 @@ ParsecSharp and Parlot. The grammar, AST and inputs live in `Warpstone.Benchmark
   static calls, for example `SeparatedBy`. Call them as extensions (`p.SeparatedBy(sep)`).
 - `Parsers.LeftAssociative` (Parlot) clashes with the `LeftAssociative<T, TInput>` type and with `Warpstone.Parsers`.
   Write `Parlot.Fluent.Parsers.LeftAssociative(...)`.
-- Parlot `Else(null)` is ambiguous. Use `Else(default(T))`.
+- Parlot `Else(null)` is ambiguous. Use a typed null, such as `Else((IExpr?)null)`.
+- `Parlot.SourceGenerator` (the `Parlot_generated` benchmark) only accepts callbacks written inline in the
+  `[GenerateParser]` method (error PARLOT003). The factory can't call another class's `Build()`, and lambdas can't live
+  in generic helpers such as `Opt<T>`. That is why `ParlotGeneratedMiniJava.parlot.cs` holds a verbatim copy of
+  `ParlotMiniJava.Build()`. Helpers that build parsers without lambdas (`Sym`, `Kw`) are fine.
+- `Else(value)` with a non-constant value can't be generated (PARLOT005). Write `Else(static _ => Array.Empty<T>())` instead.
 - Pidgin doesn't backtrack after consuming input. Multi-character symbols, keywords and identifiers (`Word.Assert`), the
   `[]` type suffix and local variable statements need `Try`.
 - `dotnet run` without a `--filter` (or with an unknown argument) makes BenchmarkDotNet wait for console input. Pass
