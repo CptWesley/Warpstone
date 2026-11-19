@@ -14,3 +14,7 @@
 - Proj1703: a blank line is required after `<Project>` and before `</Project>`. Proj3000: no BOM.
 - Proj0012: package metadata was duplicated in `Warpstone.csproj` and `package.props`, so the csproj copy was removed.
 - Turning on `EnforceCodeStyleInBuild` (Proj0050) added no new IDE warnings.
+
+## CI pipeline
+- `setup-dotnet` now uses `global-json-file: global.json` to install the pinned SDK, plus the 8/9/10 runtimes the tests run on (11 comes with the SDK). It no longer installs 3.0–7.0: nothing runs on those, and the SDK gets their reference packs from NuGet.
+- Restore uses `--locked-mode`, which resolves the old TODO. It passes locally with the committed lock files.
