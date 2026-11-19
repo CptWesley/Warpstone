@@ -28,4 +28,13 @@
 
 - Left recursion *through* a selected parser fails and is not grown. Left recursion through `Source` grows normally (test `Grows_left_recursive_source`).
 - A lambda that allocates a parser wrapping a large part of the grammar rebuilds that part on every call. Upgrade path: a boundary-aware build that seeds the outer impls and stops analysis at known nodes (this needs a stop hook in `ParserBase.PerformAnalysisStep`).
-- V2 named this `Then`/`ThenAdd`/`ThenSkip(Func<T1, IParser<T2>>)` (`Legacy/Warpstone2/Parsers/BasicParsers.cs:538`). No V3 overloads were added.
+
+## V2-style overloads
+
+V2 had `Then`, `ThenSkip` and `ThenAdd` overloads that take a `Func<T1, IParser<T2>>` (`Legacy/Warpstone2/Parsers/BasicParsers.cs:538`). V3 now has them too, with `ThenAdd` covering tuple arities 2..8 to match the existing `ThenAdd(IParser)` overloads.
+
+- **No wrapper parsers.** Don't build these as `Bind(x => second(x).Transform(...))`. That allocates a new parser on every call, so each call misses the outer lookup and rebuilds a graph. Instead, `BindParser<TIn, TSelected, TOut>` takes an optional `combine` function.
+- **No combiner for `Bind` and `Then`.** They pass `null`, so the selected result is passed through without unboxing and boxing value types again.
+- **Overload resolution.** With a lambda argument it picks the tuple-flattening `ThenAdd`, the same way it does for the `IParser` overloads (test `ThenAdd_flattens_tuples`).
+- **Null-forgiving `!` in tests.** Sonar S8969 asks to drop `!` in `Lazy(() => Field!)`, but dropping it gives CS8603. The repo keeps the `!` (see `StackDepth.cs`).
+- **Tuple equality with lists.** `Should().Be((2, list))` compares the list by reference; use `BeEquivalentTo`.

@@ -407,7 +407,136 @@ namespace Warpstone
         /// <param name="select">The function that picks the parser to apply next.</param>
         /// <returns>A parser returning the result of the selected parser.</returns>
         public static IParser<T2> Bind<T1, T2>(this IParser<T1> parser, Func<T1, IParser<T2>> select)
-            => new BindParser<T1, T2>(parser.MustNotBeNull(), select.MustNotBeNull());
+            => new BindParser<T1, T2, T2>(parser.MustNotBeNull(), select.MustNotBeNull(), null);
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and returns the result of the second one. This is the same as <see cref="Bind{T1, T2}(IParser{T1}, Func{T1, IParser{T2}})"/>.
+        /// </summary>
+        /// <typeparam name="T1">The result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser returning the result of the second parser.</returns>
+        public static IParser<T2> Then<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
+            => first.Bind(second);
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and returns the result of the first one.
+        /// </summary>
+        /// <typeparam name="T1">The result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser returning the result of the first parser.</returns>
+        public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
+            => new BindParser<T1, T2, T1>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, _) => l);
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and combines the results.
+        /// </summary>
+        /// <typeparam name="T1">The result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser combining the results of both parsers.</returns>
+        public static IParser<(T1 Left, T2 Right)> ThenAdd<T1, T2>(this IParser<T1> first, Func<T1, IParser<T2>> second)
+            => new BindParser<T1, T2, (T1, T2)>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, r) => (l, r));
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and combines the results.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the first parser.</typeparam>
+        /// <typeparam name="T3">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser combining the results of both parsers.</returns>
+        public static IParser<(T1 First, T2 Second, T3 Third)> ThenAdd<T1, T2, T3>(this IParser<(T1 First, T2 Second)> first, Func<(T1 First, T2 Second), IParser<T3>> second)
+            => new BindParser<(T1, T2), T3, (T1, T2, T3)>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, r) => (l.Item1, l.Item2, r));
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and combines the results.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the first parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the first parser.</typeparam>
+        /// <typeparam name="T4">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser combining the results of both parsers.</returns>
+        public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> ThenAdd<T1, T2, T3, T4>(this IParser<(T1 First, T2 Second, T3 Third)> first, Func<(T1 First, T2 Second, T3 Third), IParser<T4>> second)
+            => new BindParser<(T1, T2, T3), T4, (T1, T2, T3, T4)>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, r) => (l.Item1, l.Item2, l.Item3, r));
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and combines the results.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the first parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the first parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the first parser.</typeparam>
+        /// <typeparam name="T5">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser combining the results of both parsers.</returns>
+        public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> ThenAdd<T1, T2, T3, T4, T5>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> first, Func<(T1 First, T2 Second, T3 Third, T4 Fourth), IParser<T5>> second)
+            => new BindParser<(T1, T2, T3, T4), T5, (T1, T2, T3, T4, T5)>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, r) => (l.Item1, l.Item2, l.Item3, l.Item4, r));
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and combines the results.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the first parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the first parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the first parser.</typeparam>
+        /// <typeparam name="T5">The fifth result type of the first parser.</typeparam>
+        /// <typeparam name="T6">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser combining the results of both parsers.</returns>
+        public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> ThenAdd<T1, T2, T3, T4, T5, T6>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> first, Func<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth), IParser<T6>> second)
+            => new BindParser<(T1, T2, T3, T4, T5), T6, (T1, T2, T3, T4, T5, T6)>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, r) => (l.Item1, l.Item2, l.Item3, l.Item4, l.Item5, r));
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and combines the results.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the first parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the first parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the first parser.</typeparam>
+        /// <typeparam name="T5">The fifth result type of the first parser.</typeparam>
+        /// <typeparam name="T6">The sixth result type of the first parser.</typeparam>
+        /// <typeparam name="T7">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser combining the results of both parsers.</returns>
+        public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> ThenAdd<T1, T2, T3, T4, T5, T6, T7>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> first, Func<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth), IParser<T7>> second)
+            => new BindParser<(T1, T2, T3, T4, T5, T6), T7, (T1, T2, T3, T4, T5, T6, T7)>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, r) => (l.Item1, l.Item2, l.Item3, l.Item4, l.Item5, l.Item6, r));
+
+        /// <summary>
+        /// Creates a parser that applies the given parser and then the parser that <paramref name="second"/> picks for its result,
+        /// and combines the results.
+        /// </summary>
+        /// <typeparam name="T1">The first result type of the first parser.</typeparam>
+        /// <typeparam name="T2">The second result type of the first parser.</typeparam>
+        /// <typeparam name="T3">The third result type of the first parser.</typeparam>
+        /// <typeparam name="T4">The fourth result type of the first parser.</typeparam>
+        /// <typeparam name="T5">The fifth result type of the first parser.</typeparam>
+        /// <typeparam name="T6">The sixth result type of the first parser.</typeparam>
+        /// <typeparam name="T7">The seventh result type of the first parser.</typeparam>
+        /// <typeparam name="T8">The result type of the second parser.</typeparam>
+        /// <param name="first">The first parser.</param>
+        /// <param name="second">The function that picks the second parser.</param>
+        /// <returns>A parser combining the results of both parsers.</returns>
+        public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)> ThenAdd<T1, T2, T3, T4, T5, T6, T7, T8>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> first, Func<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh), IParser<T8>> second)
+            => new BindParser<(T1, T2, T3, T4, T5, T6, T7), T8, (T1, T2, T3, T4, T5, T6, T7, T8)>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, r) => (l.Item1, l.Item2, l.Item3, l.Item4, l.Item5, l.Item6, l.Item7, r));
 
         /// <summary>
         /// Creates a parser that applies the given parser and then expects the input stream to end.

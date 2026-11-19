@@ -11,25 +11,28 @@ namespace Warpstone.Internal.ParserImplementations
     /// that a select function picks for its result.
     /// </summary>
     /// <typeparam name="TIn">The result type of the source parser.</typeparam>
-    /// <typeparam name="TOut">The result type of the selected parser.</typeparam>
-    internal sealed class BindParserImpl<TIn, TOut> : ParserImplementationBase<BindParser<TIn, TOut>, TOut>
+    /// <typeparam name="TSelected">The result type of the selected parser.</typeparam>
+    /// <typeparam name="TOut">The result type of the combine function.</typeparam>
+    internal sealed class BindParserImpl<TIn, TSelected, TOut> : ParserImplementationBase<BindParser<TIn, TSelected, TOut>, TOut>
     {
         private IParserImplementation<TIn> source = default!;
-        private Func<TIn, IParser<TOut>> select = default!;
+        private Func<TIn, IParser<TSelected>> select = default!;
+        private Func<TIn, TSelected, TOut>? combine;
         private IReadOnlyDictionary<IParser, IParserImplementation> lookup = default!;
         private IParserImplementation reentryKey = default!;
         private Continuation continuation = default!;
-        private CombineContinuation combine = default!;
+        private CombineContinuation combineContinuation = default!;
 
         /// <inheritdoc />
-        protected override void InitializeInternal(BindParser<TIn, TOut> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+        protected override void InitializeInternal(BindParser<TIn, TSelected, TOut> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             source = (IParserImplementation<TIn>)parserLookup[parser.Source];
             select = parser.Select;
+            combine = parser.Combine;
             lookup = parserLookup;
             reentryKey = parser.ReentryKey;
             continuation = new(this);
-            combine = new(this);
+            combineContinuation = new(this);
         }
 
         /// <inheritdoc />
@@ -78,9 +81,9 @@ namespace Warpstone.Internal.ParserImplementations
         /// <summary>
         /// Picks the parser to apply after <paramref name="left"/>, or reports why there is none.
         /// </summary>
-        private IParserImplementation<TOut>? Select(IParseContext context, int position, in UnsafeParseResult left)
+        private IParserImplementation<TSelected>? Select(IParseContext context, int position, in UnsafeParseResult left)
         {
-            IParser<TOut> next;
+            IParser<TSelected> next;
             try
             {
                 next = select((TIn)left.Value!) ?? throw new InvalidOperationException("The bind function returned null instead of a parser.");
@@ -94,7 +97,7 @@ namespace Warpstone.Internal.ParserImplementations
             // A parser of the analyzed grammar shares its memo entries, left recursion handling and stack guards.
             // Any other parser gets its own implementation, which the parser caches.
             return lookup.TryGetValue(next, out var impl)
-                ? (IParserImplementation<TOut>)impl
+                ? (IParserImplementation<TSelected>)impl
                 : next.GetImplementation(context.Options);
         }
 
@@ -119,19 +122,26 @@ namespace Warpstone.Internal.ParserImplementations
         private void Leave(IParseContext context, int position)
             => context.MemoTable[position, reentryKey] = UnsafeParseResult.Failure(position);
 
-        private static UnsafeParseResult Combine(in UnsafeParseResult left, in UnsafeParseResult right)
-            => right.Success
-            ? new UnsafeParseResult(left.Position, left.Length + right.Length, right.Value)
-            : UnsafeParseResult.Failure(left.Position);
+        private UnsafeParseResult Combine(in UnsafeParseResult left, in UnsafeParseResult right)
+        {
+            if (!right.Success)
+            {
+                return UnsafeParseResult.Failure(left.Position);
+            }
+
+            // Without a combine function the selected result is passed on as is, so value types are not boxed again.
+            var value = combine is null ? right.Value : combine((TIn)left.Value!, (TSelected)right.Value!);
+            return new UnsafeParseResult(left.Position, left.Length + right.Length, value);
+        }
 
         /// <summary>
         /// Picks and pushes the selected parser once the source has finished, when executing in iterative mode.
         /// </summary>
         private sealed class Continuation : ContinuationParserImplementationBase
         {
-            private readonly BindParserImpl<TIn, TOut> owner;
+            private readonly BindParserImpl<TIn, TSelected, TOut> owner;
 
-            public Continuation(BindParserImpl<TIn, TOut> owner)
+            public Continuation(BindParserImpl<TIn, TSelected, TOut> owner)
             {
                 this.owner = owner;
             }
@@ -153,7 +163,7 @@ namespace Warpstone.Internal.ParserImplementations
                     return;
                 }
 
-                context.ExecutionStack.Push((left.NextPosition, owner.combine));
+                context.ExecutionStack.Push((left.NextPosition, owner.combineContinuation));
                 context.ExecutionStack.Push((left.NextPosition, next));
             }
         }
@@ -163,9 +173,9 @@ namespace Warpstone.Internal.ParserImplementations
         /// </summary>
         private sealed class CombineContinuation : ContinuationParserImplementationBase
         {
-            private readonly BindParserImpl<TIn, TOut> owner;
+            private readonly BindParserImpl<TIn, TSelected, TOut> owner;
 
-            public CombineContinuation(BindParserImpl<TIn, TOut> owner)
+            public CombineContinuation(BindParserImpl<TIn, TSelected, TOut> owner)
             {
                 this.owner = owner;
             }
@@ -181,7 +191,7 @@ namespace Warpstone.Internal.ParserImplementations
                     owner.Leave(context, left.Position);
                 }
 
-                context.ResultStack.Push(Combine(left, right));
+                context.ResultStack.Push(owner.Combine(left, right));
             }
         }
     }

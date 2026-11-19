@@ -59,6 +59,26 @@ public sealed class BindParser(ParseOptions options)
         => Choice.TryParse("a2", options).Success.Should().BeFalse();
 
     [Test]
+    public void Then_returns_selected_result()
+        => Regex("[0-9]").Transform(int.Parse).Then(n => Multiple(Char('x'), n)).ThenEnd()
+        .Parse("2xx", options).Should().HaveCount(2);
+
+    [Test]
+    public void ThenSkip_returns_source_result()
+        => Char('<').Then(Regex("[a-z]+")).ThenSkip(Char('>')).ThenSkip(name => String($"</{name}>"))
+        .Parse("<b></b>", options).Should().Be("b");
+
+    [Test]
+    public void ThenAdd_combines_results()
+        => Regex("[0-9]").Transform(int.Parse).ThenAdd(n => Multiple(Char('x'), n)).ThenEnd()
+        .Parse("2xx", options).Should().BeEquivalentTo((2, new[] { 'x', 'x' }));
+
+    [Test]
+    public void ThenAdd_flattens_tuples()
+        => Regex("[a-z]").ThenAdd(c => String(c)).ThenAdd(t => String(t.First + t.Second)).ThenEnd()
+        .Parse("aaaa", options).Should().Be(("a", "a", "aa"));
+
+    [Test]
     public void Grows_left_recursive_source()
         => Sum.Parse("1+2+3", options).Should().Be(6);
 
