@@ -9,10 +9,12 @@
 
 - Tests that set options explicitly (`Legacy/BasicParsersTests`, `Legacy/CommonParsersTests`, `Parsers/MemoParser`, `Parsers/LeftRecursiveMemoParser`, `Expressions/LeftRecursionGrammars`) are unaffected by the default.
 - Tests on defaults silently flipped from memo-off to memo-on. Memo only applies when the grammar has a node with occurrence count > 1 (`ParserBase.GetSimplifiedOptions`), so only grammars with shared nodes matter:
-  - `Expressions/LeftRecursive`, `Expressions/StackDepth`: now `[TestFixture(true)] [TestFixture(false)]` with a `bool memo` primary constructor.
-  - Json `Complex.Simple_object`: `[TestCase(true/false)]`; `JsonParser.Parse` takes optional `ParseOptions?`.
+  - New shared source `Warpstone.Tests/TestOptions.All`: the 3 execution modes × memo on/off, with growing on.
+  - `Expressions/LeftRecursive`: `[TestFixtureSource(typeof(TestOptions), nameof(TestOptions.All))]` with a `ParseOptions` primary constructor.
+  - `Expressions/StackDepth`: `[TestCaseSource]` of options × counts. Recursive mode only gets counts up to 1 000, because it has no stack guard and 10k/50k would overflow the stack and kill the test host.
+  - Json `Complex.Simple_object`: `[TestCaseSource(typeof(TestOptions), ...)]`; `JsonParser.Parse` takes optional `ParseOptions?`.
   - Not changed: Json scalar tests, `AnalysisScaling`, and `AsResultParser` (no shared nodes, so memo gets simplified away); `BasicParsersTests` already covers both memo settings for basic parsers.
-- Result: 1539 passed, 12 skipped (`TransformationExceptionCorrect`, skipped on purpose).
+- Result: 1695 passed, 12 skipped (`TransformationExceptionCorrect`, skipped on purpose).
 
 ## Pitfalls
 

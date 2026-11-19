@@ -1,11 +1,8 @@
 namespace Warpstone.Tests.Expressions;
 
-[TestFixture(true)]
-[TestFixture(false)]
-public sealed class LeftRecursive(bool memo)
+[TestFixtureSource(typeof(TestOptions), nameof(TestOptions.All))]
+public sealed class LeftRecursive(ParseOptions options)
 {
-    private readonly ParseOptions options = ParseOptions.Default with { EnableAutomaticMemoization = memo };
-
     private interface IExp 
     {
         int Value{ get; }
