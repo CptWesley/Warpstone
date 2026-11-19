@@ -246,12 +246,15 @@ namespace Warpstone.Internal.Input
         /// <returns>A task that completes when the input is read.</returns>
         public async Task ReadPendingAsync(CancellationToken cancellationToken)
         {
-            // ponytail: TextReader.ReadAsync(char[]) has no cancellation token before .NET Core 3; cancellation is checked between reads.
             while (length < pendingEnd && !IsComplete)
             {
-                cancellationToken.ThrowIfCancellationRequested();
                 EnsureCapacity();
+#if NETCOREAPP3_0_OR_GREATER
+                Append(await reader.ReadAsync(buffer, cancellationToken).ConfigureAwait(false));
+#else
+                cancellationToken.ThrowIfCancellationRequested();
                 Append(await reader.ReadAsync(buffer, length, buffer.Length - length).ConfigureAwait(false));
+#endif
             }
 
             pendingEnd = 0;
