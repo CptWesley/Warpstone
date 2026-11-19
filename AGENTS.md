@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Warpstone is a packrat parser combinator library for C# with left-recursion support. The current major version is V3, which is in preview. The README still shows the V1/V2 import styles; for V3 use `using Warpstone; using static Warpstone.Parsers;`.
+Warpstone is a packrat parser combinator library for C# with left-recursion support. The current major version is V3, which is in preview. V3 imports: `using Warpstone; using static Warpstone.Parsers;`. The README's Usage section has a runnable V3 calculator example; if the public API changes, re-run it (see [docs/lessons_learned/2026-11-19-readme-v3-example.md](docs/lessons_learned/2026-11-19-readme-v3-example.md)).
 
 ## Communication Style
 
