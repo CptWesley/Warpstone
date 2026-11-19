@@ -222,13 +222,8 @@ public static class LeftRecursionGrammars
 
     [Theory]
     [MemberData(nameof(InterlockingData))]
-    public static void Interlocking_cycles_without_common_rule_are_rejected(ParseOptions options, string input)
-    {
-        // Like pegen: no single parser lies on every cycle, so automatic growing cannot pick a leader.
-        var parser = Interlocking(manualLeaders: false).ThenEnd();
-        Action act = () => parser.TryParse(input, options);
-        act.Should().Throw<ArgumentException>();
-    }
+    public static void Interlocking_cycles_without_common_rule(ParseOptions options, string input)
+        => ShouldParse(Interlocking(manualLeaders: false), input, options); // No leader: Umeda–Maeda fallback.
 
     [Theory]
     [MemberData(nameof(InterlockingManualData))]
@@ -260,5 +255,37 @@ public static class LeftRecursionGrammars
     {
         ShouldParse(IndirectSA(manualLeader: true), "baabab", options);
         ShouldParse(IndirectSAB(manualLeader: true), "babab-babab", options);
+    }
+
+    [Theory]
+    [MemberData(nameof(AutoOptionsData))]
+    public static void Explicit_memo_inside_cycle_is_bypassed(ParseOptions options)
+    {
+        // S <- S 'a' / 'a', memoized by hand.
+        IParser<string> direct = null!;
+        direct = Memo(Or(Seq(Lazy(() => direct), S("a")), S("a")));
+        ShouldParse(direct, "aaaa", options);
+
+        // S <- A 'b' / 'b' ; A <- A 'a' / S 'a', both memoized by hand.
+        IParser<string> s = null!;
+        IParser<string> a = null!;
+        s = Memo(Or(Seq(Lazy(() => a), S("b")), S("b")));
+        a = Memo(Or(Seq(Lazy(() => a), S("a")), Seq(Lazy(() => s), S("a"))));
+        ShouldParse(s, "baabab", options);
+    }
+
+    [Theory]
+    [MemberData(nameof(AutoOptionsData))]
+    public static void Explicit_memo_inside_leaderless_cycle_is_bypassed(ParseOptions options)
+    {
+        IParser<string> a = null!;
+        IParser<string> b = null!;
+        IParser<string> c = null!;
+        IParser<string> d = null!;
+        a = Memo(Or(Seq(Lazy(() => b), S("x")), S("a")));
+        b = Memo(Or(Seq(Lazy(() => a), S("z")), Seq(Lazy(() => c), S("y"))));
+        c = Memo(Or(Seq(Lazy(() => b), S("w")), Seq(Lazy(() => d), S("v"))));
+        d = Memo(Seq(Lazy(() => c), S("u")));
+        ShouldParse(a, "azxzx", options);
     }
 }

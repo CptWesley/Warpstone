@@ -1,0 +1,269 @@
+using System;
+using System.Collections.Generic;
+using Warpstone.Errors;
+using Warpstone.Internal.ParserExpressions;
+
+namespace Warpstone.Internal.ParserImplementations
+{
+    /// <summary>
+    /// Grows the seed of a left-recursive component that has no single leader, following Umeda &amp; Maeda (JIP vol. 29, 2021).
+    /// A parser that calls itself again at the same position, before its first result is known, starts growing.
+    /// During each growth iteration, every other parser of the component called at that position is evaluated again,
+    /// at most once, instead of being read from the memo table; its memoized result is only replaced by a longer one.
+    /// </summary>
+    /// <typeparam name="T">The return type of the wrapped parser.</typeparam>
+    /// <seealso href="https://github.com/ialab/LeftRecursion"/>
+    internal sealed class CycleGrowParserImpl<T> : ParserImplementationBase<CycleGrowParser<T>, T>
+    {
+        private IParserImplementation<T> inner = default!;
+        private CycleGrowGroup group = default!;
+        private KeepBestContinuation keepBest = default!;
+        private SeedContinuation seed = default!;
+        private GrowContinuation grow = default!;
+
+        /// <inheritdoc />
+        protected override void InitializeInternal(CycleGrowParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
+        {
+            inner = (IParserImplementation<T>)parserLookup[parser.Parser];
+            group = parser.Group;
+            keepBest = new(this);
+            seed = new(this);
+            grow = new(this);
+        }
+
+        /// <inheritdoc />
+        public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
+        {
+            var state = group.GetState(context, position);
+
+            if (state.Limits is { } limits && limits.Add(this))
+            {
+                return KeepBest(context, position, inner.Apply(context, position));
+            }
+
+            if (context.MemoTable.TryGetValue(position, inner, out var memo))
+            {
+                RequestGrowIfInProgress(state);
+                return memo;
+            }
+
+            StartSeed(context, state, position);
+            var result = inner.Apply(context, position);
+            if (!EndSeed(context, state, position, result))
+            {
+                return result;
+            }
+
+            do
+            {
+                result = inner.Apply(context, position);
+            }
+            while (ContinueGrowing(context, state, position, result));
+
+            return context.MemoTable[position, inner];
+        }
+
+        /// <inheritdoc />
+        public override void Apply(IIterativeParseContext context, int position)
+        {
+            var state = group.GetState(context, position);
+
+            if (state.Limits is { } limits && limits.Add(this))
+            {
+                context.ExecutionStack.Push((position, keepBest));
+                context.ExecutionStack.Push((position, inner));
+                return;
+            }
+
+            if (context.MemoTable.TryGetValue(position, inner, out var memo))
+            {
+                RequestGrowIfInProgress(state);
+                context.ResultStack.Push(memo);
+                return;
+            }
+
+            StartSeed(context, state, position);
+            context.ExecutionStack.Push((position, seed));
+            context.ExecutionStack.Push((position, inner));
+        }
+
+        private void RequestGrowIfInProgress(CycleGrowState state)
+        {
+            if (state.InProgress.Contains(this))
+            {
+                state.GrowRequested.Add(this);
+            }
+        }
+
+        private void StartSeed(IParseContext context, CycleGrowState state, int position)
+        {
+            state.InProgress.Add(this);
+            context.MemoTable[position, inner] = new(position, new InfiniteRecursionError(context, this, position, 1));
+        }
+
+        /// <returns><see langword="true"/> if the parser was called again while evaluating its seed, so it has to grow.</returns>
+        private bool EndSeed(IParseContext context, CycleGrowState state, int position, in UnsafeParseResult result)
+        {
+            context.MemoTable[position, inner] = result;
+            state.InProgress.Remove(this);
+
+            if (!state.GrowRequested.Remove(this))
+            {
+                return false;
+            }
+
+            state.Suspended.Push(state.Limits);
+            state.Limits = new() { this };
+            return true;
+        }
+
+        /// <returns><see langword="true"/> if <paramref name="result"/> improved the seed, so another iteration has to run.</returns>
+        private bool ContinueGrowing(IParseContext context, CycleGrowState state, int position, in UnsafeParseResult result)
+        {
+            if (GrowParserImpl<T>.ResultHasImproved(context.MemoTable[position, inner], result))
+            {
+                context.MemoTable[position, inner] = result;
+                state.Limits = new() { this };
+                return true;
+            }
+
+            state.Limits = state.Suspended.Pop();
+            return false;
+        }
+
+        private UnsafeParseResult KeepBest(IParseContext context, int position, in UnsafeParseResult result)
+        {
+            if (context.MemoTable.TryGetValue(position, inner, out var best) && !GrowParserImpl<T>.ResultHasImproved(best, result))
+            {
+                return best;
+            }
+
+            context.MemoTable[position, inner] = result;
+            return result;
+        }
+
+        private sealed class KeepBestContinuation : ContinuationParserImplementationBase
+        {
+            private readonly CycleGrowParserImpl<T> owner;
+
+            public KeepBestContinuation(CycleGrowParserImpl<T> owner)
+            {
+                this.owner = owner;
+            }
+
+            /// <inheritdoc />
+            public override void Apply(IIterativeParseContext context, int position)
+            {
+                var result = context.ResultStack.Pop();
+                context.ResultStack.Push(owner.KeepBest(context, position, result));
+            }
+        }
+
+        private sealed class SeedContinuation : ContinuationParserImplementationBase
+        {
+            private readonly CycleGrowParserImpl<T> owner;
+
+            public SeedContinuation(CycleGrowParserImpl<T> owner)
+            {
+                this.owner = owner;
+            }
+
+            /// <inheritdoc />
+            public override void Apply(IIterativeParseContext context, int position)
+            {
+                var result = context.ResultStack.Pop();
+                var state = owner.group.GetState(context, position);
+
+                if (!owner.EndSeed(context, state, position, result))
+                {
+                    context.ResultStack.Push(result);
+                    return;
+                }
+
+                context.ExecutionStack.Push((position, owner.grow));
+                context.ExecutionStack.Push((position, owner.inner));
+            }
+        }
+
+        private sealed class GrowContinuation : ContinuationParserImplementationBase
+        {
+            private readonly CycleGrowParserImpl<T> owner;
+
+            public GrowContinuation(CycleGrowParserImpl<T> owner)
+            {
+                this.owner = owner;
+            }
+
+            /// <inheritdoc />
+            public override void Apply(IIterativeParseContext context, int position)
+            {
+                var result = context.ResultStack.Pop();
+                var state = owner.group.GetState(context, position);
+
+                if (owner.ContinueGrowing(context, state, position, result))
+                {
+                    context.ExecutionStack.Push((position, this));
+                    context.ExecutionStack.Push((position, owner.inner));
+                    return;
+                }
+
+                context.ResultStack.Push(context.MemoTable[position, owner.inner]);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Shared by all <see cref="CycleGrowParserImpl{T}"/> of one leaderless left-recursive component.
+    /// Serves as memo table key for the component's growth state at each position, so the state lives in the parse context.
+    /// </summary>
+    internal sealed class CycleGrowGroup : ContinuationParserImplementationBase
+    {
+        /// <inheritdoc />
+        public override void Apply(IIterativeParseContext context, int position)
+            => throw new NotSupportedException();
+
+        /// <summary>
+        /// Gets the growth state of the component at the given position.
+        /// </summary>
+        /// <param name="context">The parse context.</param>
+        /// <param name="position">The position.</param>
+        /// <returns>The growth state, created on first use.</returns>
+        public CycleGrowState GetState(IParseContext context, int position)
+        {
+            if (context.MemoTable.TryGetValue(position, this, out var entry))
+            {
+                return (CycleGrowState)entry.Value!;
+            }
+
+            var state = new CycleGrowState();
+            context.MemoTable[position, this] = new UnsafeParseResult(position, 0, state);
+            return state;
+        }
+    }
+
+    /// <summary>
+    /// The growth state of a leaderless left-recursive component at one position.
+    /// </summary>
+    internal sealed class CycleGrowState
+    {
+        /// <summary>
+        /// The parsers evaluating their seed at this position.
+        /// </summary>
+        public HashSet<IParserImplementation> InProgress { get; } = new();
+
+        /// <summary>
+        /// The parsers called again while evaluating their seed, which therefore have to grow.
+        /// </summary>
+        public HashSet<IParserImplementation> GrowRequested { get; } = new();
+
+        /// <summary>
+        /// While growing, the parsers already evaluated in the current iteration. Other parsers are evaluated again.
+        /// </summary>
+        public HashSet<IParserImplementation>? Limits { get; set; }
+
+        /// <summary>
+        /// The <see cref="Limits"/> of growths interrupted by a nested growth at the same position.
+        /// </summary>
+        public Stack<HashSet<IParserImplementation>?> Suspended { get; } = new();
+    }
+}

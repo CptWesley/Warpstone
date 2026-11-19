@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using Warpstone.Internal.ParserImplementations;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -47,7 +48,6 @@ namespace Warpstone.Internal.ParserExpressions
                 var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
 
                 var requiresMemo = new HashSet<IParser>();
-                var requiresGrow = new HashSet<IParser>();
 
                 // Build initial lookup table.
 
@@ -100,14 +100,15 @@ namespace Warpstone.Internal.ParserExpressions
 
                 // Handle memoization and left-recursion.
 
+                LeftRecursionInfo? leftRecursion = null;
+
                 if (o.EnableAutomaticGrowingRecursion)
                 {
                     var parsers = analysis.OccurrenceCounts.Keys.ToList();
-                    var (leaders, members) = LeftRecursionAnalysis.Analyze(parsers, new HashSet<IParser>(lazyTargets.Values));
-                    requiresGrow.UnionWith(leaders);
+                    leftRecursion = LeftRecursionAnalysis.Analyze(parsers, new HashSet<IParser>(lazyTargets.Values));
 
                     // Members of a left-recursive cycle must not be memoized, or they keep returning results built from an outdated seed.
-                    requiresMemo.ExceptWith(members);
+                    requiresMemo.ExceptWith(leftRecursion.Members);
                 }
 
                 if (o.EnableAutomaticMemoization)
@@ -117,23 +118,30 @@ namespace Warpstone.Internal.ParserExpressions
 
                     foreach (var parser in requiresMemo)
                     {
-                        var type = typeof(MemoParser<>).MakeGenericType(parser.ResultType);
-                        var wrapped = (IParser)Activator.CreateInstance(type, parser)!;
-                        var impl = wrapped.CreateUninitializedImplementation();
-                        impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
-                        lookup[parser] = impl;
+                        Wrap(typeof(MemoParser<>), parser, lookup);
                     }
                 }
 
-                if (o.EnableAutomaticGrowingRecursion)
+                if (leftRecursion is not null)
                 {
-                    foreach (var parser in requiresGrow)
+                    foreach (var parser in leftRecursion.Leaders)
                     {
-                        var type = typeof(GrowParser<>).MakeGenericType(parser.ResultType);
-                        var wrapped = (IParser)Activator.CreateInstance(type, parser)!;
-                        var impl = wrapped.CreateUninitializedImplementation();
-                        impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
-                        lookup[parser] = impl;
+                        Wrap(typeof(GrowParser<>), parser, lookup);
+                    }
+
+                    foreach (var group in leftRecursion.LeaderlessGroups)
+                    {
+                        var key = new CycleGrowGroup();
+                        foreach (var parser in group)
+                        {
+                            Wrap(typeof(CycleGrowParser<>), parser, lookup, key);
+                        }
+                    }
+
+                    // Bypass explicit memo parsers inside a left-recursive cycle, for the same reason as above.
+                    foreach (var memo in leftRecursion.Members.OfType<IMemoParser>())
+                    {
+                        lookup[memo] = lookup[SkipBypassed(memo.Parser, leftRecursion.Members, lazyTargets)];
                     }
                 }
 
@@ -156,6 +164,40 @@ namespace Warpstone.Internal.ParserExpressions
             });
         }
 
+        /// <summary>
+        /// Replaces the implementation of <paramref name="parser"/> by one of the generic <paramref name="wrapper"/> expression around it.
+        /// </summary>
+        private static void Wrap(Type wrapper, IParser parser, Dictionary<IParser, IParserImplementation> lookup, params object[] arguments)
+        {
+            var type = wrapper.MakeGenericType(parser.ResultType);
+            var wrapped = (IParser)Activator.CreateInstance(type, [parser, .. arguments])!;
+            var impl = wrapped.CreateUninitializedImplementation();
+            impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
+            lookup[parser] = impl;
+        }
+
+        /// <summary>
+        /// Follows lazy parsers and bypassed memo parsers to the parser that does the work.
+        /// </summary>
+        private static IParser SkipBypassed(IParser parser, HashSet<IParser> bypassedMemos, Dictionary<ILazyParser, IParser> lazyTargets)
+        {
+            while (true)
+            {
+                if (parser is ILazyParser lazy)
+                {
+                    parser = lazyTargets[lazy];
+                }
+                else if (parser is IMemoParser memo && bypassedMemos.Contains(parser))
+                {
+                    parser = memo.Parser;
+                }
+                else
+                {
+                    return parser;
+                }
+            }
+        }
+
         /// <inheritdoc />
         IParserImplementation IParser.GetImplementation(ParseOptions options)
             => GetImplementation(options);
@@ -167,31 +209,64 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public void PerformAnalysisStep(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
         {
-            var updatedTrace = new IParser[trace.Count + 1];
-            CopyTo(trace, updatedTrace);
-            updatedTrace[updatedTrace.Length - 1] = this;
-
-            var oldLength = info.MaximumNestedParserDepth;
-            if (updatedTrace.Length > oldLength)
-            {
-                info.MaximumNestedParserDepth = updatedTrace.Length;
-            }
-
             var oldCount = info.OccurrenceCounts.TryGetValue(this, out var oldCountValue) ? oldCountValue : 0;
-            var newCount = oldCount + 1;
-            info.OccurrenceCounts[this] = newCount;
+            info.OccurrenceCounts[this] = oldCount + 1;
+
+            // Our own analysis info remembers heights, so a parser reached again through another path is not walked again.
+#pragma warning disable S3215 // Heights are an implementation detail of our own analysis info, not part of the public interface.
+            var heights = (info as ParserAnalysisInfo)?.Heights;
+#pragma warning restore S3215
 
             if (trace.Contains(this))
             {
                 var oldRecCount = info.RecursiveOccurrenceCounts.TryGetValue(this, out var oldRecCountValue) ? oldRecCountValue : 0;
-                var newRecCount = oldRecCount + 1;
-                info.RecursiveOccurrenceCounts[this] = newRecCount;
-
+                info.RecursiveOccurrenceCounts[this] = oldRecCount + 1;
                 info.HasRecursiveParsers = true;
+                UpdateDepths(info, heights, trace, trace.Count + 1);
                 return;
             }
 
+            if (heights is not null && heights.TryGetValue(this, out var height))
+            {
+                UpdateDepths(info, heights, trace, trace.Count + height);
+                return;
+            }
+
+            UpdateDepths(info, heights, trace, trace.Count + 1);
+            if (heights is not null)
+            {
+                heights[this] = 1;
+            }
+
+            var updatedTrace = new IParser[trace.Count + 1];
+            CopyTo(trace, updatedTrace);
+            updatedTrace[updatedTrace.Length - 1] = this;
             PerformAnalysisStepInternal(info, updatedTrace);
+        }
+
+        /// <summary>
+        /// Records that a path from the root reaches <paramref name="depth"/> parsers deep, through every parser in <paramref name="trace"/>.
+        /// </summary>
+        private static void UpdateDepths(IParserAnalysisInfo info, Dictionary<IParser, int>? heights, IReadOnlyList<IParser> trace, int depth)
+        {
+            if (depth > info.MaximumNestedParserDepth)
+            {
+                info.MaximumNestedParserDepth = depth;
+            }
+
+            if (heights is null)
+            {
+                return;
+            }
+
+            // trace[i] sits at depth i + 1, so the path down from it holds depth - i parsers.
+            for (var i = 0; i < trace.Count; i++)
+            {
+                if (!heights.TryGetValue(trace[i], out var old) || depth - i > old)
+                {
+                    heights[trace[i]] = depth - i;
+                }
+            }
         }
 
         /// <inheritdoc cref="PerformAnalysisStep(IParserAnalysisInfo, IReadOnlyList{IParser})" />

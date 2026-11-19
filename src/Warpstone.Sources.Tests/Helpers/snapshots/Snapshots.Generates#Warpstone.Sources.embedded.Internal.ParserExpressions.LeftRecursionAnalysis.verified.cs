@@ -14,6 +14,7 @@ namespace Warpstone.Internal.ParserExpressions
     /// Builds the graph of parsers that can be invoked before any input is consumed, splits it into strongly connected components,
     /// and picks for each cyclic component a single leader that lies on every cycle. Only the leader grows its seed;
     /// the other members must not be memoized, so that each growth iteration sees the leader's latest seed.
+    /// Components without such a leader fall back to <see cref="CycleGrowParser{T}"/> (Umeda &amp; Maeda).
     /// </summary>
     /// <seealso href="https://github.com/python/cpython/blob/main/Tools/peg_generator/pegen/parser_generator.py"/>
     internal static class LeftRecursionAnalysis
@@ -23,14 +24,12 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         /// <param name="parsers">All parsers in the grammar, in a stable order.</param>
         /// <param name="preferredLeaders">Parsers to prefer as leader, such as the targets of lazy parsers.</param>
-        /// <returns>The parsers that need to grow, and all parsers that are part of a left-recursive cycle.</returns>
-        /// <exception cref="ArgumentException">Thrown when a cycle has no parser that lies on all of its cycles.</exception>
-        public static (HashSet<IParser> Leaders, HashSet<IParser> Members) Analyze(IReadOnlyList<IParser> parsers, ISet<IParser> preferredLeaders)
+        /// <returns>The found left-recursion info.</returns>
+        public static LeftRecursionInfo Analyze(IReadOnlyList<IParser> parsers, ISet<IParser> preferredLeaders)
         {
             var edges = BuildLeftEdges(parsers);
             var order = parsers.Select((p, i) => (p, i)).ToDictionary(x => x.p, x => x.i);
-            var leaders = new HashSet<IParser>();
-            var members = new HashSet<IParser>();
+            var info = new LeftRecursionInfo();
 
             foreach (var component in StronglyConnectedComponents(parsers, edges))
             {
@@ -40,7 +39,7 @@ namespace Warpstone.Internal.ParserExpressions
                 }
 
                 var set = new HashSet<IParser>(component);
-                members.UnionWith(set);
+                info.Members.UnionWith(set);
 
                 // Explicit Grow parsers already break every cycle through them.
                 var growers = new HashSet<IParser>(component.Where(IsGrow));
@@ -49,24 +48,25 @@ namespace Warpstone.Internal.ParserExpressions
                     continue;
                 }
 
-                var leader = component
+                var candidates = component
                     .Where(x => x is not ILazyParser && !IsMemo(x) && !IsGrow(x))
                     .OrderBy(x => preferredLeaders.Contains(x) ? 0 : 1)
                     .ThenBy(x => order[x])
-                    .FirstOrDefault(x => IsAcyclicWithout(set, new HashSet<IParser>(growers) { x }, edges));
+                    .ToList();
+
+                var leader = candidates.Find(x => IsAcyclicWithout(set, new HashSet<IParser>(growers) { x }, edges));
 
                 if (leader is null)
                 {
-                    throw new ArgumentException(
-                        "Provided parser contains left-recursive cycles without a parser that lies on all of them. "
-                        + "Disable automatic growing recursion and place Grow parsers manually.",
-                        nameof(parsers));
+                    info.LeaderlessGroups.Add(candidates);
                 }
-
-                leaders.Add(leader);
+                else
+                {
+                    info.Leaders.Add(leader);
+                }
             }
 
-            return (leaders, members);
+            return info;
         }
 
         /// <summary>
@@ -83,7 +83,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <param name="parser">The parser to check.</param>
         /// <returns><see langword="true"/> if it is a memo parser.</returns>
         public static bool IsMemo(IParser parser)
-            => IsInstanceOf(parser, typeof(MemoParser<>));
+            => parser is IMemoParser;
 
         private static bool IsInstanceOf(IParser parser, Type genericType)
         {
@@ -215,6 +215,27 @@ namespace Warpstone.Internal.ParserExpressions
 
             return component.All(v => done.Contains(v) || !HasCycle(v));
         }
+    }
+
+    /// <summary>
+    /// The result of <see cref="LeftRecursionAnalysis.Analyze"/>.
+    /// </summary>
+    internal sealed class LeftRecursionInfo
+    {
+        /// <summary>
+        /// The parsers that grow their seed, one per left-recursive component.
+        /// </summary>
+        public HashSet<IParser> Leaders { get; } = new();
+
+        /// <summary>
+        /// All parsers that are part of a left-recursive cycle. None of them may be memoized.
+        /// </summary>
+        public HashSet<IParser> Members { get; } = new();
+
+        /// <summary>
+        /// The parsers of each left-recursive component that has no leader. They grow together.
+        /// </summary>
+        public List<List<IParser>> LeaderlessGroups { get; } = new();
     }
 }
 
