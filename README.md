@@ -45,8 +45,8 @@ Warpstone's implementation draws on the following work:
 | Step-wise execution                            | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
 | Regex parsers                                  | ✅ | ✅ | ✅ | ❌ | ❌ | ❌ | ✅ |
 | Operator precedence helpers                    | ✅ | ❌ | ❌<sup>3</sup> | ✅ | ✅ | 🟡<sup>4</sup> | ✅ |
-| Monadic bind (context-sensitive parsing)       | ❌ | ✅ | ❌ | ✅ | 🟡<sup>5</sup> | ✅ | ❌ |
-| Non-`char` token input                         | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | 🟡<sup>6</sup> |
+| Monadic bind (context-sensitive parsing)       | ❌ | ✅ | 🟡<sup>5</sup> | ✅ | 🟡<sup>6</sup> | ✅ | ❌ |
+| Non-`char` token input                         | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | 🟡<sup>7</sup> |
 | Streaming input (`TextReader`/`Stream`)        | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Compiled / source-generated parsers            | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
 | Source-only package (no assembly dependency)   | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
@@ -55,8 +55,9 @@ Warpstone's implementation draws on the following work:
 2. A choice only backtracks over consumed input when the branch is wrapped in `Try`.
 3. Not needed: write expressions as left-recursive rules.
 4. `ChainLeft`/`ChainRight` combinators, no precedence table.
-5. Via `Switch`.
-6. Custom tokenizers, input is still text.
+5. Via `Bind`. Left recursion through the selected parser is not grown and fails with an `InfiniteRecursionError`; a selected parser that is not part of the grammar is prepared for parsing each time a new instance is returned.
+6. Via `Switch`.
+7. Custom tokenizers, input is still text.
 
 Third-party columns reflect each library's documentation and package API at the time of writing (Pidgin 3.5, Parlot 2.3, ParsecSharp 5.2, Farkle 7).
 
