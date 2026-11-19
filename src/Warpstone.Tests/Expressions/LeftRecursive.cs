@@ -1,7 +1,11 @@
 namespace Warpstone.Tests.Expressions;
 
-public sealed class LeftRecursive
+[TestFixture(true)]
+[TestFixture(false)]
+public sealed class LeftRecursive(bool memo)
 {
+    private readonly ParseOptions options = ParseOptions.Default with { EnableAutomaticMemoization = memo };
+
     private interface IExp 
     {
         int Value{ get; }
@@ -84,9 +88,9 @@ public sealed class LeftRecursive
     [TestCase("1 + 2 + 3", "((1 + 2) + 3)")]
     [TestCase("1 * 2 * 3", "((1 * 2) * 3)")]
     [TestCase("1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9", "((((1 + 2) + ((3 * 4) * 5)) + ((6 * 7) * 8)) + 9)")]
-    public static void Parse_correctly(string input, string expected)
+    public void Parse_correctly(string input, string expected)
     {
-        var parsed = Exp.Parse(input);
+        var parsed = Exp.Parse(input, options);
         parsed.ToString().Should().Be(expected);
     }
 
@@ -103,9 +107,9 @@ public sealed class LeftRecursive
     [TestCase("1 + 2 + 3", 1 + 2 + 3)]
     [TestCase("1 * 2 * 3", 1 * 2 * 3)]
     [TestCase("1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9", 1 + 2 + 3 * 4 * 5 + 6 * 7 * 8 + 9)]
-    public static void Evalute_correctly(string input, int expected)
+    public void Evalute_correctly(string input, int expected)
     {
-        var parsed = Exp.Parse(input);
+        var parsed = Exp.Parse(input, options);
         parsed.Value.Should().Be(expected);
     }
 }

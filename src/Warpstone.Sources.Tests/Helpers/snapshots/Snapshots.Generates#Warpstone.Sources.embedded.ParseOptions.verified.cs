@@ -30,9 +30,9 @@ namespace Warpstone
         /// <summary>
         /// Determines if grammars should automatically
         /// be transformed to support memoization
-        /// (default: <see langword="false"/>).
+        /// (default: <see langword="true"/>).
         /// </summary>
-        public bool EnableAutomaticMemoization { get; init; } = false;
+        public bool EnableAutomaticMemoization { get; init; } = true;
     }
 }
 

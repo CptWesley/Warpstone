@@ -139,8 +139,9 @@ public sealed class Booleans
 
 public sealed class Complex
 {
-    [Test]
-    public void Simple_object()
+    [TestCase(true)]
+    [TestCase(false)]
+    public void Simple_object(bool memo)
     {
         var result = Parse(@"
         {
@@ -151,7 +152,7 @@ public sealed class Complex
                 ""numVal"": 42,
                 ""boolVal"": true
             }
-        }");
+        }", ParseOptions.Default with { EnableAutomaticMemoization = memo });
 
         result.Value.Should()
             .BeEquivalentTo(new JsonObject(ImmutableArray.Create( 
