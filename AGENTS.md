@@ -34,6 +34,14 @@ Check [docs/lessons_learned/INDEX.md](docs/lessons_learned/INDEX.md) for a simil
 
 After each session, create a "lessons learned" markdown file in `docs/lessons_learned/`. It should give a clear summary of issues you (the AI) ran into and how we solved them, so a next session doesn't run into them again. Add a reference to the file with a single, short sentence summary to `docs/lessons_learned/INDEX.md`.
 
+## Feature Comparison Table
+
+`README.md` has a "How does it compare?" table: Warpstone V1/V2/V3 against Pidgin, Parlot, ParsecSharp and Farkle. Keep it current:
+- A change that adds, removes or substantially changes a user-visible V3 feature (a combinator, parse option, execution mode, input source or package) updates the V3 column in the same change. A feature that isn't in the table yet gets a new row, with every column filled in.
+- Bumping a third-party package in `src/Directory.Packages.props` means re-checking that library's column, and the version list under the footnotes.
+- Don't touch the V1/V2 columns. They describe the frozen copies in `Warpstone.Benchmarks/Legacy`.
+- Use ✅ for supported, 🟡 for partial (add a footnote that says what is missing) and ❌ for not supported. Verify third-party cells from package docs or sources, not memory: see [docs/lessons_learned/2026-11-19-readme-comparison-table.md](docs/lessons_learned/2026-11-19-readme-comparison-table.md) for where to look.
+
 ## Commands
 
 Run everything from `src/`, where the solution `Warpstone.slnx` lives.
