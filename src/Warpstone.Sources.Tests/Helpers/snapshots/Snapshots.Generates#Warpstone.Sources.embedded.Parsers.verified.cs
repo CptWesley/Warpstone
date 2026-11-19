@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Warpstone.Internal;
 using Warpstone.Internal.ParserExpressions;
@@ -143,29 +144,20 @@ namespace Warpstone
         /// <returns>A parser trying multiple parsers in order and returning the result of the first successful one.</returns>
         public static IParser<T> Or<T>(IEnumerable<IParser<T>>? parsers)
         {
-            var result = Fail<T>();
+            var list = parsers?.ToList();
+            return list is { Count: > 0 } ? Or(list, 0, list.Count) : Fail<T>();
+        }
 
-            if (parsers is null)
+        // A balanced tree keeps many alternatives shallow, so the grammar analysis and the parser stay fast and within stack limits.
+        private static IParser<T> Or<T>(List<IParser<T>> parsers, int start, int count)
+        {
+            if (count == 1)
             {
-                return result;
+                return parsers[start];
             }
 
-            var hasFirst = false;
-
-            foreach (var parser in parsers)
-            {
-                if (!hasFirst)
-                {
-                    result = parser;
-                    hasFirst = true;
-                }
-                else
-                {
-                    result = new OrParser<T>(result, parser);
-                }
-            }
-
-            return result;
+            var left = (count + 1) / 2;
+            return new OrParser<T>(Or(parsers, start, left), Or(parsers, start + left, count - left));
         }
 
         /// <summary>

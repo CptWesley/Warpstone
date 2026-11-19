@@ -79,7 +79,8 @@ namespace Warpstone.Internal.ParserExpressions
             var owner = new Dictionary<IParser, int>();
             var stack = new Stack<IParser>();
 
-            // ponytail: one walk of the left-edge closure per parser with several children, O(parsers * closure) on deep choice chains.
+            // One walk of the left-edge closure per parser with several children.
+            // Parsers.Or builds a balanced tree, so the closures of its choices stay small.
             foreach (var children in edges.Values.Where(x => x.Count > 1))
             {
                 owner.Clear();

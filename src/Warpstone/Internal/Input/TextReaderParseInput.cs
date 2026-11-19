@@ -20,7 +20,7 @@ namespace Warpstone.Internal.Input
         private readonly List<int> lineStarts = [0];
         private char[] buffer = new char[MinimumReadSize];
         private int length;
-        private string? content;
+        private StringParseInput? whole;
         private int pendingEnd;
 
         /// <summary>
@@ -34,22 +34,8 @@ namespace Warpstone.Internal.Input
             this.reader = reader;
         }
 
-        // ponytail: keeps both the buffer and this string once built (2x memory); drop the buffer if big reader inputs need Content.
-
         /// <inheritdoc />
-        public string Content
-        {
-            get
-            {
-                if (content is null)
-                {
-                    Read(int.MaxValue);
-                    content = new string(buffer, 0, length);
-                }
-
-                return content;
-            }
-        }
+        public string Content => Whole().Content;
 
         /// <inheritdoc />
         public IParseInputSource Source { get; }
@@ -58,6 +44,7 @@ namespace Warpstone.Internal.Input
         /// Whether a parse runs asynchronously.
         /// Matches that need more input then return <see cref="InputMatch.Pending"/>
         /// and leave reading it to <see cref="ReadPendingAsync"/>, instead of blocking.
+        /// Only <see cref="IterativeParseContext{T}.RunToEndAsync"/> sets it, so only iterative parsers see <see cref="InputMatch.Pending"/>.
         /// </summary>
         public bool IsAsynchronous { get; set; }
 
@@ -93,6 +80,11 @@ namespace Warpstone.Internal.Input
         /// <inheritdoc />
         public InputMatch Match(int index, char character)
         {
+            if (whole is { })
+            {
+                return whole.Match(index, character);
+            }
+
             var available = Request(index + 1);
             if (available != InputMatch.Success)
             {
@@ -105,6 +97,11 @@ namespace Warpstone.Internal.Input
         /// <inheritdoc />
         public InputMatch Match(int index, string str, CultureInfo culture, CompareOptions options, out string? match)
         {
+            if (whole is { })
+            {
+                return whole.Match(index, str, culture, options, out match);
+            }
+
             match = null;
             var available = Request(index + str.Length);
             if (available != InputMatch.Success)
@@ -151,29 +148,31 @@ namespace Warpstone.Internal.Input
             }
 
 #if NET7_0_OR_GREATER
-            var matches = regex.EnumerateMatches(new ReadOnlySpan<char>(buffer, 0, length), index);
-            if (matches.MoveNext())
+            if (whole is null)
             {
-                match = new string(buffer, matches.Current.Index, matches.Current.Length);
-                return InputMatch.Success;
-            }
+                var matches = regex.EnumerateMatches(new ReadOnlySpan<char>(buffer, 0, length), index);
+                if (matches.MoveNext())
+                {
+                    match = new string(buffer, matches.Current.Index, matches.Current.Length);
+                    return InputMatch.Success;
+                }
 
-            return InputMatch.Failure;
-#else
-            var result = regex.Match(Content, index);
-            if (!result.Success)
-            {
                 return InputMatch.Failure;
             }
-
-            match = result.Value;
-            return InputMatch.Success;
 #endif
+
+            // Below .NET 7 a regex only matches strings.
+            return Whole().Match(index, regex, out match);
         }
 
         /// <inheritdoc />
         public InputMatch MatchWhitespaces(int index, out string? match)
         {
+            if (whole is { })
+            {
+                return whole.MatchWhitespaces(index, out match);
+            }
+
             match = null;
             var end = index;
             while (true)
@@ -216,6 +215,11 @@ namespace Warpstone.Internal.Input
         /// <inheritdoc />
         public string Substring(int index, int length)
         {
+            if (whole is { })
+            {
+                return whole.Substring(index, length);
+            }
+
             Read(index + length);
             if (index < 0 || length < 0 || index + length > this.length)
             {
@@ -228,6 +232,11 @@ namespace Warpstone.Internal.Input
         /// <inheritdoc />
         public bool TryGetChar(int index, out char character)
         {
+            if (whole is { })
+            {
+                return whole.TryGetChar(index, out character);
+            }
+
             Read(index + 1);
             if (index >= 0 && index < length)
             {
@@ -246,18 +255,35 @@ namespace Warpstone.Internal.Input
         /// <returns>A task that completes when the input is read.</returns>
         public async Task ReadPendingAsync(CancellationToken cancellationToken)
         {
-            // ponytail: TextReader.ReadAsync(char[]) has no cancellation token before .NET Core 3; cancellation is checked between reads.
             while (length < pendingEnd && !IsComplete)
             {
-                cancellationToken.ThrowIfCancellationRequested();
                 EnsureCapacity();
+#if NETCOREAPP3_0_OR_GREATER
+                Append(await reader.ReadAsync(buffer.AsMemory(length), cancellationToken).ConfigureAwait(false));
+#else
+                cancellationToken.ThrowIfCancellationRequested();
                 Append(await reader.ReadAsync(buffer, length, buffer.Length - length).ConfigureAwait(false));
+#endif
             }
 
             pendingEnd = 0;
         }
 
-        // ponytail: Pending is only expected from iterative parsers; IsAsynchronous is only set by IterativeParseContext.RunToEndAsync.
+        /// <summary>
+        /// Reads the whole input into a string, and from then on matches against that string.
+        /// The buffer is dropped, so the input is not held in memory twice.
+        /// </summary>
+        private StringParseInput Whole()
+        {
+            if (whole is null)
+            {
+                Read(int.MaxValue);
+                whole = new StringParseInput(Source, new string(buffer, 0, length), []);
+                buffer = [];
+            }
+
+            return whole;
+        }
 
         /// <summary>
         /// Makes the input up to <paramref name="end"/> available.

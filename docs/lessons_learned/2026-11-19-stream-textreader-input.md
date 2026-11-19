@@ -11,7 +11,7 @@
 - `Substring`/`TryGetChar` read synchronously up to the requested index, even under `ParseAsync`. `UnexpectedTokenError.Found` uses `TryGetChar`.
 - Impls: recursive mode checks `== InputMatch.Success`; iterative mode uses a switch where `Pending` pushes `(position, this)` back onto `ExecutionStack`. `Pending` only occurs while `RunToEndAsync` has set `TextReaderParseInput.IsAsynchronous`.
 - `TextReaderParseInput` buffers in a doubling `char[]`, not a `StringBuilder`. The `StringBuilder` indexer walks its chunk list, which is slow for backtracking. Appends are amortized O(1), so each read takes only what the reader has ready, and no read waits for more than the parser needs.
-- Regex needs the whole input. On .NET 7+ it matches a span of the buffer (`EnumerateMatches`); below that it builds `Content` (2x memory, noted with a ponytail comment).
+- Regex needs the whole input. On .NET 7+ it matches a span of the buffer (`EnumerateMatches`); below that it builds `Content`. Once `Content` exists, the input delegates to a `StringParseInput` over it and drops the buffer (see [2026-11-19-ponytail-comments.md](2026-11-19-ponytail-comments.md)).
 - `ParseInput` (string) on .NET 7+ also uses `EnumerateMatches`, which skips the `Match` allocation; MiniJava allocates ~2.4% less.
 
 ## Measured (ShortRun, string input)
