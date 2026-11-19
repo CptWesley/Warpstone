@@ -780,4 +780,114 @@ public static class BasicParsersTests
         AssertThat(identifier.TryParse("the warpstone parser", options).Success).IsTrue();
         AssertThat(identifier.TryParse("fOr warpstone parser", options).Success).IsTrue();
     }
+
+    /// <summary>
+    /// Checks that transformed results carry their source position.
+    /// Ported from V1, where <c>IParsed</c> values got their position assigned automatically;
+    /// V3 exposes the position through <see cref="Parsers.AsResult{T}(IParser{T})"/> instead.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void TransformParserCorrectIParsed(ParseOptions options)
+    {
+        IParseResult<char> parsed = Char('a').Then(Char('b').AsResult()).Parse("abc", options);
+        AssertThat(parsed.Position).IsEqualTo(1);
+        AssertThat(parsed.Length).IsEqualTo(1);
+        AssertThat(parsed.Value).IsEqualTo('b');
+    }
+
+    /// <summary>
+    /// Checks that optional parsing works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MaybeParserCorrectExists(ParseOptions options)
+        => AssertThat(Maybe(Char('x')).Parse("xyz", options)).IsEqualTo('x');
+
+    /// <summary>
+    /// Checks that optional parsing works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MaybeParserCorrectDoesNotExist(ParseOptions options)
+        => AssertThat(Maybe(Char('x')).Parse("yz", options)).IsEqualTo(default(char));
+
+    /// <summary>
+    /// Checks that optional parsing works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MaybeParserCorrectExistsDefaultValue(ParseOptions options)
+        => AssertThat(Maybe(Char('x'), '-').Parse("xyz", options)).IsEqualTo('x');
+
+    /// <summary>
+    /// Checks that optional parsing works correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MaybeParserCorrectDoesNotExistDefaultValue(ParseOptions options)
+        => AssertThat(Maybe(Char('x'), '-').Parse("yz", options)).IsEqualTo('-');
+
+    /// <summary>
+    /// Checks that optional parsing works correctly.
+    /// Ported from V1, where the result was an <c>IOption</c>; V3 has no option type,
+    /// so "has no value" is checked as "consumed nothing".
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void MaybeParserOptions(ParseOptions options)
+    {
+        IParser<char> parser = Maybe(Char('x'));
+        IParseResult<char> result1 = parser.TryParse("xyz", options);
+        AssertThat(result1.Success).IsTrue();
+        AssertThat(result1.Length).IsEqualTo(1);
+        AssertThat(result1.Value).IsEqualTo('x');
+
+        IParseResult<char> result2 = parser.TryParse("yz", options);
+        AssertThat(result2.Success).IsTrue();
+        AssertThat(result2.Length).IsEqualTo(0);
+        AssertThat(result2.Value).IsEqualTo(default(char));
+    }
+
+    /// <summary>
+    /// Checks that exceptions thrown in transformations are reported correctly.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void TransformationExceptionCorrect(ParseOptions options)
+    {
+        IParser<int> parser = String("x").Transform(x => int.Parse(x, CultureInfo.InvariantCulture));
+        IParseResult<int> result = parser.TryParse("x", options);
+        AssertThat(result.Success).IsFalse();
+        AssertThat(result.Errors).HasSize(1);
+        AssertThat(result.Errors[0]).IsExactlyInstanceOf<TransformationError>();
+        TransformationError error = (TransformationError)result.Errors[0];
+        AssertThat(error.InnerException).IsNotNull();
+        AssertThat(error.Message).IsEqualTo(error.InnerException!.Message + " At 1:1.");
+    }
+
+    /// <summary>
+    /// Checks that result positions are correct.
+    /// </summary>
+    [Theory]
+    [MemberData(nameof(Options))]
+    public static void PositionCorrect(ParseOptions options)
+    {
+        IParser<string> parser = Regex("\\s*").Then(String("hello"));
+        IParseResult<string> result1 = parser.TryParse("hello", options);
+        AssertThat(result1.Position).IsEqualTo(0);
+        AssertThat(result1.NextPosition).IsEqualTo(5);
+        AssertThat(result1.InputStartPosition.Line).IsEqualTo(1);
+        AssertThat(result1.InputStartPosition.Column).IsEqualTo(1);
+        AssertThat(result1.InputEndPosition.Line).IsEqualTo(1);
+        AssertThat(result1.InputEndPosition.Column).IsEqualTo(5);
+
+        IParseResult<string> result2 = parser.TryParse("\n \t\nhello", options);
+        AssertThat(result2.Position).IsEqualTo(0);
+        AssertThat(result2.NextPosition).IsEqualTo(9);
+        AssertThat(result2.InputStartPosition.Line).IsEqualTo(1);
+        AssertThat(result2.InputStartPosition.Column).IsEqualTo(1);
+        AssertThat(result2.InputEndPosition.Line).IsEqualTo(3);
+        AssertThat(result2.InputEndPosition.Column).IsEqualTo(5);
+    }
 }
