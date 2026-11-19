@@ -38,6 +38,15 @@
         "resolved": "1.20.0",
         "contentHash": "RJJiUWf3HsKeCMLHtcA8f6pcJpK/6VSK4huHbV6Bngaawg1zoj5H1b4BZNdIgtyx0RrI/ZI7oN5/hDxm1ig7TA=="
       },
+      "Farkle": {
+        "type": "Direct",
+        "requested": "[7.1.1, )",
+        "resolved": "7.1.1",
+        "contentHash": "5NefgSer+C9c+e+zu1T937gb4Y0AEIEHHiunkW6iUvb+RYJciWXgBtZ3SvoeD7sjtCE3XGV1UekQNaFocZljEg==",
+        "dependencies": {
+          "BitCollections": "1.0.1"
+        }
+      },
       "Parlot": {
         "type": "Direct",
         "requested": "[2.3.1, )",
@@ -84,6 +93,11 @@
         "type": "Transitive",
         "resolved": "0.15.8",
         "contentHash": "hfucY0ycAsB0SsoaZcaAp9oq5wlWBJcylvEJb9pmvdYUx6PD6S4mDiYnZWjdjAlLhIpe/xtGCwzORfzAzPqvzA=="
+      },
+      "BitCollections": {
+        "type": "Transitive",
+        "resolved": "1.0.1",
+        "contentHash": "NtlRPGyXZk2DWA+5Ox16oEWYjZxLmCPd7LKpIJpN49Pjy4Rz0/+8rPf9c6KEb/vdb/4zDMLLB/KIDIo30sHMuA=="
       },
       "CommandLineParser": {
         "type": "Transitive",

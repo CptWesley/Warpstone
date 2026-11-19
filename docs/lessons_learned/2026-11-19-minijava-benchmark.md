@@ -36,6 +36,18 @@ ParsecSharp and Parlot. The grammar, AST and inputs live in `Warpstone.Benchmark
 - `Else(value)` with a non-constant value can't be generated (PARLOT005). Write `Else(static _ => Array.Empty<T>())` instead.
 - Pidgin doesn't backtrack after consuming input. Multi-character symbols, keywords and identifiers (`Word.Assert`), the
   `[]` type suffix and local variable statements need `Try`.
+- Farkle (an LALR parser generator, built at runtime in `FarkleMiniJava`):
+  - Grammar build errors surface as `parser.IsFailing`, with the message in `Parse(...).Error`. `Verify` prints
+    `GetBaseException()` so the message isn't hidden behind the `TypeInitializationException`.
+  - Its regex dialect rejects escapes inside character sets (`[ \t]`) and an escaped `]`. Use the combinators instead:
+    `Regex.Literal("[") + Regex.FromRegexString(@"\s*") + Regex.Literal("]")`.
+  - Write `using Regex = Farkle.Builder.Regex;`, because a global using brings in `System.Text.RegularExpressions`.
+  - `Nonterminal.Create(name, [.. productions])` with a collection expression can't infer `T`. Write `Create<string>(...)`.
+  - `AsIs()` is obsolete (FARKLE1001). Use `AsProduction()`.
+  - Conflict-free grammar: binary operators are left-recursive levels, the dangling `else` is split into closed and open
+    statements, and `[]` is a single token, so that `int[] a` and `a[i]` don't need two tokens of lookahead.
+- The BenchmarkDotNet filter matches `namespace.Class.Method`, so a filter must use `*MiniJavaBenchmark.Farkle`.
+  `*MiniJava.Farkle*` matches nothing.
 - `dotnet run` without a `--filter` (or with an unknown argument) makes BenchmarkDotNet wait for console input. Pass
   `< /dev/null`, or the command hangs until it times out.
 - `--job dry` timings are cold-start (JIT) numbers. Use them only to check that nothing crashes.

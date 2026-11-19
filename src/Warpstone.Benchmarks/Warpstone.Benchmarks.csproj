@@ -6,6 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Farkle" />
     <PackageReference Include="Parlot" />
     <PackageReference Include="Parlot.SourceGenerator" PrivateAssets="all" />
     <PackageReference Include="ParsecSharp" />
