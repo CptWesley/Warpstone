@@ -5,7 +5,7 @@ using Warpstone.Internal.ParserImplementations;
 namespace Warpstone.Internal.ParserExpressions
 {
     /// <summary>
-    /// Represents a parser that parses either the provided first or second option.
+    /// Represents a parser that tries the provided alternatives in order and returns the result of the first successful one.
     /// </summary>
     /// <typeparam name="T">The result type of the parsers.</typeparam>
     internal sealed class OrParser<T> : ParserBase<T>
@@ -13,23 +13,16 @@ namespace Warpstone.Internal.ParserExpressions
         /// <summary>
         /// Initializes a new instance of the <see cref="OrParser{T}"/> class.
         /// </summary>
-        /// <param name="first">The first parser to try.</param>
-        /// <param name="second">The second parser to try.</param>
-        public OrParser(IParser<T> first, IParser<T> second)
+        /// <param name="alternatives">The parsers to try, in order. Contains at least two parsers.</param>
+        public OrParser(IReadOnlyList<IParser<T>> alternatives)
         {
-            First = first;
-            Second = second;
+            Alternatives = alternatives;
         }
 
         /// <summary>
-        /// The first parser to try.
+        /// The parsers to try, in order.
         /// </summary>
-        public IParser<T> First { get; }
-
-        /// <summary>
-        /// The second parser to try.
-        /// </summary>
-        public IParser<T> Second { get; }
+        public IReadOnlyList<IParser<T>> Alternatives { get; }
 
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
@@ -38,16 +31,23 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
         {
-            First.PerformAnalysisStep(info, trace);
-            Second.PerformAnalysisStep(info, trace);
+            foreach (var alternative in Alternatives)
+            {
+                alternative.PerformAnalysisStep(info, trace);
+            }
         }
 
         /// <inheritdoc />
         public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
         {
-            leftEdge.Add(First);
-            leftEdge.Add(Second);
-            return isNullable(First) || isNullable(Second);
+            var nullable = false;
+            foreach (var alternative in Alternatives)
+            {
+                leftEdge.Add(alternative);
+                nullable |= isNullable(alternative);
+            }
+
+            return nullable;
         }
     }
 }
