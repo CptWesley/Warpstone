@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
@@ -12,19 +13,31 @@ namespace Warpstone.Internal.ParserImplementations
     internal sealed class RegexParserImpl : ParserImplementationBase<RegexParser, string>
     {
         private readonly string expected;
-        private readonly Regex regex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RegexParserImpl"/> class.
         /// </summary>
         /// <param name="pattern">The pattern to be matched.</param>
         /// <param name="options">The options used by the regex engine.</param>
-        public RegexParserImpl([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
+        /// <param name="timeout">The timeout for the regex engine.</param>
+        public RegexParserImpl([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options, TimeSpan timeout)
         {
             var o = options | RegexOptions.ExplicitCapture;
             expected = Regex.Escape(pattern);
-            regex = new Regex(@$"\G({pattern})", o);
+            if (timeout == TimeSpan.Zero || timeout == TimeSpan.MaxValue)
+            {
+                Regex = new Regex(@$"\G({pattern})", o);
+            }
+            else
+            {
+                Regex = new Regex(@$"\G({pattern})", o, timeout);
+            }
         }
+
+        /// <summary>
+        /// The regular expression engine.
+        /// </summary>
+        public Regex Regex { get; }
 
         /// <inheritdoc />
         protected override void InitializeInternal(RegexParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
@@ -36,7 +49,7 @@ namespace Warpstone.Internal.ParserImplementations
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
             var input = context.Input.Content;
-            var match = regex.Match(input, position);
+            var match = Regex.Match(input, position);
 
             if (match.Success && match.Index == position)
             {
@@ -52,7 +65,7 @@ namespace Warpstone.Internal.ParserImplementations
         public override void Apply(IIterativeParseContext context, int position)
         {
             var input = context.Input.Content;
-            var match = regex.Match(input, position);
+            var match = Regex.Match(input, position);
 
             if (match.Success && match.Index == position)
             {

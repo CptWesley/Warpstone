@@ -12,6 +12,21 @@ namespace Warpstone.Internal.ParserExpressions
     internal sealed class RegexParser : ParserBase<string>
     {
         private static readonly int baseHash = typeof(RegexParser).GetHashCode() * 31;
+        private readonly Lazy<RegexParserImpl> impl;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RegexParser"/> class.
+        /// </summary>
+        /// <param name="pattern">The pattern to be matched.</param>
+        /// <param name="options">The options used by the regex engine.</param>
+        /// <param name="timeout">The timeout of this regex engine.</param>
+        public RegexParser([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options, TimeSpan timeout)
+        {
+            Pattern = pattern;
+            Options = options;
+            Timeout = timeout;
+            impl = new(() => new RegexParserImpl(pattern, options, timeout));
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RegexParser"/> class.
@@ -19,9 +34,8 @@ namespace Warpstone.Internal.ParserExpressions
         /// <param name="pattern">The pattern to be matched.</param>
         /// <param name="options">The options used by the regex engine.</param>
         public RegexParser([StringSyntax(StringSyntaxAttribute.Regex)] string pattern, RegexOptions options)
+            : this(pattern, options, TimeSpan.MaxValue)
         {
-            Pattern = pattern;
-            Options = options | RegexOptions.ExplicitCapture;
         }
 
         /// <summary>
@@ -43,9 +57,14 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         public RegexOptions Options { get; }
 
+        /// <summary>
+        /// The timeout of this regex engine.
+        /// </summary>
+        public TimeSpan Timeout { get; }
+
         /// <inheritdoc />
         public override IParserImplementation<string> CreateUninitializedImplementation()
-            => new RegexParserImpl(Pattern, Options);
+            => impl.Value;
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
@@ -55,9 +74,7 @@ namespace Warpstone.Internal.ParserExpressions
 
         /// <inheritdoc />
         public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
-        {
-            return new Regex(@$"\G({Pattern})", Options, TimeSpan.FromSeconds(1)).IsMatch(string.Empty);
-        }
+            => impl.Value.Regex.IsMatch(string.Empty);
 
         /// <inheritdoc />
         public override bool Equals(object? obj)
