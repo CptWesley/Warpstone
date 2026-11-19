@@ -1,77 +1,16 @@
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
+using Warpstone.Internal.Input;
 
 namespace Warpstone
 {
     /// <summary>
-    /// Represents information for inputs used by parsers.
-    /// Basic concrete implementation of the <see cref="IParseInput"/> interface.
+    /// Responsible for instantiating instances of the <see cref="IParseInput"/> interface.
     /// </summary>
-    public sealed class ParseInput : IParseInput
+    public static class ParseInput
     {
-        private readonly int[] lineLengths;
-
-        private ParseInput(IParseInputSource source, string content, int[] lineLengths)
-        {
-            Source = source;
-            Content = content;
-            this.lineLengths = lineLengths;
-        }
-
-        /// <inheritdoc />
-        public string Content { get; }
-
-        /// <inheritdoc />
-        public IParseInputSource Source { get; }
-
-        /// <inheritdoc />
-        public ParseInputPosition GetPosition(int index)
-        {
-            var start = 0;
-            var end = lineLengths.Length;
-            var range = end;
-
-            while (range > 1)
-            {
-                var halfRange = range / 2;
-                var pivot = start + halfRange;
-
-                var startIndex = lineLengths[pivot];
-
-                if (index < startIndex)
-                {
-                    end -= halfRange;
-                    range = end - start;
-                }
-                else if (index == startIndex)
-                {
-                    return new ParseInputPosition(this, index, pivot + 1, 1);
-                }
-                else if (index > startIndex)
-                {
-                    if (pivot == lineLengths.Length - 1)
-                    {
-                        return new ParseInputPosition(this, index, pivot + 1, index - startIndex + 1);
-                    }
-
-                    var nextStartIndex = lineLengths[pivot + 1];
-                    if (index < nextStartIndex)
-                    {
-                        return new ParseInputPosition(this, index, pivot + 1, index - startIndex + 1);
-                    }
-
-                    start += halfRange;
-                    range = end - start;
-                }
-            }
-
-            return new ParseInputPosition(this, index, start + 1, index - lineLengths[start] + 1);
-        }
-
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="content"/> string
@@ -94,7 +33,7 @@ namespace Warpstone
                 lines.Add(acc);
             }
 
-            return new ParseInput(source, content, lines.ToArray());
+            return new StringParseInput(source, content, lines.ToArray());
         }
 
         /// <summary>
@@ -111,7 +50,7 @@ namespace Warpstone
         /// <returns>A new <see cref="IParseInput"/> instance.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IParseInput Create(IParseInputSource source, TextReader reader)
-            => new ReaderParseInput(source, reader);
+            => new TextReaderParseInput(source, reader);
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
@@ -141,6 +80,28 @@ namespace Warpstone
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
+        /// from the given <paramref name="reader"/> text reader
+        /// with a from-memory source.
+        /// </summary>
+        /// <param name="reader">The reader to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromMemory(TextReader reader)
+            => Create(FromMemorySource.Instance, reader);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// from the given <paramref name="stream"/> stream
+        /// with a from-memory source.
+        /// </summary>
+        /// <param name="stream">The stream to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromMemory(Stream stream)
+            => Create(FromMemorySource.Instance, stream);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="content"/> string
         /// with a file source from the given <paramref name="path"/>.
         /// </summary>
@@ -153,26 +114,37 @@ namespace Warpstone
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
+        /// from the given <paramref name="reader"/> text reader
+        /// with a file source from the given <paramref name="path"/>.
+        /// </summary>
+        /// <param name="path">The path to the source file.</param>
+        /// <param name="reader">The reader to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromFile(string path, TextReader reader)
+            => Create(new FileSource(path), reader);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
+        /// from the given <paramref name="stream"/> stream
+        /// with a file source from the given <paramref name="path"/>.
+        /// </summary>
+        /// <param name="path">The path to the source file.</param>
+        /// <param name="stream">The stream to read the input from.</param>
+        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IParseInput CreateFromFile(string path, Stream stream)
+            => Create(new FileSource(path), stream);
+
+        /// <summary>
+        /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="path"/>.
         /// </summary>
         /// <param name="path">The path to the source file.</param>
         /// <returns>A new <see cref="IParseInput"/> instance.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IParseInput CreateFromFile(string path)
-            => CreateFromFile(path, File.ReadAllText(path));
-
-        /// <summary>
-        /// Creates a new <see cref="IParseInput"/> instance
-        /// that reads from the given <paramref name="reader"/> as parsers need more input,
-        /// with a from-memory source.
-        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
-        /// The reader is not disposed.
-        /// </summary>
-        /// <param name="reader">The reader to read the input from.</param>
-        /// <returns>A new <see cref="IParseInput"/> instance.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static IParseInput CreateFromReader(TextReader reader)
-            => Create(FromMemorySource.Instance, reader);
+            => CreateFromFile(path, File.OpenRead(path));
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
@@ -187,87 +159,5 @@ namespace Warpstone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IParseInput CreateFromStream(Stream stream)
             => Create(stream is FileStream file ? new FileSource(file.Name) : FromMemorySource.Instance, stream);
-
-        /// <inheritdoc />
-        public InputMatch Match(int index, char character)
-            => index < Content.Length && Content[index] == character
-            ? InputMatch.Success
-            : InputMatch.Failure;
-
-        /// <inheritdoc />
-        public InputMatch Match(int index, string str, CultureInfo culture, CompareOptions options, out string? match)
-        {
-            if (index + str.Length > Content.Length
-                || string.Compare(Content, index, str, 0, str.Length, culture, options) != 0)
-            {
-                match = null;
-                return InputMatch.Failure;
-            }
-
-            match = options == CompareOptions.Ordinal
-                ? str
-                : Content.Substring(index, str.Length);
-            return InputMatch.Success;
-        }
-
-        /// <inheritdoc />
-        public InputMatch Match(int index, Regex regex, out string? match)
-        {
-#if NET7_0_OR_GREATER
-            var matches = regex.EnumerateMatches(Content, index);
-            if (matches.MoveNext())
-            {
-                match = Content.Substring(matches.Current.Index, matches.Current.Length);
-                return InputMatch.Success;
-            }
-
-            match = null;
-            return InputMatch.Failure;
-#else
-            var result = regex.Match(Content, index);
-            if (!result.Success)
-            {
-                match = null;
-                return InputMatch.Failure;
-            }
-
-            match = result.Value;
-            return InputMatch.Success;
-#endif
-        }
-
-        /// <inheritdoc />
-        public InputMatch MatchWhitespaces(int index, out string? match)
-        {
-            var end = index;
-            while (end < Content.Length && char.IsWhiteSpace(Content[end]))
-            {
-                end++;
-            }
-
-            match = Content.Substring(index, end - index);
-            return end > index ? InputMatch.Success : InputMatch.Failure;
-        }
-
-        /// <inheritdoc />
-        public InputMatch MatchEnd(int index)
-            => index >= Content.Length ? InputMatch.Success : InputMatch.Failure;
-
-        /// <inheritdoc />
-        public string Substring(int index, int length)
-            => Content.Substring(index, length);
-
-        /// <inheritdoc />
-        public bool TryGetChar(int index, out char character)
-        {
-            if (index >= 0 && index < Content.Length)
-            {
-                character = Content[index];
-                return true;
-            }
-
-            character = default;
-            return false;
-        }
     }
 }

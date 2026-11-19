@@ -6,13 +6,13 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Warpstone
+namespace Warpstone.Internal.Input
 {
     /// <summary>
     /// An <see cref="IParseInput"/> that reads its content from a <see cref="TextReader"/> as parsers need it.
     /// Everything read stays buffered, so parsers can backtrack into it.
     /// </summary>
-    internal sealed class ReaderParseInput : IParseInput
+    internal sealed class TextReaderParseInput : IParseInput
     {
         private const int MinimumReadSize = 4096;
 
@@ -24,11 +24,11 @@ namespace Warpstone
         private int pendingEnd;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ReaderParseInput"/> class.
+        /// Initializes a new instance of the <see cref="TextReaderParseInput"/> class.
         /// </summary>
         /// <param name="source">The source of the input.</param>
         /// <param name="reader">The reader to read the input from.</param>
-        public ReaderParseInput(IParseInputSource source, TextReader reader)
+        public TextReaderParseInput(IParseInputSource source, TextReader reader)
         {
             Source = source;
             this.reader = reader;

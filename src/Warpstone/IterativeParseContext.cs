@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Warpstone.Internal.Input;
 
 namespace Warpstone
 {
@@ -146,7 +147,7 @@ namespace Warpstone
         /// <returns>The parse result.</returns>
         public async Task<IParseResult<T>> RunToEndAsync(CancellationToken cancellationToken = default)
         {
-            if (Input is not ReaderParseInput reader)
+            if (Input is not TextReaderParseInput reader)
             {
                 return RunToEnd(cancellationToken);
             }
