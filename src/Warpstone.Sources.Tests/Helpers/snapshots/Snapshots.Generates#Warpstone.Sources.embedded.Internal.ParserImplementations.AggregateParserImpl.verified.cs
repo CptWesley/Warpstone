@@ -22,6 +22,7 @@ namespace Warpstone.Internal.ParserImplementations
         private int maxCount = default!;
         private Func<TAccumulator> createSeed = default!;
         private Func<TAccumulator, TSource, TAccumulator> accumulate = default!;
+        private FirstContinuation firstContinuation = default!;
 
         /// <inheritdoc />
         protected override void InitializeInternal(AggregateParser<TSource, TAccumulator> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
@@ -32,6 +33,7 @@ namespace Warpstone.Internal.ParserImplementations
             maxCount = parser.MaxCount;
             createSeed = parser.CreateSeed;
             accumulate = parser.Accumulate;
+            firstContinuation = new(this);
         }
 
         /// <inheritdoc />
@@ -109,8 +111,35 @@ namespace Warpstone.Internal.ParserImplementations
                 return;
             }
 
-            context.ExecutionStack.Push((position, new Continuation(this, position, createSeed())));
+            context.ExecutionStack.Push((position, firstContinuation));
             context.ExecutionStack.Push((position, element));
+        }
+
+        /// <summary>
+        /// Runs after the first element. Most repetitions match nothing, so the per-run <see cref="Continuation"/>
+        /// is only allocated once the first element succeeded.
+        /// </summary>
+        private sealed class FirstContinuation : ContinuationParserImplementationBase
+        {
+            private readonly AggregateParserImpl<TSource, TAccumulator> parser;
+
+            public FirstContinuation(AggregateParserImpl<TSource, TAccumulator> parser)
+            {
+                this.parser = parser;
+            }
+
+            public override void Apply(IIterativeParseContext context, int position)
+            {
+                if (context.ResultStack.Peek().Success)
+                {
+                    new Continuation(parser, position, parser.createSeed()).Apply(context, position);
+                }
+                else if (parser.minCount <= 0)
+                {
+                    context.ResultStack.Pop();
+                    context.ResultStack.Push(new(position, 0, parser.createSeed()));
+                }
+            }
         }
 
         /// <summary>

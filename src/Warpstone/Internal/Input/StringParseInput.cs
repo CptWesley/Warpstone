@@ -146,6 +146,51 @@ namespace Warpstone.Internal.Input
 #endif
         }
 
+        /// <summary>
+        /// Matches a regex like <see cref="Match(int, Regex, out string?)"/>, but returns <paramref name="first"/> instead of a new
+        /// string when the match has the same text, and stores the match in it when it is still <see langword="null"/>.
+        /// A regex that matches one fixed text, such as a keyword, then allocates once instead of on every match.
+        /// </summary>
+        /// <param name="index">The index to match at.</param>
+        /// <param name="regex">The regex to match.</param>
+        /// <param name="prefix">Literal text every match starts with, checked before running the regex.</param>
+        /// <param name="first">The first text matched, shared by all parses. Only ever written while it is <see langword="null"/>.</param>
+        /// <param name="match">The matched text.</param>
+        /// <returns>Whether the regex matched.</returns>
+        internal InputMatch Match(int index, Regex regex, string prefix, ref string? first, out string? match)
+        {
+            if (prefix.Length > 0 && string.CompareOrdinal(Content, index, prefix, 0, prefix.Length) != 0)
+            {
+                match = null;
+                return InputMatch.Failure;
+            }
+
+#if NET7_0_OR_GREATER
+            var matches = regex.EnumerateMatches(Content, index);
+            if (matches.MoveNext())
+            {
+                var start = matches.Current.Index;
+                var length = matches.Current.Length;
+                if (first is { } known && known.Length == length && string.CompareOrdinal(Content, start, known, 0, length) == 0)
+                {
+                    match = known;
+                }
+                else
+                {
+                    match = Content.Substring(start, length);
+                    first ??= match;
+                }
+
+                return InputMatch.Success;
+            }
+
+            match = null;
+            return InputMatch.Failure;
+#else
+            return Match(index, regex, out match);
+#endif
+        }
+
         /// <inheritdoc />
         public InputMatch MatchWhitespaces(int index, out string? match)
         {
