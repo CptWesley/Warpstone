@@ -128,6 +128,29 @@ namespace Warpstone.Internal.ParserExpressions
         public static bool IsMemo(IParser parser)
             => parser is IMemoParser;
 
+        /// <summary>
+        /// Checks whether running the given parser again costs about as much as looking it up in the memo table:
+        /// a few tokens in a row, without choices, repetition or recursion, such as a token followed by whitespace.
+        /// </summary>
+        /// <param name="parser">The parser to check.</param>
+        /// <returns><see langword="true"/> if memoizing the parser isn't worth it.</returns>
+        public static bool IsCheap(IParser parser)
+        {
+            var info = new ParserAnalysisInfo();
+            parser.PerformAnalysisStep(info, Array.Empty<IParser>());
+
+            // ponytail: fixed size limit, measured on MiniJava; make it a cost model if other grammars disagree.
+            return info.OccurrenceCounts.Count <= MaxCheapParsers && info.OccurrenceCounts.Keys.All(IsCheapKind);
+        }
+
+        private const int MaxCheapParsers = 8;
+
+        private static readonly Type[] CheapGenericKinds = [typeof(AndParser<,>), typeof(SequenceParser<,,>), typeof(MapParser<,>), typeof(ExpectedParser<>)];
+
+        private static bool IsCheapKind(IParser parser)
+            => parser is StringParser or CharacterParser or RegexParser or WhitespacesParser or OptionalWhitespacesParser or EndParser
+            || Array.Exists(CheapGenericKinds, kind => IsInstanceOf(parser, kind));
+
         private static bool IsInstanceOf(IParser parser, Type genericType)
         {
             var type = parser.GetType();

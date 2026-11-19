@@ -14,7 +14,7 @@ namespace Warpstone.Internal.ParserExpressions
     /// </summary>
     /// <typeparam name="TFirst">The result type of the <see name="First"/> parser.</typeparam>
     /// <typeparam name="TSecond">The result type of the <see name="Second"/> parser.</typeparam>
-    internal sealed class AndParser<TFirst, TSecond> : ParserBase<(TFirst First, TSecond Second)>
+    internal sealed class AndParser<TFirst, TSecond> : ParserBase<(TFirst First, TSecond Second)>, ISequenceParser<(TFirst First, TSecond Second)>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="AndParser{TFirst,TSecond}"/> class.
@@ -36,6 +36,10 @@ namespace Warpstone.Internal.ParserExpressions
         /// The parser that is executed after the first one has succeeded.
         /// </summary>
         public IParser<TSecond> Second { get; }
+
+        /// <inheritdoc />
+        public IParser<TOut> Map<TOut>(Func<(TFirst First, TSecond Second), TOut> map)
+            => new SequenceParser<TFirst, TSecond, TOut>(First, Second, (first, second) => map((first, second)));
 
         /// <inheritdoc />
         public override IParserImplementation<(TFirst First, TSecond Second)> CreateUninitializedImplementation()

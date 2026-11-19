@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
@@ -9,19 +10,23 @@ namespace Warpstone.Internal.Input
     /// </summary>
     internal sealed class StringParseInput : IParseInput
     {
-        private readonly int[] lineLengths;
+        private static readonly string[] Spaces = CreateRuns(string.Empty);
+        private static readonly string[] LineFeedSpaces = CreateRuns("\n");
+        private static readonly string[] CrLfSpaces = CreateRuns("\r\n");
+
+        private int[]? lineStarts;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="StringParseInput"/> class.
         /// </summary>
         /// <param name="source">The source of the input.</param>
         /// <param name="content">The input string.</param>
-        /// <param name="lineLengths">The start index of each line.</param>
-        public StringParseInput(IParseInputSource source, string content, int[] lineLengths)
+        /// <param name="lineStarts">The start index of each line, or <see langword="null"/> to find them when a position is first asked for.</param>
+        public StringParseInput(IParseInputSource source, string content, int[]? lineStarts)
         {
             Source = source;
             Content = content;
-            this.lineLengths = lineLengths;
+            this.lineStarts = lineStarts;
         }
 
         /// <inheritdoc />
@@ -33,6 +38,8 @@ namespace Warpstone.Internal.Input
         /// <inheritdoc />
         public ParseInputPosition GetPosition(int index)
         {
+            // Only errors and results ask for positions, so a successful parse never builds the line index.
+            var lineLengths = lineStarts ??= FindLineStarts(Content);
             var start = 0;
             var end = lineLengths.Length;
             var range = end;
@@ -72,6 +79,21 @@ namespace Warpstone.Internal.Input
             }
 
             return new ParseInputPosition(this, index, start + 1, index - lineLengths[start] + 1);
+        }
+
+        /// <summary>
+        /// Finds the start of every line, plus one past the end of the content, as splitting on <c>'\n'</c> would.
+        /// </summary>
+        private static int[] FindLineStarts(string content)
+        {
+            var starts = new List<int> { 0 };
+            for (var i = content.IndexOf('\n'); i >= 0; i = content.IndexOf('\n', i + 1))
+            {
+                starts.Add(i + 1);
+            }
+
+            starts.Add(content.Length + 1);
+            return starts.ToArray();
         }
 
         /// <inheritdoc />
@@ -133,8 +155,55 @@ namespace Warpstone.Internal.Input
                 end++;
             }
 
-            match = Content.Substring(index, end - index);
+            match = FindCommonRun(Content, index, end - index) ?? Content.Substring(index, end - index);
             return end > index ? InputMatch.Success : InputMatch.Failure;
+        }
+
+        /// <summary>
+        /// Returns a shared string for the usual whitespace between tokens: spaces, optionally after one line break.
+        /// Whitespace is mostly skipped, so allocating a new string for every run would mostly produce garbage.
+        /// </summary>
+        // ponytail: spaces only, up to 64; tabs and other runs still allocate. Add tables if those show up in profiles.
+        private static string? FindCommonRun(string content, int start, int length)
+        {
+            var end = start + length;
+            var runs = Spaces;
+            if (length >= 2 && content[start] == '\r' && content[start + 1] == '\n')
+            {
+                runs = CrLfSpaces;
+                start += 2;
+            }
+            else if (length >= 1 && content[start] == '\n')
+            {
+                runs = LineFeedSpaces;
+                start++;
+            }
+
+            if (end - start >= runs.Length)
+            {
+                return null;
+            }
+
+            for (var i = start; i < end; i++)
+            {
+                if (content[i] != ' ')
+                {
+                    return null;
+                }
+            }
+
+            return runs[end - start];
+        }
+
+        private static string[] CreateRuns(string prefix)
+        {
+            var runs = new string[65];
+            for (var i = 0; i < runs.Length; i++)
+            {
+                runs[i] = prefix + new string(' ', i);
+            }
+
+            return runs;
         }
 
         /// <inheritdoc />

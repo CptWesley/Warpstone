@@ -3,10 +3,12 @@
 #pragma warning disable
 #nullable enable annotations
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace Warpstone
 {
@@ -15,7 +17,8 @@ namespace Warpstone
     /// </summary>
     public sealed class MemoTable : IMemoTable
     {
-        private readonly Dictionary<int, Dictionary<IParserImplementation, UnsafeParseResult>> table = new();
+        // One flat table: a dictionary per position cost an allocation for every position that was memoized.
+        private readonly Dictionary<Key, UnsafeParseResult> table = new();
 
         /// <inheritdoc />
         public UnsafeParseResult this[(int, IParserImplementation) key] => this[key.Item1, key.Item2];
@@ -23,43 +26,27 @@ namespace Warpstone
         /// <inheritdoc />
         public UnsafeParseResult this[int position, IParserImplementation parser]
         {
-            get
-            {
-                if (!table.TryGetValue(position, out var expressions) || !expressions.TryGetValue(parser, out var result))
-                {
-                    throw new KeyNotFoundException("Could not find entry in memo table.");
-                }
-
-                return result;
-            }
-
-            set
-            {
-                if (!table.TryGetValue(position, out var expressions))
-                {
-                    expressions = new();
-                    table.Add(position, expressions);
-                }
-
-                expressions[parser] = value;
-            }
+            get => table.TryGetValue(new(position, parser), out var result)
+                ? result
+                : throw new KeyNotFoundException("Could not find entry in memo table.");
+            set => table[new(position, parser)] = value;
         }
 
         /// <inheritdoc />
         UnsafeParseResult IReadOnlyMemoTable.this[int position, IParserImplementation parser] => this[position, parser];
 
         /// <inheritdoc />
-        public IEnumerable<(int, IParserImplementation)> Keys => table.SelectMany(x => x.Value.Select(y => (x.Key, y.Key)));
+        public IEnumerable<(int, IParserImplementation)> Keys => table.Keys.Select(static x => (x.Position, x.Parser));
 
         /// <inheritdoc />
-        public IEnumerable<UnsafeParseResult> Values => table.SelectMany(x => x.Value.Select(y => y.Value));
+        public IEnumerable<UnsafeParseResult> Values => table.Values;
 
         /// <inheritdoc />
-        public int Count => table.Sum(x => x.Value.Count);
+        public int Count => table.Count;
 
         /// <inheritdoc />
         public bool ContainsKey((int Position, IParserImplementation Parser) key)
-            => TryGetValue(key, out _);
+            => table.ContainsKey(new(key.Position, key.Parser));
 
         /// <inheritdoc />
         public bool TryGetValue((int Position, IParserImplementation Parser) key, [NotNullWhen(true)] out UnsafeParseResult value)
@@ -67,24 +54,40 @@ namespace Warpstone
 
         /// <inheritdoc />
         public bool TryGetValue(int position, IParserImplementation parser, [NotNullWhen(true)] out UnsafeParseResult value)
-        {
-            if (!table.TryGetValue(position, out var expressions) || !expressions.TryGetValue(parser, out value))
-            {
-                value = default!;
-                return false;
-            }
-
-            return true;
-        }
+            => table.TryGetValue(new(position, parser), out value);
 
         /// <inheritdoc />
         public IEnumerator<KeyValuePair<(int Position, IParserImplementation Parser), UnsafeParseResult>> GetEnumerator()
-            => table.SelectMany(x => x.Value.Select(y => new KeyValuePair<(int, IParserImplementation), UnsafeParseResult>((x.Key, y.Key), y.Value)))
+            => table
+                .Select(static x => new KeyValuePair<(int, IParserImplementation), UnsafeParseResult>((x.Key.Position, x.Key.Parser), x.Value))
                 .GetEnumerator();
 
         /// <inheritdoc />
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
+
+        private readonly struct Key : IEquatable<Key>
+        {
+            public Key(int position, IParserImplementation parser)
+            {
+                Position = position;
+                Parser = parser;
+            }
+
+            public int Position { get; }
+
+            public IParserImplementation Parser { get; }
+
+            public bool Equals(Key other)
+                => Position == other.Position && ReferenceEquals(Parser, other.Parser);
+
+            public override bool Equals(object? obj)
+                => obj is Key other && Equals(other);
+
+            // Parsers are compared by reference, so their identity hash code avoids a virtual GetHashCode call.
+            public override int GetHashCode()
+                => unchecked((Position * 486187739) ^ RuntimeHelpers.GetHashCode(Parser));
+        }
     }
 }
 

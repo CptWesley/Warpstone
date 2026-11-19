@@ -110,7 +110,8 @@ namespace Warpstone.Internal.ParserExpressions
                     }
 
                     // Explicit memo and grow parsers already memoize. Wrapping a grow parser would hide its growing seed.
-                    requiresMemo.RemoveWhere(p => LeftRecursionAnalysis.IsGrow(p) || LeftRecursionAnalysis.IsMemo(p));
+                    // Cheap parsers are faster to run again than to look up.
+                    requiresMemo.RemoveWhere(p => LeftRecursionAnalysis.IsGrow(p) || LeftRecursionAnalysis.IsMemo(p) || LeftRecursionAnalysis.IsCheap(p));
 
                     foreach (var parser in requiresMemo)
                     {
