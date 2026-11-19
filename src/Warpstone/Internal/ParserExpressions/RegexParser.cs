@@ -56,7 +56,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge)
         {
-            return new Regex(@$"\G({Pattern})", Options).IsMatch(string.Empty);
+            return new Regex(@$"\G({Pattern})", Options, TimeSpan.FromSeconds(1)).IsMatch(string.Empty);
         }
 
         /// <inheritdoc />

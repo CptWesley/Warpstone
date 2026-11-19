@@ -99,13 +99,7 @@ namespace Warpstone.Internal.ParserExpressions
             foreach (var parser in parsers)
             {
                 var leftEdge = new List<IParser>();
-
-                // ponytail: parsers not deriving from ParserBase are opaque, so left recursion through them is not found.
-                if (parser is ILeftEdgeParser p)
-                {
-                    p.AnalyzeLeftEdge(nullable.Contains, leftEdge);
-                }
-
+                parser.AnalyzeLeftEdge(nullable.Contains, leftEdge);
                 edges[parser] = leftEdge.Distinct().ToList();
             }
 
@@ -129,8 +123,7 @@ namespace Warpstone.Internal.ParserExpressions
                     }
 
                     ignored.Clear();
-                    var isNullable = parser is not ILeftEdgeParser p || p.AnalyzeLeftEdge(nullable.Contains, ignored);
-                    if (isNullable)
+                    if (parser.AnalyzeLeftEdge(nullable.Contains, ignored))
                     {
                         nullable.Add(parser);
                         changed = true;

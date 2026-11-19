@@ -14,7 +14,7 @@ namespace Warpstone.Internal.ParserExpressions
     /// Provides a base implementation for parsers.
     /// </summary>
     /// <typeparam name="T">The result type of the parser.</typeparam>
-    internal abstract class ParserBase<T> : IParser<T>, ILeftEdgeParser
+    internal abstract class ParserBase<T> : IParser<T>
     {
         private readonly Lazy<IReadOnlyParserAnalysisInfo> lazyAnalsysis;
         private readonly ConcurrentDictionary<ParseOptions, ParseOptions> simplifiedOptions = new();

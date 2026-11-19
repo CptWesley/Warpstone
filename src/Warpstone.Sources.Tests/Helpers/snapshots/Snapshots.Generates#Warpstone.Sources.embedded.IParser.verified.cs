@@ -39,6 +39,15 @@ namespace Warpstone
         public void PerformAnalysisStep(IParserAnalysisInfo info, IReadOnlyList<IParser> trace);
 
         /// <summary>
+        /// Adds the parsers this parser may invoke before consuming any input to <paramref name="leftEdge"/>.
+        /// Used to find left recursion.
+        /// </summary>
+        /// <param name="isNullable">Tells whether a parser can succeed without consuming input.</param>
+        /// <param name="leftEdge">The collection to add the parsers to.</param>
+        /// <returns><see langword="true"/> if this parser can succeed without consuming input.</returns>
+        public bool AnalyzeLeftEdge(Func<IParser, bool> isNullable, ICollection<IParser> leftEdge);
+
+        /// <summary>
         /// Creates a new uninitialized instance of the <see cref="IParserImplementation"/> that corresponds
         /// to this <see cref="IParser"/> expression.
         /// </summary>
