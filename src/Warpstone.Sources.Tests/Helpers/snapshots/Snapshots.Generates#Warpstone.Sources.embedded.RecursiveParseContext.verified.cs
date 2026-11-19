@@ -4,6 +4,7 @@
 #nullable enable annotations
 
 using System.Threading;
+using Warpstone.Errors;
 
 namespace Warpstone
 {
@@ -63,6 +64,9 @@ namespace Warpstone
 
         /// <inheritdoc />
         public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
+
+        /// <inheritdoc />
+        public FailureTracker Failures { get; } = new();
 
         /// <inheritdoc />
         public bool Done => result is { };

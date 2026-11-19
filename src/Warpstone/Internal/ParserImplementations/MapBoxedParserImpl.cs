@@ -56,7 +56,8 @@ namespace Warpstone.Internal.ParserImplementations
             }
             catch (Exception e)
             {
-                return new UnsafeParseResult(prevResult.Position, new TransformationError(context, this, position, 0, null, e));
+                context.Failures.AddError(new TransformationError(context, this, position, 0, null, e));
+                return UnsafeParseResult.Failure(prevResult.Position);
             }
         }
 
@@ -94,7 +95,8 @@ namespace Warpstone.Internal.ParserImplementations
                 }
                 catch (Exception e)
                 {
-                    context.ResultStack.Push(new UnsafeParseResult(prevResult.Position, new TransformationError(context, this, position, 0, null, e)));
+                    context.Failures.AddError(new TransformationError(context, this, position, 0, null, e));
+                    context.ResultStack.Push(UnsafeParseResult.Failure(prevResult.Position));
                 }
             }
         }

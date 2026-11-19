@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Warpstone.Errors;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -19,37 +18,41 @@ namespace Warpstone.Internal.ParserImplementations
         {
             expected = parser.Expected;
             inner = (IParserImplementation<T>)parserLookup[parser.Parser];
-            continuation = new(expected);
+            continuation = new(this, expected);
         }
 
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
+            context.Failures.BeginLabel();
             var result = inner.Apply(context, position);
 
             if (result.Success)
             {
+                context.Failures.EndLabel();
                 return result;
             }
-            else
-            {
-                return new(position, new UnexpectedTokenError(context, this, position, 1, expected));
-            }
+
+            context.Failures.EndLabel(position, this, expected);
+            return UnsafeParseResult.Failure(position);
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
+            context.Failures.BeginLabel();
             context.ExecutionStack.Push((position, continuation));
             context.ExecutionStack.Push((position, inner));
         }
 
         private sealed class Continuation : ContinuationParserImplementationBase
         {
+            private readonly IParserImplementation root;
             private readonly string expected;
 
-            public Continuation(string expected)
+            public Continuation(IParserImplementation root, string expected)
             {
+                this.root = root;
                 this.expected = expected;
             }
 
@@ -60,11 +63,13 @@ namespace Warpstone.Internal.ParserImplementations
 
                 if (result.Success)
                 {
+                    context.Failures.EndLabel();
                     return;
                 }
 
+                context.Failures.EndLabel(position, root, expected);
                 context.ResultStack.Pop();
-                context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, expected)));
+                context.ResultStack.Push(UnsafeParseResult.Failure(position));
             }
         }
     }

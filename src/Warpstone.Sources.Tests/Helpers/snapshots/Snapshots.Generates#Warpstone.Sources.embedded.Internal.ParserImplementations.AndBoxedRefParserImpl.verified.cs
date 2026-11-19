@@ -51,7 +51,7 @@ namespace Warpstone.Internal.ParserImplementations
 
             if (!right.Success)
             {
-                return new(position, right.Errors!);
+                return UnsafeParseResult.Failure(position);
             }
 
 #if NETCOREAPP3_0_OR_GREATER
@@ -116,7 +116,7 @@ namespace Warpstone.Internal.ParserImplementations
 
                     if (!right.Success)
                     {
-                        context.ResultStack.Push(new(left.Position, right.Errors!));
+                        context.ResultStack.Push(UnsafeParseResult.Failure(left.Position));
                         return;
                     }
 

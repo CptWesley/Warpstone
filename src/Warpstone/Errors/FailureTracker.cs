@@ -1,0 +1,191 @@
+using System.Collections.Generic;
+
+namespace Warpstone.Errors
+{
+    /// <summary>
+    /// Keeps track of why parsing failed, without allocating while the parse runs.
+    /// Only the failures at the furthest position reached are kept, and errors are created from them
+    /// when the parse as a whole fails.
+    /// </summary>
+    public sealed class FailureTracker
+    {
+        private readonly List<Entry> entries = new();
+        private readonly Stack<(int Position, int Count)> labels = new();
+        private int suppressed;
+        private int position = -1;
+
+        /// <summary>
+        /// Gets the furthest position at which a failure was reported, or -1 if none was.
+        /// </summary>
+        public int Position => position;
+
+        /// <summary>
+        /// Reports that <paramref name="parser"/> expected <paramref name="expected"/> at <paramref name="position"/>.
+        /// </summary>
+        /// <param name="position">The position of the failure.</param>
+        /// <param name="parser">The parser that failed.</param>
+        /// <param name="expected">A description of what was expected.</param>
+        public void AddExpected(int position, IParserImplementation parser, string expected)
+        {
+            if (!MoveTo(position))
+            {
+                return;
+            }
+
+            // Indexed instead of LINQ, so reporting a failure doesn't allocate.
+            for (var i = 0; i < entries.Count; i++)
+            {
+                if (ReferenceEquals(entries[i].Parser, parser) && ReferenceEquals(entries[i].Expected, expected))
+                {
+                    return;
+                }
+            }
+
+            entries.Add(new(parser, expected, null));
+        }
+
+        /// <summary>
+        /// Reports an error that is not about an unexpected token, such as an exception thrown by a transformation.
+        /// </summary>
+        /// <param name="error">The error.</param>
+        public void AddError(IParseError error)
+        {
+            if (MoveTo(error.Position))
+            {
+                entries.Add(new(error.Parser, null, error));
+            }
+        }
+
+        /// <summary>
+        /// Starts a parser whose failures are reported under a single name. Must be followed by one of the <c>EndLabel</c> overloads.
+        /// </summary>
+        public void BeginLabel()
+            => labels.Push((Position, entries.Count));
+
+        /// <summary>
+        /// Ends a parser started with <see cref="BeginLabel"/> that succeeded.
+        /// </summary>
+        public void EndLabel()
+            => labels.Pop();
+
+        /// <summary>
+        /// Ends a parser started with <see cref="BeginLabel"/> that failed at <paramref name="position"/>.
+        /// If it got no further than <paramref name="position"/>, the failures it reported there are replaced by <paramref name="expected"/>.
+        /// </summary>
+        /// <param name="position">The position the parser started at.</param>
+        /// <param name="parser">The parser that failed.</param>
+        /// <param name="expected">The name to report.</param>
+        public void EndLabel(int position, IParserImplementation parser, string expected)
+        {
+            var (startPosition, startCount) = labels.Pop();
+
+            // Failures that got further than the start are more precise than the name, so they are kept.
+            if (Position > position)
+            {
+                return;
+            }
+
+            if (Position == position && !IsSuppressed)
+            {
+                var keep = startPosition == position ? startCount : 0;
+                entries.RemoveRange(keep, entries.Count - keep);
+            }
+
+            AddExpected(position, parser, expected);
+        }
+
+        /// <summary>
+        /// Stops reporting failures until <see cref="EndSuppress"/>, for parsers whose failures are not errors, such as negative lookaheads.
+        /// </summary>
+        public void BeginSuppress()
+            => suppressed++;
+
+        /// <summary>
+        /// Resumes reporting failures stopped by <see cref="BeginSuppress"/>.
+        /// </summary>
+        public void EndSuppress()
+            => suppressed--;
+
+        /// <summary>
+        /// Creates the errors of a failed parse from the failures at the furthest position.
+        /// </summary>
+        /// <param name="context">The context of the parse.</param>
+        /// <param name="parser">The parser to blame for errors that combine several failures.</param>
+        /// <param name="position">The position to report if no failure was reported at all.</param>
+        /// <returns>The errors.</returns>
+        public IReadOnlyList<IParseError> CreateErrors(IReadOnlyParseContext context, IParserImplementation parser, int position)
+        {
+            var errors = new List<IParseError>();
+            var expected = new List<string>();
+            var seen = new HashSet<string>();
+            var tokens = new List<UnexpectedTokenError>();
+
+            foreach (var entry in entries)
+            {
+                if (entry.Error is { } error)
+                {
+                    errors.Add(error);
+                    continue;
+                }
+
+                tokens.Add(new UnexpectedTokenError(context, entry.Parser, Position, 1, entry.Expected!));
+                if (seen.Add(entry.Expected!))
+                {
+                    expected.Add(entry.Expected!);
+                }
+            }
+
+            if (tokens.Count == 1)
+            {
+                errors.Add(tokens[0]);
+            }
+            else if (tokens.Count > 1)
+            {
+                errors.Add(new UnexpectedTokenError(context, parser, Position, 1, expected, tokens));
+            }
+
+            // ponytail: a failure first reported inside a negative lookahead and then reused from the memo table is never reported;
+            // fall back to a bare error at the failing position. Replay memoized failures if this shows up in practice.
+            if (errors.Count == 0)
+            {
+                errors.Add(new UnexpectedTokenError(context, parser, position, 1, [], []));
+            }
+
+            return errors;
+        }
+
+        private bool IsSuppressed => suppressed > 0;
+
+        private bool MoveTo(int failurePosition)
+        {
+            if (IsSuppressed || failurePosition < position)
+            {
+                return false;
+            }
+
+            if (failurePosition > position)
+            {
+                position = failurePosition;
+                entries.Clear();
+            }
+
+            return true;
+        }
+
+        private readonly struct Entry
+        {
+            public Entry(IParserImplementation parser, string? expected, IParseError? error)
+            {
+                Parser = parser;
+                Expected = expected;
+                Error = error;
+            }
+
+            public IParserImplementation Parser { get; }
+
+            public string? Expected { get; }
+
+            public IParseError? Error { get; }
+        }
+    }
+}

@@ -31,10 +31,10 @@ namespace Warpstone.Internal.ParserImplementations
         {
             if (context.MemoTable.TryGetValue(position, inner, out var result))
             {
-                return result;
+                return Hit(context, position, result);
             }
 
-            context.MemoTable[position, inner] = new(position, new InfiniteRecursionError(context, this, position, 1));
+            context.MemoTable[position, inner] = UnsafeParseResult.InProgress(position);
             result = inner.Apply(context, position);
             context.MemoTable[position, inner] = result;
             return result;
@@ -45,13 +45,28 @@ namespace Warpstone.Internal.ParserImplementations
         {
             if (context.MemoTable.TryGetValue(position, inner, out var result))
             {
-                context.ResultStack.Push(result);
+                context.ResultStack.Push(Hit(context, position, result));
                 return;
             }
 
-            context.MemoTable[position, inner] = new(position, new InfiniteRecursionError(context, this, position, 1));
+            context.MemoTable[position, inner] = UnsafeParseResult.InProgress(position);
             context.ExecutionStack.Push((position, continuation));
             context.ExecutionStack.Push((position, inner));
+        }
+
+        /// <summary>
+        /// Reaching a parser again at a position it is still parsing is infinite recursion.
+        /// The placeholder is replaced by an ordinary failure, so it never ends up in another memo entry.
+        /// </summary>
+        private UnsafeParseResult Hit(IParseContext context, int position, in UnsafeParseResult result)
+        {
+            if (!result.IsInProgress)
+            {
+                return result;
+            }
+
+            context.Failures.AddError(new InfiniteRecursionError(context, this, position, 1));
+            return UnsafeParseResult.Failure(position);
         }
 
         private sealed class Continuation : ContinuationParserImplementationBase

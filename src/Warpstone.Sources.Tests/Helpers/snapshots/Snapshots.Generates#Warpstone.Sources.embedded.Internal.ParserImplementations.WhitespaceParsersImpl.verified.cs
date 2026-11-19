@@ -4,7 +4,6 @@
 #nullable enable annotations
 
 using System.Collections.Generic;
-using Warpstone.Errors;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -28,7 +27,7 @@ namespace Warpstone.Internal.ParserImplementations
         {
             return context.Input.MatchWhitespaces(position, out var match) == InputMatch.Success
                 ? new(position, match!.Length, match)
-                : new(position, new UnexpectedTokenError(context, this, position, 1, "whitespace"));
+                : ReportExpected(context, position, "whitespace");
         }
 
         /// <inheritdoc />
@@ -43,7 +42,7 @@ namespace Warpstone.Internal.ParserImplementations
                     context.ExecutionStack.Push((position, this));
                     break;
                 default:
-                    context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, "whitespace")));
+                    context.ResultStack.Push(ReportExpected(context, position, "whitespace"));
                     break;
             }
         }

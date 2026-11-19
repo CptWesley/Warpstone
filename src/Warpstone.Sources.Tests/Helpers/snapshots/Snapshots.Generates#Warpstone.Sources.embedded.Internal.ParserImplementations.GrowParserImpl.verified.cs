@@ -4,7 +4,6 @@
 #nullable enable annotations
 
 using System.Collections.Generic;
-using Warpstone.Errors;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -36,7 +35,7 @@ namespace Warpstone.Internal.ParserImplementations
                 return result;
             }
 
-            var lastResult = new UnsafeParseResult(position, new InfiniteRecursionError(context, this, position, 1));
+            var lastResult = UnsafeParseResult.Failure(position);
             context.MemoTable[position, inner] = lastResult;
 
             while (true)
@@ -64,7 +63,7 @@ namespace Warpstone.Internal.ParserImplementations
                 return;
             }
 
-            context.MemoTable[position, inner] = new(position, new InfiniteRecursionError(context, this, position, 1));
+            context.MemoTable[position, inner] = UnsafeParseResult.Failure(position);
             context.ExecutionStack.Push((position, continuation));
             context.ExecutionStack.Push((position, inner));
         }

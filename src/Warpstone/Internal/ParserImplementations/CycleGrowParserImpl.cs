@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Warpstone.Errors;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -98,7 +97,7 @@ namespace Warpstone.Internal.ParserImplementations
         private void StartSeed(IParseContext context, CycleGrowState state, int position)
         {
             state.InProgress.Add(this);
-            context.MemoTable[position, inner] = new(position, new InfiniteRecursionError(context, this, position, 1));
+            context.MemoTable[position, inner] = UnsafeParseResult.Failure(position);
         }
 
         /// <returns><see langword="true"/> if the parser was called again while evaluating its seed, so it has to grow.</returns>
