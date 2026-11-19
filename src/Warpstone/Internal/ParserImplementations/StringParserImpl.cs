@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Globalization;
-using Warpstone.Errors;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -47,7 +46,7 @@ namespace Warpstone.Internal.ParserImplementations
                     context.ExecutionStack.Push((position, this));
                     break;
                 default:
-                    context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, expected)));
+                    context.ResultStack.Push(ReportExpected(context, position, expected));
                     break;
             }
         }
@@ -57,7 +56,7 @@ namespace Warpstone.Internal.ParserImplementations
         {
             return context.Input.Match(position, value, culture, options, out var match) == InputMatch.Success
                 ? new(position, value.Length, match)
-                : new(position, new UnexpectedTokenError(context, this, position, 1, expected));
+                : ReportExpected(context, position, expected);
         }
     }
 }

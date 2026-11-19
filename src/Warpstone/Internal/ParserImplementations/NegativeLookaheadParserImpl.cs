@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Warpstone.Errors;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -11,57 +10,59 @@ namespace Warpstone.Internal.ParserImplementations
     internal sealed class NegativeLookaheadParserImpl<T> : ParserImplementationBase<NegativeLookaheadParser<T>, T?>
     {
         private IParserImplementation<T> inner = default!;
+        private Continuation continuation = default!;
 
         /// <inheritdoc />
         protected override void InitializeInternal(NegativeLookaheadParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             inner = (IParserImplementation<T>)parserLookup[parser.Parser];
+            continuation = new(this);
         }
 
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
+            // The inner parser failing is what this parser wants, so those failures are not errors.
+            context.Failures.BeginSuppress();
             var result = inner.Apply(context, position);
+            context.Failures.EndSuppress();
 
-            if (result.Success)
-            {
-                return new(position, new UnexpectedTokenError(context, this, position, 1, "<not>"));
-            }
-            else
-            {
-                return new(position, 0, default(T?));
-            }
+            return result.Success
+                ? ReportExpected(context, position, "<not>")
+                : new(position, 0, default(T?));
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            context.ExecutionStack.Push((position, Continuation.Instance));
+            context.Failures.BeginSuppress();
+            context.ExecutionStack.Push((position, continuation));
             context.ExecutionStack.Push((position, inner));
         }
 
         private sealed class Continuation : ContinuationParserImplementationBase
         {
-#pragma warning disable S2743 // Static fields should not be used in generic types
-            public static readonly Continuation Instance = new();
-#pragma warning restore S2743 // Static fields should not be used in generic types
+            private readonly IParserImplementation root;
 
-            private Continuation()
+            public Continuation(IParserImplementation root)
             {
+                this.root = root;
             }
 
             /// <inheritdoc />
             public override void Apply(IIterativeParseContext context, int position)
             {
+                context.Failures.EndSuppress();
                 var result = context.ResultStack.Pop();
 
                 if (result.Success)
                 {
-                    context.ResultStack.Push(new(result.Position, new UnexpectedTokenError(context, this, position, 1, "<not>")));
+                    context.Failures.AddExpected(position, root, "<not>");
+                    context.ResultStack.Push(UnsafeParseResult.Failure(position));
                 }
                 else
                 {
-                    context.ResultStack.Push(new(result.Position, 0, default(T?)));
+                    context.ResultStack.Push(new(position, 0, default(T?)));
                 }
             }
         }

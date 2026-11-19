@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
-using Warpstone.Errors;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -50,7 +49,7 @@ namespace Warpstone.Internal.ParserImplementations
         {
             return context.Input.Match(position, Regex, out var match) == InputMatch.Success
                 ? new(position, match!.Length, match)
-                : new(position, new UnexpectedTokenError(context, this, position, 1, expected));
+                : ReportExpected(context, position, expected);
         }
 
         /// <inheritdoc />
@@ -65,7 +64,7 @@ namespace Warpstone.Internal.ParserImplementations
                     context.ExecutionStack.Push((position, this));
                     break;
                 default:
-                    context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, expected)));
+                    context.ResultStack.Push(ReportExpected(context, position, expected));
                     break;
             }
         }

@@ -1,15 +1,16 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using Warpstone.Errors;
 
 namespace Warpstone
 {
     /// <summary>
     /// Represents an internal untyped, unsafe parse result.
+    /// A failed result carries no errors: parsers report why they failed to <see cref="IParseContext.Failures"/>.
     /// </summary>
     public readonly struct UnsafeParseResult
     {
+        private static readonly object InProgressMarker = new();
+
         /// <summary>
         /// The position of the result.
         /// </summary>
@@ -31,38 +32,9 @@ namespace Warpstone
         public readonly bool Success;
 
         /// <summary>
-        /// The parsed value if successful; an error otherwise.
+        /// The parsed value if successful.
         /// </summary>
         public readonly object? Value;
-
-        /// <summary>
-        /// The encountered errors.
-        /// </summary>
-        public readonly IEnumerable<IParseError>? Errors;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct.
-        /// </summary>
-        /// <param name="position">The position where the error occurred.</param>
-        /// <param name="errors">The encountered errors.</param>
-        public UnsafeParseResult(int position, IEnumerable<IParseError> errors)
-        {
-            Position = position;
-            Length = 0;
-            Value = null;
-            Success = false;
-            Errors = errors;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct.
-        /// </summary>
-        /// <param name="position">The position where the error occurred.</param>
-        /// <param name="error">The encountered error.</param>
-        public UnsafeParseResult(int position, IParseError error)
-            : this(position, new[] { error })
-        {
-        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct.
@@ -71,13 +43,39 @@ namespace Warpstone
         /// <param name="length">The length of the value in the input.</param>
         /// <param name="value">The found value.</param>
         public UnsafeParseResult(int position, int length, object? value)
+            : this(position, length, value, success: true)
+        {
+        }
+
+        private UnsafeParseResult(int position, int length, object? value, bool success)
         {
             Position = position;
             Length = length;
             Value = value;
-            Success = true;
-            Errors = null;
+            Success = success;
         }
+
+        /// <summary>
+        /// Gets whether this is the placeholder stored by <see cref="InProgress"/>.
+        /// </summary>
+        internal bool IsInProgress => !Success && ReferenceEquals(Value, InProgressMarker);
+
+        /// <summary>
+        /// Creates a failed result.
+        /// </summary>
+        /// <param name="position">The position where the failure occurred.</param>
+        /// <returns>The failed result.</returns>
+        public static UnsafeParseResult Failure(int position)
+            => new(position, 0, null, success: false);
+
+        /// <summary>
+        /// Creates the failed result a memoizing parser stores while it is still parsing at <paramref name="position"/>,
+        /// so that a call reaching it again can tell infinite recursion apart from an ordinary failure.
+        /// </summary>
+        /// <param name="position">The position being parsed.</param>
+        /// <returns>The placeholder result.</returns>
+        internal static UnsafeParseResult InProgress(int position)
+            => new(position, 0, InProgressMarker, success: false);
     }
 
     /// <summary>
@@ -112,7 +110,7 @@ namespace Warpstone
                     length: result.Length,
                     success: false,
                     value: default,
-                    errors: result.Errors?.ToArray() ?? Array.Empty<IParseError>());
+                    errors: context.Failures.CreateErrors(context, context.Parser.GetImplementation(context.Options), result.Position));
             }
         }
     }

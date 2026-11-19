@@ -1,5 +1,6 @@
 using System;
 using System.Threading;
+using Warpstone.Errors;
 
 namespace Warpstone
 {
@@ -55,6 +56,9 @@ namespace Warpstone
 
         /// <inheritdoc />
         IMemoTable IParseContext.MemoTable => ((IParseContext)current).MemoTable;
+
+        /// <inheritdoc />
+        public FailureTracker Failures => current.Failures;
 
         /// <inheritdoc />
         public bool Done => current.Done;

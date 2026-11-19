@@ -4,6 +4,7 @@
 #nullable enable annotations
 
 using System.Threading;
+using Warpstone.Errors;
 
 namespace Warpstone
 {
@@ -16,6 +17,11 @@ namespace Warpstone
         /// The used memo-table.
         /// </summary>
         public new IMemoTable MemoTable { get; }
+
+        /// <summary>
+        /// The failures reported so far, from which the errors of a failed parse are created.
+        /// </summary>
+        public FailureTracker Failures { get; }
 
         /// <summary>
         /// Progress the parser through a single step of the parsing process.

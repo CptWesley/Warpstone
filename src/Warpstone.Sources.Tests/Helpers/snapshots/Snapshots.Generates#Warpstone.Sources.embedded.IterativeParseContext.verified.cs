@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Warpstone.Errors;
 using Warpstone.Internal.Input;
 
 namespace Warpstone
@@ -73,6 +74,9 @@ namespace Warpstone
 
         /// <inheritdoc />
         public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
+
+        /// <inheritdoc />
+        public FailureTracker Failures { get; } = new();
 
         /// <inheritdoc />
         IMemoTable IParseContext.MemoTable => memoTable;

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Warpstone.Errors;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -28,13 +27,13 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
-            return new UnsafeParseResult(position, new UnexpectedTokenError(context, this, position, 1, string.Empty));
+            return ReportExpected(context, position, string.Empty);
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            context.ResultStack.Push(new UnsafeParseResult(position, new UnexpectedTokenError(context, this, position, 1, string.Empty)));
+            context.ResultStack.Push(ReportExpected(context, position, string.Empty));
         }
     }
 }

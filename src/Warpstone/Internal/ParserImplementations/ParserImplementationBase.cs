@@ -26,6 +26,19 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public abstract void Apply(IIterativeParseContext context, int position);
 
+        /// <summary>
+        /// Reports that this parser expected <paramref name="expected"/> at <paramref name="position"/>.
+        /// </summary>
+        /// <param name="context">The parsing context.</param>
+        /// <param name="position">The position of the failure.</param>
+        /// <param name="expected">A description of what was expected.</param>
+        /// <returns>A failed result.</returns>
+        protected UnsafeParseResult ReportExpected(IParseContext context, int position, string expected)
+        {
+            context.Failures.AddExpected(position, this, expected);
+            return UnsafeParseResult.Failure(position);
+        }
+
         /// <inheritdoc cref="Initialize(TParser, IReadOnlyDictionary{IParser, IParserImplementation})" />
         protected abstract void InitializeInternal(TParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup);
 
