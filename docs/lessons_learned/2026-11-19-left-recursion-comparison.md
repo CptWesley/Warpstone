@@ -14,3 +14,6 @@ Task: compare findings from an earlier claude.ai chat (Umeda & Maeda, JIP 29, 20
 
 - Auto mode (default options) fails on indirect left recursion (`S/A`, `S/A/B`, interlocking cycles) because the analysis grows *every* cycle entry point it finds, and the inner growers' memo entries go stale.
 - Auto grow and memo off, with one `Grow` on a pegen-style leader: `S/A` and `S/A/B` pass.
+- `ParseOptions.Default` has `EnableAutomaticMemoization = false`. With it **on**, even Expr/Num (direct left recursion only) fails: the rule's subtree is reached via two paths, so inner nodes like `Seq(Lazy(num), digit)` get count 2 and a `MemoParser` inside the growing cycle, whose entry goes stale.
+- Regression tests: `Warpstone.Tests/Expressions/LeftRecursionGrammars.cs`. 48 of 271 cases fail on purpose until left-recursion handling is fixed (indirect, interlocking, Expr/Num with memo on).
+- Running them: scratch `lib/` + `runner/` pair (see [2026-11-19-legacy-test-port.md](2026-11-19-legacy-test-port.md)). A runner compiling only `Expressions/*.cs`, `Parsers/*.cs` and `Properties/GlobalUsings.cs` is enough and builds in seconds.
