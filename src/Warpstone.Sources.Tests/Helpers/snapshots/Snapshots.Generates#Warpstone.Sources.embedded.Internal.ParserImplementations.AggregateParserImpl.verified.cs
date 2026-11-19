@@ -103,50 +103,37 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            var acc = createSeed();
-            context.ExecutionStack.Push((position, new ContinuationElement(
-                element: element,
-                delimiter: delimiter,
-                startPosition: position,
-                length: 0,
-                minCount: minCount,
-                maxCount: maxCount,
-                accumulator: acc,
-                accumulate: accumulate)));
+            if (maxCount <= 0)
+            {
+                context.ResultStack.Push(new(position, 0, createSeed()));
+                return;
+            }
+
+            context.ExecutionStack.Push((position, new Continuation(this, position, createSeed())));
             context.ExecutionStack.Push((position, element));
         }
 
-        private sealed class ContinuationElement : ContinuationParserImplementationBase
+        /// <summary>
+        /// The state of one iterative run. It is mutated and pushed again for every element and delimiter,
+        /// so a run allocates one continuation instead of one per element.
+        /// </summary>
+        private sealed class Continuation : ContinuationParserImplementationBase
         {
-            private readonly IParserImplementation<TSource> element;
-            private readonly IParserImplementation? delimiter;
+            private readonly AggregateParserImpl<TSource, TAccumulator> parser;
             private readonly int startPosition;
-            private readonly int length;
-            private readonly int minCount;
-            private readonly int maxCount;
-            private readonly TAccumulator accumulator;
-            private readonly Func<TAccumulator, TSource, TAccumulator> accumulate;
+            private TAccumulator accumulator;
+            private int length;
+            private int minCount;
+            private int maxCount;
+            private bool afterDelimiter;
 
-#pragma warning disable S107 // Methods should not have too many parameters
-            public ContinuationElement(
-                IParserImplementation<TSource> element,
-                IParserImplementation? delimiter,
-                int startPosition,
-                int length,
-                int minCount,
-                int maxCount,
-                TAccumulator accumulator,
-                Func<TAccumulator, TSource, TAccumulator> accumulate)
-#pragma warning restore S107 // Methods should not have too many parameters
+            public Continuation(AggregateParserImpl<TSource, TAccumulator> parser, int startPosition, TAccumulator accumulator)
             {
-                this.element = element;
-                this.delimiter = delimiter;
+                this.parser = parser;
                 this.startPosition = startPosition;
-                this.length = length;
-                this.minCount = minCount;
-                this.maxCount = maxCount;
                 this.accumulator = accumulator;
-                this.accumulate = accumulate;
+                minCount = parser.minCount;
+                maxCount = parser.maxCount;
             }
 
             public override void Apply(IIterativeParseContext context, int position)
@@ -155,122 +142,41 @@ namespace Warpstone.Internal.ParserImplementations
 
                 if (!result.Success)
                 {
-                    if (minCount <= 0)
-                    {
-                        context.ResultStack.Push(new(startPosition, length, accumulator));
-                    }
-                    else
-                    {
-                        context.ResultStack.Push(result);
-                    }
-
+                    context.ResultStack.Push(minCount <= 0 ? new(startPosition, length, accumulator) : result);
                     return;
                 }
 
                 var nextPos = result.NextPosition;
-                var newAccumulator = accumulate(accumulator, (TSource)result.Value!);
-                var newLength = result.NextPosition - startPosition;
 
-                var newMin = minCount - 1;
-                var newMax = maxCount - 1;
-
-                if (newMax <= 0)
+                if (afterDelimiter)
                 {
-                    context.ResultStack.Push(new(startPosition, newLength, newAccumulator));
+                    afterDelimiter = false;
+                    context.ExecutionStack.Push((nextPos, this));
+                    context.ExecutionStack.Push((nextPos, parser.element));
                     return;
                 }
 
-                if (delimiter is { })
+                accumulator = parser.accumulate(accumulator, (TSource)result.Value!);
+                length = nextPos - startPosition;
+                minCount--;
+                maxCount--;
+
+                if (maxCount <= 0)
                 {
-                    context.ExecutionStack.Push((nextPos, new ContinuationDelimiter(
-                        element: element,
-                        delimiter: delimiter,
-                        startPosition: startPosition,
-                        length: newLength,
-                        minCount: newMin,
-                        maxCount: newMax,
-                        accumulator: newAccumulator,
-                        accumulate: accumulate)));
+                    context.ResultStack.Push(new(startPosition, length, accumulator));
+                    return;
+                }
+
+                context.ExecutionStack.Push((nextPos, this));
+                if (parser.delimiter is { } delimiter)
+                {
+                    afterDelimiter = true;
                     context.ExecutionStack.Push((nextPos, delimiter));
                 }
                 else
                 {
-                    context.ExecutionStack.Push((nextPos, new ContinuationElement(
-                        element: element,
-                        delimiter: delimiter,
-                        startPosition: startPosition,
-                        length: newLength,
-                        minCount: newMin,
-                        maxCount: newMax,
-                        accumulator: newAccumulator,
-                        accumulate: accumulate)));
-                    context.ExecutionStack.Push((nextPos, element));
+                    context.ExecutionStack.Push((nextPos, parser.element));
                 }
-            }
-        }
-
-        private sealed class ContinuationDelimiter : ContinuationParserImplementationBase
-        {
-            private readonly IParserImplementation<TSource> element;
-            private readonly IParserImplementation? delimiter;
-            private readonly int startPosition;
-            private readonly int length;
-            private readonly int minCount;
-            private readonly int maxCount;
-            private readonly TAccumulator accumulator;
-            private readonly Func<TAccumulator, TSource, TAccumulator> accumulate;
-
-#pragma warning disable S107 // Methods should not have too many parameters
-            public ContinuationDelimiter(
-                IParserImplementation<TSource> element,
-                IParserImplementation? delimiter,
-                int startPosition,
-                int length,
-                int minCount,
-                int maxCount,
-                TAccumulator accumulator,
-                Func<TAccumulator, TSource, TAccumulator> accumulate)
-#pragma warning restore S107 // Methods should not have too many parameters
-            {
-                this.element = element;
-                this.delimiter = delimiter;
-                this.startPosition = startPosition;
-                this.length = length;
-                this.minCount = minCount;
-                this.maxCount = maxCount;
-                this.accumulator = accumulator;
-                this.accumulate = accumulate;
-            }
-
-            public override void Apply(IIterativeParseContext context, int position)
-            {
-                var result = context.ResultStack.Pop();
-
-                if (!result.Success)
-                {
-                    if (minCount <= 0)
-                    {
-                        context.ResultStack.Push(new(startPosition, length, accumulator));
-                    }
-                    else
-                    {
-                        context.ResultStack.Push(result);
-                    }
-
-                    return;
-                }
-
-                var nextPos = result.NextPosition;
-                context.ExecutionStack.Push((nextPos, new ContinuationElement(
-                    element: element,
-                    delimiter: delimiter,
-                    startPosition: startPosition,
-                    length: length,
-                    minCount: minCount,
-                    maxCount: maxCount,
-                    accumulator: accumulator,
-                    accumulate: accumulate)));
-                context.ExecutionStack.Push((nextPos, element));
             }
         }
     }
