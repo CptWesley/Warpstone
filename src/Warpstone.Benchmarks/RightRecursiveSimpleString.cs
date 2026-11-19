@@ -56,6 +56,12 @@ public class RightRecursiveSimpleString
     }
 
     [Benchmark]
+    public string Warpstone3_auto_benchmark()
+    {
+        return Warpstone3Parser.Parse(input, ParseOptions.Default with { ExecutionMode = ParserExecutionMode.Auto });
+    }
+
+    [Benchmark]
     public string Warpstone3_recursive_benchmark()
     {
         return Warpstone3Parser.Parse(input, ParseOptions.Default with { ExecutionMode = ParserExecutionMode.Recursive });

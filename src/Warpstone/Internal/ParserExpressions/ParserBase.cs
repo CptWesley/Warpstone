@@ -145,6 +145,22 @@ namespace Warpstone.Internal.ParserExpressions
                     }
                 }
 
+                // Every cycle of the grammar passes through a parser that the analysis found recursively.
+                // Guarding those bounds the stack used between two checks, so recursive mode throws
+                // an InsufficientExecutionStackException instead of overflowing the stack.
+                if (o.ExecutionMode != ParserExecutionMode.Iterative)
+                {
+                    var guarded = new HashSet<IParser>();
+                    foreach (var parser in analysis.RecursiveOccurrenceCounts.Keys)
+                    {
+                        var target = parser is ILazyParser lp ? lazyTargets[lp] : parser;
+                        if (guarded.Add(target))
+                        {
+                            Wrap(typeof(StackGuardParser<>), target, lookup);
+                        }
+                    }
+                }
+
                 // Remove the lazy parser
                 foreach (var entry in lazyTargets)
                 {
@@ -308,7 +324,10 @@ namespace Warpstone.Internal.ParserExpressions
 
                 o = o with
                 {
-                    ExecutionMode = ParserExecutionMode.Auto, // For purposes of finding the implementation this is irrelevant.
+                    // Only iterative mode leaves out the stack guards of recursive grammars, the other modes share one implementation.
+                    ExecutionMode = o.ExecutionMode == ParserExecutionMode.Iterative && analysis.HasRecursiveParsers
+                        ? ParserExecutionMode.Iterative
+                        : ParserExecutionMode.Auto,
                 };
 
                 if (o.EnableAutomaticGrowingRecursion && !analysis.HasRecursiveParsers)

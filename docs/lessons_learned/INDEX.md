@@ -7,4 +7,5 @@ Verify any file/type/command still exists before relying on an entry.
 - [2026-11-19-legacy-test-port.md](2026-11-19-legacy-test-port.md): V1/V2 test locations in git (`b27fb56`, `7d7113b`), what got ported to V3, and a two-project scratch runner that works around the `Warpstone.Tests` restore failure.
 - [2026-11-19-left-recursion-comparison.md](2026-11-19-left-recursion-comparison.md): Warpstone GrowParser vs pegen/Umeda–Maeda; test restore broke with `-f`, so probe via scratch project compiling `src/Warpstone` sources.
 - [2026-11-19-xunit-to-nunit.md](2026-11-19-xunit-to-nunit.md): xunit→NUnit migration; attribute mapping, covariant `ParseOptions[][]` data-source pitfall, Verify.NUnit version pin.
+- [2026-11-19-auto-execution-mode.md](2026-11-19-auto-execution-mode.md): Auto mode now runs recursively with stack guards on grammar cycles and restarts iteratively on `InsufficientExecutionStackException`; left recursion doesn't nest deep, Debug stack margin pitfalls.
 - [2026-11-19-memo-default-true.md](2026-11-19-memo-default-true.md): memo default flipped to true; which default-option tests got memo on/off fixtures, plus sed CRLF and Verify vim `.swp` pitfalls.

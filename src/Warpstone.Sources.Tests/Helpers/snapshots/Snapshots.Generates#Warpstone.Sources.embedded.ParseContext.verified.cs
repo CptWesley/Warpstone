@@ -29,14 +29,19 @@ namespace Warpstone
         {
             var analysis = parser.Analyze();
 
-            if (analysis.HasRecursiveParsers || analysis.MaximumNestedParserDepth > 256)
+            // How deep a recursive grammar recurses depends on the input, so try recursively and fall back when the stack runs low.
+            if (analysis.HasRecursiveParsers)
+            {
+                return new AutoParseContext<T>(input, parser, options);
+            }
+
+            // Without recursion the stack depth is bounded by the grammar itself.
+            if (analysis.MaximumNestedParserDepth > 256)
             {
                 return new IterativeParseContext<T>(input, parser, options);
             }
-            else
-            {
-                return new RecursiveParseContext<T>(input, parser, options);
-            }
+
+            return new RecursiveParseContext<T>(input, parser, options);
         }
 
         /// <summary>
