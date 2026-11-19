@@ -3,23 +3,25 @@
 ## What was added
 - `ParseInput.Create(IParseInputSource, TextReader | Stream)`, `ParseInput.CreateFromReader(TextReader)` and `ParseInput.CreateFromStream(Stream)`. They return the internal `ReaderParseInput` (`src/Warpstone/ReaderParseInput.cs`), which reads on demand.
 - `IterativeParseContext<T>.RunToEndAsync` and `ParserExtensions.TryParseAsync<T>`/`ParseAsync<T>`. These always run iteratively.
-- Tests: `src/Warpstone.Tests/ParseInputSources.cs`. They use a channel-fed `TextReader` whose sync `Read` throws, so a blocking read fails the test.
+- Tests: `src/Warpstone.Tests/ParseInputSources.cs`. They use a channel-fed `TextReader` whose sync `Read` throws, so a blocking read fails the test. Its `Delivered` count shows progress, because reading `Content` would force a full read.
 
-## Design
-- `IParseInput.Content` stays a `string`. For a reader input it holds the text read so far, and all of that stays buffered, so backtracking simply re-reads it.
-- The 6 leaf impls (Character, String, End, Whitespaces, OptionalWhitespaces, Regex) call `ReaderParseInput.RequestMore(input, end)`, and only on the branch where they would otherwise fail at the end of `Content`. String inputs therefore pay nothing on the success path. Regex asks for `int.MaxValue`, which means the whole input.
-- Retry when `RequestMore` returns true: recursive mode does `return Apply(context, position)`, iterative mode pushes `(position, this)` back onto `ExecutionStack` and returns.
-- Async: `RunToEndAsync` sets `IsAsynchronous`. `Request` then only records `pendingEnd`, the step loop stops on `IsPending`, it awaits `ReadPendingAsync`, and then it resumes. Sync contexts block in `reader.Read`.
-- Each read asks for at least as much as is already buffered (minimum 4096 chars). Rebuilding `Content` with `string.Concat` stays linear that way. The ceiling: a read can wait for more input than the parser needs right now, which is fine for sources that end and not for request/response protocols. The upgrade path is a `char[]` buffer with impls that read through it.
+## Design (second version; the first used a `RequestMore` hook inside the impls)
+- `IParseInput` has match methods: `Match(index, char)`, `Match(index, string, culture, options, out match)`, `Match(index, Regex, out match)`, `MatchWhitespaces`, `MatchEnd`, plus `Substring` and `TryGetChar`. They return `InputMatch { Failure, Success, Pending }`.
+- `Content` always means the whole input; a reader input reads to the end, blocking. No library code calls it during parsing, except Regex on targets below .NET 7.
+- `Substring`/`TryGetChar` read synchronously up to the requested index, even under `ParseAsync`. `UnexpectedTokenError.Found` uses `TryGetChar`.
+- Impls: recursive mode checks `== InputMatch.Success`; iterative mode uses a switch where `Pending` pushes `(position, this)` back onto `ExecutionStack`. `Pending` only occurs while `RunToEndAsync` has set `ReaderParseInput.IsAsynchronous`.
+- `ReaderParseInput` buffers in a doubling `char[]`, not a `StringBuilder`. The `StringBuilder` indexer walks its chunk list, which is slow for backtracking. Appends are amortized O(1), so each read takes only what the reader has ready, and no read waits for more than the parser needs.
+- Regex needs the whole input. On .NET 7+ it matches a span of the buffer (`EnumerateMatches`); below that it builds `Content` (2x memory, noted with a ponytail comment).
+- `ParseInput` (string) on .NET 7+ also uses `EnumerateMatches`, which skips the `Match` allocation; MiniJava allocates ~2.4% less.
 
-## Measured (ShortRun, before vs after, string input)
-MiniJava small/medium/large and RightRecursiveSimpleString: allocations identical, times within noise.
+## Measured (ShortRun, string input)
+MiniJava and RightRecursiveSimpleString: no time regression (differences within noise); allocations equal or lower.
 
 ## Pitfalls
-- Sonar S4136: all `Create` overloads must be adjacent.
-- Leaf impl files use CRLF. Patch them with a script that normalizes line endings, or with Edit.
-- `StringParserImpl`: don't call `Matches` twice on failure (`Or` chains fail often); checking the length alone is enough to decide whether to request more.
-- Roslynaut `diagnostics` reported bogus CS0518 errors for the new file; `dotnet build` was clean.
+- Sonar S4136: all `Create` overloads must be adjacent. Sonar S1751: `foreach` that returns on its first iteration; use `MoveNext()` on the `EnumerateMatches` enumerator.
+- Leaf impl files use CRLF. Patch them with a script that normalizes line endings.
+- Roslynaut `diagnostics` reported bogus CS0518 errors for new files; `dotnet build` was clean.
 - `dotnet build -f net9.0` rewrote `Warpstone.Sources/packages.lock.json`; restore it with `git checkout`.
-- Verify left a vim `.swp` file in `Warpstone.Sources.Tests/Helpers/snapshots/`. Delete it after accepting snapshots, and check `git status` for staged leftovers after `git stash pop`.
-- `git worktree add` into the scratchpad failed with "Filename too long" (snapshot names). Benchmark before/after in place with `git stash push -u` instead.
+- `dotnet pack` rewrites `CompatibilitySuppressions.xml` (`ApiCompatGenerateSuppressionFile=true`) with unrelated nullable-attribute churn. Revert it unless the change really needs a suppression. The new `IParseInput` members needed none, because baseline 1.0.8.1 predates `IParseInput`.
+- Verify leaves a vim `.swp` file in `Warpstone.Sources.Tests/Helpers/snapshots/`; delete it after accepting snapshots.
+- Benchmarking before/after in place: `git worktree add` into the scratchpad fails ("Filename too long"). `git stash push -u -- <path>` followed by `git stash pop --index` refused to pop because the user had an unstaged, unrelated `README.md` edit, and the stash was kept. Recovery: `git checkout stash@{0} -- <path>`, `git restore --staged -- <path>`, `git restore --source='stash@{0}^2' --staged -- <staged files>`, compare untracked files against `stash@{0}^3`, then drop the stash. Next time: back up first, and don't benchmark while the user is editing files.

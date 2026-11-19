@@ -21,48 +21,25 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
-            var content = context.Input.Content;
-            var pos = position;
-
-            while (pos < content.Length && char.IsWhiteSpace(content[pos]))
-            {
-                pos++;
-            }
-
-            if (pos == content.Length && ReaderParseInput.RequestMore(context.Input, pos + 1))
-            {
-                return Apply(context, position);
-            }
-
-            return pos == position
-                ? new(position, new UnexpectedTokenError(context, this, position, 1, "whitespace"))
-                : new(position, pos - position, content[position..pos]);
+            return context.Input.MatchWhitespaces(position, out var match) == InputMatch.Success
+                ? new(position, match!.Length, match)
+                : new(position, new UnexpectedTokenError(context, this, position, 1, "whitespace"));
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            var content = context.Input.Content;
-            var pos = position;
-
-            while (pos < content.Length && char.IsWhiteSpace(content[pos]))
+            switch (context.Input.MatchWhitespaces(position, out var match))
             {
-                pos++;
-            }
-
-            if (pos == content.Length && ReaderParseInput.RequestMore(context.Input, pos + 1))
-            {
-                context.ExecutionStack.Push((position, this));
-                return;
-            }
-
-            if (pos > position)
-            {
-                context.ResultStack.Push(new(position, pos - position, content[position..pos]));
-            }
-            else
-            {
-                context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, "whitespace")));
+                case InputMatch.Success:
+                    context.ResultStack.Push(new(position, match!.Length, match));
+                    break;
+                case InputMatch.Pending:
+                    context.ExecutionStack.Push((position, this));
+                    break;
+                default:
+                    context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, "whitespace")));
+                    break;
             }
         }
 

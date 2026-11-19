@@ -53,43 +53,25 @@ namespace Warpstone.Internal.ParserImplementations
         /// <inheritdoc />
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
         {
-            if (ReaderParseInput.RequestMore(context.Input, int.MaxValue))
-            {
-                return Apply(context, position);
-            }
-
-            var input = context.Input.Content;
-            var match = Regex.Match(input, position);
-
-            if (match.Success && match.Index == position)
-            {
-                return new(position, match.Length, match.Value);
-            }
-            else
-            {
-                return new(position, new UnexpectedTokenError(context, this, position, 1, expected));
-            }
+            return context.Input.Match(position, Regex, out var match) == InputMatch.Success
+                ? new(position, match!.Length, match)
+                : new(position, new UnexpectedTokenError(context, this, position, 1, expected));
         }
 
         /// <inheritdoc />
         public override void Apply(IIterativeParseContext context, int position)
         {
-            if (ReaderParseInput.RequestMore(context.Input, int.MaxValue))
+            switch (context.Input.Match(position, Regex, out var match))
             {
-                context.ExecutionStack.Push((position, this));
-                return;
-            }
-
-            var input = context.Input.Content;
-            var match = Regex.Match(input, position);
-
-            if (match.Success && match.Index == position)
-            {
-                context.ResultStack.Push(new(position, match.Length, match.Value));
-            }
-            else
-            {
-                context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, expected)));
+                case InputMatch.Success:
+                    context.ResultStack.Push(new(position, match!.Length, match));
+                    break;
+                case InputMatch.Pending:
+                    context.ExecutionStack.Push((position, this));
+                    break;
+                default:
+                    context.ResultStack.Push(new(position, new UnexpectedTokenError(context, this, position, 1, expected)));
+                    break;
             }
         }
     }

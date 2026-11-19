@@ -46,10 +46,44 @@ public sealed class ParseInputSources
     [Test]
     public void Reader_is_read_lazily()
     {
-        var input = ParseInput.CreateFromReader(new StringReader("one" + new string('x', 100_000)));
+        using var reader = new StringReader("one" + new string('x', 100_000));
 
-        String("one").Parse(input).Should().Be("one");
-        input.Content.Length.Should().BeLessThan(100_000);
+        String("one").Parse(ParseInput.CreateFromReader(reader)).Should().Be("one");
+        reader.ReadToEnd().Length.Should().BeGreaterThan(90_000);
+    }
+
+    [Test]
+    public void Content_reads_the_whole_input()
+    {
+        var text = "one" + new string('x', 100_000);
+        var input = ParseInput.CreateFromReader(new StringReader(text));
+
+        String("one").Parse(input);
+        input.Content.Should().Be(text);
+    }
+
+    [Test]
+    public void TryGetChar_and_Substring_read_up_to_the_index()
+    {
+        using var reader = new StringReader("abc" + new string('x', 100_000));
+        var input = ParseInput.CreateFromReader(reader);
+
+        input.TryGetChar(1, out var c).Should().BeTrue();
+        c.Should().Be('b');
+        input.Substring(0, 3).Should().Be("abc");
+        reader.ReadToEnd().Length.Should().BeGreaterThan(90_000);
+
+        input.TryGetChar(100_003, out _).Should().BeFalse();
+        input.Invoking(i => i.Substring(100_000, 4)).Should().Throw<ArgumentOutOfRangeException>();
+    }
+
+    [TestCaseSource(typeof(TestOptions), nameof(TestOptions.All))]
+    public void Reader_matches_culture_aware_strings_like_string(ParseOptions options)
+    {
+        var parser = String("ONE", ignoreCase: true).ThenSkip(OptionalWhitespaces).ThenAdd(String("Two", ignoreCase: true)).ThenEnd();
+
+        parser.Parse(ParseInput.CreateFromReader(new StringReader("one  TWO")), options)
+            .Should().Be(parser.Parse("one  TWO", options));
     }
 
     [Test]
@@ -81,18 +115,18 @@ public sealed class ParseInputSources
     {
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(10));
         var channel = Channel.CreateUnbounded<string>();
-        var input = ParseInput.CreateFromReader(new ChannelTextReader(channel.Reader));
+        var reader = new ChannelTextReader(channel.Reader);
 
-        var parse = sum.ParseAsync(input, options, timeout.Token);
+        var parse = sum.ParseAsync(ParseInput.CreateFromReader(reader), options, timeout.Token);
         await channel.Writer.WriteAsync(longSum[..5000], timeout.Token);
 
-        while (input.Content.Length == 0)
+        // The parser takes the whole first chunk, then waits for more.
+        while (reader.Delivered < 5000)
         {
             await Task.Delay(1, timeout.Token);
         }
 
         parse.IsCompleted.Should().BeFalse();
-        input.Content.Should().Be(longSum[..input.Content.Length]);
 
         await channel.Writer.WriteAsync(longSum[5000..], timeout.Token);
         channel.Writer.Complete();
@@ -155,6 +189,8 @@ public sealed class ParseInputSources
         private string chunk = string.Empty;
         private int offset;
 
+        public int Delivered { get; private set; }
+
         public override int Read(char[] buffer, int index, int count)
             => throw new InvalidOperationException("Read synchronously.");
 
@@ -175,6 +211,7 @@ public sealed class ParseInputSources
             var read = Math.Min(count, chunk.Length - offset);
             chunk.CopyTo(offset, buffer, index, read);
             offset += read;
+            Delivered += read;
             return read;
         }
     }

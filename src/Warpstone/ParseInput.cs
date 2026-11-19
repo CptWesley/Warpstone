@@ -1,7 +1,9 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Warpstone
 {
@@ -185,5 +187,87 @@ namespace Warpstone
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IParseInput CreateFromStream(Stream stream)
             => Create(stream is FileStream file ? new FileSource(file.Name) : FromMemorySource.Instance, stream);
+
+        /// <inheritdoc />
+        public InputMatch Match(int index, char character)
+            => index < Content.Length && Content[index] == character
+            ? InputMatch.Success
+            : InputMatch.Failure;
+
+        /// <inheritdoc />
+        public InputMatch Match(int index, string str, CultureInfo culture, CompareOptions options, out string? match)
+        {
+            if (index + str.Length > Content.Length
+                || string.Compare(Content, index, str, 0, str.Length, culture, options) != 0)
+            {
+                match = null;
+                return InputMatch.Failure;
+            }
+
+            match = options == CompareOptions.Ordinal
+                ? str
+                : Content.Substring(index, str.Length);
+            return InputMatch.Success;
+        }
+
+        /// <inheritdoc />
+        public InputMatch Match(int index, Regex regex, out string? match)
+        {
+#if NET7_0_OR_GREATER
+            var matches = regex.EnumerateMatches(Content, index);
+            if (matches.MoveNext())
+            {
+                match = Content.Substring(matches.Current.Index, matches.Current.Length);
+                return InputMatch.Success;
+            }
+
+            match = null;
+            return InputMatch.Failure;
+#else
+            var result = regex.Match(Content, index);
+            if (!result.Success)
+            {
+                match = null;
+                return InputMatch.Failure;
+            }
+
+            match = result.Value;
+            return InputMatch.Success;
+#endif
+        }
+
+        /// <inheritdoc />
+        public InputMatch MatchWhitespaces(int index, out string? match)
+        {
+            var end = index;
+            while (end < Content.Length && char.IsWhiteSpace(Content[end]))
+            {
+                end++;
+            }
+
+            match = Content.Substring(index, end - index);
+            return end > index ? InputMatch.Success : InputMatch.Failure;
+        }
+
+        /// <inheritdoc />
+        public InputMatch MatchEnd(int index)
+            => index >= Content.Length ? InputMatch.Success : InputMatch.Failure;
+
+        /// <inheritdoc />
+        public string Substring(int index, int length)
+            => Content.Substring(index, length);
+
+        /// <inheritdoc />
+        public bool TryGetChar(int index, out char character)
+        {
+            if (index >= 0 && index < Content.Length)
+            {
+                character = Content[index];
+                return true;
+            }
+
+            character = default;
+            return false;
+        }
     }
 }
