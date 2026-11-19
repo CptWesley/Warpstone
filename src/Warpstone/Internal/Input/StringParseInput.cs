@@ -1,8 +1,4 @@
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Warpstone.Internal.Input
@@ -15,6 +11,12 @@ namespace Warpstone.Internal.Input
     {
         private readonly int[] lineLengths;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StringParseInput"/> class.
+        /// </summary>
+        /// <param name="source">The source of the input.</param>
+        /// <param name="content">The input string.</param>
+        /// <param name="lineLengths">The start index of each line.</param>
         public StringParseInput(IParseInputSource source, string content, int[] lineLengths)
         {
             Source = source;

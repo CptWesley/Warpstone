@@ -26,7 +26,7 @@ public sealed class ParseInputSources
     [TestCaseSource(typeof(TestOptions), nameof(TestOptions.All))]
     public void Reader_parses_like_string(ParseOptions options)
     {
-        sum.Parse(ParseInput.CreateFromReader(new StringReader(longSum)), options).Should().Be(6000);
+        sum.Parse(ParseInput.CreateFromMemory(new StringReader(longSum)), options).Should().Be(6000);
     }
 
     [TestCaseSource(typeof(TestOptions), nameof(TestOptions.All))]
@@ -34,7 +34,7 @@ public sealed class ParseInputSources
     {
         var input = longSum + " + four";
         var expected = sum.TryParse(input, options);
-        var actual = sum.TryParse(ParseInput.CreateFromReader(new StringReader(input)), options);
+        var actual = sum.TryParse(ParseInput.CreateFromMemory(new StringReader(input)), options);
 
         actual.Success.Should().BeFalse();
         actual.Errors.Select(Describe).Should().Equal(expected.Errors.Select(Describe));
@@ -48,7 +48,7 @@ public sealed class ParseInputSources
     {
         using var reader = new StringReader("one" + new string('x', 100_000));
 
-        String("one").Parse(ParseInput.CreateFromReader(reader)).Should().Be("one");
+        String("one").Parse(ParseInput.CreateFromMemory(reader)).Should().Be("one");
         reader.ReadToEnd().Length.Should().BeGreaterThan(90_000);
     }
 
@@ -56,7 +56,7 @@ public sealed class ParseInputSources
     public void Content_reads_the_whole_input()
     {
         var text = "one" + new string('x', 100_000);
-        var input = ParseInput.CreateFromReader(new StringReader(text));
+        var input = ParseInput.CreateFromMemory(new StringReader(text));
 
         String("one").Parse(input);
         input.Content.Should().Be(text);
@@ -66,7 +66,7 @@ public sealed class ParseInputSources
     public void TryGetChar_and_Substring_read_up_to_the_index()
     {
         using var reader = new StringReader("abc" + new string('x', 100_000));
-        var input = ParseInput.CreateFromReader(reader);
+        var input = ParseInput.CreateFromMemory(reader);
 
         input.TryGetChar(1, out var c).Should().BeTrue();
         c.Should().Be('b');
@@ -82,7 +82,7 @@ public sealed class ParseInputSources
     {
         var parser = String("ONE", ignoreCase: true).ThenSkip(OptionalWhitespaces).ThenAdd(String("Two", ignoreCase: true)).ThenEnd();
 
-        parser.Parse(ParseInput.CreateFromReader(new StringReader("one  TWO")), options)
+        parser.Parse(ParseInput.CreateFromMemory(new StringReader("one  TWO")), options)
             .Should().Be(parser.Parse("one  TWO", options));
     }
 
@@ -90,7 +90,7 @@ public sealed class ParseInputSources
     public void Regex_reads_the_whole_input()
     {
         var text = "one" + new string('x', 100_000);
-        var input = ParseInput.CreateFromReader(new StringReader(text));
+        var input = ParseInput.CreateFromMemory(new StringReader(text));
 
         Regex("o").Parse(input).Should().Be("o");
         input.Content.Should().Be(text);
@@ -101,7 +101,7 @@ public sealed class ParseInputSources
     {
         var text = "ab\n\ncd\ne\n";
         var expected = ParseInput.CreateFromMemory(text);
-        var actual = ParseInput.CreateFromReader(new StringReader(text));
+        var actual = ParseInput.CreateFromMemory(new StringReader(text));
         Regex(".*", System.Text.RegularExpressions.RegexOptions.Singleline).Parse(actual);
 
         for (var i = 0; i <= text.Length; i++)
@@ -117,7 +117,7 @@ public sealed class ParseInputSources
         var channel = Channel.CreateUnbounded<string>();
         var reader = new ChannelTextReader(channel.Reader);
 
-        var parse = sum.ParseAsync(ParseInput.CreateFromReader(reader), options, timeout.Token);
+        var parse = sum.ParseAsync(ParseInput.CreateFromMemory(reader), options, timeout.Token);
         await channel.Writer.WriteAsync(longSum[..5000], timeout.Token);
 
         // The parser takes the whole first chunk, then waits for more.
@@ -145,7 +145,7 @@ public sealed class ParseInputSources
     {
         using var cancellation = new CancellationTokenSource();
         var channel = Channel.CreateUnbounded<string>();
-        var parse = sum.TryParseAsync(ParseInput.CreateFromReader(new ChannelTextReader(channel.Reader)), cancellation.Token);
+        var parse = sum.TryParseAsync(ParseInput.CreateFromMemory(new ChannelTextReader(channel.Reader)), cancellation.Token);
 
         cancellation.Cancel();
         channel.Writer.TryWrite("one");
@@ -176,6 +176,100 @@ public sealed class ParseInputSources
 
             sum.Parse(input).Should().Be(3);
             input.Source.Should().BeOfType<FileSource>().Which.Path.Should().Be(stream.Name);
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Test]
+    public void Create_keeps_the_given_source()
+    {
+        var source = new FileSource("input.txt");
+        IParseInput[] inputs =
+        [
+            ParseInput.Create(source, "one + two"),
+            ParseInput.Create(source, new StringReader("one + two")),
+            ParseInput.Create(source, new MemoryStream(Encoding.UTF8.GetBytes("one + two"))),
+        ];
+
+        foreach (var input in inputs)
+        {
+            sum.Parse(input).Should().Be(3);
+            input.Source.Should().BeSameAs(source);
+        }
+    }
+
+    [Test]
+    public void CreateFromMemory_gets_from_memory_source()
+    {
+        IParseInput[] inputs =
+        [
+            ParseInput.CreateFromMemory("one + two"),
+            ParseInput.CreateFromMemory(new StringReader("one + two")),
+            ParseInput.CreateFromMemory(new MemoryStream(Encoding.UTF8.GetBytes("one + two"))),
+        ];
+
+        foreach (var input in inputs)
+        {
+            sum.Parse(input).Should().Be(3);
+            input.Source.Should().Be(FromMemorySource.Instance);
+        }
+    }
+
+    [Test]
+    public void CreateFromMemory_stream_is_left_open()
+    {
+        using var stream = new MemoryStream(Encoding.UTF8.GetBytes("one + two"));
+
+        sum.Parse(ParseInput.CreateFromMemory(stream)).Should().Be(3);
+        stream.CanRead.Should().BeTrue();
+    }
+
+    [Test]
+    public void CreateFromFile_gets_file_source()
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllText(path, "one + two");
+            using var reader = new StringReader("one + two");
+            using var stream = new MemoryStream(Encoding.UTF8.GetBytes("one + two"));
+            IParseInput[] inputs =
+            [
+                ParseInput.CreateFromFile(path),
+                ParseInput.CreateFromFile(path, "one + two"),
+                ParseInput.CreateFromFile(path, reader),
+                ParseInput.CreateFromFile(path, stream),
+            ];
+
+            foreach (var input in inputs)
+            {
+                sum.Parse(input).Should().Be(3);
+                input.Source.Should().BeOfType<FileSource>().Which.Path.Should().Be(path);
+            }
+
+            stream.CanRead.Should().BeTrue();
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Test]
+    public void CreateFromFile_does_not_keep_the_file_open()
+    {
+        var path = Path.GetTempFileName();
+        try
+        {
+            File.WriteAllText(path, "one + two");
+            var input = ParseInput.CreateFromFile(path);
+
+            // Throws IOException while a handle to the file is still open.
+            File.WriteAllText(path, "changed");
+            sum.Parse(input).Should().Be(3);
         }
         finally
         {

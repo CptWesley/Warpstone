@@ -14,7 +14,7 @@ namespace Warpstone
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="content"/> string
-        /// with with the given <paramref name="source"/>.
+        /// with the given <paramref name="source"/>.
         /// </summary>
         /// <param name="source">The source of the input.</param>
         /// <param name="content">The input string.</param>
@@ -82,6 +82,8 @@ namespace Warpstone
         /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="reader"/> text reader
         /// with a from-memory source.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The reader is not disposed.
         /// </summary>
         /// <param name="reader">The reader to read the input from.</param>
         /// <returns>A new <see cref="IParseInput"/> instance.</returns>
@@ -93,6 +95,9 @@ namespace Warpstone
         /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="stream"/> stream
         /// with a from-memory source.
+        /// The text encoding is detected from the byte order mark and defaults to UTF-8.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The stream is not disposed.
         /// </summary>
         /// <param name="stream">The stream to read the input from.</param>
         /// <returns>A new <see cref="IParseInput"/> instance.</returns>
@@ -116,6 +121,8 @@ namespace Warpstone
         /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="reader"/> text reader
         /// with a file source from the given <paramref name="path"/>.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The reader is not disposed.
         /// </summary>
         /// <param name="path">The path to the source file.</param>
         /// <param name="reader">The reader to read the input from.</param>
@@ -128,6 +135,9 @@ namespace Warpstone
         /// Creates a new <see cref="IParseInput"/> instance
         /// from the given <paramref name="stream"/> stream
         /// with a file source from the given <paramref name="path"/>.
+        /// The text encoding is detected from the byte order mark and defaults to UTF-8.
+        /// See <see cref="Create(IParseInputSource, TextReader)"/> for how the input is read.
+        /// The stream is not disposed.
         /// </summary>
         /// <param name="path">The path to the source file.</param>
         /// <param name="stream">The stream to read the input from.</param>
@@ -144,7 +154,7 @@ namespace Warpstone
         /// <returns>A new <see cref="IParseInput"/> instance.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static IParseInput CreateFromFile(string path)
-            => CreateFromFile(path, File.OpenRead(path));
+            => CreateFromFile(path, File.ReadAllText(path));
 
         /// <summary>
         /// Creates a new <see cref="IParseInput"/> instance
