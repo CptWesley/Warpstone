@@ -38,7 +38,7 @@ namespace Warpstone
         public IReadOnlyList<bool> Chars => chars;
 
         /// <summary>
-        /// Gets the <see cref="Errors.FailureTracker.AddExpected"/> calls, in order, that the parser makes when it fails
+        /// Gets the <see cref="Errors.FailureTracker.AddExpected(int, IParserImplementation, string)"/> calls, in order, that the parser makes when it fails
         /// at a character it can't start with.
         /// </summary>
         public IReadOnlyList<(IParserImplementation Parser, string Expected)> Reports { get; }

@@ -26,6 +26,10 @@ namespace Warpstone
         private Entry[]?[]?[] chunks = new Entry[]?[]?[4];
         private int count;
 
+        // Grow and Memo look up the same parser several times in a row, so the last slot found is kept.
+        private IParserImplementation? lastParser;
+        private int lastSlot;
+
         /// <inheritdoc />
         public UnsafeParseResult this[(int, IParserImplementation) key] => this[key.Item1, key.Item2];
 
@@ -66,7 +70,7 @@ namespace Warpstone
                 && chunkIndex < chunks.Length
                 && chunks[chunkIndex] is { } chunk
                 && chunk[position & ChunkMask] is { } row
-                && slots.TryGetValue(parser, out var slot)
+                && TryGetSlot(parser, out var slot)
                 && slot < row.Length
                 && row[slot].IsSet)
             {
@@ -117,7 +121,7 @@ namespace Warpstone
                 throw new ArgumentOutOfRangeException(nameof(position), position, "Memo table positions can not be negative.");
             }
 
-            if (!slots.TryGetValue(parser, out var slot))
+            if (!TryGetSlot(parser, out var slot))
             {
                 slot = parsers.Count;
                 slots.Add(parser, slot);
@@ -149,15 +153,42 @@ namespace Warpstone
             row[slot] = new(value);
         }
 
+        private bool TryGetSlot(IParserImplementation parser, out int slot)
+        {
+            if (ReferenceEquals(parser, lastParser))
+            {
+                slot = lastSlot;
+                return true;
+            }
+
+            if (!slots.TryGetValue(parser, out slot))
+            {
+                return false;
+            }
+
+            lastParser = parser;
+            lastSlot = slot;
+            return true;
+        }
+
+        // The result's fields are stored flat, so IsSet fits in its padding: 24 bytes per entry instead of 32.
         private readonly struct Entry
         {
+            private readonly object? value;
+            private readonly int position;
+            private readonly int length;
+            private readonly bool success;
+
             public Entry(in UnsafeParseResult result)
             {
-                Result = result;
+                value = result.Value;
+                position = result.Position;
+                length = result.Length;
+                success = result.Success;
                 IsSet = true;
             }
 
-            public UnsafeParseResult Result { get; }
+            public UnsafeParseResult Result => new(position, length, value, success);
 
             public bool IsSet { get; }
         }

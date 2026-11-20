@@ -142,14 +142,14 @@ namespace Warpstone.Internal.ParserImplementations
         private sealed class Plan
         {
             private readonly IParserImplementation<T>[] runs;
-            private readonly IReadOnlyList<(IParserImplementation, string)>[] before;
-            private readonly IReadOnlyList<(IParserImplementation, string)> after;
+            private readonly (IParserImplementation, string)[][] before;
+            private readonly (IParserImplementation, string)[] after;
             private readonly PlanContinuation?[] continuations;
 
             public Plan(IParserImplementation<T>[] alternatives, FirstChars?[] firsts, bool[] run)
             {
                 var runList = new List<IParserImplementation<T>>();
-                var beforeList = new List<IReadOnlyList<(IParserImplementation, string)>>();
+                var beforeList = new List<(IParserImplementation, string)[]>();
                 var pending = new List<(IParserImplementation Parser, string Expected)>();
                 var seen = FirstChars.CreateSeen();
                 for (var i = 0; i < alternatives.Length; i++)
@@ -176,17 +176,12 @@ namespace Warpstone.Internal.ParserImplementations
                 for (var i = 0; i < continuations.Length; i++)
                 {
                     var last = i == continuations.Length - 1;
-                    continuations[i] = last && after.Count == 0 ? null : new(this, i);
+                    continuations[i] = last && after.Length == 0 ? null : new(this, i);
                 }
             }
 
-            private static void ReportAll(IParseContext context, int position, IReadOnlyList<(IParserImplementation Parser, string Expected)> reports)
-            {
-                for (var i = 0; i < reports.Count; i++)
-                {
-                    context.Failures.AddExpected(position, reports[i].Parser, reports[i].Expected);
-                }
-            }
+            private static void ReportAll(IParseContext context, int position, (IParserImplementation Parser, string Expected)[] reports)
+                => context.Failures.AddExpected(position, reports);
 
             public UnsafeParseResult Apply(IRecursiveParseContext context, int position)
             {
@@ -194,7 +189,7 @@ namespace Warpstone.Internal.ParserImplementations
                 {
                     ReportAll(context, position, before[i]);
                     var result = runs[i].Apply(context, position);
-                    if (result.Success || (i == runs.Length - 1 && after.Count == 0))
+                    if (result.Success || (i == runs.Length - 1 && after.Length == 0))
                     {
                         return result;
                     }

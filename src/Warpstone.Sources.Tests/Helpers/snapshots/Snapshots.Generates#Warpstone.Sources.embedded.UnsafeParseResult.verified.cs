@@ -52,7 +52,14 @@ namespace Warpstone
         {
         }
 
-        private UnsafeParseResult(int position, int length, object? value, bool success)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UnsafeParseResult"/> struct, successful or not.
+        /// </summary>
+        /// <param name="position">The position where the result was obtained.</param>
+        /// <param name="length">The length of the value in the input.</param>
+        /// <param name="value">The found value, or the in-progress marker of a failure.</param>
+        /// <param name="success">Whether parsing succeeded.</param>
+        internal UnsafeParseResult(int position, int length, object? value, bool success)
         {
             Position = position;
             Length = length;
