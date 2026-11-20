@@ -53,3 +53,30 @@ Stopwatch probe, MiniJava large, net11.0 Release, best of 5 × 0.4 s, **one proc
 - An incremental `dotnet build` hid analyzer warnings in files that changed; `--no-incremental` showed SA1214 (field order), SA1600
   (doc on a now-internal ctor) and CS0419 (cref to a now-overloaded `AddExpected`).
 - Verify received snapshots carry a TFM (`Snapshots.Generates.DotNet10_0#...received.cs`); rename to `Snapshots.Generates#...verified.cs`.
+
+## Follow-up: identifier interning (.NET 9+)
+
+`StringParseInput.Intern` (used by the regex match path, which only exists under `NET7_0_OR_GREATER`) shares one string for repeated
+matches of at most 32 chars. Under `NET9_0_OR_GREATER` only; older TFMs keep `Content.Substring`.
+
+| Mode | before | after |
+|---|---:|---:|
+| Recursive (Auto) | 2.26 ms, 1 027 KB | 2.29 ms, 865 KB |
+| Left-recursive grammar | 3.75 ms, 2 300 KB | 3.80 ms, 2 138 KB |
+| Iterative | 4.67 ms, 1 174 KB | 4.82 ms, 1 012 KB |
+
+Means of 4 alternated runs. −16% bytes, about +1–3% time: a lookup costs about what a gen0 allocation does. It pays off in GC
+pressure (multi-threaded hosts) and in the retained AST, not in single-thread throughput.
+
+- Table is a direct-mapped `string?[512]` per input, slot = `string.GetHashCode(span) & 511`; a collision overwrites. Thread-safe without
+  locks: one input can be parsed by several contexts at once, reference writes are atomic and a slot is compared before reuse.
+- Tried first: per-input `ConcurrentDictionary<string, string>` + `GetAlternateLookup<ReadOnlySpan<char>>`. Saved only 116 KB
+  (its nodes allocate) and was slower (recursive +4%). Do not store the `AlternateLookup` struct in a nullable field: it can tear
+  across threads. Store the dictionary and call `GetAlternateLookup` per use.
+- A hand-rolled hash (length + first/middle/last char) was no faster than Marvin. Kept `string.GetHashCode(span)`.
+- Not on `RegexParserImpl`: impls are shared across parses and graphs, so a cache there grows forever.
+- Tests: `RegexParser.Returns_matched_text_when_interned_matches_collide` (2000 words, more than 512 slots, plus a 40-char word) and
+  `Repeated_short_matches_share_one_string` (`BeSameAs` on net9+, `Be` below).
+- Pitfalls: the helper first clashed with the existing public `Substring(int, int)`. netstandard2.0 flagged it as unused (S1144)
+  until it was wrapped in `#if NET7_0_OR_GREATER`. The NET9 consts had to move above the static readonly fields (SA1203). A Python
+  heredoc collapsed `"\n"` in C# literals again, so use Edit.

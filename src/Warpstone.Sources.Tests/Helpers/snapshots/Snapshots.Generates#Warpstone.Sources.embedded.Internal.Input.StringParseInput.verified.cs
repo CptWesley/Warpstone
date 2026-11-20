@@ -3,6 +3,7 @@
 #pragma warning disable
 #nullable enable annotations
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -15,9 +16,25 @@ namespace Warpstone.Internal.Input
     /// </summary>
     internal sealed class StringParseInput : IParseInput
     {
+#if NET9_0_OR_GREATER
+        // Longer matches (string literals, comments) rarely repeat, so they are not worth a lookup.
+        private const int MaxInternLength = 32;
+
+        // A power of two, so the slot is the hash masked.
+        private const int InternSlots = 512;
+#endif
+
         private static readonly string[] Spaces = CreateRuns(string.Empty);
         private static readonly string[] LineFeedSpaces = CreateRuns("\n");
         private static readonly string[] CrLfSpaces = CreateRuns("\r\n");
+
+#if NET9_0_OR_GREATER
+        // Regex matches with the same text share one string, so repeated identifiers allocate once per input.
+        // Direct-mapped by hash: a collision overwrites the slot. Safe when one input is parsed by several contexts at the
+        // same time, because reference writes are atomic and a read slot is compared before it is reused.
+        // ponytail: fixed 512 slots; colliding identifiers keep evicting each other. Grow or add ways if a profile shows misses.
+        private string?[]? interned;
+#endif
 
         private int[]? lineStarts;
 
@@ -182,7 +199,7 @@ namespace Warpstone.Internal.Input
                 }
                 else
                 {
-                    match = Content.Substring(start, length);
+                    match = Intern(start, length);
                     first ??= match;
                 }
 
@@ -195,6 +212,28 @@ namespace Warpstone.Internal.Input
             return Match(index, regex, out match);
 #endif
         }
+
+#if NET7_0_OR_GREATER
+        private string Intern(int start, int length)
+        {
+#if NET9_0_OR_GREATER
+            if (length <= MaxInternLength)
+            {
+                var span = Content.AsSpan(start, length);
+                ref var slot = ref (interned ??= new string?[InternSlots])[string.GetHashCode(span) & (InternSlots - 1)];
+                if (slot is { } known && span.SequenceEqual(known))
+                {
+                    return known;
+                }
+
+                var value = span.ToString();
+                slot = value;
+                return value;
+            }
+#endif
+            return Content.Substring(start, length);
+        }
+#endif
 
         /// <inheritdoc />
         public InputMatch MatchWhitespaces(int index, out string? match)
