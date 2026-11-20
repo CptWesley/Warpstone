@@ -19,6 +19,10 @@ namespace Warpstone.Internal.ParserImplementations
         private IParserImplementation<T> inner = default!;
 
         /// <inheritdoc />
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(inner, visiting);
+
+        /// <inheritdoc />
         protected override void InitializeInternal(StackGuardParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             inner = (IParserImplementation<T>)parserLookup[parser.Parser];

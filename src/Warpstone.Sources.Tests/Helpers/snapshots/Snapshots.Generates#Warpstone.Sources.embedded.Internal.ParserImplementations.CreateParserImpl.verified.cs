@@ -14,7 +14,8 @@ namespace Warpstone.Internal.ParserImplementations
     /// <typeparam name="T">The type of the value that is always returned.</typeparam>
     internal sealed class CreateParserImpl<T> : ParserImplementationBase<CreateParser<T>, T>
     {
-        private readonly T value;
+        // Boxed once, so a value type result does not allocate a new box on every application.
+        private readonly object? value;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CreateParserImpl{T}"/> class.

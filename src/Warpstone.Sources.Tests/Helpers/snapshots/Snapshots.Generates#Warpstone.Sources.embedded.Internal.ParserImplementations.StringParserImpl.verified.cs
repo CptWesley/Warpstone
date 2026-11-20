@@ -34,6 +34,17 @@ namespace Warpstone.Internal.ParserImplementations
         }
 
         /// <inheritdoc />
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+        {
+            // Culture comparisons can match other first characters (ignorable ones, for one), and so can a letter with ignore case.
+            var ordinal = options == CompareOptions.Ordinal
+                || (options == CompareOptions.OrdinalIgnoreCase && value.Length > 0 && !char.IsLetter(value[0]));
+            return ordinal && value.Length > 0
+                ? FirstChars.Leaf([value[0]], this, expected)
+                : null;
+        }
+
+        /// <inheritdoc />
         protected override void InitializeInternal(StringParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             // Do nothing.

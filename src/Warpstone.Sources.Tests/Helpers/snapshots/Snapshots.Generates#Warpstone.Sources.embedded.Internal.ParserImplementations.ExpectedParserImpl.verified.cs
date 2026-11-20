@@ -19,6 +19,11 @@ namespace Warpstone.Internal.ParserImplementations
         private string expected = default!;
 
         /// <inheritdoc />
+        // Failing at its start, the label replaces whatever the inner parser reported there with its name.
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(inner, visiting)?.Relabel(this, expected);
+
+        /// <inheritdoc />
         protected override void InitializeInternal(ExpectedParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             expected = parser.Expected;

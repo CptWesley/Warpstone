@@ -69,15 +69,15 @@ Mean CPU time per parse:
 
 | Library                          | Small     | Medium    | Large      |
 |----------------------------------|----------:|----------:|-----------:|
-| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 7.9 μs | 91.4 μs | 0.93 ms |
-| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.2 μs | 121.2 μs | 1.38 ms |
-| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 16.0 μs | 187.2 μs | 2.09 ms |
-| Warpstone V3                     | 41.1 μs   | 484.2 μs  | 5.31 ms    |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 59.8 μs | 717.4 μs | 7.98 ms |
-| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 96.9 μs | 1.21 ms | 13.49 ms |
-| Warpstone V1                     | 471.9 μs  | 5.72 ms   | 57.86 ms   |
-| [ParsecSharp](https://github.com/acple/ParsecSharp) | 536.5 μs | 6.62 ms | 68.00 ms |
-| Warpstone V2                     | 3.29 ms   | 83.45 ms  | 802.02 ms  |
+| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.1 μs | 92.7 μs | 1.00 ms |
+| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.4 μs | 124.3 μs | 1.37 ms |
+| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 17.1 μs | 208.1 μs | 2.12 ms |
+| Warpstone V3                     | 24.7 μs | 297.1 μs | 2.86 ms |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 40.6 μs | 524.0 μs | 5.29 ms |
+| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 101.2 μs | 1.27 ms | 13.52 ms |
+| Warpstone V1                     | 487.5 μs | 6.21 ms | 60.29 ms |
+| [ParsecSharp](https://github.com/acple/ParsecSharp) | 549.1 μs | 6.84 ms | 67.45 ms |
+| Warpstone V2                     | 3.39 ms | 79.51 ms | 805.98 ms |
 
 Memory allocated per parse:
 
@@ -86,16 +86,16 @@ Memory allocated per parse:
 | [Farkle](https://github.com/teo-tsirpanis/Farkle) | 6.5 KB | 65.0 KB | 650 KB |
 | [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 6.5 KB | 67.5 KB | 673 KB |
 | [Parlot](https://github.com/sebastienros/parlot) (runtime) | 6.6 KB | 67.5 KB | 673 KB |
-| Warpstone V3                     | 13.1 KB   | 115.8 KB  | 1,139 KB   |
+| Warpstone V3                     | 14.7 KB | 93.9 KB | 866 KB |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 22.1 KB | 179.2 KB | 1,696 KB |
 | [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 21.8 KB | 252.0 KB | 2,523 KB |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 29.8 KB | 273.4 KB | 2,640 KB |
-| Warpstone V1                     | 1,579 KB  | 19,116 KB | 191,131 KB |
-| [ParsecSharp](https://github.com/acple/ParsecSharp) | 1,956 KB | 24,179 KB | 242,815 KB |
-| Warpstone V2                     | 9,069 KB  | 109,982 KB | 1,104,779 KB |
+| Warpstone V1                     | 1,578 KB | 19,116 KB | 191,131 KB |
+| [ParsecSharp](https://github.com/acple/ParsecSharp) | 1,956 KB | 24,179 KB | 242,814 KB |
+| Warpstone V2                     | 9,069 KB | 109,981 KB | 1,104,776 KB |
 
 7. Binary operators written as left-recursive rules instead of repetitions.
 
-Measured with BenchmarkDotNet 0.15.8 (`InProcessEmitToolchain`) on .NET 11.0, AMD Ryzen 9 7950X3D, Windows 11. Reproduce from `src/` with `dotnet run -c Release --project Warpstone.Benchmarks -- --filter "*MiniJavaBenchmark*" --inProcess`.
+Measured with BenchmarkDotNet 0.16.0-preview.2 (`InProcessEmitToolchain`) on .NET 11.0, AMD Ryzen 9 7950X3D, Windows 11. Reproduce from `src/` with `dotnet run -c Release --project Warpstone.Benchmarks -- --filter "*MiniJavaBenchmark*" --inProcess`.
 
 ## Usage
 Install the package. V3 is in preview, so include prereleases:

@@ -25,6 +25,10 @@ namespace Warpstone.Internal.ParserImplementations
         private Func<TIn, TOut> map = default!;
 
         /// <inheritdoc />
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(element, visiting);
+
+        /// <inheritdoc />
         protected override void InitializeInternal(MapParser<TIn, TOut> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             element = (IParserImplementation<TIn>)parserLookup[parser.Element];

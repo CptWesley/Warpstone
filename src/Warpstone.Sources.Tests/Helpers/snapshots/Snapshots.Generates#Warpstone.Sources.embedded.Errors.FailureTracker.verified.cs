@@ -3,6 +3,7 @@
 #pragma warning disable
 #nullable enable annotations
 
+using System;
 using System.Collections.Generic;
 
 namespace Warpstone.Errors
@@ -14,8 +15,9 @@ namespace Warpstone.Errors
     /// </summary>
     public sealed class FailureTracker
     {
-        private readonly List<Entry> entries = new();
         private readonly Stack<(int Position, int Count)> labels = new();
+        private Entry[] entries = new Entry[16];
+        private int count;
         private int suppressed;
         private int position = -1;
 
@@ -37,16 +39,26 @@ namespace Warpstone.Errors
                 return;
             }
 
-            // Indexed instead of LINQ, so reporting a failure doesn't allocate.
-            for (var i = 0; i < entries.Count; i++)
+            Add(parser, expected);
+        }
+
+        /// <summary>
+        /// Reports several expectations at one position, as <see cref="AddExpected(int, IParserImplementation, string)"/> does for each.
+        /// </summary>
+        /// <param name="position">The position of the failures.</param>
+        /// <param name="reports">The parsers that failed and what they expected.</param>
+        internal void AddExpected(int position, (IParserImplementation Parser, string Expected)[] reports)
+        {
+            if (reports.Length == 0 || !MoveTo(position))
             {
-                if (ReferenceEquals(entries[i].Parser, parser) && ReferenceEquals(entries[i].Expected, expected))
-                {
-                    return;
-                }
+                return;
             }
 
-            entries.Add(new(parser, expected, null));
+            for (var i = 0; i < reports.Length; i++)
+            {
+                var (parser, expected) = reports[i];
+                Add(parser, expected);
+            }
         }
 
         /// <summary>
@@ -57,7 +69,7 @@ namespace Warpstone.Errors
         {
             if (MoveTo(error.Position))
             {
-                entries.Add(new(error.Parser, null, error));
+                Append(new(error.Parser, null, error));
             }
         }
 
@@ -65,7 +77,7 @@ namespace Warpstone.Errors
         /// Starts a parser whose failures are reported under a single name. Must be followed by one of the <c>EndLabel</c> overloads.
         /// </summary>
         public void BeginLabel()
-            => labels.Push((Position, entries.Count));
+            => labels.Push((Position, count));
 
         /// <summary>
         /// Ends a parser started with <see cref="BeginLabel"/> that succeeded.
@@ -93,7 +105,8 @@ namespace Warpstone.Errors
             if (Position == position && !IsSuppressed)
             {
                 var keep = startPosition == position ? startCount : 0;
-                entries.RemoveRange(keep, entries.Count - keep);
+                Array.Clear(entries, keep, count - keep);
+                count = keep;
             }
 
             AddExpected(position, parser, expected);
@@ -125,8 +138,9 @@ namespace Warpstone.Errors
             var seen = new HashSet<string>();
             var tokens = new List<UnexpectedTokenError>();
 
-            foreach (var entry in entries)
+            for (var i = 0; i < count; i++)
             {
+                var entry = entries[i];
                 if (entry.Error is { } error)
                 {
                     errors.Add(error);
@@ -171,10 +185,36 @@ namespace Warpstone.Errors
             if (failurePosition > position)
             {
                 position = failurePosition;
-                entries.Clear();
+                Array.Clear(entries, 0, count);
+                count = 0;
             }
 
             return true;
+        }
+
+        private void Add(IParserImplementation parser, string expected)
+        {
+            // A plain array walked by reference: no struct copies, and reporting a failure doesn't allocate.
+            for (var i = 0; i < count; i++)
+            {
+                ref readonly var entry = ref entries[i];
+                if (ReferenceEquals(entry.Parser, parser) && ReferenceEquals(entry.Expected, expected))
+                {
+                    return;
+                }
+            }
+
+            Append(new(parser, expected, null));
+        }
+
+        private void Append(in Entry entry)
+        {
+            if (count == entries.Length)
+            {
+                Array.Resize(ref entries, count * 2);
+            }
+
+            entries[count++] = entry;
         }
 
         private readonly struct Entry
@@ -186,11 +226,11 @@ namespace Warpstone.Errors
                 Error = error;
             }
 
-            public IParserImplementation Parser { get; }
+            public readonly IParserImplementation Parser;
 
-            public string? Expected { get; }
+            public readonly string? Expected;
 
-            public IParseError? Error { get; }
+            public readonly IParseError? Error;
         }
     }
 }

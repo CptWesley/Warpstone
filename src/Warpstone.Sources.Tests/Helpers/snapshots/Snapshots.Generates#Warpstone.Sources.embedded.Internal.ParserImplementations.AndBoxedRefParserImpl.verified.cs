@@ -23,6 +23,10 @@ namespace Warpstone.Internal.ParserImplementations
         private Continuation continuation = default!;
 
         /// <inheritdoc />
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(first, visiting);
+
+        /// <inheritdoc />
         protected override void InitializeInternal(AndParser<TFirst, TSecond> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             first = (IParserImplementation<TFirst>)parserLookup[parser.First];

@@ -3,6 +3,7 @@
 #pragma warning disable
 #nullable enable annotations
 
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -15,9 +16,25 @@ namespace Warpstone.Internal.Input
     /// </summary>
     internal sealed class StringParseInput : IParseInput
     {
+#if NET9_0_OR_GREATER
+        // Longer matches (string literals, comments) rarely repeat, so they are not worth a lookup.
+        private const int MaxInternLength = 32;
+
+        // A power of two, so the slot is the hash masked.
+        private const int InternSlots = 512;
+#endif
+
         private static readonly string[] Spaces = CreateRuns(string.Empty);
         private static readonly string[] LineFeedSpaces = CreateRuns("\n");
         private static readonly string[] CrLfSpaces = CreateRuns("\r\n");
+
+#if NET9_0_OR_GREATER
+        // Regex matches with the same text share one string, so repeated identifiers allocate once per input.
+        // Direct-mapped by hash: a collision overwrites the slot. Safe when one input is parsed by several contexts at the
+        // same time, because reference writes are atomic and a read slot is compared before it is reused.
+        // ponytail: fixed 512 slots; colliding identifiers keep evicting each other. Grow or add ways if a profile shows misses.
+        private string?[]? interned;
+#endif
 
         private int[]? lineStarts;
 
@@ -150,6 +167,73 @@ namespace Warpstone.Internal.Input
             return InputMatch.Success;
 #endif
         }
+
+        /// <summary>
+        /// Matches a regex like <see cref="Match(int, Regex, out string?)"/>, but returns <paramref name="first"/> instead of a new
+        /// string when the match has the same text, and stores the match in it when it is still <see langword="null"/>.
+        /// A regex that matches one fixed text, such as a keyword, then allocates once instead of on every match.
+        /// </summary>
+        /// <param name="index">The index to match at.</param>
+        /// <param name="regex">The regex to match.</param>
+        /// <param name="prefix">Literal text every match starts with, checked before running the regex.</param>
+        /// <param name="first">The first text matched, shared by all parses. Only ever written while it is <see langword="null"/>.</param>
+        /// <param name="match">The matched text.</param>
+        /// <returns>Whether the regex matched.</returns>
+        internal InputMatch Match(int index, Regex regex, string prefix, ref string? first, out string? match)
+        {
+            if (prefix.Length > 0 && string.CompareOrdinal(Content, index, prefix, 0, prefix.Length) != 0)
+            {
+                match = null;
+                return InputMatch.Failure;
+            }
+
+#if NET7_0_OR_GREATER
+            var matches = regex.EnumerateMatches(Content, index);
+            if (matches.MoveNext())
+            {
+                var start = matches.Current.Index;
+                var length = matches.Current.Length;
+                if (first is { } known && known.Length == length && string.CompareOrdinal(Content, start, known, 0, length) == 0)
+                {
+                    match = known;
+                }
+                else
+                {
+                    match = Intern(start, length);
+                    first ??= match;
+                }
+
+                return InputMatch.Success;
+            }
+
+            match = null;
+            return InputMatch.Failure;
+#else
+            return Match(index, regex, out match);
+#endif
+        }
+
+#if NET7_0_OR_GREATER
+        private string Intern(int start, int length)
+        {
+#if NET9_0_OR_GREATER
+            if (length <= MaxInternLength)
+            {
+                var span = Content.AsSpan(start, length);
+                ref var slot = ref (interned ??= new string?[InternSlots])[string.GetHashCode(span) & (InternSlots - 1)];
+                if (slot is { } known && span.SequenceEqual(known))
+                {
+                    return known;
+                }
+
+                var value = span.ToString();
+                slot = value;
+                return value;
+            }
+#endif
+            return Content.Substring(start, length);
+        }
+#endif
 
         /// <inheritdoc />
         public InputMatch MatchWhitespaces(int index, out string? match)

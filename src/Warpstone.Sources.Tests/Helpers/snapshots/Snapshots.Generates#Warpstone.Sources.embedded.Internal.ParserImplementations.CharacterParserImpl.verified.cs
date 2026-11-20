@@ -27,6 +27,10 @@ namespace Warpstone.Internal.ParserImplementations
         }
 
         /// <inheritdoc />
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Leaf([character], this, expected);
+
+        /// <inheritdoc />
         protected override void InitializeInternal(CharacterParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             // Do nothing.

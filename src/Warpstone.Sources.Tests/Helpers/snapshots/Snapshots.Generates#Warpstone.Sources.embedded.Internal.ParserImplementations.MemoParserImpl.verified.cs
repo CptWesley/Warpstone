@@ -20,6 +20,11 @@ namespace Warpstone.Internal.ParserImplementations
         private Continuation continuation = default!;
 
         /// <inheritdoc />
+        // A memo hit reports nothing, so skipping the inner parser can report failures it would have left out.
+        public override FirstChars? GetFirstChars(ISet<IParserImplementation> visiting)
+            => FirstChars.Of(inner, visiting);
+
+        /// <inheritdoc />
         protected override void InitializeInternal(MemoParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             inner = (IParserImplementation<T>)parserLookup[parser.Parser];

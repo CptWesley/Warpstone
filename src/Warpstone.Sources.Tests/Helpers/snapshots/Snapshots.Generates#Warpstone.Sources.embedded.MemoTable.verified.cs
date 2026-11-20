@@ -16,20 +16,30 @@ namespace Warpstone
     /// </summary>
     /// <remarks>
     /// Every memoized parser gets a slot number, and every position a row with one entry per slot.
-    /// Rows are found through chunks of a fixed number of positions. No array grows with the input,
+    /// Rows are found through chunks of a fixed number of positions. A chunk starts as a small hash table of the positions it holds,
+    /// and becomes an array indexed by position once that is smaller. No array grows with the input,
     /// so none of them ends up on the large object heap, which is only cleaned up by gen 2 collections.
     /// </remarks>
     public sealed class MemoTable : IMemoTable
     {
-        // 1024 positions per chunk: 8 KB of row references, far below the 85 KB at which arrays go to the large object heap.
+        // 1024 positions per chunk: at most 8 KB of row references, far below the 85 KB at which arrays go to the large object heap.
         private const int ChunkBits = 10;
         private const int ChunkSize = 1 << ChunkBits;
         private const int ChunkMask = ChunkSize - 1;
 
         private readonly Dictionary<IParserImplementation, int> slots = new();
         private readonly List<IParserImplementation> parsers = new();
-        private Entry[]?[]?[] chunks = new Entry[]?[]?[4];
+        private Chunk?[] chunks = new Chunk?[4];
         private int count;
+
+        // Grow and Memo look up the same parser several times in a row, so the last slot found is kept.
+        private IParserImplementation? lastParser;
+        private int lastSlot;
+
+        // Nested Grow and Memo parsers look up the same position many times in a row, so its row (or its absence) is kept too.
+        // Only Set creates or replaces rows, and it updates this.
+        private int lastPosition = -1;
+        private Entry[]? lastRow;
 
         /// <inheritdoc />
         public UnsafeParseResult this[(int, IParserImplementation) key] => this[key.Item1, key.Item2];
@@ -66,12 +76,8 @@ namespace Warpstone
         /// <inheritdoc />
         public bool TryGetValue(int position, IParserImplementation parser, [NotNullWhen(true)] out UnsafeParseResult value)
         {
-            var chunkIndex = position >> ChunkBits;
-            if (position >= 0
-                && chunkIndex < chunks.Length
-                && chunks[chunkIndex] is { } chunk
-                && chunk[position & ChunkMask] is { } row
-                && slots.TryGetValue(parser, out var slot)
+            if (FindRow(position) is { } row
+                && TryGetSlot(parser, out var slot)
                 && slot < row.Length
                 && row[slot].IsSet)
             {
@@ -93,13 +99,8 @@ namespace Warpstone
                     continue;
                 }
 
-                for (var offset = 0; offset < ChunkSize; offset++)
+                foreach (var (offset, row) in chunk.Rows())
                 {
-                    if (chunk[offset] is not { } row)
-                    {
-                        continue;
-                    }
-
                     for (var slot = 0; slot < row.Length; slot++)
                     {
                         if (row[slot].IsSet)
@@ -122,11 +123,16 @@ namespace Warpstone
                 throw new ArgumentOutOfRangeException(nameof(position), position, "Memo table positions can not be negative.");
             }
 
-            if (!slots.TryGetValue(parser, out var slot))
+            if (!TryGetSlot(parser, out var slot))
             {
                 slot = parsers.Count;
                 slots.Add(parser, slot);
                 parsers.Add(parser);
+            }
+            else if (position == lastPosition && lastRow is { } cached && slot < cached.Length)
+            {
+                SetEntry(cached, slot, value);
+                return;
             }
 
             var chunkIndex = position >> ChunkBits;
@@ -135,8 +141,8 @@ namespace Warpstone
                 Array.Resize(ref chunks, Math.Max(chunkIndex + 1, chunks.Length * 2));
             }
 
-            var chunk = chunks[chunkIndex] ??= new Entry[]?[ChunkSize];
-            ref var row = ref chunk[position & ChunkMask];
+            var chunk = chunks[chunkIndex] ??= new Chunk();
+            ref var row = ref chunk.FindOrAdd(position & ChunkMask);
             if (row is null)
             {
                 row = new Entry[parsers.Count];
@@ -146,6 +152,13 @@ namespace Warpstone
                 Array.Resize(ref row, parsers.Count);
             }
 
+            SetEntry(row, slot, value);
+            lastPosition = position;
+            lastRow = row;
+        }
+
+        private void SetEntry(Entry[] row, int slot, in UnsafeParseResult value)
+        {
             if (!row[slot].IsSet)
             {
                 count++;
@@ -154,15 +167,183 @@ namespace Warpstone
             row[slot] = new(value);
         }
 
+        private Entry[]? FindRow(int position)
+        {
+            if (position == lastPosition)
+            {
+                return lastRow;
+            }
+
+            var chunkIndex = position >> ChunkBits;
+            if (position < 0 || chunkIndex >= chunks.Length || chunks[chunkIndex] is not { } chunk)
+            {
+                return null;
+            }
+
+            lastPosition = position;
+            return lastRow = chunk.Find(position & ChunkMask);
+        }
+
+        private bool TryGetSlot(IParserImplementation parser, out int slot)
+        {
+            if (ReferenceEquals(parser, lastParser))
+            {
+                slot = lastSlot;
+                return true;
+            }
+
+            if (!slots.TryGetValue(parser, out slot))
+            {
+                return false;
+            }
+
+            lastParser = parser;
+            lastSlot = slot;
+            return true;
+        }
+
+        /// <summary>
+        /// The rows of one chunk of positions. Memoized positions are usually spread thin (a few per hundred characters),
+        /// so the chunk starts as an open-addressing hash table keyed by offset, and switches to an array with one row per offset
+        /// once the table would be larger than that array.
+        /// </summary>
+        private sealed class Chunk
+        {
+            private const int InitialSize = 64;
+
+            // A sparse table of this many slots (10 bytes each) costs more than the 8 KB dense array, so it goes dense instead.
+            private const int MaxSparseSize = 512;
+
+            // Offset + 1 per slot, 0 when empty; null once dense.
+            private ushort[]? keys = new ushort[InitialSize];
+            private Entry[]?[] rows = new Entry[]?[InitialSize];
+            private int count;
+
+            public Entry[]? Find(int offset)
+            {
+                if (keys is not { } k)
+                {
+                    return rows[offset];
+                }
+
+                var key = (ushort)(offset + 1);
+                var mask = k.Length - 1;
+                var i = Hash(offset, mask);
+                while (k[i] != 0)
+                {
+                    if (k[i] == key)
+                    {
+                        return rows[i];
+                    }
+
+                    i = (i + 1) & mask;
+                }
+
+                return null;
+            }
+
+            public ref Entry[]? FindOrAdd(int offset)
+            {
+                if (keys is not { } k)
+                {
+                    return ref rows[offset];
+                }
+
+                var key = (ushort)(offset + 1);
+                var mask = k.Length - 1;
+                var i = Hash(offset, mask);
+                while (k[i] != 0)
+                {
+                    if (k[i] == key)
+                    {
+                        return ref rows[i];
+                    }
+
+                    i = (i + 1) & mask;
+                }
+
+                // At most three quarters full, so probes stay short.
+                if ((count + 1) * 4 > k.Length * 3)
+                {
+                    Grow();
+                    return ref FindOrAdd(offset);
+                }
+
+                k[i] = key;
+                count++;
+                return ref rows[i];
+            }
+
+            public IEnumerable<(int Offset, Entry[] Row)> Rows()
+            {
+                var found = new List<(int Offset, Entry[] Row)>(count);
+                for (var i = 0; i < rows.Length; i++)
+                {
+                    if (rows[i] is { } row)
+                    {
+                        found.Add((keys is { } k ? k[i] - 1 : i, row));
+                    }
+                }
+
+                found.Sort(static (x, y) => x.Offset.CompareTo(y.Offset));
+                return found;
+            }
+
+            // Fibonacci hashing: offsets of memoized positions often share low bits, so the product's high bits are used.
+            private static int Hash(int offset, int mask)
+                => (int)(((uint)offset * 2654435769u) >> 22) & mask;
+
+            private void Grow()
+            {
+                var oldKeys = keys!;
+                var oldRows = rows;
+                var size = oldKeys.Length * 2;
+                if (size > MaxSparseSize)
+                {
+                    keys = null;
+                    rows = new Entry[]?[ChunkSize];
+                    for (var i = 0; i < oldKeys.Length; i++)
+                    {
+                        if (oldKeys[i] != 0)
+                        {
+                            rows[oldKeys[i] - 1] = oldRows[i];
+                        }
+                    }
+
+                    return;
+                }
+
+                keys = new ushort[size];
+                rows = new Entry[]?[size];
+                count = 0;
+                for (var i = 0; i < oldKeys.Length; i++)
+                {
+                    if (oldKeys[i] != 0)
+                    {
+                        FindOrAdd(oldKeys[i] - 1) = oldRows[i];
+                    }
+                }
+            }
+        }
+
+        // The result's fields are stored flat, so IsSet fits in its padding: 24 bytes per entry instead of 32.
         private readonly struct Entry
         {
+            private readonly object? value;
+            private readonly int position;
+            private readonly int length;
+            private readonly bool success;
+
             public Entry(in UnsafeParseResult result)
             {
-                Result = result;
+                value = result.Value;
+                position = result.Position;
+                length = result.Length;
+                success = result.Success;
                 IsSet = true;
             }
 
-            public UnsafeParseResult Result { get; }
+            public UnsafeParseResult Result => new(position, length, value, success);
 
             public bool IsSet { get; }
         }

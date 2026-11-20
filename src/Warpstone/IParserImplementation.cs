@@ -33,6 +33,14 @@ namespace Warpstone
         /// <param name="parser">The parser to initialize from.</param>
         /// <param name="parserLookup">The lookup table for looking up referenced parsers.</param>
         public void Initialize(IParser parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup);
+
+        /// <summary>
+        /// Gets the characters every match of this parser starts with, so a choice can skip it when the input starts with another one.
+        /// Call <see cref="FirstChars.Of(IParserImplementation, ISet{IParserImplementation})"/> instead, which caches and stops at cycles.
+        /// </summary>
+        /// <param name="visiting">The parsers whose first characters are being computed.</param>
+        /// <returns>The first characters, or <see langword="null"/> when unknown or when the parser can match empty input.</returns>
+        public FirstChars? GetFirstChars(ISet<IParserImplementation> visiting);
     }
 
     /// <summary>
