@@ -80,3 +80,28 @@ pressure (multi-threaded hosts) and in the retained AST, not in single-thread th
 - Pitfalls: the helper first clashed with the existing public `Substring(int, int)`. netstandard2.0 flagged it as unused (S1144)
   until it was wrapped in `#if NET7_0_OR_GREATER`. The NET9 consts had to move above the static readonly fields (SA1203). A Python
   heredoc collapsed `"\n"` in C# literals again, so use Edit.
+
+## Follow-up: sparse memo chunks
+
+The `MemoTable` chunk (1024 positions) used to be a dense `Entry[]?[1024]`: 8 KB each, 576 KB for MiniJava large, even though only 4 150 of
+73 K positions had rows. Now a `Chunk` class starts as an open-addressing table (`ushort` keys = offset + 1, 0 = empty, Fibonacci hash,
+linear probing, at most 3/4 full, 64 slots to start). Past 512 slots it converts to the old dense array, so a grammar that memoizes
+nearly every position costs at most what it did before. Largest array: 8 KB, so nothing reaches the LOH.
+
+| Left-recursive grammar | before | after |
+|---|---:|---:|
+| time (mean of 4) | 3.67 ms | 3.69 ms |
+| bytes | 2 140 KB | 1 695 KB (−21%) |
+| gen2 / parse | 0 | 0 |
+
+Recursive and iterative MiniJava don't memoize, so they're unchanged.
+
+- Sparse on its own was +7% time. Two caches won it back: the last position → row looked up (negative results too; only `Set` creates or
+  resizes rows, and it refreshes the cache), and a `Set` fast path into that cached row. Nested Grow levels all hit the same position
+  back to back. Dense + caches alone was about −2.5%, so the hash still costs about that much compared with the best possible.
+- Starting at 16 slots instead of 64 was slower, because MiniJava chunks average ~57 rows and rehashed three times.
+- Enumeration (`Keys`, `GetEnumerator`) sorts each chunk's offsets, so it stays in position order.
+- Tests: `MemoTables.Finds_every_position_as_chunks_fill_up` (strides 1/7/37: dense switch, 256- and 64-slot tables, misses, order) and
+  `Finds_a_row_created_after_a_miss_at_the_same_position` (negative cache). Mutating the dense conversion (`^ 1` on the offset) fails one.
+- Pitfalls: `sed -i` turned `MemoTable.cs` into LF again; restore with a Python CRLF rewrite. Sonar S1994 rejects `for (var i = ...; ; i = ...)`
+  probe loops, so use `while (k[i] != 0)`.
