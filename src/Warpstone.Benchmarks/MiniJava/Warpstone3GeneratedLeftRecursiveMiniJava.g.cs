@@ -127,13 +127,160 @@ namespace Warpstone.Benchmarks.MiniJava
         private static global::Warpstone.Benchmarks.MiniJava.ClassDecl __F1(string n, string e, global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IMember> ms)
             => new ClassDecl(n, e, new Seq<IMember>(ms));
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S0 = new global::System.Text.RegularExpressions.Regex("\\G(class\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static bool __H0(char c)
+            => (c < 128 ? (((c < 64 ? 0x3FF000000000000UL >> c : 0x7FFFFFE87FFFFFEUL >> (c - 64)) & 1) != 0) : ((((1 << (int)global::System.Globalization.CharUnicodeInfo.GetUnicodeCategory(c)) & 0x4013F) != 0) ^ (c == '\u200C' || c == '\u200D')));
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S1 = new global::System.Text.RegularExpressions.Regex("\\G((?!(?:class|extends|public|private|protected|static|final|if|else|while|return|new|this|true|false|null|int|boolean|void)\\b)[A-Za-z_][A-Za-z0-9_]*)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static bool __H1(string input, int index)
+            => (index > 0 && __H0(input[index - 1])) != (index < input.Length && __H0(input[index]));
 
-        private static readonly byte[] __S2 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static int __H2(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 5 || string.CompareOrdinal(input, i, "class", 0, 5) != 0)
+            {
+                return -1;
+            }
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S3 = new global::System.Text.RegularExpressions.Regex("\\G(extends\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+            i += 5;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
+
+        private static int __H3(string input, int pos)
+        {
+            var i = pos;
+            if (i < input.Length)
+            {
+                switch (input[i])
+                {
+                    case 'c':
+                        if ((input.Length - i >= 5 && string.CompareOrdinal(input, i, "class", 0, 5) == 0 && __H1(input, i + 5)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'e':
+                        if ((input.Length - i >= 7 && string.CompareOrdinal(input, i, "extends", 0, 7) == 0 && __H1(input, i + 7)) || (input.Length - i >= 4 && string.CompareOrdinal(input, i, "else", 0, 4) == 0 && __H1(input, i + 4)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'p':
+                        if ((input.Length - i >= 6 && string.CompareOrdinal(input, i, "public", 0, 6) == 0 && __H1(input, i + 6)) || (input.Length - i >= 7 && string.CompareOrdinal(input, i, "private", 0, 7) == 0 && __H1(input, i + 7)) || (input.Length - i >= 9 && string.CompareOrdinal(input, i, "protected", 0, 9) == 0 && __H1(input, i + 9)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 's':
+                        if ((input.Length - i >= 6 && string.CompareOrdinal(input, i, "static", 0, 6) == 0 && __H1(input, i + 6)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'f':
+                        if ((input.Length - i >= 5 && string.CompareOrdinal(input, i, "final", 0, 5) == 0 && __H1(input, i + 5)) || (input.Length - i >= 5 && string.CompareOrdinal(input, i, "false", 0, 5) == 0 && __H1(input, i + 5)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'i':
+                        if ((input.Length - i >= 2 && string.CompareOrdinal(input, i, "if", 0, 2) == 0 && __H1(input, i + 2)) || (input.Length - i >= 3 && string.CompareOrdinal(input, i, "int", 0, 3) == 0 && __H1(input, i + 3)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'w':
+                        if ((input.Length - i >= 5 && string.CompareOrdinal(input, i, "while", 0, 5) == 0 && __H1(input, i + 5)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'r':
+                        if ((input.Length - i >= 6 && string.CompareOrdinal(input, i, "return", 0, 6) == 0 && __H1(input, i + 6)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'n':
+                        if ((input.Length - i >= 3 && string.CompareOrdinal(input, i, "new", 0, 3) == 0 && __H1(input, i + 3)) || (input.Length - i >= 4 && string.CompareOrdinal(input, i, "null", 0, 4) == 0 && __H1(input, i + 4)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 't':
+                        if ((input.Length - i >= 4 && string.CompareOrdinal(input, i, "this", 0, 4) == 0 && __H1(input, i + 4)) || (input.Length - i >= 4 && string.CompareOrdinal(input, i, "true", 0, 4) == 0 && __H1(input, i + 4)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'b':
+                        if ((input.Length - i >= 7 && string.CompareOrdinal(input, i, "boolean", 0, 7) == 0 && __H1(input, i + 7)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                    case 'v':
+                        if ((input.Length - i >= 4 && string.CompareOrdinal(input, i, "void", 0, 4) == 0 && __H1(input, i + 4)))
+                        {
+                            return -1;
+                        }
+
+                        break;
+                }
+            }
+
+            if (i >= input.Length || !((input[i] >= 'A' && input[i] <= 'Z') || input[i] == '_' || (input[i] >= 'a' && input[i] <= 'z')))
+            {
+                return -1;
+            }
+
+            i++;
+
+            var start2 = i;
+            var limit2 = input.Length;
+            while (i < limit2 && ((input[i] >= '0' && input[i] <= '9') || (input[i] >= 'A' && input[i] <= 'Z') || input[i] == '_' || (input[i] >= 'a' && input[i] <= 'z')))
+            {
+                i++;
+            }
+
+            return i;
+        }
+
+        private static readonly byte[] __S0 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+
+        private static int __H4(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 7 || string.CompareOrdinal(input, i, "extends", 0, 7) != 0)
+            {
+                return -1;
+            }
+
+            i += 7;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IMember __F2(global::Warpstone.Benchmarks.MiniJava.Seq<string> m, global::Warpstone.Benchmarks.MiniJava.TypeRef t, string n, global::System.Func<global::Warpstone.Benchmarks.MiniJava.Seq<string>, global::Warpstone.Benchmarks.MiniJava.TypeRef, string, global::Warpstone.Benchmarks.MiniJava.IMember> tail)
             => tail(m, t, n);
@@ -141,35 +288,163 @@ namespace Warpstone.Benchmarks.MiniJava
         private static global::Warpstone.Benchmarks.MiniJava.Seq<string> __F3(global::System.Collections.Generic.IReadOnlyList<string> xs)
             => new Seq<string>(xs);
 
-        private static readonly byte[] __S4 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S1 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S5 = new global::System.Text.RegularExpressions.Regex("\\G(public\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H5(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 6 || string.CompareOrdinal(input, i, "public", 0, 6) != 0)
+            {
+                return -1;
+            }
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S6 = new global::System.Text.RegularExpressions.Regex("\\G(private\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+            i += 6;
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S7 = new global::System.Text.RegularExpressions.Regex("\\G(protected\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S8 = new global::System.Text.RegularExpressions.Regex("\\G(static\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+            return i;
+        }
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S9 = new global::System.Text.RegularExpressions.Regex("\\G(final\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H6(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 7 || string.CompareOrdinal(input, i, "private", 0, 7) != 0)
+            {
+                return -1;
+            }
+
+            i += 7;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
+
+        private static int __H7(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 9 || string.CompareOrdinal(input, i, "protected", 0, 9) != 0)
+            {
+                return -1;
+            }
+
+            i += 9;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
+
+        private static int __H8(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 6 || string.CompareOrdinal(input, i, "static", 0, 6) != 0)
+            {
+                return -1;
+            }
+
+            i += 6;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
+
+        private static int __H9(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 5 || string.CompareOrdinal(input, i, "final", 0, 5) != 0)
+            {
+                return -1;
+            }
+
+            i += 5;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.TypeRef __F4(string name, bool isArray)
             => new TypeRef(name, isArray);
 
-        private static readonly byte[] __S10 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 1, 2, 3, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S2 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 1, 2, 3, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 5, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1 };
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S11 = new global::System.Text.RegularExpressions.Regex("\\G(int\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H10(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 3 || string.CompareOrdinal(input, i, "int", 0, 3) != 0)
+            {
+                return -1;
+            }
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S12 = new global::System.Text.RegularExpressions.Regex("\\G(boolean\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+            i += 3;
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S13 = new global::System.Text.RegularExpressions.Regex("\\G(void\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
 
-        private static readonly byte[] __S14 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+            return i;
+        }
+
+        private static int __H11(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 7 || string.CompareOrdinal(input, i, "boolean", 0, 7) != 0)
+            {
+                return -1;
+            }
+
+            i += 7;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
+
+        private static int __H12(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 4 || string.CompareOrdinal(input, i, "void", 0, 4) != 0)
+            {
+                return -1;
+            }
+
+            i += 4;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
+
+        private static readonly byte[] __S3 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
         private static bool __F5(string _)
             => true;
 
-        private static readonly byte[] __S15 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S4 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
         private static global::System.Func<global::Warpstone.Benchmarks.MiniJava.Seq<string>, global::Warpstone.Benchmarks.MiniJava.TypeRef, string, global::Warpstone.Benchmarks.MiniJava.IMember> __F6(global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.Param> p, global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IStmt> b)
             => (MemberTail)((m, t, n) => new MethodDecl(m, t, n, p, b));
@@ -183,7 +458,7 @@ namespace Warpstone.Benchmarks.MiniJava
         private static global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IStmt> __F9(global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IStmt> xs)
             => new Seq<IStmt>(xs);
 
-        private static readonly byte[] __S16 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 5, 2, 2, 2, 6, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S5 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 3, 2, 2, 2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 5, 2, 2, 2, 6, 1, 1, 1, 1, 1 };
 
         private static global::Warpstone.Benchmarks.MiniJava.IStmt __F10(global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IStmt> b)
             => (IStmt)new BlockStmt(b);
@@ -191,71 +466,208 @@ namespace Warpstone.Benchmarks.MiniJava
         private static global::Warpstone.Benchmarks.MiniJava.IStmt __F11(global::Warpstone.Benchmarks.MiniJava.IExpr c, global::Warpstone.Benchmarks.MiniJava.IStmt t, global::Warpstone.Benchmarks.MiniJava.IStmt e)
             => (IStmt)new IfStmt(c, t, e);
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S17 = new global::System.Text.RegularExpressions.Regex("\\G(if\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H13(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 2 || string.CompareOrdinal(input, i, "if", 0, 2) != 0)
+            {
+                return -1;
+            }
+
+            i += 2;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F12(global::Warpstone.Benchmarks.MiniJava.IExpr l, string op, global::Warpstone.Benchmarks.MiniJava.IExpr r)
             => (IExpr)new BinaryExpr(op, l, r);
 
-        private static readonly byte[] __S18 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S6 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
-        private static readonly byte[] __S19 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S7 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
-        private static readonly byte[] __S20 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S8 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
-        private static readonly byte[] __S21 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S9 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1 };
 
-        private static readonly byte[] __S22 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S10 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 3, 1, 1, 1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
-        private static readonly byte[] __S23 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S11 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 3, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 2, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 3, 1, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 1, 1, 1, 1, 1, 1 };
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F13(string op, global::Warpstone.Benchmarks.MiniJava.IExpr e)
             => (IExpr)new UnaryExpr(op, e);
 
-        private static readonly byte[] __S24 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S12 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F14(global::Warpstone.Benchmarks.MiniJava.IExpr p, global::System.Collections.Generic.IReadOnlyList<global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr>> s)
             => G.Fold(p, s);
 
-        private static readonly byte[] __S25 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 1, 1, 1, 5, 1, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 8, 5, 5, 5, 5, 5, 5, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S13 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 1, 1, 1, 1, 1, 1, 1, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 1, 1, 1, 1, 5, 1, 5, 5, 5, 5, 5, 6, 5, 5, 5, 5, 5, 5, 5, 7, 5, 5, 5, 5, 5, 8, 5, 5, 5, 5, 5, 5, 1, 1, 1, 1, 1, 1 };
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F15(string s)
             => (IExpr)new IntLit(int.Parse(s, CultureInfo.InvariantCulture));
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S26 = new global::System.Text.RegularExpressions.Regex("\\G([0-9]+)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H14(string input, int pos)
+        {
+            var i = pos;
+            var start0 = i;
+            var limit0 = input.Length;
+            while (i < limit0 && ((input[i] >= '0' && input[i] <= '9')))
+            {
+                i++;
+            }
+
+            if (i - start0 < 1)
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F16(string s)
             => (IExpr)new StrLit(s[1..^1]);
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S27 = new global::System.Text.RegularExpressions.Regex("\\G(\"[^\"]*\")", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H15(string input, int pos)
+        {
+            var i = pos;
+            if (i >= input.Length || input[i] != '"')
+            {
+                return -1;
+            }
+
+            i += 1;
+
+            var start1 = i;
+            var limit1 = input.Length;
+            while (i < limit1 && ((input[i] >= '\0' && input[i] <= '!') || input[i] >= '#'))
+            {
+                i++;
+            }
+
+            if (i >= input.Length || input[i] != '"')
+            {
+                return -1;
+            }
+
+            i += 1;
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F17(string _)
             => (IExpr)new BoolLit(true);
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S28 = new global::System.Text.RegularExpressions.Regex("\\G(true\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H16(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 4 || string.CompareOrdinal(input, i, "true", 0, 4) != 0)
+            {
+                return -1;
+            }
+
+            i += 4;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F18(string _)
             => (IExpr)new BoolLit(false);
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S29 = new global::System.Text.RegularExpressions.Regex("\\G(false\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H17(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 5 || string.CompareOrdinal(input, i, "false", 0, 5) != 0)
+            {
+                return -1;
+            }
+
+            i += 5;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F19(string _)
             => (IExpr)new NullLit();
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S30 = new global::System.Text.RegularExpressions.Regex("\\G(null\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H18(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 4 || string.CompareOrdinal(input, i, "null", 0, 4) != 0)
+            {
+                return -1;
+            }
+
+            i += 4;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F20(string _)
             => (IExpr)new ThisExpr();
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S31 = new global::System.Text.RegularExpressions.Regex("\\G(this\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H19(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 4 || string.CompareOrdinal(input, i, "this", 0, 4) != 0)
+            {
+                return -1;
+            }
+
+            i += 4;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F21(string t, global::System.Func<string, global::Warpstone.Benchmarks.MiniJava.IExpr> create)
             => create(t);
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S32 = new global::System.Text.RegularExpressions.Regex("\\G(new\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H20(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 3 || string.CompareOrdinal(input, i, "new", 0, 3) != 0)
+            {
+                return -1;
+            }
 
-        private static readonly byte[] __S33 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1 };
+            i += 3;
 
-        private static readonly byte[] __S34 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
+
+        private static readonly byte[] __S14 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1 };
+
+        private static readonly byte[] __S15 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
         private static global::System.Func<string, global::Warpstone.Benchmarks.MiniJava.IExpr> __F22(global::Warpstone.Benchmarks.MiniJava.IExpr size)
             => (Func<string, IExpr>)(t => new NewArrayExpr(t, size));
@@ -269,7 +681,7 @@ namespace Warpstone.Benchmarks.MiniJava
         private static global::Warpstone.Benchmarks.MiniJava.IExpr __F25(string n, global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IExpr> a)
             => a is null ? new NameExpr(n) : (IExpr)new CallExpr(null, n, a);
 
-        private static readonly byte[] __S35 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S16 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
         private static global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr> __F26(string n, global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IExpr> a)
             => a is null ? (Suffix)(t => new FieldExpr(t, n)) : t => new CallExpr(t, n, a);
@@ -277,22 +689,70 @@ namespace Warpstone.Benchmarks.MiniJava
         private static global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr> __F27(global::Warpstone.Benchmarks.MiniJava.IExpr i)
             => (Suffix)(t => new IndexExpr(t, i));
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S36 = new global::System.Text.RegularExpressions.Regex("\\G(else\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H21(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 4 || string.CompareOrdinal(input, i, "else", 0, 4) != 0)
+            {
+                return -1;
+            }
+
+            i += 4;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IStmt __F28(global::Warpstone.Benchmarks.MiniJava.IExpr c, global::Warpstone.Benchmarks.MiniJava.IStmt b)
             => (IStmt)new WhileStmt(c, b);
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S37 = new global::System.Text.RegularExpressions.Regex("\\G(while\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H22(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 5 || string.CompareOrdinal(input, i, "while", 0, 5) != 0)
+            {
+                return -1;
+            }
+
+            i += 5;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IStmt __F29(global::Warpstone.Benchmarks.MiniJava.IExpr e)
             => (IStmt)new ReturnStmt(e);
 
-        private static readonly global::System.Text.RegularExpressions.Regex __S38 = new global::System.Text.RegularExpressions.Regex("\\G(return\\b)", (global::System.Text.RegularExpressions.RegexOptions)12);
+        private static int __H23(string input, int pos)
+        {
+            var i = pos;
+            if (input.Length - i < 6 || string.CompareOrdinal(input, i, "return", 0, 6) != 0)
+            {
+                return -1;
+            }
+
+            i += 6;
+
+            if (!__H1(input, i))
+            {
+                return -1;
+            }
+
+            return i;
+        }
 
         private static global::Warpstone.Benchmarks.MiniJava.IStmt __F30(global::Warpstone.Benchmarks.MiniJava.TypeRef t, string n, global::Warpstone.Benchmarks.MiniJava.IExpr i)
             => (IStmt)new LocalVarStmt(t, n, i);
 
-        private static readonly byte[] __S39 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
+        private static readonly byte[] __S17 = new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 };
 
         private static global::Warpstone.Benchmarks.MiniJava.IStmt __F31(global::Warpstone.Benchmarks.MiniJava.IExpr l, global::Warpstone.Benchmarks.MiniJava.IExpr r)
             => r is null ? new ExprStmt(l) : (IStmt)new AssignStmt(l, r);
@@ -785,6 +1245,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OptionalWhitespacesParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P2(int pos, out int end, out string value)
             {
                 end = pos;
@@ -797,6 +1258,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OptionalWhitespacesParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P2M(int pos, out int end)
             {
                 end = pos;
@@ -937,24 +1399,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P10(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S0.EnumerateMatches(input, pos))
+                var stop = __H2(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S0.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "class\\\\b");
                 end = pos;
                 value = default!;
@@ -962,22 +1416,15 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P10M(int pos, out int end)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S0.EnumerateMatches(input, pos))
+                var stop = __H2(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
+                    end = stop;
                     return true;
                 }
-                #else
-                var match0 = __S0.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    return true;
-                }
-                #endif
                 Expect(pos, "class\\\\b");
                 end = pos;
                 return false;
@@ -997,24 +1444,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P12(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S1.EnumerateMatches(input, pos))
+                var stop = __H3(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S1.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "\\(\\?!\\(\\?:class\\|extends\\|public\\|private\\|protected\\|static\\|final\\|if\\|else\\|while\\|return\\|new\\|this\\|true\\|false\\|null\\|int\\|boolean\\|void\\)\\\\b\\)\\[A-Za-z_]\\[A-Za-z0-9_]\\*");
                 end = pos;
                 value = default!;
@@ -1024,7 +1463,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P13(int pos, out int end, out string value)
             {
-                switch (__S2[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S0[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -1077,24 +1516,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P16(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S3.EnumerateMatches(input, pos))
+                var stop = __H4(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S3.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "extends\\\\b");
                 end = pos;
                 value = default!;
@@ -1102,28 +1533,22 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P16M(int pos, out int end)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S3.EnumerateMatches(input, pos))
+                var stop = __H4(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
+                    end = stop;
                     return true;
                 }
-                #else
-                var match0 = __S3.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    return true;
-                }
-                #endif
                 Expect(pos, "extends\\\\b");
                 end = pos;
                 return false;
             }
 
             // CreateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P17(int pos, out int end, out string value)
             {
                 end = pos;
@@ -1156,6 +1581,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P19(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "{", 0, 1) == 0)
@@ -1171,6 +1597,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P19M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "{", 0, 1) == 0)
@@ -1316,7 +1743,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P26(int pos, out int end, out string value)
             {
-                switch (__S4[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S1[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -1405,24 +1832,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P28(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S5.EnumerateMatches(input, pos))
+                var stop = __H5(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S5.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "public\\\\b");
                 end = pos;
                 value = default!;
@@ -1443,24 +1862,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P30(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S6.EnumerateMatches(input, pos))
+                var stop = __H6(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S6.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "private\\\\b");
                 end = pos;
                 value = default!;
@@ -1481,24 +1892,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P32(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S7.EnumerateMatches(input, pos))
+                var stop = __H7(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S7.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "protected\\\\b");
                 end = pos;
                 value = default!;
@@ -1519,24 +1922,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P34(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S8.EnumerateMatches(input, pos))
+                var stop = __H8(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S8.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "static\\\\b");
                 end = pos;
                 value = default!;
@@ -1557,24 +1952,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P36(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S9.EnumerateMatches(input, pos))
+                var stop = __H9(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S9.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "final\\\\b");
                 end = pos;
                 value = default!;
@@ -1607,7 +1994,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P38(int pos, out int end, out string value)
             {
-                switch (__S10[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S2[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -1686,24 +2073,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P40(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S11.EnumerateMatches(input, pos))
+                var stop = __H10(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S11.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "int\\\\b");
                 end = pos;
                 value = default!;
@@ -1724,24 +2103,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P42(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S12.EnumerateMatches(input, pos))
+                var stop = __H11(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S12.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "boolean\\\\b");
                 end = pos;
                 value = default!;
@@ -1762,24 +2133,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P44(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S13.EnumerateMatches(input, pos))
+                var stop = __H12(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S13.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "void\\\\b");
                 end = pos;
                 value = default!;
@@ -1789,7 +2152,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P45(int pos, out int end, out bool value)
             {
-                switch (__S14[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S3[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -1853,6 +2216,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P48(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "[", 0, 1) == 0)
@@ -1868,6 +2232,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P48M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "[", 0, 1) == 0)
@@ -1894,6 +2259,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P50(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "]", 0, 1) == 0)
@@ -1909,6 +2275,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P50M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "]", 0, 1) == 0)
@@ -1922,6 +2289,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // CreateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P51(int pos, out int end, out bool value)
             {
                 end = pos;
@@ -1932,7 +2300,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P52(int pos, out int end, out global::System.Func<global::Warpstone.Benchmarks.MiniJava.Seq<string>, global::Warpstone.Benchmarks.MiniJava.TypeRef, string, global::Warpstone.Benchmarks.MiniJava.IMember> value)
             {
-                switch (__S15[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S4[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -2032,6 +2400,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P57(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "(", 0, 1) == 0)
@@ -2047,6 +2416,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P57M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "(", 0, 1) == 0)
@@ -2146,6 +2516,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P61(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ",", 0, 1) == 0)
@@ -2161,6 +2532,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P61M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ",", 0, 1) == 0)
@@ -2198,6 +2570,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P63(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ")", 0, 1) == 0)
@@ -2213,6 +2586,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P63M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ")", 0, 1) == 0)
@@ -2318,7 +2692,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P68(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IStmt value)
             {
-                switch (__S16[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S5[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -2478,6 +2852,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P71(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "}", 0, 1) == 0)
@@ -2493,6 +2868,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P71M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "}", 0, 1) == 0)
@@ -2580,24 +2956,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P76(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S17.EnumerateMatches(input, pos))
+                var stop = __H13(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S17.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "if\\\\b");
                 end = pos;
                 value = default!;
@@ -2605,22 +2973,15 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P76M(int pos, out int end)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S17.EnumerateMatches(input, pos))
+                var stop = __H13(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
+                    end = stop;
                     return true;
                 }
-                #else
-                var match0 = __S17.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    return true;
-                }
-                #endif
                 Expect(pos, "if\\\\b");
                 end = pos;
                 return false;
@@ -2737,6 +3098,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P84(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 2 && string.CompareOrdinal(input, pos, "||", 0, 2) == 0)
@@ -2812,6 +3174,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P89(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 2 && string.CompareOrdinal(input, pos, "&&", 0, 2) == 0)
@@ -2876,7 +3239,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P93(int pos, out int end, out string value)
             {
-                switch (__S18[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S6[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -2924,6 +3287,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P95(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 2 && string.CompareOrdinal(input, pos, "==", 0, 2) == 0)
@@ -2952,6 +3316,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P97(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 2 && string.CompareOrdinal(input, pos, "!=", 0, 2) == 0)
@@ -3016,7 +3381,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P101(int pos, out int end, out string value)
             {
-                switch (__S19[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S7[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -3084,6 +3449,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P103(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 2 && string.CompareOrdinal(input, pos, "<=", 0, 2) == 0)
@@ -3112,6 +3478,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P105(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 2 && string.CompareOrdinal(input, pos, ">=", 0, 2) == 0)
@@ -3140,6 +3507,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P107(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "<", 0, 1) == 0)
@@ -3168,6 +3536,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P109(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ">", 0, 1) == 0)
@@ -3232,7 +3601,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P113(int pos, out int end, out string value)
             {
-                switch (__S20[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S8[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -3280,6 +3649,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P115(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "+", 0, 1) == 0)
@@ -3308,6 +3678,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P117(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "-", 0, 1) == 0)
@@ -3325,7 +3696,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P118(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
-                switch (__S21[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S9[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -3396,7 +3767,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P121(int pos, out int end, out string value)
             {
-                switch (__S22[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S10[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -3463,6 +3834,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P123(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "*", 0, 1) == 0)
@@ -3491,6 +3863,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P125(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "/", 0, 1) == 0)
@@ -3519,6 +3892,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P127(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "%", 0, 1) == 0)
@@ -3536,7 +3910,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P128(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
-                switch (__S23[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S11[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -3614,7 +3988,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P130(int pos, out int end, out string value)
             {
-                switch (__S24[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S12[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -3662,6 +4036,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P132(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "!", 0, 1) == 0)
@@ -3715,7 +4090,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P135(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
-                switch (__S25[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S13[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -3928,24 +4303,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P137(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S26.EnumerateMatches(input, pos))
+                var stop = __H14(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S26.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "\\[0-9]\\+");
                 end = pos;
                 value = default!;
@@ -3977,24 +4344,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P139(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S27.EnumerateMatches(input, pos))
+                var stop = __H15(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S27.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "\"\\[\\^\"]\\*\"");
                 end = pos;
                 value = default!;
@@ -4026,24 +4385,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P141(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S28.EnumerateMatches(input, pos))
+                var stop = __H16(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S28.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "true\\\\b");
                 end = pos;
                 value = default!;
@@ -4075,24 +4426,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P143(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S29.EnumerateMatches(input, pos))
+                var stop = __H17(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S29.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "false\\\\b");
                 end = pos;
                 value = default!;
@@ -4124,24 +4467,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P145(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S30.EnumerateMatches(input, pos))
+                var stop = __H18(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S30.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "null\\\\b");
                 end = pos;
                 value = default!;
@@ -4173,24 +4508,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P147(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S31.EnumerateMatches(input, pos))
+                var stop = __H19(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S31.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "this\\\\b");
                 end = pos;
                 value = default!;
@@ -4258,24 +4585,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P151(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S32.EnumerateMatches(input, pos))
+                var stop = __H20(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S32.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "new\\\\b");
                 end = pos;
                 value = default!;
@@ -4283,22 +4602,15 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P151M(int pos, out int end)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S32.EnumerateMatches(input, pos))
+                var stop = __H20(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
+                    end = stop;
                     return true;
                 }
-                #else
-                var match0 = __S32.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    return true;
-                }
-                #endif
                 Expect(pos, "new\\\\b");
                 end = pos;
                 return false;
@@ -4307,7 +4619,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P152(int pos, out int end, out string value)
             {
-                switch (__S33[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S14[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -4346,7 +4658,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P154(int pos, out int end, out global::System.Func<string, global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
-                switch (__S34[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S15[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -4640,7 +4952,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P166(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
-                switch (__S15[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S4[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -4680,6 +4992,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // CreateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P168(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
                 end = pos;
@@ -4793,7 +5106,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P174(int pos, out int end, out global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
-                switch (__S35[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S16[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -4888,6 +5201,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P178(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ".", 0, 1) == 0)
@@ -4903,6 +5217,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P178M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ".", 0, 1) == 0)
@@ -4918,7 +5233,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P179(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
-                switch (__S15[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S4[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -5045,7 +5360,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P185(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IStmt value)
             {
-                switch (__S2[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S0[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -5098,24 +5413,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P188(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S36.EnumerateMatches(input, pos))
+                var stop = __H21(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S36.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "else\\\\b");
                 end = pos;
                 value = default!;
@@ -5123,28 +5430,22 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P188M(int pos, out int end)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S36.EnumerateMatches(input, pos))
+                var stop = __H21(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
+                    end = stop;
                     return true;
                 }
-                #else
-                var match0 = __S36.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    return true;
-                }
-                #endif
                 Expect(pos, "else\\\\b");
                 end = pos;
                 return false;
             }
 
             // CreateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P189(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IStmt value)
             {
                 end = pos;
@@ -5213,24 +5514,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P193(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S37.EnumerateMatches(input, pos))
+                var stop = __H22(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S37.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "while\\\\b");
                 end = pos;
                 value = default!;
@@ -5238,22 +5531,15 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P193M(int pos, out int end)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S37.EnumerateMatches(input, pos))
+                var stop = __H22(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
+                    end = stop;
                     return true;
                 }
-                #else
-                var match0 = __S37.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    return true;
-                }
-                #endif
                 Expect(pos, "while\\\\b");
                 end = pos;
                 return false;
@@ -5321,24 +5607,16 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P197(int pos, out int end, out string value)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S38.EnumerateMatches(input, pos))
+                var stop = __H23(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
-                    value = input.Substring(pos, match0.Length);
+                    end = stop;
+                    value = input.Substring(pos, stop - pos);
                     return true;
                 }
-                #else
-                var match0 = __S38.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    value = match0.Value;
-                    return true;
-                }
-                #endif
                 Expect(pos, "return\\\\b");
                 end = pos;
                 value = default!;
@@ -5346,22 +5624,15 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // RegexParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P197M(int pos, out int end)
             {
-                #if NET7_0_OR_GREATER
-                foreach (var match0 in __S38.EnumerateMatches(input, pos))
+                var stop = __H23(input, pos);
+                if (stop >= 0)
                 {
-                    end = pos + match0.Length;
+                    end = stop;
                     return true;
                 }
-                #else
-                var match0 = __S38.Match(input, pos);
-                if (match0.Success)
-                {
-                    end = pos + match0.Length;
-                    return true;
-                }
-                #endif
                 Expect(pos, "return\\\\b");
                 end = pos;
                 return false;
@@ -5378,6 +5649,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // CreateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P199(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 end = pos;
@@ -5410,6 +5682,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P201(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ";", 0, 1) == 0)
@@ -5425,6 +5698,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P201M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, ";", 0, 1) == 0)
@@ -5490,7 +5764,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P205(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
-                switch (__S39[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S17[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -5543,6 +5817,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P208(int pos, out int end, out string value)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "=", 0, 1) == 0)
@@ -5558,6 +5833,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StringParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P208M(int pos, out int end)
             {
                 if (input.Length - pos >= 1 && string.CompareOrdinal(input, pos, "=", 0, 1) == 0)
@@ -5634,7 +5910,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // OrParser
             public bool P212(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
-                switch (__S39[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
+                switch (__S17[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
                 {
                     case 1:
                     {
@@ -5783,6 +6059,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // EndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P219(int pos, out int end, out string value)
             {
                 if (pos >= input.Length)
@@ -5798,6 +6075,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // EndParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P219M(int pos, out int end)
             {
                 if (pos >= input.Length)

@@ -23,6 +23,7 @@ namespace Warpstone.Internal.SourceGeneration
         private readonly StringBuilder fields = new();
         private readonly Dictionary<string, string> staticNames = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> functionNames = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> helperNames = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> memoTables = new(StringComparer.Ordinal);
         private readonly List<string> memoSlots = new();
         private readonly StringBuilder constructor = new();
@@ -39,6 +40,7 @@ namespace Warpstone.Internal.SourceGeneration
         private int locals;
         private int methodCount;
         private int userCalls;
+        private bool inline;
 
         private SourceEmitter()
         {
@@ -304,6 +306,30 @@ namespace Warpstone.Internal.SourceGeneration
         }
 
         /// <summary>
+        /// Gets a static helper member of the generated class, written by <paramref name="create"/> the first time <paramref name="key"/> is asked for.
+        /// </summary>
+        /// <param name="key">Identifies the helper; equal keys share one helper.</param>
+        /// <param name="create">Writes the declaration of the helper, given its name.</param>
+        /// <returns>The name of the helper.</returns>
+        public string Helper(string key, Func<string, string> create)
+        {
+            if (!helperNames.TryGetValue(key, out var name))
+            {
+                name = $"__H{helperNames.Count}";
+                helperNames[key] = name;
+                statics.Append(create(name));
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Asks the JIT to inline the current method. Meant for small parsers that call no other parsers.
+        /// </summary>
+        public void Inline()
+            => inline = true;
+
+        /// <summary>
         /// Gets the static field of the generated class with the given <paramref name="type"/> and <paramref name="initializer"/>.
         /// </summary>
         /// <param name="type">The type of the field.</param>
@@ -466,10 +492,16 @@ namespace Warpstone.Internal.SourceGeneration
             indent = MethodIndent;
             locals = 0;
             ValueNeeded = valueNeeded;
+            inline = false;
             ((IEmittableParser)parser).EmitSource(this);
 
             var method = new StringBuilder();
             method.Append($"            // {Describe(parser)}{(valueNeeded ? string.Empty : ", only matching")}\n");
+            if (inline)
+            {
+                method.Append("            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]\n");
+            }
+
             method.Append(valueNeeded
                 ? $"            public bool P{number}(int pos, out int end, out {TypeName(parser.ResultType)} value)\n"
                 : $"            public bool P{number}M(int pos, out int end)\n");

@@ -29,6 +29,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
+            emitter.Inline();
             emitter.Fail(string.Empty);
         }
 

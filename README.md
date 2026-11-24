@@ -70,17 +70,17 @@ Mean CPU time per parse:
 
 | Library                          | Small     | Medium    | Large      |
 |----------------------------------|----------:|----------:|-----------:|
-| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.1 μs | 113.2 μs | 1.15 ms |
-| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.4 μs | 149.4 μs | 1.51 ms |
-| Warpstone V3 (source-generated) | 13.4 μs | 173.3 μs | 1.72 ms |
-| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 17.1 μs | 236.3 μs | 2.42 ms |
-| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 16.5 μs | 249.5 μs | 2.55 ms |
-| Warpstone V3 | 29.0 μs | 344.8 μs | 3.52 ms |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 48.3 μs | 586.6 μs | 5.85 ms |
-| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 100.8 μs | 1.53 ms | 14.87 ms |
-| Warpstone V1 | 493.6 μs | 6.93 ms | 71.88 ms |
-| [ParsecSharp](https://github.com/acple/ParsecSharp) | 561.5 μs | 8.02 ms | 80.98 ms |
-| Warpstone V2 | 3.41 ms | 97.78 ms | 1,067.80 ms |
+| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.6 μs | 98.5 μs | 1.00 ms |
+| Warpstone V3 (source-generated) | 9.6 μs | 115.7 μs | 1.17 ms |
+| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.6 μs | 121.8 μs | 1.29 ms |
+| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 14.1 μs | 176.3 μs | 1.80 ms |
+| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 17.0 μs | 192.1 μs | 1.98 ms |
+| Warpstone V3 | 25.6 μs | 288.9 μs | 2.85 ms |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 40.9 μs | 500.6 μs | 4.96 ms |
+| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 104.9 μs | 1.30 ms | 12.97 ms |
+| Warpstone V1 | 514.5 μs | 6.06 ms | 62.71 ms |
+| [ParsecSharp](https://github.com/acple/ParsecSharp) | 566.3 μs | 6.84 ms | 70.57 ms |
+| Warpstone V2 | 3.48 ms | 94.00 ms | 974.91 ms |
 
 Memory allocated per parse:
 
@@ -199,7 +199,7 @@ Expected number or '(' but found '*'
 ```
 
 ### Generating a parser's source
-`GenerateSource` writes the C# source of a parser that runs without Warpstone, and runs about twice as fast (see [Performance](#performance)). Generate the file once, for example from a test or a small tool, and add it to your project:
+`GenerateSource` writes the C# source of a parser that runs without Warpstone, and runs about 2.5 times as fast (see [Performance](#performance)). Generate the file once, for example from a test or a small tool, and add it to your project:
 
 ```cs
 File.WriteAllText("CalculatorParser.g.cs", Calculator.Expression.GenerateSource("MyApp", "CalculatorParser"));

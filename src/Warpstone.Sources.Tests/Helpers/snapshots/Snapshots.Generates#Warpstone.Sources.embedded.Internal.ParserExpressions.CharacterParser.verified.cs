@@ -38,6 +38,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
+            emitter.Inline();
             emitter.Open($"if (pos < input.Length && input[pos] == {emitter.Literal(Character)})");
             emitter.Line("end = pos + 1;");
             emitter.Value(emitter.Literal(Character));

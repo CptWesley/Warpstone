@@ -53,6 +53,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
+            emitter.Inline();
             var literal = emitter.Literal(String);
             if (Options == CompareOptions.Ordinal)
             {

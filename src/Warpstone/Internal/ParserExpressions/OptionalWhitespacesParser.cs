@@ -26,6 +26,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
+            emitter.Inline();
             emitter.Line("end = pos;");
             emitter.Open("while (end < input.Length && char.IsWhiteSpace(input[end]))");
             emitter.Line("end++;");

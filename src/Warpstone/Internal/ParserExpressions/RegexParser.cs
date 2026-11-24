@@ -70,11 +70,36 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
-            var options = $"(global::System.Text.RegularExpressions.RegexOptions){(int)(Options | RegexOptions.ExplicitCapture)}";
+            var expected = System.Text.RegularExpressions.Regex.Escape(Pattern);
+            var options = Options | RegexOptions.ExplicitCapture;
+
+            // A simple pattern becomes a scanning loop, which needs no regex engine at all.
+            if (SimpleRegex.TryEmit(Pattern, options, emitter, out var scanner))
+            {
+                emitter.Inline();
+                emitter.Line($"var stop = {scanner}(input, pos);");
+                emitter.Open("if (stop >= 0)");
+                emitter.Line("end = stop;");
+                emitter.Value("input.Substring(pos, stop - pos)");
+                emitter.Line("return true;");
+                emitter.Close();
+                emitter.Fail(expected);
+                return;
+            }
+
+            // Every match starts with the literal prefix, which is cheaper to compare than to run the regex.
+            var prefix = RegexParserImpl.FindLiteralPrefix(Pattern, Options);
+            if (prefix.Length > 0)
+            {
+                emitter.Open($"if (input.Length - pos < {prefix.Length} || string.CompareOrdinal(input, pos, {emitter.Literal(prefix)}, 0, {prefix.Length}) != 0)");
+                emitter.Fail(expected);
+                emitter.Close();
+            }
+
             var timeout = Timeout == TimeSpan.Zero || Timeout == TimeSpan.MaxValue ? string.Empty : $", global::System.TimeSpan.FromTicks({Timeout.Ticks}L)";
             var regex = emitter.Static(
                 "global::System.Text.RegularExpressions.Regex",
-                $"new global::System.Text.RegularExpressions.Regex({emitter.Literal(@$"\G({Pattern})")}, {options}{timeout})");
+                $"new global::System.Text.RegularExpressions.Regex({emitter.Literal(@$"\G({Pattern})")}, (global::System.Text.RegularExpressions.RegexOptions){(int)options}{timeout})");
             var match = emitter.Local("match");
 
             // Matching without a value allocates nothing on .NET 7 and later.
@@ -92,7 +117,7 @@ namespace Warpstone.Internal.ParserExpressions
             emitter.Line("return true;");
             emitter.Close();
             emitter.Line("#endif");
-            emitter.Fail(System.Text.RegularExpressions.Regex.Escape(Pattern));
+            emitter.Fail(expected);
         }
 
         /// <inheritdoc />

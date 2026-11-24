@@ -56,6 +56,21 @@ The first version was no faster than the interpreter. What fixed it:
 5. **Lambdas as static methods** (`Lambda.TryParse` splits the parameters and body; discards get unique names). Method groups like `int.Parse` are called directly.
    Delegate fields remain only as a fallback.
 
+## Regexes become loops (generator only)
+
+`SimpleRegex.TryEmit` turns a regex into a static `int __H{n}(string input, int pos)` scanner when it can; otherwise `RegexParser.EmitSource`
+compares the literal prefix (`RegexParserImpl.FindLiteralPrefix`, now `internal`) before calling the `Regex`. Small leaf parsers get `[MethodImpl(AggressiveInlining)]`.
+- **Exact sets by brute force:** every atom (`[...]`, `\w`, `\p{L}`, a literal) becomes a `bool[65536]` by asking .NET's `Regex` `^(?:atom)\z` about each char.
+  Word chars for `\b` likewise (`^a\B` against `"a" + c`). They are emitted as compares (up to 4 ranges), or as an ASCII bit mask plus a Unicode category mask
+  plus an XOR list of exceptions. `\w` needs the exceptions: U+200C/U+200D are word chars, but the rest of their category (Cf) is not.
+- **No backtracking:** convert only when greedy equals backtracking. A repeated set must be disjoint from the sets that can follow it,
+  up to and including the first required one. A repeated set before `\b` needs `min >= 1` and all-word or all-non-word members.
+  A lookahead must not follow a repeated set. Alternation is only allowed inside a negative lookahead, where it is expanded.
+  `[^a-c]{2,3}y` is correctly rejected, because `y` is in `[^a-c]`.
+- Tests compare ~310 random and fixed inputs per pattern with the interpreter, and assert which patterns convert.
+- MiniJava: every regex converts, including the keyword-excluding identifier `(?!(?:class|...)\b)[A-Za-z_]...`, which becomes a `switch` on the first character.
+  Generated/interpreted went from 0.49 to 0.40 (large) and 0.47 to 0.39 (small). That is now 1.14-1.18x Parlot's generated parser.
+
 ## Pitfalls
 
 - **Verify snapshots** are TFM-agnostic (`Snapshots.Generates#...verified.cs`), but the received files carry the TFM (`Snapshots.Generates.DotNet10_0#...`).

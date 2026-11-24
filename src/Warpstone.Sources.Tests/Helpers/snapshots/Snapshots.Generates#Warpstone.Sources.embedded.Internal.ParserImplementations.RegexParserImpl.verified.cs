@@ -67,7 +67,7 @@ namespace Warpstone.Internal.ParserImplementations
         /// <param name="pattern">The pattern.</param>
         /// <param name="options">The regex options.</param>
         /// <returns>The literal prefix, or an empty string.</returns>
-        private static string FindLiteralPrefix(string pattern, RegexOptions options)
+        internal static string FindLiteralPrefix(string pattern, RegexOptions options)
         {
             if ((options & (RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.RightToLeft)) != 0
                 || pattern.IndexOf('|') >= 0)

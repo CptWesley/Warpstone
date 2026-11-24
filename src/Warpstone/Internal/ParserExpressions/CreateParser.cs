@@ -34,6 +34,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
+            emitter.Inline();
             emitter.Line("end = pos;");
             emitter.Value(emitter.Literal(Value, typeof(T)));
             emitter.Line("return true;");
