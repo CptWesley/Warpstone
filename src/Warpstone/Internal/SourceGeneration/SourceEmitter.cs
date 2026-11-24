@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,39 +10,28 @@ namespace Warpstone.Internal.SourceGeneration
 {
     /// <summary>
     /// Writes the C# source of a parser that runs without Warpstone.
-    /// Every parser node becomes one method <c>bool P{n}(int pos, out int end, out T value)</c> of a nested parser class,
+    /// Every parser node becomes a method <c>bool P{n}(int pos, out int end, out T value)</c> of a nested parser class,
     /// which reports its failures the way the <see cref="Errors.FailureTracker"/> does.
+    /// A node whose value is not used also gets a method <c>bool P{n}M(int pos, out int end)</c> that only matches.
     /// </summary>
-    internal sealed class SourceEmitter
+    internal sealed partial class SourceEmitter
     {
         private const string MethodIndent = "                ";
 
-        private static readonly Dictionary<Type, string> Keywords = new()
-        {
-            [typeof(bool)] = "bool",
-            [typeof(byte)] = "byte",
-            [typeof(sbyte)] = "sbyte",
-            [typeof(char)] = "char",
-            [typeof(short)] = "short",
-            [typeof(ushort)] = "ushort",
-            [typeof(int)] = "int",
-            [typeof(uint)] = "uint",
-            [typeof(long)] = "long",
-            [typeof(ulong)] = "ulong",
-            [typeof(float)] = "float",
-            [typeof(double)] = "double",
-            [typeof(decimal)] = "decimal",
-            [typeof(string)] = "string",
-            [typeof(object)] = "object",
-        };
-
-        private readonly SortedDictionary<int, string> methods = new();
+        private readonly SortedDictionary<(int Number, bool MatchOnly), string> methods = new();
         private readonly StringBuilder statics = new();
         private readonly StringBuilder fields = new();
         private readonly Dictionary<string, string> staticNames = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> functionNames = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> memoTables = new(StringComparer.Ordinal);
+        private readonly List<string> memoSlots = new();
+        private readonly StringBuilder constructor = new();
         private readonly Dictionary<CycleGrowGroup, string> cycleGroups = new();
         private readonly Dictionary<IParser, int> cycleIds = new();
+        private readonly Dictionary<string, (int Number, IParser Parser)> baseMethods = new(StringComparer.Ordinal);
+        private readonly HashSet<string> matchOnlyRequested = new(StringComparer.Ordinal);
+        private readonly Queue<(int Number, IParser Parser)> matchOnlyPending = new();
+        private Dictionary<IParser, IParserImplementation> implementations = new();
         private IReadOnlyDictionary<IParser, string> resolver = new Dictionary<IParser, string>();
         private StringBuilder body = new();
         private string indent = MethodIndent;
@@ -55,6 +43,11 @@ namespace Warpstone.Internal.SourceGeneration
         private SourceEmitter()
         {
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the current method produces a value, or only matches.
+        /// </summary>
+        public bool ValueNeeded { get; private set; } = true;
 
         /// <summary>
         /// Generates the source of <paramref name="root"/>.
@@ -78,6 +71,45 @@ namespace Warpstone.Internal.SourceGeneration
         /// <returns>The method name.</returns>
         public string Call(IParser parser)
             => resolver[parser];
+
+        /// <summary>
+        /// Gets the call of the method running <paramref name="parser"/>.
+        /// Without a <paramref name="value"/>, it calls the method that only matches, if <paramref name="parser"/> has one.
+        /// </summary>
+        /// <param name="parser">The parser to run.</param>
+        /// <param name="position">The position to run it at.</param>
+        /// <param name="end">The out argument receiving the end position, like <c>var end1</c> or <c>_</c>.</param>
+        /// <param name="value">The out argument receiving the value, like <c>var value1</c>, or <see langword="null"/> if the value isn't used.</param>
+        /// <returns>The call expression.</returns>
+        public string Invoke(IParser parser, string position, string end, string? value)
+        {
+            var name = Call(parser);
+            if (value is not null)
+            {
+                return $"{name}({position}, out {end}, out {value})";
+            }
+
+            // Wrappers memoize values, so they always run in full.
+            if (!baseMethods.TryGetValue(name, out var method))
+            {
+                return $"{name}({position}, out {end}, out _)";
+            }
+
+            if (matchOnlyRequested.Add(name))
+            {
+                matchOnlyPending.Enqueue(method);
+            }
+
+            return $"{name}M({position}, out {end})";
+        }
+
+        /// <summary>
+        /// Gets what the alternatives of <paramref name="parser"/> can start with, as the parser implementations see it.
+        /// </summary>
+        /// <param name="parser">The parser.</param>
+        /// <returns>The first characters, or <see langword="null"/> if they are unknown.</returns>
+        public FirstChars? FirstCharsOf(IParser parser)
+            => FirstChars.Of(implementations[parser]);
 
         /// <summary>
         /// Writes one line of the body of the current method.
@@ -107,6 +139,18 @@ namespace Warpstone.Internal.SourceGeneration
         }
 
         /// <summary>
+        /// Writes the assignment of <paramref name="expression"/> to <c>value</c>, if the current method produces a value.
+        /// </summary>
+        /// <param name="expression">The value.</param>
+        public void Value(string expression)
+        {
+            if (ValueNeeded)
+            {
+                Line($"value = {expression};");
+            }
+        }
+
+        /// <summary>
         /// Writes the statements that make the current method fail at <c>pos</c>.
         /// </summary>
         /// <param name="expected">What was expected, reported as a failure, or <see langword="null"/> to report nothing.</param>
@@ -118,7 +162,7 @@ namespace Warpstone.Internal.SourceGeneration
             }
 
             Line("end = pos;");
-            Line("value = default!;");
+            Value("default!");
             Line("return false;");
         }
 
@@ -143,34 +187,58 @@ namespace Warpstone.Internal.SourceGeneration
         }
 
         /// <summary>
-        /// Writes the assignment of <paramref name="template"/> to <c>value</c>.
+        /// Finds out which arguments <paramref name="template"/> uses, and whether it runs user code.
+        /// A node only needs a value from a child when the template uses it, and the template is written.
+        /// </summary>
+        /// <param name="template">The template, or <see langword="null"/> if its source is unknown.</param>
+        /// <param name="description">What the template computes, for the error message if it is <see langword="null"/>.</param>
+        /// <param name="count">The number of arguments.</param>
+        /// <returns>Per argument whether it is used, and whether the template runs user code.</returns>
+        public (bool[] Uses, bool UserCode) Analyze(CodeTemplate? template, string description, int count)
+        {
+            var arguments = Enumerable.Range(0, count).Select(i => $"\u0001{i}\u0002").ToArray();
+            var (lines, expression, userCode) = Capture(() => Expression(template, description, arguments));
+            var text = lines + expression;
+            return (arguments.Select(a => text.Contains(a)).ToArray(), userCode);
+        }
+
+        /// <summary>
+        /// Gets whether the current method must write <paramref name="template"/>: when it produces a value, or when the template runs user code,
+        /// which may throw, and so may make the parser fail.
+        /// </summary>
+        /// <param name="template">The template analysis.</param>
+        /// <returns><see langword="true"/> if the template must be written.</returns>
+        public bool Writes((bool[] Uses, bool UserCode) template)
+            => ValueNeeded || template.UserCode;
+
+        /// <summary>
+        /// Writes the assignment of <paramref name="template"/> to <c>value</c>, or to a discard if the current method only matches.
         /// User code is wrapped in a <see langword="try"/> block, so an exception becomes a failure, like it does in Warpstone.
+        /// Nothing is written if the method only matches and the template runs no user code.
         /// </summary>
         /// <param name="template">The template, or <see langword="null"/> if its source is unknown.</param>
         /// <param name="description">What the template computes, for the error message if it is <see langword="null"/>.</param>
         /// <param name="arguments">The arguments of the template.</param>
         public void AssignValue(CodeTemplate? template, string description, params string[] arguments)
         {
-            var outerBody = body;
-            var outerIndent = indent;
-            var outerUserCalls = userCalls;
-            body = new();
-            indent += "    ";
-            Line($"value = {Expression(template, description, arguments)};");
-            var inner = body.ToString();
-            var hasUserCode = userCalls != outerUserCalls;
-            body = outerBody;
-            indent = outerIndent;
-
-            if (!hasUserCode)
+            var (lines, expression, userCode) = Capture(() => Expression(template, description, arguments));
+            if (!ValueNeeded && !userCode)
             {
-                body.Append(inner.Replace("\n    ", "\n").Substring(4));
+                return;
+            }
+
+            var assignment = ValueNeeded ? $"value = {expression};" : $"_ = {expression};";
+            if (!userCode)
+            {
+                body.Append(lines);
+                Line(assignment);
                 return;
             }
 
             Line("try");
             Line("{");
-            body.Append(inner);
+            body.Append(lines.Replace("\n", "\n    ").Insert(0, "    ").TrimEnd(' '));
+            Line("    " + assignment);
             Line("}");
             Open("catch (global::System.Exception exception)");
             Line("Error(pos, exception);");
@@ -191,12 +259,13 @@ namespace Warpstone.Internal.SourceGeneration
             : template(this, arguments);
 
         /// <summary>
-        /// Gets the static field holding the user provided delegate <paramref name="function"/>, of which <paramref name="source"/> is the source.
+        /// Gets the callable expression for the user provided delegate <paramref name="function"/>, of which <paramref name="source"/> is the source.
+        /// A lambda becomes a static method, so the JIT can inline it; a method group is called directly.
         /// </summary>
         /// <param name="function">The delegate.</param>
         /// <param name="source">The source of the delegate.</param>
-        /// <returns>The name of the field.</returns>
-        public string Delegate(Delegate function, string source)
+        /// <returns>The expression to call with the arguments of the delegate.</returns>
+        public string Function(Delegate function, string source)
         {
             // A lambda without captured variables is a method of the compiler's cached closure class, which has no instance fields.
 #pragma warning disable S3011 // Only counts the fields, to find captured variables.
@@ -207,7 +276,31 @@ namespace Warpstone.Internal.SourceGeneration
             }
 
             userCalls++;
-            return Static(TypeName(function.GetType()), source);
+            var delegateType = TypeName(function.GetType());
+            var key = delegateType + " = " + source;
+            if (functionNames.TryGetValue(key, out var name))
+            {
+                return name;
+            }
+
+            var invoke = function.GetType().GetMethod("Invoke")!;
+            var parameters = invoke.GetParameters();
+            if (Lambda.TryParse(source, parameters.Length, out var names, out var lambdaBody))
+            {
+                name = $"__F{functionNames.Count}";
+                var declarations = names.Select((n, i) => n.IndexOf(' ') >= 0 ? n : $"{TypeName(parameters[i].ParameterType)} {n}");
+                statics.Append($"        private static {TypeName(invoke.ReturnType)} {name}({string.Join(", ", declarations)})\n");
+                statics.Append(lambdaBody.StartsWith("{", StringComparison.Ordinal)
+                    ? $"        {lambdaBody}\n\n"
+                    : $"            => {lambdaBody};\n\n");
+            }
+            else
+            {
+                name = Lambda.IsMethodGroup(source) ? source.Trim() : Static(delegateType, source);
+            }
+
+            functionNames[key] = name;
+            return name;
         }
 
         /// <summary>
@@ -231,6 +324,7 @@ namespace Warpstone.Internal.SourceGeneration
 
         /// <summary>
         /// Gets the memo table of the method running <paramref name="parser"/>, which is shared by all wrappers of that method.
+        /// All tables share one row per position, like the <see cref="Warpstone.MemoTable"/> does: parsers memoized at one position share the lookup.
         /// </summary>
         /// <param name="parser">The parser being memoized.</param>
         /// <returns>The name of the field holding the table.</returns>
@@ -239,12 +333,17 @@ namespace Warpstone.Internal.SourceGeneration
             var method = Call(parser);
             if (!memoTables.TryGetValue(method, out var name))
             {
+                var slot = memoTables.Count;
                 name = $"memo{method}";
                 memoTables[method] = name;
+                memoSlots.Add(TypeName(parser.ResultType));
+                if (slot == 0)
+                {
+                    fields.Append("            private readonly __Rows rows = new __Rows();\n");
+                }
 
-                // ponytail: one dictionary per memoized method; a flat table per position if lookups show up in profiles.
-                var type = $"global::System.Collections.Generic.Dictionary<int, __Entry<{TypeName(parser.ResultType)}>>";
-                fields.Append($"            private readonly {type} {name} = new {type}();\n");
+                fields.Append($"            private readonly __Table{slot} {name};\n");
+                constructor.Append($"                {name} = new __Table{slot}(rows);\n");
             }
 
             return name;
@@ -292,184 +391,6 @@ namespace Warpstone.Internal.SourceGeneration
         public NotSupportedException Unsupported(string reason)
             => new($"Can't generate the source of parser '{Describe(node)}': {reason}.");
 
-        /// <summary>
-        /// Gets the C# name of <paramref name="type"/>.
-        /// </summary>
-        /// <param name="type">The type.</param>
-        /// <returns>The name.</returns>
-#pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
-        public string TypeName(Type type)
-#pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
-        {
-            if (Keywords.TryGetValue(type, out var keyword))
-            {
-                return keyword;
-            }
-
-            if (type.IsArray)
-            {
-                return $"{TypeName(type.GetElementType()!)}[{new string(',', type.GetArrayRank() - 1)}]";
-            }
-
-            if (Nullable.GetUnderlyingType(type) is { } underlying)
-            {
-                return $"{TypeName(underlying)}?";
-            }
-
-            if (type.IsGenericParameter || type.Name.StartsWith("<", StringComparison.Ordinal) || type.FullName is null)
-            {
-                throw Unsupported($"its type '{type}' has no name in C#");
-            }
-
-            var arguments = type.IsGenericType ? type.GetGenericArguments() : Type.EmptyTypes;
-
-            if (type.IsGenericType && type.Namespace == "System" && type.Name.StartsWith("ValueTuple`", StringComparison.Ordinal) && arguments.Length is >= 2 and <= 7)
-            {
-                return $"({string.Join(", ", arguments.Select(TypeName))})";
-            }
-
-            // Nested types: the generic arguments of the declaring types come first.
-            var chain = new List<Type>();
-            for (var t = type; t is not null; t = t.DeclaringType)
-            {
-                chain.Insert(0, t);
-            }
-
-            var name = new StringBuilder("global::");
-            if (!string.IsNullOrEmpty(type.Namespace))
-            {
-                name.Append(type.Namespace).Append('.');
-            }
-
-            var used = 0;
-            for (var i = 0; i < chain.Count; i++)
-            {
-                var part = chain[i].Name;
-                var tick = part.IndexOf('`');
-                if (i > 0)
-                {
-                    name.Append('.');
-                }
-
-                if (tick < 0)
-                {
-                    name.Append(part);
-                    continue;
-                }
-
-                var count = int.Parse(part.Substring(tick + 1), CultureInfo.InvariantCulture);
-                name.Append(part, 0, tick).Append('<').Append(string.Join(", ", arguments.Skip(used).Take(count).Select(TypeName))).Append('>');
-                used += count;
-            }
-
-            return name.ToString();
-        }
-
-        /// <summary>
-        /// Gets the C# literal of <paramref name="value"/>.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The literal.</returns>
-#pragma warning disable CA1822, S2325 // Instance methods, like the rest of the emitter, so parsers call them all the same way.
-        public string Literal(string value)
-        {
-            var literal = new StringBuilder("\"");
-            foreach (var c in value)
-            {
-                literal.Append(c == '\'' ? "'" : Escape(c));
-            }
-
-            return literal.Append('"').ToString();
-        }
-
-        /// <summary>
-        /// Gets the C# literal of <paramref name="value"/>.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <returns>The literal.</returns>
-        public string Literal(char value)
-            => value == '"' ? "'\"'" : $"'{Escape(value)}'";
-#pragma warning restore CA1822, S2325
-
-        /// <summary>
-        /// Gets the C# expression of <paramref name="value"/>, a value of type <paramref name="type"/>.
-        /// </summary>
-        /// <param name="value">The value.</param>
-        /// <param name="type">The type of the value.</param>
-        /// <returns>The expression.</returns>
-        public string Literal(object? value, Type type)
-        {
-            if (value is null || (type.IsValueType && value.Equals(Activator.CreateInstance(type))))
-            {
-                return $"default({TypeName(type)})";
-            }
-
-            var actual = value.GetType();
-            if (type.IsValueType && actual != type)
-            {
-                // A nullable value type holding a value.
-                return $"({TypeName(type)}){Literal(value, actual)}";
-            }
-
-            if (actual.IsEnum)
-            {
-                return $"({TypeName(actual)}){Literal(Convert.ChangeType(value, Enum.GetUnderlyingType(actual), CultureInfo.InvariantCulture), Enum.GetUnderlyingType(actual))}";
-            }
-
-            var literal = value switch
-            {
-                string s => Literal(s),
-                char c => Literal(c),
-                bool b => b ? "true" : "false",
-                int i => i.ToString(CultureInfo.InvariantCulture),
-                long l => $"{l.ToString(CultureInfo.InvariantCulture)}L",
-                uint u => $"{u.ToString(CultureInfo.InvariantCulture)}U",
-                ulong u => $"{u.ToString(CultureInfo.InvariantCulture)}UL",
-                byte or sbyte or short or ushort => $"({TypeName(actual)}){Convert.ToString(value, CultureInfo.InvariantCulture)}",
-                double d => Number(d, "D", "double"),
-                float f => Number(f, "F", "float"),
-                decimal m => $"{m.ToString(CultureInfo.InvariantCulture)}M",
-                _ => null,
-            };
-
-            if (literal is null)
-            {
-                throw Unsupported($"its value '{value}' of type '{actual}' can't be written as a C# literal. Create it in a transformation instead");
-            }
-
-            // A value stored as a base type, like a string created as an object.
-            return actual == type ? literal : $"({TypeName(type)}){literal}";
-        }
-
-        private static string Number(double value, string suffix, string keyword)
-        {
-            if (double.IsNaN(value))
-            {
-                return $"{keyword}.NaN";
-            }
-
-            if (double.IsInfinity(value))
-            {
-                return value > 0 ? $"{keyword}.PositiveInfinity" : $"{keyword}.NegativeInfinity";
-            }
-
-            return value.ToString("R", CultureInfo.InvariantCulture) + suffix;
-        }
-
-        private static string Escape(char c)
-            => c switch
-            {
-                '\\' => "\\\\",
-                '"' => "\\\"",
-                '\'' => "\\'",
-                '\0' => "\\0",
-                '\n' => "\\n",
-                '\r' => "\\r",
-                '\t' => "\\t",
-                _ when c < ' ' || c > '~' => $"\\u{(int)c:X4}",
-                _ => c.ToString(),
-            };
-
         private static string Describe(IParser? parser)
         {
             if (parser is null)
@@ -482,281 +403,81 @@ namespace Warpstone.Internal.SourceGeneration
             return tick < 0 ? name : name.Substring(0, tick);
         }
 
+        /// <summary>
+        /// Runs <paramref name="write"/> while capturing the lines it writes, and tells whether it used user code.
+        /// </summary>
+        private (string Lines, string Result, bool UserCode) Capture(Func<string> write)
+        {
+            var outerBody = body;
+            var outerUserCalls = userCalls;
+            body = new();
+            try
+            {
+                var result = write();
+                return (body.ToString(), result, userCalls != outerUserCalls);
+            }
+            finally
+            {
+                body = outerBody;
+            }
+        }
+
         private string EmitParsers(IEmittableParser root)
         {
             // Recursive mode keeps the stack guards in the plan; the generated parser has no iterative mode.
             var plan = root.CreatePlan(ParseOptions.Default with { ExecutionMode = ParserExecutionMode.Recursive });
+            implementations = plan.CreateImplementations();
+
             var pending = new List<(IParser Parser, int Number)>();
             var lookup = plan.Execute(
                 parser =>
                 {
                     var number = methodCount++;
                     pending.Add((parser, number));
+                    baseMethods[$"P{number}"] = (number, parser);
                     return $"P{number}";
                 },
                 (wrapper, parser, inner) =>
                 {
                     var number = methodCount++;
-                    EmitMethod(number, wrapper, new Dictionary<IParser, string>() { [parser] = inner });
+                    EmitMethod(number, wrapper, new Dictionary<IParser, string>() { [parser] = inner }, valueNeeded: true);
                     return $"P{number}";
                 });
 
             foreach (var (parser, number) in pending)
             {
-                EmitMethod(number, parser, lookup);
+                EmitMethod(number, parser, lookup, valueNeeded: true);
+            }
+
+            while (matchOnlyPending.Count > 0)
+            {
+                var (number, parser) = matchOnlyPending.Dequeue();
+                EmitMethod(number, parser, lookup, valueNeeded: false);
             }
 
             return lookup[root];
         }
 
-        private void EmitMethod(int number, IParser parser, IReadOnlyDictionary<IParser, string> lookup)
+        private void EmitMethod(int number, IParser parser, IReadOnlyDictionary<IParser, string> lookup, bool valueNeeded)
         {
             resolver = lookup;
             node = parser;
             body = new();
             indent = MethodIndent;
             locals = 0;
+            ValueNeeded = valueNeeded;
             ((IEmittableParser)parser).EmitSource(this);
 
             var method = new StringBuilder();
-            method.Append($"            // {Describe(parser)}\n");
-            method.Append($"            public bool P{number}(int pos, out int end, out {TypeName(parser.ResultType)} value)\n");
+            method.Append($"            // {Describe(parser)}{(valueNeeded ? string.Empty : ", only matching")}\n");
+            method.Append(valueNeeded
+                ? $"            public bool P{number}(int pos, out int end, out {TypeName(parser.ResultType)} value)\n"
+                : $"            public bool P{number}M(int pos, out int end)\n");
             method.Append("            {\n");
             method.Append(body);
             method.Append("            }\n");
-            methods[number] = method.ToString();
-        }
-
-        private string EmitFile(Type resultType, string rootMethod, string @namespace, string className, IEnumerable<string> usings)
-        {
-            var type = TypeName(resultType);
-            var file = new StringBuilder();
-            file.Append("// <auto-generated/>\n");
-            file.Append("// Generated by Warpstone. The parser below doesn't depend on Warpstone.\n");
-            file.Append("#nullable enable annotations\n");
-            file.Append("#nullable disable warnings\n\n");
-
-            // Transformations often use these, like implicit usings do. The generated code is fully qualified, so they can't clash with it.
-            foreach (var import in new[] { "System", "System.Collections.Generic", "System.Linq" }.Concat(usings).Distinct(StringComparer.Ordinal))
-            {
-                file.Append($"using {import};\n");
-            }
-
-            file.Append($$"""
-
-namespace {{@namespace}}
-{
-    static partial class {{className}}
-    {
-        /// <summary>
-        /// Tries to parse <paramref name="input"/>.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="value">The parsed value, if parsing succeeded.</param>
-        /// <returns><see langword="true"/> if parsing succeeded.</returns>
-        public static bool TryParse(string input, out {{type}} value)
-            => TryParse(input, out value, out _);
-
-        /// <summary>
-        /// Tries to parse <paramref name="input"/>.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <param name="value">The parsed value, if parsing succeeded.</param>
-        /// <param name="error">The error, if parsing failed.</param>
-        /// <returns><see langword="true"/> if parsing succeeded.</returns>
-        public static bool TryParse(string input, out {{type}} value, out ParseError? error)
-        {
-            if (input is null)
-            {
-                throw new global::System.ArgumentNullException(nameof(input));
-            }
-
-            var parser = new __Parser(input);
-            if (parser.{{rootMethod}}(0, out _, out value))
-            {
-                error = null;
-                return true;
-            }
-
-            error = parser.CreateError();
-            return false;
-        }
-
-        /// <summary>
-        /// Parses <paramref name="input"/>.
-        /// </summary>
-        /// <param name="input">The input.</param>
-        /// <returns>The parsed value.</returns>
-        /// <exception cref="global::System.FormatException">Thrown when parsing failed.</exception>
-        public static {{type}} Parse(string input)
-            => TryParse(input, out var value, out var error) ? value : throw new global::System.FormatException(error!.ToString());
-
-        /// <summary>
-        /// Describes why parsing failed.
-        /// </summary>
-        public sealed class ParseError
-        {
-            internal ParseError(int position, global::System.Collections.Generic.IReadOnlyList<string> expected, global::System.Collections.Generic.IReadOnlyList<global::System.Exception> exceptions)
-            {
-                Position = position;
-                Expected = expected;
-                Exceptions = exceptions;
-            }
-
-            /// <summary>
-            /// Gets the furthest position at which parsing failed.
-            /// </summary>
-            public int Position { get; }
-
-            /// <summary>
-            /// Gets what was expected at <see cref="Position"/>.
-            /// </summary>
-            public global::System.Collections.Generic.IReadOnlyList<string> Expected { get; }
-
-            /// <summary>
-            /// Gets the exceptions thrown by transformations at <see cref="Position"/>.
-            /// </summary>
-            public global::System.Collections.Generic.IReadOnlyList<global::System.Exception> Exceptions { get; }
-
-            /// <inheritdoc />
-            public override string ToString()
-                => Exceptions.Count > 0
-                ? $"Parsing failed at position {Position}: {Exceptions[0].Message}"
-                : $"Expected {string.Join(", ", Expected)} at position {Position}.";
-        }
-
-        private readonly struct __Entry<T>
-        {
-            public __Entry(byte state, int end, T value)
-            {
-                State = state;
-                End = end;
-                Value = value;
-            }
-
-            /// <summary>1 while in progress, 2 after a failure, 3 after a success.</summary>
-            public readonly byte State;
-
-            public readonly int End;
-
-            public readonly T Value;
-        }
-
-        private sealed class __CycleState
-        {
-            public readonly global::System.Collections.Generic.HashSet<int> InProgress = new global::System.Collections.Generic.HashSet<int>();
-
-            public readonly global::System.Collections.Generic.HashSet<int> GrowRequested = new global::System.Collections.Generic.HashSet<int>();
-
-            public readonly global::System.Collections.Generic.Stack<global::System.Collections.Generic.HashSet<int>> Suspended = new global::System.Collections.Generic.Stack<global::System.Collections.Generic.HashSet<int>>();
-
-            public global::System.Collections.Generic.HashSet<int> Limits;
-        }
-
-{{statics}}        private sealed class __Parser
-        {
-            private readonly string input;
-            private readonly global::System.Collections.Generic.List<object> failures = new global::System.Collections.Generic.List<object>();
-            private int failPos = -1;
-            private int suppressed;
-{{fields}}
-            public __Parser(string input)
-            {
-                this.input = input;
-            }
-
-            public ParseError CreateError()
-            {
-                var expected = new global::System.Collections.Generic.List<string>();
-                var exceptions = new global::System.Collections.Generic.List<global::System.Exception>();
-                foreach (var failure in failures)
-                {
-                    if (failure is string text)
-                    {
-                        if (!expected.Contains(text))
-                        {
-                            expected.Add(text);
-                        }
-                    }
-                    else
-                    {
-                        exceptions.Add((global::System.Exception)failure);
-                    }
-                }
-
-                return new ParseError(failures.Count == 0 ? 0 : failPos, expected, exceptions);
-            }
-
-            private bool MoveTo(int position)
-            {
-                if (suppressed > 0 || position < failPos)
-                {
-                    return false;
-                }
-
-                if (position > failPos)
-                {
-                    failPos = position;
-                    failures.Clear();
-                }
-
-                return true;
-            }
-
-            private void Expect(int position, string expected)
-            {
-                if (MoveTo(position) && !failures.Contains(expected))
-                {
-                    failures.Add(expected);
-                }
-            }
-
-            private void Error(int position, global::System.Exception exception)
-            {
-                if (MoveTo(position))
-                {
-                    failures.Add(exception);
-                }
-            }
-
-            private void EndLabel(int startPos, int startCount, int position, string name)
-            {
-                // Failures that got further than the start are more precise than the name, so they are kept.
-                if (failPos > position)
-                {
-                    return;
-                }
-
-                if (failPos == position && suppressed == 0)
-                {
-                    var keep = startPos == position ? startCount : 0;
-                    failures.RemoveRange(keep, failures.Count - keep);
-                }
-
-                Expect(position, name);
-            }
-
-            private static bool Improved<T>(in __Entry<T> previous, bool success, int end)
-                => previous.State != 3 ? success : success && end > previous.End;
-
-            private static global::System.Collections.Generic.IReadOnlyList<T> AddToList<T>(global::System.Collections.Generic.IReadOnlyList<T> list, T element)
-            {
-                if (list is global::System.Collections.Generic.List<T> mutable)
-                {
-                    mutable.Add(element);
-                    return mutable;
-                }
-
-                return new global::System.Collections.Generic.List<T> { element };
-            }
-
-""");
-
-            file.Append(string.Join("\n", methods.Values));
-            file.Append("        }\n");
-            file.Append("    }\n");
-            file.Append("}\n");
-            return file.ToString();
+            methods[(number, !valueNeeded)] = method.ToString();
+            ValueNeeded = true;
         }
     }
 }

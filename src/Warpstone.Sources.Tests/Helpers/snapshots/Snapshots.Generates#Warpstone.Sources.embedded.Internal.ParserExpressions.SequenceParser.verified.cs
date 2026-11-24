@@ -84,7 +84,11 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
-            emitter.Open($"if (!{emitter.Call(First)}(pos, out var end1, out var value1) || !{emitter.Call(Second)}(end1, out end, out var value2))");
+            var combine = emitter.Analyze(CombineCode, "transformation", 2);
+            var written = emitter.Writes(combine);
+            var first = emitter.Invoke(First, "pos", "var end1", written && combine.Uses[0] ? "var value1" : null);
+            var second = emitter.Invoke(Second, "end1", "end", written && combine.Uses[1] ? "var value2" : null);
+            emitter.Open($"if (!{first} || !{second})");
             emitter.Fail();
             emitter.Close();
             emitter.AssignValue(CombineCode, "transformation", "value1", "value2");

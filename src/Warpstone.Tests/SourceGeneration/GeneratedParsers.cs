@@ -62,6 +62,13 @@ public static class GeneratedParsers
     public static void Throwing(string input)
         => GeneratedParser.ShouldMatchWarpstone(nameof(Throwing), Grammars.Throwing, input, "System.Globalization");
 
+    [TestCase("abc-21-x")]
+    [TestCase("abc-21-x!!")]
+    [TestCase("abc-21-x!")]
+    [TestCase("abc-99999999999-x")]
+    public static void Lambdas(string input)
+        => GeneratedParser.ShouldMatchWarpstone(nameof(Lambdas), Grammars.Lambdas, input);
+
     [TestCase("abc.")]
     [TestCase("abc;")]
     [TestCase("abc")]

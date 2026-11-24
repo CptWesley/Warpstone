@@ -35,7 +35,7 @@ namespace Warpstone.Internal.ParserExpressions
         {
             emitter.Open("if (pos >= input.Length)");
             emitter.Line("end = pos;");
-            emitter.Line("value = string.Empty;");
+            emitter.Value("string.Empty");
             emitter.Line("return true;");
             emitter.Close();
             emitter.Fail("EOF");

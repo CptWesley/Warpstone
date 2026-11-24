@@ -35,7 +35,7 @@ namespace Warpstone.Internal.ParserExpressions
         {
             emitter.Open($"if (pos < input.Length && input[pos] == {emitter.Literal(Character)})");
             emitter.Line("end = pos + 1;");
-            emitter.Line($"value = {emitter.Literal(Character)};");
+            emitter.Value(emitter.Literal(Character));
             emitter.Line("return true;");
             emitter.Close();
             emitter.Fail($"'{Character}'");

@@ -52,7 +52,7 @@ namespace Warpstone.Internal.ParserExpressions
             if (Options == CompareOptions.Ordinal)
             {
                 emitter.Open($"if (input.Length - pos >= {String.Length} && string.CompareOrdinal(input, pos, {literal}, 0, {String.Length}) == 0)");
-                emitter.Line($"value = {literal};");
+                emitter.Value(literal);
             }
             else
             {
@@ -60,7 +60,7 @@ namespace Warpstone.Internal.ParserExpressions
                     ? "global::System.Globalization.CultureInfo.InvariantCulture"
                     : emitter.Static("global::System.Globalization.CultureInfo", $"global::System.Globalization.CultureInfo.GetCultureInfo({emitter.Literal(Culture.Name)})");
                 emitter.Open($"if (input.Length - pos >= {String.Length} && string.Compare(input, pos, {literal}, 0, {String.Length}, {culture}, (global::System.Globalization.CompareOptions){(int)Options}) == 0)");
-                emitter.Line($"value = input.Substring(pos, {String.Length});");
+                emitter.Value($"input.Substring(pos, {String.Length})");
             }
 
             emitter.Line($"end = pos + {String.Length};");

@@ -195,7 +195,7 @@ Expected number or '(' but found '*'
 ```
 
 ### Generating a parser's source
-`GenerateSource` writes the C# source of a parser that runs without Warpstone. It isn't faster yet: on the MiniJava benchmark it is about as fast as the interpreted parser on small input, and up to 20% slower on larger input. Generate the file once, for example from a test or a small tool, and add it to your project:
+`GenerateSource` writes the C# source of a parser that runs without Warpstone, and runs about twice as fast (see [Performance](#performance)). Generate the file once, for example from a test or a small tool, and add it to your project:
 
 ```cs
 File.WriteAllText("CalculatorParser.g.cs", Calculator.Expression.GenerateSource("MyApp", "CalculatorParser"));

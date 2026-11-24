@@ -33,7 +33,7 @@ namespace Warpstone.Internal.SourceGeneration
         public static CodeTemplate? User(Delegate function, string? source)
             => source is null
             ? null
-            : (emitter, arguments) => $"{emitter.Delegate(function, source)}({string.Join(", ", arguments)})";
+            : (emitter, arguments) => $"{emitter.Function(function, source)}({string.Join(", ", arguments)})";
 
         /// <summary>
         /// Creates a template that passes the elements of its tuple argument as separate arguments to <paramref name="template"/>.

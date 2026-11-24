@@ -60,8 +60,9 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
-            emitter.Open($"if (!{emitter.Call(Element)}(pos, out end, out var element))");
-            emitter.Line("value = default!;");
+            var map = emitter.Analyze(MapCode, "transformation", 1);
+            emitter.Open($"if (!{emitter.Invoke(Element, "pos", "end", emitter.Writes(map) && map.Uses[0] ? "var element" : null)})");
+            emitter.Value("default!");
             emitter.Line("return false;");
             emitter.Close();
             emitter.AssignValue(MapCode, "transformation", "element");

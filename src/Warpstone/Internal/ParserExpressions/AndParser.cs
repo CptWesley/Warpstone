@@ -62,10 +62,11 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
-            emitter.Open($"if (!{emitter.Call(First)}(pos, out var end1, out var value1) || !{emitter.Call(Second)}(end1, out end, out var value2))");
+            var values = emitter.ValueNeeded;
+            emitter.Open($"if (!{emitter.Invoke(First, "pos", "var end1", values ? "var value1" : null)} || !{emitter.Invoke(Second, "end1", "end", values ? "var value2" : null)})");
             emitter.Fail();
             emitter.Close();
-            emitter.Line("value = (value1, value2);");
+            emitter.Value("(value1, value2)");
             emitter.Line("return true;");
         }
 

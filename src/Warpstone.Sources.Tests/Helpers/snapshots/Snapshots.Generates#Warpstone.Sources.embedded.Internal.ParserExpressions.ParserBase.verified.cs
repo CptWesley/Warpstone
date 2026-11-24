@@ -43,30 +43,7 @@ namespace Warpstone.Internal.ParserExpressions
         public IParserImplementation<T> GetImplementation(ParseOptions options)
         {
             var simplified = GetSimplifiedOptions(options);
-            return implementations.GetOrAdd(simplified, o =>
-            {
-                var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
-                var lookup = CreatePlan(o).Execute<IParserImplementation>(
-                    parser =>
-                    {
-                        var impl = parser.CreateUninitializedImplementation();
-                        initializeable.Add((parser, impl));
-                        return impl;
-                    },
-                    (wrapper, parser, inner) =>
-                    {
-                        var impl = wrapper.CreateUninitializedImplementation();
-                        impl.Initialize(wrapper, new Dictionary<IParser, IParserImplementation>() { [parser] = inner });
-                        return impl;
-                    });
-
-                foreach (var entry in initializeable)
-                {
-                    entry.Implementation.Initialize(entry.Parser, lookup);
-                }
-
-                return (IParserImplementation<T>)lookup[this];
-            });
+            return implementations.GetOrAdd(simplified, o => (IParserImplementation<T>)CreatePlan(o).CreateImplementations()[this]);
         }
 
         /// <inheritdoc />

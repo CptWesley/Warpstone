@@ -37,7 +37,7 @@ namespace Warpstone.Internal.ParserExpressions
             emitter.Close();
             emitter.Open("if (next > pos)");
             emitter.Line("end = next;");
-            emitter.Line("value = input.Substring(pos, next - pos);");
+            emitter.Value("input.Substring(pos, next - pos)");
             emitter.Line("return true;");
             emitter.Close();
             emitter.Fail("whitespace");

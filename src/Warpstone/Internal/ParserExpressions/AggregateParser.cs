@@ -92,7 +92,16 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
-            emitter.Line($"var accumulator = {emitter.Expression(SeedCode, "seed")};");
+            var seed = emitter.Analyze(SeedCode, "seed", 0);
+            var accumulate = emitter.Analyze(AccumulateCode, "accumulation", 2);
+
+            // Only matching skips building the result, unless user code runs, which may throw.
+            var accumulating = emitter.ValueNeeded || seed.UserCode || accumulate.UserCode;
+            if (accumulating)
+            {
+                emitter.Line($"var accumulator = {emitter.Expression(SeedCode, "seed")};");
+            }
+
             emitter.Line("var count = 0;");
             emitter.Line("var next = pos;");
             emitter.Line("end = pos;");
@@ -100,7 +109,7 @@ namespace Warpstone.Internal.ParserExpressions
             emitter.Line("var start = next;");
             if (Delimiter is not null)
             {
-                emitter.Open($"if (count > 0 && !{emitter.Call(Delimiter)}(next, out start, out _))");
+                emitter.Open($"if (count > 0 && !{emitter.Invoke(Delimiter, "next", "start", null)})");
                 emitter.Open($"if (count >= {MinCount})");
                 emitter.Line("break;");
                 emitter.Close();
@@ -108,18 +117,22 @@ namespace Warpstone.Internal.ParserExpressions
                 emitter.Close();
             }
 
-            emitter.Open($"if (!{emitter.Call(Element)}(start, out var elementEnd, out var element))");
+            emitter.Open($"if (!{emitter.Invoke(Element, "start", "var elementEnd", accumulating && accumulate.Uses[1] ? "var element" : null)})");
             emitter.Open($"if (count >= {MinCount})");
             emitter.Line("break;");
             emitter.Close();
             emitter.Fail();
             emitter.Close();
-            emitter.Line($"accumulator = {emitter.Expression(AccumulateCode, "accumulation", "accumulator", "element")};");
+            if (accumulating)
+            {
+                emitter.Line($"accumulator = {emitter.Expression(AccumulateCode, "accumulation", "accumulator", "element")};");
+            }
+
             emitter.Line("next = elementEnd;");
             emitter.Line("end = elementEnd;");
             emitter.Line("count++;");
             emitter.Close();
-            emitter.Line("value = accumulator;");
+            emitter.Value("accumulator");
             emitter.Line("return true;");
         }
 

@@ -144,6 +144,35 @@ namespace Warpstone.Internal.ParserExpressions
             return lookup;
         }
 
+        /// <summary>
+        /// Creates and initializes the parser implementations of the plan.
+        /// </summary>
+        /// <returns>Every parser of the expression mapped to the implementation that runs it.</returns>
+        public Dictionary<IParser, IParserImplementation> CreateImplementations()
+        {
+            var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
+            var lookup = Execute<IParserImplementation>(
+                parser =>
+                {
+                    var impl = parser.CreateUninitializedImplementation();
+                    initializeable.Add((parser, impl));
+                    return impl;
+                },
+                (wrapper, parser, inner) =>
+                {
+                    var impl = wrapper.CreateUninitializedImplementation();
+                    impl.Initialize(wrapper, new Dictionary<IParser, IParserImplementation>() { [parser] = inner });
+                    return impl;
+                });
+
+            foreach (var entry in initializeable)
+            {
+                entry.Implementation.Initialize(entry.Parser, lookup);
+            }
+
+            return lookup;
+        }
+
         private static Dictionary<ILazyParser, IParser> ResolveLazyParsers(List<IParser> all)
         {
             var lazyTargets = new Dictionary<ILazyParser, IParser>();

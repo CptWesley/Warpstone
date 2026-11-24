@@ -34,13 +34,13 @@ namespace Warpstone.Internal.ParserExpressions
         {
             // The inner parser failing is what this parser wants, so those failures are not errors.
             emitter.Line("suppressed++;");
-            emitter.Line($"var success = {emitter.Call(Parser)}(pos, out _, out _);");
+            emitter.Line($"var success = {emitter.Invoke(Parser, "pos", "_", null)};");
             emitter.Line("suppressed--;");
             emitter.Open("if (success)");
             emitter.Fail("<not>");
             emitter.Close();
             emitter.Line("end = pos;");
-            emitter.Line("value = default!;");
+            emitter.Value("default!");
             emitter.Line("return true;");
         }
 

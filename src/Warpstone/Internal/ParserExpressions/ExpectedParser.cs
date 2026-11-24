@@ -40,8 +40,8 @@ namespace Warpstone.Internal.ParserExpressions
         public override void EmitSource(SourceEmitter emitter)
         {
             emitter.Line("var labelPos = failPos;");
-            emitter.Line("var labelCount = failures.Count;");
-            emitter.Open($"if ({emitter.Call(Parser)}(pos, out end, out value))");
+            emitter.Line("var labelCount = failureCount;");
+            emitter.Open($"if ({emitter.Invoke(Parser, "pos", "end", emitter.ValueNeeded ? "value" : null)})");
             emitter.Line("return true;");
             emitter.Close();
             emitter.Line($"EndLabel(labelPos, labelCount, pos, {emitter.Literal(Expected)});");

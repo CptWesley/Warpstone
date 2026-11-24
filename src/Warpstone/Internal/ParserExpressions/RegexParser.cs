@@ -76,17 +76,19 @@ namespace Warpstone.Internal.ParserExpressions
                 "global::System.Text.RegularExpressions.Regex",
                 $"new global::System.Text.RegularExpressions.Regex({emitter.Literal(@$"\G({Pattern})")}, {options}{timeout})");
             var match = emitter.Local("match");
+
+            // Matching without a value allocates nothing on .NET 7 and later.
             emitter.Line("#if NET7_0_OR_GREATER");
             emitter.Open($"foreach (var {match} in {regex}.EnumerateMatches(input, pos))");
             emitter.Line($"end = pos + {match}.Length;");
-            emitter.Line($"value = input.Substring(pos, {match}.Length);");
+            emitter.Value($"input.Substring(pos, {match}.Length)");
             emitter.Line("return true;");
             emitter.Close();
             emitter.Line("#else");
             emitter.Line($"var {match} = {regex}.Match(input, pos);");
             emitter.Open($"if ({match}.Success)");
             emitter.Line($"end = pos + {match}.Length;");
-            emitter.Line($"value = {match}.Value;");
+            emitter.Value($"{match}.Value");
             emitter.Line("return true;");
             emitter.Close();
             emitter.Line("#endif");

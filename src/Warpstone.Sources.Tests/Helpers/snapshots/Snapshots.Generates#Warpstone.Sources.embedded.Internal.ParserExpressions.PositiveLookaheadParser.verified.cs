@@ -37,7 +37,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override void EmitSource(SourceEmitter emitter)
         {
-            emitter.Line($"var success = {emitter.Call(Parser)}(pos, out _, out value);");
+            emitter.Line($"var success = {emitter.Invoke(Parser, "pos", "_", emitter.ValueNeeded ? "value" : null)};");
             emitter.Line("end = pos;");
             emitter.Line("return success;");
         }

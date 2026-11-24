@@ -49,6 +49,18 @@ public static class Grammars
     public static readonly IParser<int> Throwing
         = Regex("[0-9]+").ThenAdd(Char('!')).Transform((digits, bang) => digits + bang).Transform(text => int.Parse(text.TrimEnd('!'), CultureInfo.InvariantCulture)).ThenEnd();
 
+    /// <summary>Lambdas of every shape: block bodies, typed parameters, discards, static lambdas and method groups.</summary>
+    public static readonly IParser<string> Lambdas
+        = Regex("[a-z]+").Transform(static w => { var upper = w.ToUpperInvariant(); return upper + upper.Length; })
+            .ThenAdd(Char('-').Then(Regex("[0-9]+")).Transform(int.Parse))
+            .ThenAdd(Char('-').Then(Regex("[a-z]")))
+#pragma warning disable S3257 // The parameter types are explicit on purpose: they test typed lambda parameters.
+            .Transform((string word, int number, string letter) => word + (number * 2) + letter)
+#pragma warning restore S3257
+            .ThenAdd(Maybe(Char('!').ThenAdd(Char('!')).Transform((_, _) => "!!"), string.Empty))
+            .Transform(static (text, bangs) => text + bangs)
+            .ThenEnd();
+
     /// <summary>Explicit memoization of a parser that is tried twice at the same position.</summary>
     public static readonly IParser<string> Memoized = CreateMemoized();
 
