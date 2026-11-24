@@ -83,7 +83,10 @@ Shared MSBuild settings are split into `src/*.props`, which each project imports
    - wraps recursive nodes in `GrowParser` (the left-recursion "seed growing" approach, when `EnableAutomaticGrowingRecursion` is on, which is the default),
    - wires up all implementations through a lookup dictionary in `Initialize`.
 
-Adding a combinator therefore means adding an expression class, an `Impl` class, a factory method in `Parsers` or `ParserExtensions`, and support for both execution modes in the impl.
+   The memo/grow/stack-guard decisions live in `ParserPlan`, which both `GetImplementation` and source generation follow.
+3. **Source generation** (`Internal/SourceGeneration`): `ParserExtensions.GenerateSource` writes a Warpstone-free C# parser. Every expression implements `EmitSource`, which writes the body of `bool P{n}(int pos, out int end, out T value)` through `SourceEmitter`. Delegates can't be printed, so `Transform`/`Aggregate` capture their lambda text with `[CallerArgumentExpression]` and expressions carry it as a `CodeTemplate` (library combiners pass hand-written templates). Tests in `Warpstone.Tests/SourceGeneration` compile the output with Roslyn and compare it with the interpreter.
+
+Adding a combinator therefore means adding an expression class (with `EmitSource`), an `Impl` class, a factory method in `Parsers` or `ParserExtensions`, and support for both execution modes in the impl. A factory taking a delegate also needs its `CodeTemplate`, or generated parsers can't use it.
 
 ### Execution modes
 

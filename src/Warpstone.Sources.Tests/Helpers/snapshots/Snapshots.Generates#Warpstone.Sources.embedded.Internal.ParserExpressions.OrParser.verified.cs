@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -32,6 +33,20 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
             => new OrParserImpl<T>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            for (var i = 0; i < Alternatives.Count - 1; i++)
+            {
+                emitter.Open($"if ({emitter.Call(Alternatives[i])}(pos, out end, out value))");
+                emitter.Line("return true;");
+                emitter.Close();
+            }
+
+            // Every alternative reports its own failures, so a failing last alternative's result is the result.
+            emitter.Line($"return {emitter.Call(Alternatives[Alternatives.Count - 1])}(pos, out end, out value);");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

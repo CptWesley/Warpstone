@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -65,6 +66,32 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<string> CreateUninitializedImplementation()
             => impl.Value;
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            var options = $"(global::System.Text.RegularExpressions.RegexOptions){(int)(Options | RegexOptions.ExplicitCapture)}";
+            var timeout = Timeout == TimeSpan.Zero || Timeout == TimeSpan.MaxValue ? string.Empty : $", global::System.TimeSpan.FromTicks({Timeout.Ticks}L)";
+            var regex = emitter.Static(
+                "global::System.Text.RegularExpressions.Regex",
+                $"new global::System.Text.RegularExpressions.Regex({emitter.Literal(@$"\G({Pattern})")}, {options}{timeout})");
+            var match = emitter.Local("match");
+            emitter.Line("#if NET7_0_OR_GREATER");
+            emitter.Open($"foreach (var {match} in {regex}.EnumerateMatches(input, pos))");
+            emitter.Line($"end = pos + {match}.Length;");
+            emitter.Line($"value = input.Substring(pos, {match}.Length);");
+            emitter.Line("return true;");
+            emitter.Close();
+            emitter.Line("#else");
+            emitter.Line($"var {match} = {regex}.Match(input, pos);");
+            emitter.Open($"if ({match}.Success)");
+            emitter.Line($"end = pos + {match}.Length;");
+            emitter.Line($"value = {match}.Value;");
+            emitter.Line("return true;");
+            emitter.Close();
+            emitter.Line("#endif");
+            emitter.Fail(System.Text.RegularExpressions.Regex.Escape(Pattern));
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

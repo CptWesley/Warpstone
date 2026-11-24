@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -29,6 +30,34 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
             => new GrowParserImpl<T>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            var table = emitter.MemoTable(Parser);
+            var entry = $"__Entry<{emitter.TypeName(typeof(T))}>";
+            emitter.Open($"if ({table}.TryGetValue(pos, out var hit))");
+            emitter.Line("end = hit.End;");
+            emitter.Line("value = hit.Value;");
+            emitter.Line("return hit.State == 3;");
+            emitter.Close();
+
+            // Seed growing: start from a failure, and run the parser again while its result keeps getting longer.
+            emitter.Line($"{table}[pos] = new {entry}(2, pos, default!);");
+            emitter.Line("var success = false;");
+            emitter.Line("end = pos;");
+            emitter.Line("value = default!;");
+            emitter.Open("while (true)");
+            emitter.Open($"if (!{emitter.Call(Parser)}(pos, out var grownEnd, out var grown) || (success && grownEnd <= end))");
+            emitter.Line("break;");
+            emitter.Close();
+            emitter.Line("success = true;");
+            emitter.Line("end = grownEnd;");
+            emitter.Line("value = grown;");
+            emitter.Line($"{table}[pos] = new {entry}(3, end, value);");
+            emitter.Close();
+            emitter.Line("return success;");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

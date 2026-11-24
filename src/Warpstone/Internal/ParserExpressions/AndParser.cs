@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -33,8 +34,8 @@ namespace Warpstone.Internal.ParserExpressions
         public IParser<TSecond> Second { get; }
 
         /// <inheritdoc />
-        public IParser<TOut> Map<TOut>(Func<(TFirst First, TSecond Second), TOut> map)
-            => new SequenceParser<TFirst, TSecond, TOut>(First, Second, (first, second) => map((first, second)));
+        public IParser<TOut> Map<TOut>(Func<(TFirst First, TSecond Second), TOut> map, CodeTemplate? mapCode)
+            => new SequenceParser<TFirst, TSecond, TOut>(First, Second, (first, second) => map((first, second)), Code.Compose(mapCode, Code.Of("({0}, {1})")));
 
         /// <inheritdoc />
         public override IParserImplementation<(TFirst First, TSecond Second)> CreateUninitializedImplementation()
@@ -56,6 +57,16 @@ namespace Warpstone.Internal.ParserExpressions
             var parserType = genericParserType.MakeGenericType(tLeft, tRight);
             var parser = (IParserImplementation<(TFirst, TSecond)>)Activator.CreateInstance(parserType, args: null)!;
             return parser;
+        }
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            emitter.Open($"if (!{emitter.Call(First)}(pos, out var end1, out var value1) || !{emitter.Call(Second)}(end1, out end, out var value2))");
+            emitter.Fail();
+            emitter.Close();
+            emitter.Line("value = (value1, value2);");
+            emitter.Line("return true;");
         }
 
         /// <inheritdoc />

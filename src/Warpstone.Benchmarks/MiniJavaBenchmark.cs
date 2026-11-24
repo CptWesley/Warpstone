@@ -14,6 +14,8 @@ public class MiniJavaBenchmark
     [
         ("Warpstone3", s => Warpstone3MiniJava.Parser.Parse(s)),
         ("Warpstone3_left_recursive", s => Warpstone3MiniJava.LeftRecursiveParser.Parse(s)),
+        ("Warpstone3_generated", Warpstone3GeneratedMiniJava.Parse),
+        ("Warpstone3_generated_left_recursive", Warpstone3GeneratedLeftRecursiveMiniJava.Parse),
         ("Warpstone2", s => Warpstone2MiniJava.Parser.Parse(s)),
         ("Warpstone1", s => Warpstone1MiniJava.Parser.Parse(s)),
         ("Pidgin", s => PidginMiniJava.Parser.ParseOrThrow(s)),
@@ -39,6 +41,12 @@ public class MiniJavaBenchmark
 
     [Benchmark]
     public CompilationUnit Warpstone3_left_recursive() => Warpstone3MiniJava.LeftRecursiveParser.Parse(input);
+
+    [Benchmark]
+    public CompilationUnit Warpstone3_generated() => Warpstone3GeneratedMiniJava.Parse(input);
+
+    [Benchmark]
+    public CompilationUnit Warpstone3_generated_left_recursive() => Warpstone3GeneratedLeftRecursiveMiniJava.Parse(input);
 
     [Benchmark]
     public CompilationUnit Warpstone2() => Warpstone2MiniJava.Parser.Parse(input);
@@ -85,7 +93,7 @@ public class MiniJavaBenchmark
                 }
 
                 ok &= verdict == "same AST";
-                Console.WriteLine($"  {name,-26} {verdict}");
+                Console.WriteLine($"  {name,-36} {verdict}");
             }
         }
 

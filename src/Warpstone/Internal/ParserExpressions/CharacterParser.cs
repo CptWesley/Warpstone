@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -28,6 +29,17 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<char> CreateUninitializedImplementation()
             => new CharacterParserImpl(Character);
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            emitter.Open($"if (pos < input.Length && input[pos] == {emitter.Literal(Character)})");
+            emitter.Line("end = pos + 1;");
+            emitter.Line($"value = {emitter.Literal(Character)};");
+            emitter.Line("return true;");
+            emitter.Close();
+            emitter.Fail($"'{Character}'");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

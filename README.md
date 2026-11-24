@@ -48,7 +48,7 @@ Warpstone's implementation draws on the following work:
 | Monadic bind (context-sensitive parsing)       | ❌ | ✅ | 🟡<sup>5</sup> | ✅ | 🟡<sup>6</sup> | ✅ | ❌ |
 | Non-`char` token input                         | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | 🟡<sup>7</sup> |
 | Streaming input (`TextReader`/`Stream`)        | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Compiled / source-generated parsers            | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Compiled / source-generated parsers            | ❌ | ❌ | 🟡<sup>8</sup> | ❌ | ✅ | ❌ | ✅ |
 | Source-only package (no assembly dependency)   | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 1. Farkle is an LALR(1) parser generator, not a PEG/combinator library. It needs no memoization or backtracking and reports grammar conflicts when the grammar is built.
@@ -58,6 +58,7 @@ Warpstone's implementation draws on the following work:
 5. Via `Bind`. Left recursion through the selected parser is not grown and fails with an `InfiniteRecursionError`; a selected parser that is not part of the grammar is prepared for parsing each time a new instance is returned.
 6. Via `Switch`.
 7. Custom tokenizers, input is still text.
+8. Via `GenerateSource`, which writes C# for a parser that doesn't depend on Warpstone. `Bind`, `AsResult` and transformations that capture variables are not supported, and the generated parser takes `string` input only and always runs recursively.
 
 Third-party columns reflect each library's documentation and package API at the time of writing (Pidgin 3.5, Parlot 2.3, ParsecSharp 5.2, Farkle 7).
 
@@ -192,3 +193,21 @@ Output:
 Error at Index 4 Line 1 Column 5
 Expected number or '(' but found '*'
 ```
+
+### Generating a parser's source
+`GenerateSource` writes the C# source of a parser that runs without Warpstone. It isn't faster yet: on the MiniJava benchmark it is about as fast as the interpreted parser on small input, and up to 20% slower on larger input. Generate the file once, for example from a test or a small tool, and add it to your project:
+
+```cs
+File.WriteAllText("CalculatorParser.g.cs", Calculator.Expression.GenerateSource("MyApp", "CalculatorParser"));
+```
+
+The file declares `static partial class CalculatorParser` with `Parse(string)`, `TryParse(string, out int)` and `TryParse(string, out int, out ParseError?)`:
+
+```cs
+Console.WriteLine(CalculatorParser.Parse("1 + 2 * 3")); // 7
+```
+
+Regenerate the file whenever the grammar changes. Some limits:
+- The source of every transformation is copied from the `Transform` or `Aggregate` call that created it, so a transformation can only use its parameters and static members. A lambda that captures a variable is rejected. The file imports `System`, `System.Collections.Generic` and `System.Linq`. Pass other namespaces, or aliases such as `"G = MyApp.Grammar"`, as extra arguments.
+- `Bind`, the `Then`, `ThenAdd` and `ThenSkip` overloads that take a function, `AsResult`, and `Create` with a value that has no C# literal are not supported.
+- The generated parser always runs recursively, so very deep input throws an `InsufficientExecutionStackException`. A failed parse reports the furthest position and what was expected there.

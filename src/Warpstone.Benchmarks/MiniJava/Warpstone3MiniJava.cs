@@ -16,6 +16,29 @@ public static class Warpstone3MiniJava
     /// <summary>Binary operators as left-recursive rules (<c>e := e op operand | operand</c>).</summary>
     public static readonly IParser<CompilationUnit> LeftRecursiveParser = Build(leftRecursive: true);
 
+    /// <summary>
+    /// The namespaces and aliases the transformations use, for <see cref="ParserExtensions.GenerateSource{T}"/>.
+    /// Aliases can't use the other usings, so their targets are fully qualified.
+    /// </summary>
+    public static readonly string[] Usings =
+    [
+        "System.Globalization",
+        "G = Warpstone.Benchmarks.MiniJava.MiniJavaGrammar",
+        "MemberTail = System.Func<Warpstone.Benchmarks.MiniJava.Seq<string>, Warpstone.Benchmarks.MiniJava.TypeRef, string, Warpstone.Benchmarks.MiniJava.IMember>",
+        "Suffix = System.Func<Warpstone.Benchmarks.MiniJava.IExpr, Warpstone.Benchmarks.MiniJava.IExpr>",
+    ];
+
+    /// <summary>
+    /// Writes the generated parsers to <c>Warpstone3GeneratedMiniJava.g.cs</c> and <c>Warpstone3GeneratedLeftRecursiveMiniJava.g.cs</c> in <paramref name="directory"/>.
+    /// </summary>
+    /// <param name="directory">The directory, normally <c>Warpstone.Benchmarks/MiniJava</c>.</param>
+    public static void Generate(string directory)
+    {
+        const string Namespace = "Warpstone.Benchmarks.MiniJava";
+        File.WriteAllText(Path.Combine(directory, "Warpstone3GeneratedMiniJava.g.cs"), Parser.GenerateSource(Namespace, "Warpstone3GeneratedMiniJava", Usings));
+        File.WriteAllText(Path.Combine(directory, "Warpstone3GeneratedLeftRecursiveMiniJava.g.cs"), LeftRecursiveParser.GenerateSource(Namespace, "Warpstone3GeneratedLeftRecursiveMiniJava", Usings));
+    }
+
     private static IParser<T> Tok<T>(IParser<T> parser)
         => parser.ThenSkip(OptionalWhitespaces);
 

@@ -8,9 +8,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Warpstone.Internal;
 using Warpstone.Internal.ParserExpressions;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone
 {
@@ -163,11 +165,11 @@ namespace Warpstone
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <param name="transformationSource">The source of <paramref name="transformation"/>, filled in by the compiler.
+        /// Used by <see cref="ParserExtensions.GenerateSource{T}(IParser{T}, string, string, string[])"/>.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
-        public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, Func<TInput, TOutput> transformation)
-            => parser.MustNotBeNull() is ISequenceParser<TInput> sequence
-            ? sequence.Map(transformation.MustNotBeNull()) // A transformed sequence runs as one parser, without an intermediate result.
-            : new MapParser<TInput, TOutput>(parser, transformation.MustNotBeNull());
+        public static IParser<TOutput> Transform<TInput, TOutput>(this IParser<TInput> parser, Func<TInput, TOutput> transformation, [CallerArgumentExpression(nameof(transformation))] string? transformationSource = null)
+            => Map(parser.MustNotBeNull(), transformation.MustNotBeNull(), Code.User(transformation, transformationSource));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -177,11 +179,13 @@ namespace Warpstone
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <param name="transformationSource">The source of <paramref name="transformation"/>, filled in by the compiler.
+        /// Used by <see cref="ParserExtensions.GenerateSource{T}(IParser{T}, string, string, string[])"/>.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
-        public static IParser<TOutput> Transform<T1, T2, TOutput>(this IParser<(T1 First, T2 Second)> parser, Func<T1, T2, TOutput> transformation)
+        public static IParser<TOutput> Transform<T1, T2, TOutput>(this IParser<(T1 First, T2 Second)> parser, Func<T1, T2, TOutput> transformation, [CallerArgumentExpression(nameof(transformation))] string? transformationSource = null)
             => parser.MustNotBeNull() is AndParser<T1, T2> and
-            ? new SequenceParser<T1, T2, TOutput>(and.First, and.Second, transformation.MustNotBeNull())
-            : parser.Transform(x => transformation(x.First, x.Second));
+            ? new SequenceParser<T1, T2, TOutput>(and.First, and.Second, transformation.MustNotBeNull(), Code.User(transformation, transformationSource))
+            : Map(parser, x => transformation(x.First, x.Second), Code.Spread(Code.User(transformation.MustNotBeNull(), transformationSource), 2));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -192,9 +196,11 @@ namespace Warpstone
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <param name="transformationSource">The source of <paramref name="transformation"/>, filled in by the compiler.
+        /// Used by <see cref="ParserExtensions.GenerateSource{T}(IParser{T}, string, string, string[])"/>.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
-        public static IParser<TOutput> Transform<T1, T2, T3, TOutput>(this IParser<(T1 First, T2 Second, T3 Third)> parser, Func<T1, T2, T3, TOutput> transformation)
-            => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third));
+        public static IParser<TOutput> Transform<T1, T2, T3, TOutput>(this IParser<(T1 First, T2 Second, T3 Third)> parser, Func<T1, T2, T3, TOutput> transformation, [CallerArgumentExpression(nameof(transformation))] string? transformationSource = null)
+            => Map(parser.MustNotBeNull(), x => transformation(x.First, x.Second, x.Third), Code.Spread(Code.User(transformation.MustNotBeNull(), transformationSource), 3));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -206,9 +212,11 @@ namespace Warpstone
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <param name="transformationSource">The source of <paramref name="transformation"/>, filled in by the compiler.
+        /// Used by <see cref="ParserExtensions.GenerateSource{T}(IParser{T}, string, string, string[])"/>.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
-        public static IParser<TOutput> Transform<T1, T2, T3, T4, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> parser, Func<T1, T2, T3, T4, TOutput> transformation)
-            => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth));
+        public static IParser<TOutput> Transform<T1, T2, T3, T4, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> parser, Func<T1, T2, T3, T4, TOutput> transformation, [CallerArgumentExpression(nameof(transformation))] string? transformationSource = null)
+            => Map(parser.MustNotBeNull(), x => transformation(x.First, x.Second, x.Third, x.Fourth), Code.Spread(Code.User(transformation.MustNotBeNull(), transformationSource), 4));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -221,9 +229,11 @@ namespace Warpstone
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <param name="transformationSource">The source of <paramref name="transformation"/>, filled in by the compiler.
+        /// Used by <see cref="ParserExtensions.GenerateSource{T}(IParser{T}, string, string, string[])"/>.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
-        public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> parser, Func<T1, T2, T3, T4, T5, TOutput> transformation)
-            => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth));
+        public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> parser, Func<T1, T2, T3, T4, T5, TOutput> transformation, [CallerArgumentExpression(nameof(transformation))] string? transformationSource = null)
+            => Map(parser.MustNotBeNull(), x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth), Code.Spread(Code.User(transformation.MustNotBeNull(), transformationSource), 5));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -237,9 +247,11 @@ namespace Warpstone
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <param name="transformationSource">The source of <paramref name="transformation"/>, filled in by the compiler.
+        /// Used by <see cref="ParserExtensions.GenerateSource{T}(IParser{T}, string, string, string[])"/>.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
-        public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> parser, Func<T1, T2, T3, T4, T5, T6, TOutput> transformation)
-            => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth));
+        public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> parser, Func<T1, T2, T3, T4, T5, T6, TOutput> transformation, [CallerArgumentExpression(nameof(transformation))] string? transformationSource = null)
+            => Map(parser.MustNotBeNull(), x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth), Code.Spread(Code.User(transformation.MustNotBeNull(), transformationSource), 6));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -254,9 +266,11 @@ namespace Warpstone
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <param name="transformationSource">The source of <paramref name="transformation"/>, filled in by the compiler.
+        /// Used by <see cref="ParserExtensions.GenerateSource{T}(IParser{T}, string, string, string[])"/>.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
-        public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, T7, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> parser, Func<T1, T2, T3, T4, T5, T6, T7, TOutput> transformation)
-            => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth, x.Seventh));
+        public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, T7, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> parser, Func<T1, T2, T3, T4, T5, T6, T7, TOutput> transformation, [CallerArgumentExpression(nameof(transformation))] string? transformationSource = null)
+            => Map(parser.MustNotBeNull(), x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth, x.Seventh), Code.Spread(Code.User(transformation.MustNotBeNull(), transformationSource), 7));
 
         /// <summary>
         /// Creates a parser that first applies the given parser and then applies a transformation on its result.
@@ -272,9 +286,11 @@ namespace Warpstone
         /// <typeparam name="TOutput">The result type of the transformation.</typeparam>
         /// <param name="parser">The given input parser.</param>
         /// <param name="transformation">The transformation to apply on the parser result.</param>
+        /// <param name="transformationSource">The source of <paramref name="transformation"/>, filled in by the compiler.
+        /// Used by <see cref="ParserExtensions.GenerateSource{T}(IParser{T}, string, string, string[])"/>.</param>
         /// <returns>A parser first applying the given parser and then applying a transformation on its result.</returns>
-        public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, T7, T8, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)> parser, Func<T1, T2, T3, T4, T5, T6, T7, T8, TOutput> transformation)
-            => parser.MustNotBeNull().Transform(x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth, x.Seventh, x.Eigth));
+        public static IParser<TOutput> Transform<T1, T2, T3, T4, T5, T6, T7, T8, TOutput>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)> parser, Func<T1, T2, T3, T4, T5, T6, T7, T8, TOutput> transformation, [CallerArgumentExpression(nameof(transformation))] string? transformationSource = null)
+            => Map(parser.MustNotBeNull(), x => transformation(x.First, x.Second, x.Third, x.Fourth, x.Fifth, x.Sixth, x.Seventh, x.Eigth), Code.Spread(Code.User(transformation.MustNotBeNull(), transformationSource), 8));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -297,7 +313,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third)> ThenAdd<T1, T2, T3>(this IParser<(T1 First, T2 Second)> first, IParser<T3> second)
-            => new SequenceParser<(T1, T2), T3, (T1, T2, T3)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, y));
+            => new SequenceParser<(T1, T2), T3, (T1, T2, T3)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, y), Code.AddToTuple(2));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -310,7 +326,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> ThenAdd<T1, T2, T3, T4>(this IParser<(T1 First, T2 Second, T3 Third)> first, IParser<T4> second)
-            => new SequenceParser<(T1, T2, T3), T4, (T1, T2, T3, T4)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, y));
+            => new SequenceParser<(T1, T2, T3), T4, (T1, T2, T3, T4)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, y), Code.AddToTuple(3));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -324,7 +340,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> ThenAdd<T1, T2, T3, T4, T5>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth)> first, IParser<T5> second)
-            => new SequenceParser<(T1, T2, T3, T4), T5, (T1, T2, T3, T4, T5)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, y));
+            => new SequenceParser<(T1, T2, T3, T4), T5, (T1, T2, T3, T4, T5)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, y), Code.AddToTuple(4));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -339,7 +355,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> ThenAdd<T1, T2, T3, T4, T5, T6>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth)> first, IParser<T6> second)
-            => new SequenceParser<(T1, T2, T3, T4, T5), T6, (T1, T2, T3, T4, T5, T6)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, y));
+            => new SequenceParser<(T1, T2, T3, T4, T5), T6, (T1, T2, T3, T4, T5, T6)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, y), Code.AddToTuple(5));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -355,7 +371,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> ThenAdd<T1, T2, T3, T4, T5, T6, T7>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth)> first, IParser<T7> second)
-            => new SequenceParser<(T1, T2, T3, T4, T5, T6), T7, (T1, T2, T3, T4, T5, T6, T7)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, y));
+            => new SequenceParser<(T1, T2, T3, T4, T5, T6), T7, (T1, T2, T3, T4, T5, T6, T7)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, y), Code.AddToTuple(6));
 
         /// <summary>
         /// Creates a parser that applies two parsers and combines the results.
@@ -372,7 +388,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser combining the results of both parsers.</returns>
         public static IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh, T8 Eigth)> ThenAdd<T1, T2, T3, T4, T5, T6, T7, T8>(this IParser<(T1 First, T2 Second, T3 Third, T4 Fourth, T5 Fifth, T6 Sixth, T7 Seventh)> first, IParser<T8> second)
-            => new SequenceParser<(T1, T2, T3, T4, T5, T6, T7), T8, (T1, T2, T3, T4, T5, T6, T7, T8)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, x.Item7, y));
+            => new SequenceParser<(T1, T2, T3, T4, T5, T6, T7), T8, (T1, T2, T3, T4, T5, T6, T7, T8)>(first.MustNotBeNull(), second.MustNotBeNull(), static (x, y) => (x.Item1, x.Item2, x.Item3, x.Item4, x.Item5, x.Item6, x.Item7, y), Code.AddToTuple(7));
 
         /// <summary>
         /// Creates a parser that applies two parsers and returns the result of the second one.
@@ -383,7 +399,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser returning the result of the second parser.</returns>
         public static IParser<T2> Then<T1, T2>(this IParser<T1> first, IParser<T2> second)
-            => new SequenceParser<T1, T2, T2>(first.MustNotBeNull(), second.MustNotBeNull(), static (_, r) => r);
+            => new SequenceParser<T1, T2, T2>(first.MustNotBeNull(), second.MustNotBeNull(), static (_, r) => r, Code.Of("{1}"));
 
         /// <summary>
         /// Creates a parser that applies two parsers and returns the result of the first one.
@@ -394,7 +410,7 @@ namespace Warpstone
         /// <param name="second">The second parser.</param>
         /// <returns>A parser returning the result of the first parser.</returns>
         public static IParser<T1> ThenSkip<T1, T2>(this IParser<T1> first, IParser<T2> second)
-            => new SequenceParser<T1, T2, T1>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, _) => l);
+            => new SequenceParser<T1, T2, T1>(first.MustNotBeNull(), second.MustNotBeNull(), static (l, _) => l, Code.Of("{0}"));
 
         /// <summary>
         /// Creates a parser that applies the given parser and then the parser that <paramref name="select"/> picks for its result,
@@ -584,21 +600,29 @@ namespace Warpstone
         /// <param name="maxCount">The maximum count.</param>
         /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
         /// <param name="accumulate">The function used to accumulate the found values.</param>
+        /// <param name="createSeedSource">The source of <paramref name="createSeed"/>, filled in by the compiler.</param>
+        /// <param name="accumulateSource">The source of <paramref name="accumulate"/>, filled in by the compiler.</param>
         /// <returns>The newly created parser.</returns>
+#pragma warning disable S107 // Methods should not have too many parameters
         public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
             IParser<TSource> element,
             IParser? delimiter,
             int minCount,
             int maxCount,
             Func<TAccumulator> createSeed,
-            Func<TAccumulator, TSource, TAccumulator> accumulate)
+            Func<TAccumulator, TSource, TAccumulator> accumulate,
+            [CallerArgumentExpression(nameof(createSeed))] string? createSeedSource = null,
+            [CallerArgumentExpression(nameof(accumulate))] string? accumulateSource = null)
+#pragma warning restore S107 // Methods should not have too many parameters
             => new AggregateParser<TSource, TAccumulator>(
                 element.MustNotBeNull(),
                 delimiter,
                 minCount.MustBeGreaterThanOrEqualTo(0),
                 maxCount.MustBeGreaterThanOrEqualTo(minCount),
                 createSeed.MustNotBeNull(),
-                accumulate.MustNotBeNull());
+                accumulate.MustNotBeNull(),
+                Code.User(createSeed, createSeedSource),
+                Code.User(accumulate, accumulateSource));
 
         /// <summary>
         /// Creates a parser which aggregates a series with the exact length <paramref name="count"/>
@@ -614,20 +638,26 @@ namespace Warpstone
         /// <param name="count">The exact count.</param>
         /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
         /// <param name="accumulate">The function used to accumulate the found values.</param>
+        /// <param name="createSeedSource">The source of <paramref name="createSeed"/>, filled in by the compiler.</param>
+        /// <param name="accumulateSource">The source of <paramref name="accumulate"/>, filled in by the compiler.</param>
         /// <returns>The newly created parser.</returns>
         public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
             IParser<TSource> element,
             IParser? delimiter,
             int count,
             Func<TAccumulator> createSeed,
-            Func<TAccumulator, TSource, TAccumulator> accumulate)
+            Func<TAccumulator, TSource, TAccumulator> accumulate,
+            [CallerArgumentExpression(nameof(createSeed))] string? createSeedSource = null,
+            [CallerArgumentExpression(nameof(accumulate))] string? accumulateSource = null)
             => Aggregate(
                 element: element.MustNotBeNull(),
                 delimiter: delimiter,
                 minCount: count.MustBeGreaterThanOrEqualTo(0),
                 maxCount: count,
                 createSeed: createSeed.MustNotBeNull(),
-                accumulate: accumulate.MustNotBeNull());
+                accumulate: accumulate.MustNotBeNull(),
+                createSeedSource: createSeedSource,
+                accumulateSource: accumulateSource);
 
         /// <summary>
         /// Creates a parser which aggregates a series with minimum length <paramref name="minCount"/>
@@ -642,20 +672,26 @@ namespace Warpstone
         /// <param name="maxCount">The maximum count.</param>
         /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
         /// <param name="accumulate">The function used to accumulate the found values.</param>
+        /// <param name="createSeedSource">The source of <paramref name="createSeed"/>, filled in by the compiler.</param>
+        /// <param name="accumulateSource">The source of <paramref name="accumulate"/>, filled in by the compiler.</param>
         /// <returns>The newly created parser.</returns>
         public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
             IParser<TSource> element,
             int minCount,
             int maxCount,
             Func<TAccumulator> createSeed,
-            Func<TAccumulator, TSource, TAccumulator> accumulate)
+            Func<TAccumulator, TSource, TAccumulator> accumulate,
+            [CallerArgumentExpression(nameof(createSeed))] string? createSeedSource = null,
+            [CallerArgumentExpression(nameof(accumulate))] string? accumulateSource = null)
             => Aggregate(
                 element: element.MustNotBeNull(),
                 delimiter: null,
                 minCount: minCount.MustBeGreaterThanOrEqualTo(0),
                 maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
                 createSeed: createSeed.MustNotBeNull(),
-                accumulate: accumulate.MustNotBeNull());
+                accumulate: accumulate.MustNotBeNull(),
+                createSeedSource: createSeedSource,
+                accumulateSource: accumulateSource);
 
         /// <summary>
         /// Creates a parser which aggregates a series with the exact length <paramref name="count"/>
@@ -669,18 +705,32 @@ namespace Warpstone
         /// <param name="count">The exact count.</param>
         /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
         /// <param name="accumulate">The function used to accumulate the found values.</param>
+        /// <param name="createSeedSource">The source of <paramref name="createSeed"/>, filled in by the compiler.</param>
+        /// <param name="accumulateSource">The source of <paramref name="accumulate"/>, filled in by the compiler.</param>
         /// <returns>The newly created parser.</returns>
         public static IParser<TAccumulator> Aggregate<TSource, TAccumulator>(
             IParser<TSource> element,
             int count,
             Func<TAccumulator> createSeed,
-            Func<TAccumulator, TSource, TAccumulator> accumulate)
+            Func<TAccumulator, TSource, TAccumulator> accumulate,
+            [CallerArgumentExpression(nameof(createSeed))] string? createSeedSource = null,
+            [CallerArgumentExpression(nameof(accumulate))] string? accumulateSource = null)
             => Aggregate(
                 element: element.MustNotBeNull(),
                 minCount: count.MustBeGreaterThanOrEqualTo(0),
                 maxCount: count,
                 createSeed: createSeed.MustNotBeNull(),
-                accumulate: accumulate.MustNotBeNull());
+                accumulate: accumulate.MustNotBeNull(),
+                createSeedSource: createSeedSource,
+                accumulateSource: accumulateSource);
+
+        /// <summary>
+        /// Creates a parser applying <paramref name="map"/> to the result of <paramref name="parser"/>.
+        /// </summary>
+        private static IParser<TOutput> Map<TInput, TOutput>(IParser<TInput> parser, Func<TInput, TOutput> map, CodeTemplate? mapCode)
+            => parser is ISequenceParser<TInput> sequence
+            ? sequence.Map(map, mapCode) // A transformed sequence runs as one parser, without an intermediate result.
+            : new MapParser<TInput, TOutput>(parser, map, mapCode);
 
         /// <summary>
         /// Starts from a shared empty array and only creates a list for the first element,
@@ -743,12 +793,11 @@ namespace Warpstone
             IParser<TSource> element,
             int minCount,
             int maxCount)
-            => Aggregate<TSource, IReadOnlyList<TSource>>(
+            => Multiple(
                 element: element.MustNotBeNull(),
-                minCount: minCount.MustBeGreaterThanOrEqualTo(0),
-                maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
-                createSeed: static () => Array.Empty<TSource>(),
-                accumulate: AddToList);
+                delimiter: null,
+                minCount: minCount,
+                maxCount: maxCount);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
@@ -764,13 +813,15 @@ namespace Warpstone
             IParser? delimiter,
             int minCount,
             int maxCount)
-            => Aggregate<TSource, IReadOnlyList<TSource>>(
-                element: element.MustNotBeNull(),
-                delimiter: delimiter,
-                minCount: minCount.MustBeGreaterThanOrEqualTo(0),
-                maxCount: maxCount.MustBeGreaterThanOrEqualTo(minCount),
-                createSeed: static () => Array.Empty<TSource>(),
-                accumulate: AddToList);
+            => new AggregateParser<TSource, IReadOnlyList<TSource>>(
+                element.MustNotBeNull(),
+                delimiter,
+                minCount.MustBeGreaterThanOrEqualTo(0),
+                maxCount.MustBeGreaterThanOrEqualTo(minCount),
+                static () => Array.Empty<TSource>(),
+                AddToList,
+                static (emitter, _) => $"(global::System.Collections.Generic.IReadOnlyList<{emitter.TypeName(typeof(TSource))}>)global::System.Array.Empty<{emitter.TypeName(typeof(TSource))}>()",
+                Code.Of("AddToList({0}, {1})"));
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.

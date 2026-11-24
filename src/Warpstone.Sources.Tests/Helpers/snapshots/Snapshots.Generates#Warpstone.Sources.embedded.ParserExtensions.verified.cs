@@ -3,9 +3,12 @@
 #pragma warning disable
 #nullable enable annotations
 
+using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Warpstone.Internal;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone
 {
@@ -15,6 +18,26 @@ namespace Warpstone
     /// </summary>
     public static class ParserExtensions
     {
+        /// <summary>
+        /// Generates the C# source of a parser that parses like <paramref name="parser"/>, without depending on Warpstone.
+        /// The source declares a <c>static partial class</c> with <c>TryParse</c> and <c>Parse</c> methods taking a <see cref="string"/>.
+        /// </summary>
+        /// <remarks>
+        /// The source of every transformation is copied from the call to <c>Transform</c> or <c>Aggregate</c> that created it,
+        /// so transformations can only use their parameters, static members and the namespaces in <paramref name="usings"/>.
+        /// The generated parser always runs recursively, so very deep input throws an <see cref="InsufficientExecutionStackException"/>.
+        /// Parsers created by <c>Bind</c> (or <c>Then</c>, <c>ThenAdd</c> and <c>ThenSkip</c> taking a function) and <c>AsResult</c> are not supported.
+        /// </remarks>
+        /// <typeparam name="T">The result type of the parser.</typeparam>
+        /// <param name="parser">The parser.</param>
+        /// <param name="namespace">The namespace of the generated class.</param>
+        /// <param name="className">The name of the generated class.</param>
+        /// <param name="usings">The namespaces imported by the generated source.</param>
+        /// <returns>The generated source.</returns>
+        /// <exception cref="NotSupportedException">Thrown when the parser contains a parser that can't be generated.</exception>
+        public static string GenerateSource<T>(this IParser<T> parser, string @namespace, string className, params string[] usings)
+            => SourceEmitter.Generate(parser.MustNotBeNull(), @namespace.MustNotBeNull(), className.MustNotBeNull(), usings ?? []);
+
         /// <summary>
         /// Creates a new <see cref="IParseContext"/> from the given <paramref name="input"/>
         /// and the initial <paramref name="parser"/>.

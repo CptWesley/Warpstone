@@ -8,6 +8,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -15,7 +16,7 @@ namespace Warpstone.Internal.ParserExpressions
     /// Provides a base implementation for parsers.
     /// </summary>
     /// <typeparam name="T">The result type of the parser.</typeparam>
-    internal abstract class ParserBase<T> : IParser<T>
+    internal abstract class ParserBase<T> : IParser<T>, IEmittableParser
     {
         private readonly Lazy<IReadOnlyParserAnalysisInfo> lazyAnalsysis;
         private readonly ConcurrentDictionary<ParseOptions, ParseOptions> simplifiedOptions = new();
@@ -39,177 +40,38 @@ namespace Warpstone.Internal.ParserExpressions
         public Type ResultType => typeof(T);
 
         /// <inheritdoc />
-#pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
         public IParserImplementation<T> GetImplementation(ParseOptions options)
-#pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
         {
             var simplified = GetSimplifiedOptions(options);
             return implementations.GetOrAdd(simplified, o =>
             {
-                var analysis = Analyze();
-                var lookup = new Dictionary<IParser, IParserImplementation>();
-                var lazyTargets = new Dictionary<ILazyParser, IParser>();
-                var lazy = new List<ILazyParser>();
                 var initializeable = new List<(IParser Parser, IParserImplementation Implementation)>();
-                var parsers = analysis.OccurrenceCounts.Keys.ToList();
-
-                // Build initial lookup table.
-
-                foreach (var parser in parsers)
-                {
-                    if (parser is ILazyParser lp)
+                var lookup = CreatePlan(o).Execute<IParserImplementation>(
+                    parser =>
                     {
-                        lazy.Add(lp);
-                        continue;
-                    }
-
-                    var impl = parser.CreateUninitializedImplementation();
-                    initializeable.Add((parser, impl));
-                    lookup[parser] = impl;
-                }
-
-                // Resolve the lazy parsers.
-
-                foreach (var parser in lazy)
-                {
-                    IParser target = parser;
-                    var seen = new HashSet<IParser>();
-
-                    while (target is ILazyParser lazyTarget)
+                        var impl = parser.CreateUninitializedImplementation();
+                        initializeable.Add((parser, impl));
+                        return impl;
+                    },
+                    (wrapper, parser, inner) =>
                     {
-                        if (!seen.Add(lazyTarget))
-                        {
-                            throw new ArgumentException("Provided parser contains unsolvable recursive lazy parsers.");
-                        }
-
-                        target = lazyTarget.Parser.Value;
-                    }
-
-                    lazyTargets[parser] = target;
-                }
-
-                // Handle memoization and left-recursion.
-
-                LeftRecursionInfo? leftRecursion = null;
-
-                if (o.EnableAutomaticGrowingRecursion)
-                {
-                    leftRecursion = LeftRecursionAnalysis.Analyze(parsers, new HashSet<IParser>(lazyTargets.Values));
-                }
-
-                if (o.EnableAutomaticMemoization)
-                {
-                    // Only memoize where backtracking can run a parser again at the same position.
-                    var requiresMemo = new HashSet<IParser>(LeftRecursionAnalysis.FindRetried(parsers)
-                        .Select(p => p is ILazyParser lp ? lazyTargets[lp] : p));
-
-                    // Members of a left-recursive cycle must not be memoized, or they keep returning results built from an outdated seed.
-                    if (leftRecursion is not null)
-                    {
-                        requiresMemo.ExceptWith(leftRecursion.Members);
-                    }
-
-                    // Explicit memo and grow parsers already memoize. Wrapping a grow parser would hide its growing seed.
-                    // Cheap parsers are faster to run again than to look up.
-                    requiresMemo.RemoveWhere(p => LeftRecursionAnalysis.IsGrow(p) || LeftRecursionAnalysis.IsMemo(p) || LeftRecursionAnalysis.IsCheap(p));
-
-                    foreach (var parser in requiresMemo)
-                    {
-                        Wrap(typeof(MemoParser<>), parser, lookup);
-                    }
-                }
-
-                if (leftRecursion is not null)
-                {
-                    foreach (var parser in leftRecursion.Leaders)
-                    {
-                        Wrap(typeof(GrowParser<>), parser, lookup);
-                    }
-
-                    foreach (var group in leftRecursion.LeaderlessGroups)
-                    {
-                        var key = new CycleGrowGroup();
-                        foreach (var parser in group)
-                        {
-                            Wrap(typeof(CycleGrowParser<>), parser, lookup, key);
-                        }
-                    }
-
-                    // Bypass explicit memo parsers inside a left-recursive cycle, for the same reason as above.
-                    foreach (var memo in leftRecursion.Members.OfType<IMemoParser>())
-                    {
-                        lookup[memo] = lookup[SkipBypassed(memo.Parser, leftRecursion.Members, lazyTargets)];
-                    }
-                }
-
-                // Every cycle of the grammar passes through a parser that the analysis found recursively.
-                // Guarding those bounds the stack used between two checks, so recursive mode throws
-                // an InsufficientExecutionStackException instead of overflowing the stack.
-                if (o.ExecutionMode != ParserExecutionMode.Iterative)
-                {
-                    var guarded = new HashSet<IParser>();
-                    foreach (var parser in analysis.RecursiveOccurrenceCounts.Keys)
-                    {
-                        var target = parser is ILazyParser lp ? lazyTargets[lp] : parser;
-                        if (guarded.Add(target))
-                        {
-                            Wrap(typeof(StackGuardParser<>), target, lookup);
-                        }
-                    }
-                }
-
-                // Remove the lazy parser
-                foreach (var entry in lazyTargets)
-                {
-                    lookup[entry.Key] = lookup[entry.Value];
-                }
-
-                // Initialize the implementations.
+                        var impl = wrapper.CreateUninitializedImplementation();
+                        impl.Initialize(wrapper, new Dictionary<IParser, IParserImplementation>() { [parser] = inner });
+                        return impl;
+                    });
 
                 foreach (var entry in initializeable)
                 {
                     entry.Implementation.Initialize(entry.Parser, lookup);
                 }
 
-                var untypedResult = lookup[this];
-                var typedResult = (IParserImplementation<T>)untypedResult;
-                return typedResult;
+                return (IParserImplementation<T>)lookup[this];
             });
         }
 
-        /// <summary>
-        /// Replaces the implementation of <paramref name="parser"/> by one of the generic <paramref name="wrapper"/> expression around it.
-        /// </summary>
-        private static void Wrap(Type wrapper, IParser parser, Dictionary<IParser, IParserImplementation> lookup, params object[] arguments)
-        {
-            var type = wrapper.MakeGenericType(parser.ResultType);
-            var wrapped = (IParser)Activator.CreateInstance(type, [parser, .. arguments])!;
-            var impl = wrapped.CreateUninitializedImplementation();
-            impl.Initialize(wrapped, new Dictionary<IParser, IParserImplementation>() { [parser] = lookup[parser] });
-            lookup[parser] = impl;
-        }
-
-        /// <summary>
-        /// Follows lazy parsers and bypassed memo parsers to the parser that does the work.
-        /// </summary>
-        private static IParser SkipBypassed(IParser parser, HashSet<IParser> bypassedMemos, Dictionary<ILazyParser, IParser> lazyTargets)
-        {
-            while (true)
-            {
-                if (parser is ILazyParser lazy)
-                {
-                    parser = lazyTargets[lazy];
-                }
-                else if (parser is IMemoParser memo && bypassedMemos.Contains(parser))
-                {
-                    parser = memo.Parser;
-                }
-                else
-                {
-                    return parser;
-                }
-            }
-        }
+        /// <inheritdoc />
+        public ParserPlan CreatePlan(ParseOptions options)
+            => ParserPlan.Create(Analyze(), GetSimplifiedOptions(options));
 
         /// <inheritdoc />
         IParserImplementation IParser.GetImplementation(ParseOptions options)
@@ -309,6 +171,9 @@ namespace Warpstone.Internal.ParserExpressions
 
         /// <inheritdoc />
         public abstract IParserImplementation<T> CreateUninitializedImplementation();
+
+        /// <inheritdoc />
+        public abstract void EmitSource(SourceEmitter emitter);
 
         /// <inheritdoc />
         IParserImplementation IParser.CreateUninitializedImplementation()

@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -25,14 +26,22 @@ namespace Warpstone.Internal.ParserExpressions
         /// <param name="maxCount">The maximum number of parsed elements.</param>
         /// <param name="createSeed">The function to create the initial value of the accumulator.</param>
         /// <param name="accumulate">The accumulation function.</param>
+        /// <param name="seedCode">The source of <paramref name="createSeed"/>, or <see langword="null"/> if it is unknown.</param>
+        /// <param name="accumulateCode">The source of <paramref name="accumulate"/>, or <see langword="null"/> if it is unknown.</param>
+#pragma warning disable S107 // Methods should not have too many parameters
         public AggregateParser(
             IParser<TSource> element,
             IParser? delimiter,
             int minCount,
             int maxCount,
             Func<TAccumulator> createSeed,
-            Func<TAccumulator, TSource, TAccumulator> accumulate)
+            Func<TAccumulator, TSource, TAccumulator> accumulate,
+            CodeTemplate? seedCode,
+            CodeTemplate? accumulateCode)
+#pragma warning restore S107 // Methods should not have too many parameters
         {
+            SeedCode = seedCode;
+            AccumulateCode = accumulateCode;
             Element = element;
             Delimiter = delimiter;
             MinCount = minCount;
@@ -71,9 +80,53 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         public Func<TAccumulator, TSource, TAccumulator> Accumulate { get; }
 
+        /// <summary>
+        /// Gets the source of <see cref="CreateSeed"/>, or <see langword="null"/> if it is unknown.
+        /// </summary>
+        public CodeTemplate? SeedCode { get; }
+
+        /// <summary>
+        /// Gets the source of <see cref="Accumulate"/>, or <see langword="null"/> if it is unknown.
+        /// </summary>
+        public CodeTemplate? AccumulateCode { get; }
+
         /// <inheritdoc />
         public override IParserImplementation<TAccumulator> CreateUninitializedImplementation()
             => new AggregateParserImpl<TSource, TAccumulator>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            emitter.Line($"var accumulator = {emitter.Expression(SeedCode, "seed")};");
+            emitter.Line("var count = 0;");
+            emitter.Line("var next = pos;");
+            emitter.Line("end = pos;");
+            emitter.Open($"while (count < {MaxCount})");
+            emitter.Line("var start = next;");
+            if (Delimiter is not null)
+            {
+                emitter.Open($"if (count > 0 && !{emitter.Call(Delimiter)}(next, out start, out _))");
+                emitter.Open($"if (count >= {MinCount})");
+                emitter.Line("break;");
+                emitter.Close();
+                emitter.Fail();
+                emitter.Close();
+            }
+
+            emitter.Open($"if (!{emitter.Call(Element)}(start, out var elementEnd, out var element))");
+            emitter.Open($"if (count >= {MinCount})");
+            emitter.Line("break;");
+            emitter.Close();
+            emitter.Fail();
+            emitter.Close();
+            emitter.Line($"accumulator = {emitter.Expression(AccumulateCode, "accumulation", "accumulator", "element")};");
+            emitter.Line("next = elementEnd;");
+            emitter.Line("end = elementEnd;");
+            emitter.Line("count++;");
+            emitter.Close();
+            emitter.Line("value = accumulator;");
+            emitter.Line("return true;");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

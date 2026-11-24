@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -17,10 +18,12 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         /// <param name="element">The input parser.</param>
         /// <param name="map">The map function.</param>
-        public MapParser(IParser<TIn> element, Func<TIn, TOut> map)
+        /// <param name="mapCode">The source of <paramref name="map"/>, or <see langword="null"/> if it is unknown.</param>
+        public MapParser(IParser<TIn> element, Func<TIn, TOut> map, CodeTemplate? mapCode)
         {
             Element = element;
             Map = map;
+            MapCode = mapCode;
         }
 
         /// <summary>
@@ -33,6 +36,11 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         public Func<TIn, TOut> Map { get; }
 
+        /// <summary>
+        /// Gets the source of <see cref="Map"/>, or <see langword="null"/> if it is unknown.
+        /// </summary>
+        public CodeTemplate? MapCode { get; }
+
         /// <inheritdoc />
         public override IParserImplementation<TOut> CreateUninitializedImplementation()
         {
@@ -42,6 +50,17 @@ namespace Warpstone.Internal.ParserExpressions
             var parserType = genericParserType.MakeGenericType(t, typeof(TOut));
             var result = (IParserImplementation<TOut>)Activator.CreateInstance(parserType, args: null)!;
             return result;
+        }
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            emitter.Open($"if (!{emitter.Call(Element)}(pos, out end, out var element))");
+            emitter.Line("value = default!;");
+            emitter.Line("return false;");
+            emitter.Close();
+            emitter.AssignValue(MapCode, "transformation", "element");
+            emitter.Line("return true;");
         }
 
         /// <inheritdoc />

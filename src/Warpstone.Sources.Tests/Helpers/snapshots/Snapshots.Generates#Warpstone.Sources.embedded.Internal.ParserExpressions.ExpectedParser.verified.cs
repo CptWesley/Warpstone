@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -39,6 +40,19 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
             => new ExpectedParserImpl<T>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            emitter.Line("var labelPos = failPos;");
+            emitter.Line("var labelCount = failures.Count;");
+            emitter.Open($"if ({emitter.Call(Parser)}(pos, out end, out value))");
+            emitter.Line("return true;");
+            emitter.Close();
+            emitter.Line($"EndLabel(labelPos, labelCount, pos, {emitter.Literal(Expected)});");
+            emitter.Line("end = pos;");
+            emitter.Line("return false;");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
