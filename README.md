@@ -70,29 +70,29 @@ Mean CPU time per parse:
 
 | Library                          | Small     | Medium    | Large      |
 |----------------------------------|----------:|----------:|-----------:|
-| Warpstone V3 (source-generated) | 5.5 μs | 64.9 μs | 635.5 μs |
-| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.0 μs | 92.6 μs | 950.7 μs |
-| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 11.0 μs | 122.7 μs | 1.23 ms |
-| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.5 μs | 121.1 μs | 1.25 ms |
-| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 16.4 μs | 190.7 μs | 1.90 ms |
-| Warpstone V3 | 18.8 μs | 213.7 μs | 2.05 ms |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 34.3 μs | 415.2 μs | 4.05 ms |
-| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 102.9 μs | 1.28 ms | 12.43 ms |
-| Warpstone V1 | 498.7 μs | 6.00 ms | 60.92 ms |
-| [ParsecSharp](https://github.com/acple/ParsecSharp) | 559.9 μs | 6.83 ms | 68.31 ms |
-| Warpstone V2 | 3.42 ms | 88.18 ms | 911.56 ms |
+| Warpstone V3 (source-generated) | 5.8 μs | 65.1 μs | 655.4 μs |
+| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.5 μs | 99.5 μs | 1.03 ms |
+| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 9.0 μs | 105.4 μs | 1.08 ms |
+| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 11.4 μs | 130.9 μs | 1.33 ms |
+| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 17.7 μs | 202.2 μs | 2.04 ms |
+| Warpstone V3 | 20.2 μs | 223.6 μs | 2.26 ms |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 30.7 μs | 360.1 μs | 3.63 ms |
+| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 107.4 μs | 1.35 ms | 13.74 ms |
+| Warpstone V1 | 517.1 μs | 6.32 ms | 58.49 ms |
+| [ParsecSharp](https://github.com/acple/ParsecSharp) | 583.2 μs | 7.15 ms | 70.06 ms |
+| Warpstone V2 | 3.50 ms | 93.92 ms | 797.75 ms |
 
 Memory allocated per parse:
 
 | Library                          | Small     | Medium    | Large      |
 |----------------------------------|----------:|----------:|-----------:|
+| Warpstone V3 (source-generated) | 8.4 KB | 65.0 KB | 576 KB |
 | [Farkle](https://github.com/teo-tsirpanis/Farkle) | 6.5 KB | 65.0 KB | 650 KB |
 | [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 6.5 KB | 67.5 KB | 673 KB |
 | [Parlot](https://github.com/sebastienros/parlot) (runtime) | 6.6 KB | 67.5 KB | 673 KB |
-| Warpstone V3 | 13.9 KB | 93.0 KB | 864 KB |
-| Warpstone V3 (source-generated) | 8.8 KB | 90.3 KB | 902 KB |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 21.3 KB | 178.3 KB | 1,694 KB |
-| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 18.7 KB | 193.0 KB | 1,924 KB |
+| Warpstone V3 | 14.0 KB | 78.7 KB | 704 KB |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 21.7 KB | 169.3 KB | 1,591 KB |
+| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 18.6 KB | 173.2 KB | 1,655 KB |
 | [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 21.8 KB | 252.0 KB | 2,523 KB |
 | Warpstone V1 | 1,578 KB | 19,116 KB | 191,131 KB |
 | [ParsecSharp](https://github.com/acple/ParsecSharp) | 1,956 KB | 24,179 KB | 242,814 KB |
