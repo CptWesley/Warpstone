@@ -70,17 +70,17 @@ Mean CPU time per parse:
 
 | Library                          | Small     | Medium    | Large      |
 |----------------------------------|----------:|----------:|-----------:|
-| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.6 μs | 98.5 μs | 1.00 ms |
-| Warpstone V3 (source-generated) | 9.6 μs | 115.7 μs | 1.17 ms |
-| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.6 μs | 121.8 μs | 1.29 ms |
-| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 14.1 μs | 176.3 μs | 1.80 ms |
-| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 17.0 μs | 192.1 μs | 1.98 ms |
-| Warpstone V3 | 25.6 μs | 288.9 μs | 2.85 ms |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 40.9 μs | 500.6 μs | 4.96 ms |
-| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 104.9 μs | 1.30 ms | 12.97 ms |
-| Warpstone V1 | 514.5 μs | 6.06 ms | 62.71 ms |
-| [ParsecSharp](https://github.com/acple/ParsecSharp) | 566.3 μs | 6.84 ms | 70.57 ms |
-| Warpstone V2 | 3.48 ms | 94.00 ms | 974.91 ms |
+| Warpstone V3 (source-generated) | 5.5 μs | 64.9 μs | 635.5 μs |
+| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.0 μs | 92.6 μs | 950.7 μs |
+| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 11.0 μs | 122.7 μs | 1.23 ms |
+| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.5 μs | 121.1 μs | 1.25 ms |
+| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 16.4 μs | 190.7 μs | 1.90 ms |
+| Warpstone V3 | 18.8 μs | 213.7 μs | 2.05 ms |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 34.3 μs | 415.2 μs | 4.05 ms |
+| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 102.9 μs | 1.28 ms | 12.43 ms |
+| Warpstone V1 | 498.7 μs | 6.00 ms | 60.92 ms |
+| [ParsecSharp](https://github.com/acple/ParsecSharp) | 559.9 μs | 6.83 ms | 68.31 ms |
+| Warpstone V2 | 3.42 ms | 88.18 ms | 911.56 ms |
 
 Memory allocated per parse:
 
@@ -89,10 +89,10 @@ Memory allocated per parse:
 | [Farkle](https://github.com/teo-tsirpanis/Farkle) | 6.5 KB | 65.0 KB | 650 KB |
 | [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 6.5 KB | 67.5 KB | 673 KB |
 | [Parlot](https://github.com/sebastienros/parlot) (runtime) | 6.6 KB | 67.5 KB | 673 KB |
-| Warpstone V3 | 14.7 KB | 93.9 KB | 864 KB |
-| Warpstone V3 (source-generated) | 9.5 KB | 95.2 KB | 948 KB |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 22.1 KB | 179.1 KB | 1,694 KB |
-| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 19.4 KB | 197.9 KB | 1,970 KB |
+| Warpstone V3 | 13.9 KB | 93.0 KB | 864 KB |
+| Warpstone V3 (source-generated) | 8.8 KB | 90.3 KB | 902 KB |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 21.3 KB | 178.3 KB | 1,694 KB |
+| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 18.7 KB | 193.0 KB | 1,924 KB |
 | [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 21.8 KB | 252.0 KB | 2,523 KB |
 | Warpstone V1 | 1,578 KB | 19,116 KB | 191,131 KB |
 | [ParsecSharp](https://github.com/acple/ParsecSharp) | 1,956 KB | 24,179 KB | 242,814 KB |
@@ -199,7 +199,7 @@ Expected number or '(' but found '*'
 ```
 
 ### Generating a parser's source
-`GenerateSource` writes the C# source of a parser that runs without Warpstone, and runs about 2.5 times as fast (see [Performance](#performance)). Generate the file once, for example from a test or a small tool, and add it to your project:
+`GenerateSource` writes the C# source of a parser that runs without Warpstone, and runs about three times as fast (see [Performance](#performance)). Generate the file once, for example from a test or a small tool, and add it to your project:
 
 ```cs
 File.WriteAllText("CalculatorParser.g.cs", Calculator.Expression.GenerateSource("MyApp", "CalculatorParser"));
