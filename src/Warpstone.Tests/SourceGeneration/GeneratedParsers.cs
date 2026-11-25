@@ -86,6 +86,20 @@ public static class GeneratedParsers
     }
 
     [Test]
+    public static void TryParse_without_error_parses_once()
+    {
+        var source = Grammars.Calculator.GenerateSource("Generated", "GeneratedParser");
+        var tryParse = GeneratedParser.Load(source).GetMethods().Single(m => m.Name == "TryParse" && m.GetParameters().Length == 2);
+
+        object?[] good = ["1 + 2 * 3", null];
+        object?[] bad = ["1 + * 2", null];
+
+        ((bool)tryParse.Invoke(null, good)!).Should().BeTrue();
+        good[1].Should().Be(7);
+        ((bool)tryParse.Invoke(null, bad)!).Should().BeFalse();
+    }
+
+    [Test]
     public static void Bind_is_not_supported()
     {
         var parser = Char('a').Then(c => Char(c));

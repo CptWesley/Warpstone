@@ -41,10 +41,12 @@ namespace Warpstone.Internal.SourceGeneration
         /// <param name="options">The options of the regular expression.</param>
         /// <param name="emitter">The emitter to write the methods to.</param>
         /// <param name="method">The name of the scanner method.</param>
+        /// <param name="text">The text every match has, like <c>class</c> for <c>class\b</c>, or <see langword="null"/> if matches differ.</param>
         /// <returns><see langword="true"/> if the pattern could be converted.</returns>
-        public static bool TryEmit(string pattern, RegexOptions options, SourceEmitter emitter, out string method)
+        public static bool TryEmit(string pattern, RegexOptions options, SourceEmitter emitter, out string method, out string? text)
         {
             method = string.Empty;
+            text = null;
             if ((options & ~SupportedOptions) != 0)
             {
                 return false;
@@ -74,12 +76,35 @@ namespace Warpstone.Internal.SourceGeneration
 
             try
             {
+                text = FixedText(alternatives[0]);
                 return new ScannerWriter(emitter, options).TryWrite(alternatives[0], out method);
             }
             catch (FormatException)
             {
                 return false;
             }
+        }
+
+        /// <summary>
+        /// Gets the text of a sequence that can only match one text: single characters and zero-width assertions.
+        /// </summary>
+        private static string? FixedText(List<Node> sequence)
+        {
+            var text = new StringBuilder();
+            foreach (var node in sequence)
+            {
+                if (node is SetNode set)
+                {
+                    if (set.Min != 1 || set.Max != 1 || set.Single is not { } c)
+                    {
+                        return null;
+                    }
+
+                    text.Append(c);
+                }
+            }
+
+            return text.ToString();
         }
 
         private static bool[] SetOf(string atom, RegexOptions options)

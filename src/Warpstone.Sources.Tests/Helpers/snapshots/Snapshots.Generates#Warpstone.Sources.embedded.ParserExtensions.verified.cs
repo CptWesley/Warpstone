@@ -26,6 +26,7 @@ namespace Warpstone
         /// The source of every transformation is copied from the call to <c>Transform</c> or <c>Aggregate</c> that created it,
         /// so transformations can only use their parameters, static members and the namespaces in <paramref name="usings"/>.
         /// The generated parser always runs recursively, so very deep input throws an <see cref="InsufficientExecutionStackException"/>.
+        /// It only tracks failures when a parse fails, by parsing that input again, so transformations run twice for it.
         /// Parsers created by <c>Bind</c> (or <c>Then</c>, <c>ThenAdd</c> and <c>ThenSkip</c> taking a function) and <c>AsResult</c> are not supported.
         /// </remarks>
         /// <typeparam name="T">The result type of the parser.</typeparam>

@@ -71,6 +71,30 @@ compares the literal prefix (`RegexParserImpl.FindLiteralPrefix`, now `internal`
 - MiniJava: every regex converts, including the keyword-excluding identifier `(?!(?:class|...)\b)[A-Za-z_]...`, which becomes a `switch` on the first character.
   Generated/interpreted went from 0.49 to 0.40 (large) and 0.47 to 0.39 (small). That is now 1.14-1.18x Parlot's generated parser.
 
+## Profiling the generated parser (2026-11-25)
+
+Setup that worked:
+- **Harness:** a scratch console project (not in the repo) referencing `Warpstone.Benchmarks.csproj`. It calls the public `MiniJavaBenchmark` methods (the generated classes are `internal`),
+  warms up for 2 s, then prints µs and `GC.GetAllocatedBytesForCurrentThread()` per parse. It measured generated 886 µs and Parlot 674 µs on large.
+- **CPU sampling is useless here.** `process_cpu` put 92% on `Buffer.BulkMoveWithWriteBarrier`: EventPipe samples at GC safe points, so time in the
+  generated tight loops lands on the next method that polls. Without admin there's no ETW kernel sampling (`wpr` needs it).
+- **Exact call counts work:** `process_calls` with `methods: [the generated class, its __Parser]` and `per: ...Parse` gives calls per parse
+  (the generated parser lives in `Warpstone.Benchmarks.dll`, which counts as a library). The output is large, so parse the saved JSON with Python.
+  It showed `Expect` at 99,581 calls per parse with 92% reaching `Add`: 54% of all generated calls were failure tracking.
+- **A/B on a copy:** copy the `.g.cs` into the harness (an `internal` class doesn't clash with the referenced one), apply one edit with a script
+  (`Expect` no-op, no stack guards, no `try`, no `AggressiveInlining`), rebuild and run twice. Results: failure tracking −46%, `try` −4…7%,
+  guards −2…4%, inlining attribute ≈0.
+- **Allocations:** `process_allocations` (reliable) for both ours and Parlot. Compare the type shares relative to a type both allocate equally (`NameExpr`).
+
+What it led to:
+1. **Lazy failure tracking:** `__Parser(input, track)`. The first parse doesn't track (an inlined `if (track)` in `Expect`). Only a failed parse runs again with tracking,
+   which is deterministic and so finds the same errors. The 2-arg `TryParse` never tracks. Large: 886 → 493 µs, faster than Parlot's generated parser (674 µs in the harness).
+   The documented trade-off: transformations run twice for failing input.
+2. **Fixed-text regexes** (`class\b`, keywords) return the literal instead of `Substring`: −46 KB per parse.
+3. Not done: the `try` around user code (−4…7%), because removing it changes semantics, and the stack guards (−2…4%).
+   The left-recursive grammar costs 1.85× the plain one because seed growing re-runs each of the 6 levels once to find it can't grow.
+   Skipping that would need a "can't grow here" analysis.
+
 ## Pitfalls
 
 - **Verify snapshots** are TFM-agnostic (`Snapshots.Generates#...verified.cs`), but the received files carry the TFM (`Snapshots.Generates.DotNet10_0#...`).

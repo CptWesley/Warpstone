@@ -79,13 +79,15 @@ namespace Warpstone.Internal.ParserExpressions
             var options = Options | RegexOptions.ExplicitCapture;
 
             // A simple pattern becomes a scanning loop, which needs no regex engine at all.
-            if (SimpleRegex.TryEmit(Pattern, options, emitter, out var scanner))
+            if (SimpleRegex.TryEmit(Pattern, options, emitter, out var scanner, out var text))
             {
                 emitter.Inline();
                 emitter.Line($"var stop = {scanner}(input, pos);");
                 emitter.Open("if (stop >= 0)");
                 emitter.Line("end = stop;");
-                emitter.Value("input.Substring(pos, stop - pos)");
+
+                // A pattern like a keyword always matches the same text, which needs no new string.
+                emitter.Value(text is null ? "input.Substring(pos, stop - pos)" : emitter.Literal(text));
                 emitter.Line("return true;");
                 emitter.Close();
                 emitter.Fail(expected);

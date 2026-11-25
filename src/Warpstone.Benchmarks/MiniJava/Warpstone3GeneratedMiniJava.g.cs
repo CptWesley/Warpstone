@@ -23,7 +23,14 @@ namespace Warpstone.Benchmarks.MiniJava
         /// <param name="value">The parsed value, if parsing succeeded.</param>
         /// <returns><see langword="true"/> if parsing succeeded.</returns>
         public static bool TryParse(string input, out global::Warpstone.Benchmarks.MiniJava.CompilationUnit value)
-            => TryParse(input, out value, out _);
+        {
+            if (input is null)
+            {
+                throw new global::System.ArgumentNullException(nameof(input));
+            }
+
+            return new __Parser(input, false).P0(0, out _, out value);
+        }
 
         /// <summary>
         /// Tries to parse <paramref name="input"/>.
@@ -39,14 +46,17 @@ namespace Warpstone.Benchmarks.MiniJava
                 throw new global::System.ArgumentNullException(nameof(input));
             }
 
-            var parser = new __Parser(input);
-            if (parser.P0(0, out _, out value))
+            // Tracking failures costs about as much as parsing, and only a failed parse needs them.
+            // Parsing is deterministic, so parsing again while tracking fails the same way and finds the same failures.
+            if (new __Parser(input, false).P0(0, out _, out value))
             {
                 error = null;
                 return true;
             }
 
-            error = parser.CreateError();
+            var tracking = new __Parser(input, true);
+            tracking.P0(0, out _, out _);
+            error = tracking.CreateError();
             return false;
         }
 
@@ -763,14 +773,16 @@ namespace Warpstone.Benchmarks.MiniJava
         private sealed class __Parser
         {
             private readonly string input;
+            private readonly bool track;
             private object[] failures = new object[16];
             private int failureCount;
             private int failPos = -1;
             private int suppressed;
 
-            public __Parser(string input)
+            public __Parser(string input, bool track)
             {
                 this.input = input;
+                this.track = track;
             }
 
             public ParseError CreateError()
@@ -812,7 +824,16 @@ namespace Warpstone.Benchmarks.MiniJava
                 return true;
             }
 
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             private void Expect(int position, string expected)
+            {
+                if (track)
+                {
+                    Track(position, expected);
+                }
+            }
+
+            private void Track(int position, string expected)
             {
                 // Most failures happen behind the furthest one, so this check comes first.
                 if (position < failPos || !MoveTo(position))
@@ -834,7 +855,7 @@ namespace Warpstone.Benchmarks.MiniJava
 
             private void Error(int position, global::System.Exception exception)
             {
-                if (MoveTo(position))
+                if (track && MoveTo(position))
                 {
                     Add(exception);
                 }
@@ -853,7 +874,7 @@ namespace Warpstone.Benchmarks.MiniJava
             private void EndLabel(int startPos, int startCount, int position, string name)
             {
                 // Failures that got further than the start are more precise than the name, so they are kept.
-                if (failPos > position)
+                if (!track || failPos > position)
                 {
                     return;
                 }
@@ -1080,7 +1101,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "class";
                     return true;
                 }
                 Expect(pos, "class\\\\b");
@@ -1197,7 +1218,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "extends";
                     return true;
                 }
                 Expect(pos, "extends\\\\b");
@@ -1513,7 +1534,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "public";
                     return true;
                 }
                 Expect(pos, "public\\\\b");
@@ -1543,7 +1564,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "private";
                     return true;
                 }
                 Expect(pos, "private\\\\b");
@@ -1573,7 +1594,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "protected";
                     return true;
                 }
                 Expect(pos, "protected\\\\b");
@@ -1603,7 +1624,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "static";
                     return true;
                 }
                 Expect(pos, "static\\\\b");
@@ -1633,7 +1654,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "final";
                     return true;
                 }
                 Expect(pos, "final\\\\b");
@@ -1754,7 +1775,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "int";
                     return true;
                 }
                 Expect(pos, "int\\\\b");
@@ -1784,7 +1805,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "boolean";
                     return true;
                 }
                 Expect(pos, "boolean\\\\b");
@@ -1814,7 +1835,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "void";
                     return true;
                 }
                 Expect(pos, "void\\\\b");
@@ -2673,7 +2694,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "if";
                     return true;
                 }
                 Expect(pos, "if\\\\b");
@@ -3386,7 +3407,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "true";
                     return true;
                 }
                 Expect(pos, "true\\\\b");
@@ -3427,7 +3448,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "false";
                     return true;
                 }
                 Expect(pos, "false\\\\b");
@@ -3468,7 +3489,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "null";
                     return true;
                 }
                 Expect(pos, "null\\\\b");
@@ -3509,7 +3530,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "this";
                     return true;
                 }
                 Expect(pos, "this\\\\b");
@@ -3586,7 +3607,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "new";
                     return true;
                 }
                 Expect(pos, "new\\\\b");
@@ -5214,7 +5235,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "else";
                     return true;
                 }
                 Expect(pos, "else\\\\b");
@@ -5315,7 +5336,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "while";
                     return true;
                 }
                 Expect(pos, "while\\\\b");
@@ -5408,7 +5429,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = "return";
                     return true;
                 }
                 Expect(pos, "return\\\\b");

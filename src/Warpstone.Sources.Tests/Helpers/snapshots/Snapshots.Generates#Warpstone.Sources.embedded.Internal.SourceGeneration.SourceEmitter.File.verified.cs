@@ -166,7 +166,14 @@ namespace {{@namespace}}
         /// <param name="value">The parsed value, if parsing succeeded.</param>
         /// <returns><see langword="true"/> if parsing succeeded.</returns>
         public static bool TryParse(string input, out {{type}} value)
-            => TryParse(input, out value, out _);
+        {
+            if (input is null)
+            {
+                throw new global::System.ArgumentNullException(nameof(input));
+            }
+
+            return new __Parser(input, false).{{rootMethod}}(0, out _, out value);
+        }
 
         /// <summary>
         /// Tries to parse <paramref name="input"/>.
@@ -182,14 +189,17 @@ namespace {{@namespace}}
                 throw new global::System.ArgumentNullException(nameof(input));
             }
 
-            var parser = new __Parser(input);
-            if (parser.{{rootMethod}}(0, out _, out value))
+            // Tracking failures costs about as much as parsing, and only a failed parse needs them.
+            // Parsing is deterministic, so parsing again while tracking fails the same way and finds the same failures.
+            if (new __Parser(input, false).{{rootMethod}}(0, out _, out value))
             {
                 error = null;
                 return true;
             }
 
-            error = parser.CreateError();
+            var tracking = new __Parser(input, true);
+            tracking.{{rootMethod}}(0, out _, out _);
+            error = tracking.CreateError();
             return false;
         }
 
@@ -267,14 +277,16 @@ namespace {{@namespace}}
 {{statics}}{{MemoClasses()}}        private sealed class __Parser
         {
             private readonly string input;
+            private readonly bool track;
             private object[] failures = new object[16];
             private int failureCount;
             private int failPos = -1;
             private int suppressed;
 {{fields}}
-            public __Parser(string input)
+            public __Parser(string input, bool track)
             {
                 this.input = input;
+                this.track = track;
 {{constructor}}            }
 
             public ParseError CreateError()
@@ -316,7 +328,16 @@ namespace {{@namespace}}
                 return true;
             }
 
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             private void Expect(int position, string expected)
+            {
+                if (track)
+                {
+                    Track(position, expected);
+                }
+            }
+
+            private void Track(int position, string expected)
             {
                 // Most failures happen behind the furthest one, so this check comes first.
                 if (position < failPos || !MoveTo(position))
@@ -338,7 +359,7 @@ namespace {{@namespace}}
 
             private void Error(int position, global::System.Exception exception)
             {
-                if (MoveTo(position))
+                if (track && MoveTo(position))
                 {
                     Add(exception);
                 }
@@ -357,7 +378,7 @@ namespace {{@namespace}}
             private void EndLabel(int startPos, int startCount, int position, string name)
             {
                 // Failures that got further than the start are more precise than the name, so they are kept.
-                if (failPos > position)
+                if (!track || failPos > position)
                 {
                     return;
                 }

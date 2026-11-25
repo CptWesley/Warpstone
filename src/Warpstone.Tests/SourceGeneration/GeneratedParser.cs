@@ -45,22 +45,7 @@ public static class GeneratedParser
     /// <returns>A function running the generated parser.</returns>
     public static Func<string, GeneratedResult> CompileSource(string source)
     {
-        var compilation = CSharpCompilation.Create(
-            $"Generated{Guid.NewGuid():N}",
-            [CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Latest, preprocessorSymbols: PreprocessorSymbols()))],
-            References.Value,
-            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release));
-
-        using var stream = new MemoryStream();
-        var emit = compilation.Emit(stream);
-        var errors = emit.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
-        if (errors.Count > 0)
-        {
-            throw new InvalidOperationException($"The generated source doesn't compile:\n{string.Join("\n", errors)}\n\n{source}");
-        }
-
-        var assembly = Assembly.Load(stream.ToArray());
-        var type = assembly.GetType("Generated.GeneratedParser")!;
+        var type = Load(source);
         var tryParse = type.GetMethods().Single(m => m.Name == "TryParse" && m.GetParameters().Length == 3);
 
         return input =>
@@ -81,6 +66,31 @@ public static class GeneratedParser
                 (IReadOnlyList<string>)errorType.GetProperty("Expected")!.GetValue(error)!,
                 ((System.Collections.ICollection)errorType.GetProperty("Exceptions")!.GetValue(error)!).Count);
         };
+    }
+
+    /// <summary>
+    /// Compiles <paramref name="source"/> and loads the class <c>Generated.GeneratedParser</c> it declares.
+    /// </summary>
+    /// <param name="source">The generated source.</param>
+    /// <returns>The class.</returns>
+    public static Type Load(string source)
+    {
+        var compilation = CSharpCompilation.Create(
+            $"Generated{Guid.NewGuid():N}",
+            [CSharpSyntaxTree.ParseText(source, new CSharpParseOptions(LanguageVersion.Latest, preprocessorSymbols: PreprocessorSymbols()))],
+            References.Value,
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary, optimizationLevel: OptimizationLevel.Release));
+
+        using var stream = new MemoryStream();
+        var emit = compilation.Emit(stream);
+        var errors = emit.Diagnostics.Where(d => d.Severity == DiagnosticSeverity.Error).ToList();
+        if (errors.Count > 0)
+        {
+            throw new InvalidOperationException($"The generated source doesn't compile:\n{string.Join("\n", errors)}\n\n{source}");
+        }
+
+        var assembly = Assembly.Load(stream.ToArray());
+        return assembly.GetType("Generated.GeneratedParser")!;
     }
 
     /// <summary>
