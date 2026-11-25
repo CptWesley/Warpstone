@@ -5,6 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Errors
 {
@@ -15,11 +18,54 @@ namespace Warpstone.Errors
     /// </summary>
     public sealed class FailureTracker
     {
+        private static readonly ConditionalWeakTable<IParser, Box> NeedsTracking = new();
+
         private readonly Stack<(int Position, int Count)> labels = new();
         private Entry[] entries = new Entry[16];
         private int count;
         private int suppressed;
         private int position = -1;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FailureTracker"/> class, which tracks failures.
+        /// </summary>
+        public FailureTracker()
+            : this(enabled: true)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="FailureTracker"/> class.
+        /// </summary>
+        /// <param name="enabled">Whether failures are tracked; if not, every report is ignored.</param>
+        internal FailureTracker(bool enabled)
+        {
+            Enabled = enabled;
+        }
+
+        /// <summary>
+        /// Creates the tracker for a parse of <paramref name="parser"/> with <paramref name="options"/>.
+        /// </summary>
+        /// <param name="parser">The parser.</param>
+        /// <param name="options">The options of the parse.</param>
+        /// <returns>The tracker.</returns>
+        internal static FailureTracker For(IParser parser, ParseOptions options)
+            => new(options.FailureTracking == FailureTracking.Always || NeedsTracking.GetValue(parser, ContainsResultsOrBinds).Value);
+
+        /// <summary>
+        /// <c>AsResult</c> needs the errors of an inner parser in the middle of a parse, which a second parse can't give,
+        /// and <c>Bind</c> may pick such a parser while parsing.
+        /// </summary>
+        private static Box ContainsResultsOrBinds(IParser parser)
+            => new(parser.Analyze().OccurrenceCounts.Keys.Any(static p => p.GetType() is { IsGenericType: true } type
+                && type.GetGenericTypeDefinition() is var definition
+                && (definition == typeof(AsResultParser<>) || definition == typeof(BindParser<,,>))));
+
+        /// <summary>
+        /// Gets a value indicating whether failures are tracked. A parse that doesn't track them is parsed again to report its errors,
+        /// see <see cref="FailureTracking.OnFailure"/>.
+        /// </summary>
+        public bool Enabled { get; }
 
         /// <summary>
         /// Gets the furthest position at which a failure was reported, or -1 if none was.
@@ -34,7 +80,7 @@ namespace Warpstone.Errors
         /// <param name="expected">A description of what was expected.</param>
         public void AddExpected(int position, IParserImplementation parser, string expected)
         {
-            if (!MoveTo(position))
+            if (!Enabled || !MoveTo(position))
             {
                 return;
             }
@@ -49,7 +95,7 @@ namespace Warpstone.Errors
         /// <param name="reports">The parsers that failed and what they expected.</param>
         internal void AddExpected(int position, (IParserImplementation Parser, string Expected)[] reports)
         {
-            if (reports.Length == 0 || !MoveTo(position))
+            if (!Enabled || reports.Length == 0 || !MoveTo(position))
             {
                 return;
             }
@@ -67,7 +113,7 @@ namespace Warpstone.Errors
         /// <param name="error">The error.</param>
         public void AddError(IParseError error)
         {
-            if (MoveTo(error.Position))
+            if (Enabled && MoveTo(error.Position))
             {
                 Append(new(error.Parser, null, error));
             }
@@ -77,13 +123,23 @@ namespace Warpstone.Errors
         /// Starts a parser whose failures are reported under a single name. Must be followed by one of the <c>EndLabel</c> overloads.
         /// </summary>
         public void BeginLabel()
-            => labels.Push((Position, count));
+        {
+            if (Enabled)
+            {
+                labels.Push((Position, count));
+            }
+        }
 
         /// <summary>
         /// Ends a parser started with <see cref="BeginLabel"/> that succeeded.
         /// </summary>
         public void EndLabel()
-            => labels.Pop();
+        {
+            if (Enabled)
+            {
+                labels.Pop();
+            }
+        }
 
         /// <summary>
         /// Ends a parser started with <see cref="BeginLabel"/> that failed at <paramref name="position"/>.
@@ -94,6 +150,11 @@ namespace Warpstone.Errors
         /// <param name="expected">The name to report.</param>
         public void EndLabel(int position, IParserImplementation parser, string expected)
         {
+            if (!Enabled)
+            {
+                return;
+            }
+
             var (startPosition, startCount) = labels.Pop();
 
             // Failures that got further than the start are more precise than the name, so they are kept.
@@ -231,6 +292,16 @@ namespace Warpstone.Errors
             public readonly string? Expected;
 
             public readonly IParseError? Error;
+        }
+
+        private sealed class Box
+        {
+            public Box(bool value)
+            {
+                Value = value;
+            }
+
+            public bool Value { get; }
         }
     }
 }

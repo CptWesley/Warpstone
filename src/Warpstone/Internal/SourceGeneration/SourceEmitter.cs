@@ -41,6 +41,7 @@ namespace Warpstone.Internal.SourceGeneration
         private int methodCount;
         private int userCalls;
         private bool inline;
+        private bool trackAlways;
 
         private SourceEmitter()
         {
@@ -55,14 +56,16 @@ namespace Warpstone.Internal.SourceGeneration
         /// Generates the source of <paramref name="root"/>.
         /// </summary>
         /// <param name="root">The parser.</param>
+        /// <param name="options">The options deciding memoization, growing and failure tracking.</param>
         /// <param name="namespace">The namespace of the generated class.</param>
         /// <param name="className">The name of the generated static partial class.</param>
         /// <param name="usings">The namespaces imported by the generated file, used by the transformations.</param>
         /// <returns>The source.</returns>
-        public static string Generate(IParser root, string @namespace, string className, IEnumerable<string> usings)
+        public static string Generate(IParser root, ParseOptions options, string @namespace, string className, IEnumerable<string> usings)
         {
             var emitter = new SourceEmitter();
-            var rootMethod = emitter.EmitParsers((IEmittableParser)root);
+            emitter.trackAlways = options.FailureTracking == FailureTracking.Always;
+            var rootMethod = emitter.EmitParsers((IEmittableParser)root, options);
             return emitter.EmitFile(root.ResultType, rootMethod, @namespace, className, usings);
         }
 
@@ -448,10 +451,10 @@ namespace Warpstone.Internal.SourceGeneration
             }
         }
 
-        private string EmitParsers(IEmittableParser root)
+        private string EmitParsers(IEmittableParser root, ParseOptions options)
         {
             // Recursive mode keeps the stack guards in the plan; the generated parser has no iterative mode.
-            var plan = root.CreatePlan(ParseOptions.Default with { ExecutionMode = ParserExecutionMode.Recursive });
+            var plan = root.CreatePlan(options with { ExecutionMode = ParserExecutionMode.Recursive });
             implementations = plan.CreateImplementations();
 
             var pending = new List<(IParser Parser, int Number)>();

@@ -26,7 +26,7 @@ namespace Warpstone
         /// The source of every transformation is copied from the call to <c>Transform</c> or <c>Aggregate</c> that created it,
         /// so transformations can only use their parameters, static members and the namespaces in <paramref name="usings"/>.
         /// The generated parser always runs recursively, so very deep input throws an <see cref="InsufficientExecutionStackException"/>.
-        /// It only tracks failures when a parse fails, by parsing that input again, so transformations run twice for it.
+        /// By default it only tracks failures when a parse fails, by parsing that input again, so transformations run twice for it (see <see cref="FailureTracking"/>).
         /// Parsers created by <c>Bind</c> (or <c>Then</c>, <c>ThenAdd</c> and <c>ThenSkip</c> taking a function) and <c>AsResult</c> are not supported.
         /// </remarks>
         /// <typeparam name="T">The result type of the parser.</typeparam>
@@ -37,7 +37,19 @@ namespace Warpstone
         /// <returns>The generated source.</returns>
         /// <exception cref="NotSupportedException">Thrown when the parser contains a parser that can't be generated.</exception>
         public static string GenerateSource<T>(this IParser<T> parser, string @namespace, string className, params string[] usings)
-            => SourceEmitter.Generate(parser.MustNotBeNull(), @namespace.MustNotBeNull(), className.MustNotBeNull(), usings ?? []);
+            => parser.GenerateSource(ParseOptions.Default, @namespace, className, usings);
+
+        /// <inheritdoc cref="GenerateSource{T}(IParser{T}, string, string, string[])"/>
+        /// <param name="parser">The parser.</param>
+        /// <param name="options">
+        /// The options of the generated parser: <see cref="ParseOptions.EnableAutomaticMemoization"/>, <see cref="ParseOptions.EnableAutomaticGrowingRecursion"/>
+        /// and <see cref="ParseOptions.FailureTracking"/>. It always runs recursively, whatever <see cref="ParseOptions.ExecutionMode"/> says.
+        /// </param>
+        /// <param name="namespace">The namespace of the generated class.</param>
+        /// <param name="className">The name of the generated class.</param>
+        /// <param name="usings">The namespaces imported by the generated source.</param>
+        public static string GenerateSource<T>(this IParser<T> parser, ParseOptions options, string @namespace, string className, params string[] usings)
+            => SourceEmitter.Generate(parser.MustNotBeNull(), options.MustNotBeNull(), @namespace.MustNotBeNull(), className.MustNotBeNull(), usings ?? []);
 
         /// <summary>
         /// Creates a new <see cref="IParseContext"/> from the given <paramref name="input"/>

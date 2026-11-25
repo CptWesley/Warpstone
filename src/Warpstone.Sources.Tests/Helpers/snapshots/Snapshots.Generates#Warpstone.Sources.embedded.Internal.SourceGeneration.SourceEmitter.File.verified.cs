@@ -137,6 +137,39 @@ namespace Warpstone.Internal.SourceGeneration
             return classes.ToString();
         }
 
+        private string TryParseBody(string rootMethod)
+        {
+            if (trackAlways)
+            {
+                return $$"""
+            var parser = new __Parser(input, true);
+            if (parser.{{rootMethod}}(0, out _, out value))
+            {
+                error = null;
+                return true;
+            }
+
+            error = parser.CreateError();
+            return false;
+""";
+            }
+
+            return $$"""
+            // Tracking failures costs about as much as parsing, and only a failed parse needs them.
+            // Parsing is deterministic, so parsing again while tracking fails the same way and finds the same failures.
+            if (new __Parser(input, false).{{rootMethod}}(0, out _, out value))
+            {
+                error = null;
+                return true;
+            }
+
+            var tracking = new __Parser(input, true);
+            tracking.{{rootMethod}}(0, out _, out _);
+            error = tracking.CreateError();
+            return false;
+""";
+        }
+
         private string EmitFile(Type resultType, string rootMethod, string @namespace, string className, IEnumerable<string> usings)
         {
             var type = TypeName(resultType);
@@ -189,18 +222,7 @@ namespace {{@namespace}}
                 throw new global::System.ArgumentNullException(nameof(input));
             }
 
-            // Tracking failures costs about as much as parsing, and only a failed parse needs them.
-            // Parsing is deterministic, so parsing again while tracking fails the same way and finds the same failures.
-            if (new __Parser(input, false).{{rootMethod}}(0, out _, out value))
-            {
-                error = null;
-                return true;
-            }
-
-            var tracking = new __Parser(input, true);
-            tracking.{{rootMethod}}(0, out _, out _);
-            error = tracking.CreateError();
-            return false;
+{{TryParseBody(rootMethod)}}
         }
 
         /// <summary>

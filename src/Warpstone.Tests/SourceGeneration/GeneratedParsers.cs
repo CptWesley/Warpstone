@@ -99,6 +99,36 @@ public static class GeneratedParsers
         ((bool)tryParse.Invoke(null, bad)!).Should().BeFalse();
     }
 
+    [TestCase(FailureTracking.OnFailure, true)]
+    [TestCase(FailureTracking.Always, false)]
+    public static void Failure_tracking_option_decides_whether_failing_input_is_parsed_again(FailureTracking tracking, bool parsesAgain)
+    {
+        var options = ParseOptions.Default with { FailureTracking = tracking };
+        var source = Grammars.Calculator.GenerateSource(options, "Generated", "GeneratedParser");
+
+        source.Contains("var tracking = new __Parser(input, true);", StringComparison.Ordinal).Should().Be(parsesAgain);
+        var parse = GeneratedParser.CompileSource(source);
+        foreach (var input in new[] { "1 + 2", "1 + * 2", "(1" })
+        {
+            var expected = Grammars.Calculator.TryParse(input, options);
+            var actual = parse(input);
+            actual.Success.Should().Be(expected.Success);
+            if (!expected.Success)
+            {
+                actual.ErrorPosition.Should().Be(expected.Errors.Max(e => e.Position));
+            }
+        }
+    }
+
+    [Test]
+    public static void Memoization_and_growing_options_are_followed()
+    {
+        var withoutGrowing = ParseOptions.Default with { EnableAutomaticGrowingRecursion = false, EnableAutomaticMemoization = false };
+
+        Grammars.Calculator.GenerateSource("Generated", "GeneratedParser").Should().Contain("// GrowParser");
+        Grammars.Calculator.GenerateSource(withoutGrowing, "Generated", "GeneratedParser").Should().NotContain("// GrowParser");
+    }
+
     [Test]
     public static void Bind_is_not_supported()
     {

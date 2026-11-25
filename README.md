@@ -214,4 +214,15 @@ Console.WriteLine(CalculatorParser.Parse("1 + 2 * 3")); // 7
 Regenerate the file whenever the grammar changes. Some limits:
 - The source of every transformation is copied from the `Transform` or `Aggregate` call that created it, so a transformation can only use its parameters and static members. A lambda that captures a variable is rejected. The file imports `System`, `System.Collections.Generic` and `System.Linq`. Pass other namespaces, or aliases such as `"G = MyApp.Grammar"`, as extra arguments.
 - `Bind`, the `Then`, `ThenAdd` and `ThenSkip` overloads that take a function, `AsResult`, and `Create` with a value that has no C# literal are not supported.
-- The generated parser always runs recursively, so very deep input throws an `InsufficientExecutionStackException`. A failed parse reports the furthest position and what was expected there. To find that, `TryParse` with an error and `Parse` parse a failing input a second time, so transformations run twice for it and shouldn't have side effects.
+- The generated parser always runs recursively, so very deep input throws an `InsufficientExecutionStackException`. A failed parse reports the furthest position and what was expected there. By default it finds that by parsing the failing input a second time (see below). Pass `ParseOptions` to `GenerateSource` to change that, or to turn off automatic memoization or growing.
+
+### Errors of a failed parse
+Keeping track of why a parse fails costs time, and a parse that succeeds never needs it. So by default (`FailureTracking.OnFailure`) Warpstone parses without tracking failures, and parses failing input a second time, now tracking them, to report its errors. Parsing is deterministic, so both parses fail the same way and the errors are the same, but transformations run twice for failing input. On MiniJava this makes a successful interpreted parse about 20% faster, and a generated one about twice as fast.
+
+To parse failing input only once, track failures all the time:
+
+```cs
+var result = Calculator.Expression.TryParse("1 + * 2", ParseOptions.Default with { FailureTracking = FailureTracking.Always });
+```
+
+Grammars that use `AsResult` or `Bind` always track failures, because `AsResult` needs the errors of a parser in the middle of a parse.

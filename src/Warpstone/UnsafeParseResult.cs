@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
+using System.Threading;
 using Warpstone.Errors;
+using Warpstone.Internal.Input;
 
 namespace Warpstone
 {
@@ -111,13 +114,51 @@ namespace Warpstone
             }
             else
             {
+                var errors = context.Failures.Enabled
+                    ? context.Failures.CreateErrors(context, context.Parser.GetImplementation(context.Options), result.Position)
+                    : ParseAgainForErrors(context, result.Position);
                 return new ParseResult<T>(
                     context: context,
                     position: result.Position,
                     length: result.Length,
                     success: false,
                     value: default,
-                    errors: context.Failures.CreateErrors(context, context.Parser.GetImplementation(context.Options), result.Position));
+                    errors: errors);
+            }
+        }
+
+        /// <summary>
+        /// Parses the input of a failed parse that didn't track its failures again, now tracking them, to find its errors.
+        /// Parsing is deterministic, so the second parse fails the same way.
+        /// </summary>
+        private static IReadOnlyList<IParseError> ParseAgainForErrors(IParseContext context, int position)
+        {
+            // The text the first parse read is kept, so the second parse needs no more and can read synchronously.
+#pragma warning disable S3215 // Only the streaming input reads asynchronously; other inputs need nothing here.
+            var reader = context.Input as TextReaderParseInput;
+#pragma warning restore S3215
+            var asynchronous = reader?.IsAsynchronous ?? false;
+            if (reader is not null)
+            {
+                reader.IsAsynchronous = false;
+            }
+
+            try
+            {
+                var options = context.Options with { FailureTracking = FailureTracking.Always };
+                var errors = ParseContext.Create(context.Input, context.Parser, options).RunToEnd(CancellationToken.None).Errors;
+
+                // Only a transformation with side effects could make the second parse succeed; then report a bare failure.
+                return errors.Count > 0
+                    ? errors
+                    : context.Failures.CreateErrors(context, context.Parser.GetImplementation(context.Options), position);
+            }
+            finally
+            {
+                if (reader is not null)
+                {
+                    reader.IsAsynchronous = asynchronous;
+                }
             }
         }
     }

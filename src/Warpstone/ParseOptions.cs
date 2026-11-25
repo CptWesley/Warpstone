@@ -28,5 +28,11 @@ namespace Warpstone
         /// (default: <see langword="true"/>).
         /// </summary>
         public bool EnableAutomaticMemoization { get; init; } = true;
+
+        /// <summary>
+        /// Determines when a parse keeps track of its failures, which it needs to report errors
+        /// (default: <see cref="FailureTracking.OnFailure"/>, which parses failing input a second time).
+        /// </summary>
+        public FailureTracking FailureTracking { get; init; } = FailureTracking.OnFailure;
     }
 }

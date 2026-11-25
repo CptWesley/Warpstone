@@ -95,7 +95,25 @@ What it led to:
    The left-recursive grammar costs 1.85× the plain one because seed growing re-runs each of the 6 levels once to find it can't grow.
    Skipping that would need a "can't grow here" analysis.
 
+## `ParseOptions.FailureTracking` for the interpreter too (2026-11-25)
+
+- **Measure first:** a measure-only stub of `FailureTracker` (`AddExpected`/`AddError` return at once, `EndLabel` only pops) made the interpreter go from 2,226 to 1,721 µs
+  (left-recursive 3,648 → 3,180 µs). It was reverted with `git checkout` after showing the diff.
+- **Design:**
+  - `FailureTracking { OnFailure (default), Always }`. `FailureTracker.Enabled` comes from `FailureTracker.For(parser, options)`; the contexts no longer `new()` their tracker.
+  - `UnsafeParseResult.AsSafe` re-parses with `Always` when the tracker is off. It uses `ParseContext.Create` with the same options, so Auto, Iterative and Recursive keep their mode.
+  - For a `TextReaderParseInput`, `IsAsynchronous` is switched off during the second parse. That parse reads the same positions, which are all buffered, so it never has to wait.
+  - `GetSimplifiedOptions` normalizes `FailureTracking`, so both modes share the cached implementations.
+- **`AsResult` and `Bind` force `Always`.** `AsResult` calls `AsSafe` in the middle of a parse, and a whole-input second parse can't give the errors of an inner parser.
+  `Bind` can pick such a parser at runtime. The check is a `ConditionalWeakTable` over `Analyze().OccurrenceCounts.Keys`.
+- **Generator:** a new `GenerateSource(parser, ParseOptions, ...)` overload. `Always` emits one tracking parse. It also passes memo and grow through, which the generator used to ignore.
+- All 2126 existing tests passed under the new default unchanged: every error test now goes through the second parse.
+  `FailureTrackingModes` pins equal errors in both modes, a transformation running twice under `OnFailure`, inner `AsResult` errors, and async readers.
+- Result (harness, large): interpreter 2,226 → 1,768 µs (−21%), left-recursive 3,648 → 3,241 µs (−11%).
+
 ## Pitfalls
+
+- Qowaiv QW0004 flags a literal U+200D in source. Write `\u200D`.
 
 - **Verify snapshots** are TFM-agnostic (`Snapshots.Generates#...verified.cs`), but the received files carry the TFM (`Snapshots.Generates.DotNet10_0#...`).
   Renaming received to verified in place creates the wrong names. Strip the `.DotNetXX_0` part.

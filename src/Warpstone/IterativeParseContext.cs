@@ -40,6 +40,7 @@ namespace Warpstone
             Options = options;
 
             var implementation = parser.GetImplementation(options);
+            Failures = FailureTracker.For(parser, options);
 
             memoTable = new MemoTable();
             readOnlyMemoTable = memoTable.AsReadOnly();
@@ -71,7 +72,7 @@ namespace Warpstone
         public IReadOnlyMemoTable MemoTable => readOnlyMemoTable;
 
         /// <inheritdoc />
-        public FailureTracker Failures { get; } = new();
+        public FailureTracker Failures { get; }
 
         /// <inheritdoc />
         IMemoTable IParseContext.MemoTable => memoTable;

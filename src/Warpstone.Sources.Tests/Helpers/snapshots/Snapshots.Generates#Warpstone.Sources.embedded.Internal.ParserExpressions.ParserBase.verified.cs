@@ -167,6 +167,9 @@ namespace Warpstone.Internal.ParserExpressions
                     ExecutionMode = o.ExecutionMode == ParserExecutionMode.Iterative && analysis.HasRecursiveParsers
                         ? ParserExecutionMode.Iterative
                         : ParserExecutionMode.Auto,
+
+                    // Only the parse context tracks failures, so both settings share one implementation.
+                    FailureTracking = FailureTracking.Always,
                 };
 
                 if (o.EnableAutomaticGrowingRecursion && !analysis.HasRecursiveParsers)
