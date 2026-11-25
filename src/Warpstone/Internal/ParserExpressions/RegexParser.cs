@@ -82,7 +82,7 @@ namespace Warpstone.Internal.ParserExpressions
                 emitter.Line("end = stop;");
 
                 // A pattern like a keyword always matches the same text, which needs no new string.
-                emitter.Value(text is null ? "input.Substring(pos, stop - pos)" : emitter.Literal(text));
+                emitter.Value(text is null ? "Intern(pos, stop - pos)" : emitter.Literal(text));
                 emitter.Line("return true;");
                 emitter.Close();
                 emitter.Fail(expected);
@@ -108,14 +108,14 @@ namespace Warpstone.Internal.ParserExpressions
             emitter.Line("#if NET7_0_OR_GREATER");
             emitter.Open($"foreach (var {match} in {regex}.EnumerateMatches(input, pos))");
             emitter.Line($"end = pos + {match}.Length;");
-            emitter.Value($"input.Substring(pos, {match}.Length)");
+            emitter.Value($"Intern(pos, {match}.Length)");
             emitter.Line("return true;");
             emitter.Close();
             emitter.Line("#else");
             emitter.Line($"var {match} = {regex}.Match(input, pos);");
             emitter.Open($"if ({match}.Success)");
             emitter.Line($"end = pos + {match}.Length;");
-            emitter.Value($"{match}.Value");
+            emitter.Value($"Intern(pos, {match}.Length)");
             emitter.Line("return true;");
             emitter.Close();
             emitter.Line("#endif");

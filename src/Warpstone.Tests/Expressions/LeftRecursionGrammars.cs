@@ -280,6 +280,30 @@ public static class LeftRecursionGrammars
     }
 
     [TestCaseSource(nameof(AutoOptionsData))]
+    public static void Growing_runs_the_base_alternative_once(ParseOptions options)
+    {
+        // E <- E '+' N / E '-' N / N: rounds after the first only try the two left-recursive alternatives.
+        var count = 0;
+        var n = Regex("[0-9]").Transform(x => { count++; return x; });
+        IParser<string> e = null!;
+        e = Or(Seq(Lazy(() => e), S("+"), n), Seq(Lazy(() => e), S("-"), n), n);
+
+        ShouldParse(e, "1+2-3+4", options);
+        count.Should().Be(4);
+    }
+
+    [TestCaseSource(nameof(AutoOptionsData))]
+    public static void Growing_keeps_ordered_choice_when_the_base_comes_first(ParseOptions options)
+    {
+        // E <- N / E '+' N: the base always wins, so E never grows.
+        IParser<string> e = null!;
+        e = Or(Regex("[0-9]"), Seq(Lazy(() => e), S("+"), Regex("[0-9]")));
+
+        ShouldParse(e, "1", options);
+        ShouldNotParse(e, "1+2", options);
+    }
+
+    [TestCaseSource(nameof(AutoOptionsData))]
     public static void Explicit_grow_combined_with_automatic_growing(ParseOptions options)
     {
         ShouldParse(IndirectSA(manualLeader: true), "baabab", options);

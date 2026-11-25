@@ -5,6 +5,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Warpstone.Internal.ParserImplementations;
 using Warpstone.Internal.SourceGeneration;
 
@@ -23,14 +24,34 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         /// <param name="parser">The parser to be cached.</param>
         public GrowParser(IParser<T> parser)
+            : this(parser, 0)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="GrowParser{T}"/> class.
+        /// </summary>
+        /// <param name="parser">The parser to be cached.</param>
+        /// <param name="recursiveAlternatives">
+        /// The number of leading alternatives of <paramref name="parser"/>, a choice, that start with the parser itself,
+        /// or 0 to run the whole parser in every round. See <see cref="LeftRecursionAnalysis.CountLeftRecursiveAlternatives"/>.
+        /// </param>
+        public GrowParser(IParser<T> parser, int recursiveAlternatives)
         {
             Parser = parser;
+            RecursiveAlternatives = recursiveAlternatives;
         }
 
         /// <summary>
         /// The parser to be cached.
         /// </summary>
         public IParser<T> Parser { get; }
+
+        /// <summary>
+        /// Gets the number of leading alternatives of <see cref="Parser"/> that are left-recursive.
+        /// Rounds after the first only run those, because the other alternatives give the same result as in the first round.
+        /// </summary>
+        public int RecursiveAlternatives { get; }
 
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
@@ -49,6 +70,12 @@ namespace Warpstone.Internal.ParserExpressions
 
             // Seed growing: start from a failure, and run the parser again while its result keeps getting longer.
             emitter.Line($"{table}[pos] = new {entry}(2, pos, default!);");
+            if (RecursiveAlternatives > 0)
+            {
+                EmitRegrowing(emitter, table, entry);
+                return;
+            }
+
             emitter.Line("var success = false;");
             emitter.Line("end = pos;");
             emitter.Line("value = default!;");
@@ -62,6 +89,32 @@ namespace Warpstone.Internal.ParserExpressions
             emitter.Line($"{table}[pos] = new {entry}(3, end, value);");
             emitter.Close();
             emitter.Line("return success;");
+        }
+
+        private void EmitRegrowing(SourceEmitter emitter, string table, string entry)
+        {
+            // The first round skips the left-recursive alternatives, which fail without a seed.
+            // Later rounds only run those, see RecursiveAlternatives.
+#pragma warning disable S3215 // RecursiveAlternatives is only set for a choice.
+            var alternatives = ((OrParser<T>)Parser).Alternatives;
+#pragma warning restore S3215
+            var seed = string.Join(" || ", alternatives.Skip(RecursiveAlternatives)
+                .Select(alternative => $"{emitter.Call(alternative)}(pos, out end, out value)"));
+            var regrow = string.Join(" || ", Enumerable.Range(0, RecursiveAlternatives)
+                .Select(i => i == 0
+                    ? $"{emitter.Call(alternatives[i])}(pos, out var grownEnd, out var grown)"
+                    : $"{emitter.Call(alternatives[i])}(pos, out grownEnd, out grown)"));
+
+            emitter.Open($"if (!({seed}))");
+            emitter.Line("return false;");
+            emitter.Close();
+            emitter.Line($"{table}[pos] = new {entry}(3, end, value);");
+            emitter.Open($"while (({regrow}) && grownEnd > end)");
+            emitter.Line("end = grownEnd;");
+            emitter.Line("value = grown;");
+            emitter.Line($"{table}[pos] = new {entry}(3, end, value);");
+            emitter.Close();
+            emitter.Line("return true;");
         }
 
         /// <inheritdoc />

@@ -131,6 +131,7 @@ namespace Warpstone.Benchmarks.MiniJava
             public global::System.Collections.Generic.HashSet<int> Limits;
         }
 
+
         private static global::Warpstone.Benchmarks.MiniJava.CompilationUnit __F0(global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.ClassDecl> cs)
             => new CompilationUnit(new Seq<ClassDecl>(cs));
 
@@ -778,6 +779,23 @@ namespace Warpstone.Benchmarks.MiniJava
             private int failureCount;
             private int failPos = -1;
             private int suppressed;
+            private string?[]? interned;
+            private global::Warpstone.Benchmarks.MiniJava.ClassDecl[] scratch0 = new global::Warpstone.Benchmarks.MiniJava.ClassDecl[16];
+            private int scratch0Count;
+            private global::Warpstone.Benchmarks.MiniJava.IMember[] scratch1 = new global::Warpstone.Benchmarks.MiniJava.IMember[16];
+            private int scratch1Count;
+            private string[] scratch2 = new string[16];
+            private int scratch2Count;
+            private global::Warpstone.Benchmarks.MiniJava.Param[] scratch3 = new global::Warpstone.Benchmarks.MiniJava.Param[16];
+            private int scratch3Count;
+            private global::Warpstone.Benchmarks.MiniJava.IStmt[] scratch4 = new global::Warpstone.Benchmarks.MiniJava.IStmt[16];
+            private int scratch4Count;
+            private global::Warpstone.Benchmarks.MiniJava.IExpr[] scratch5 = new global::Warpstone.Benchmarks.MiniJava.IExpr[16];
+            private int scratch5Count;
+            private global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr>[] scratch6 = new global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr>[16];
+            private int scratch6Count;
+            private (string, global::Warpstone.Benchmarks.MiniJava.IExpr)[] scratch7 = new (string, global::Warpstone.Benchmarks.MiniJava.IExpr)[16];
+            private int scratch7Count;
 
             public __Parser(string input, bool track)
             {
@@ -822,6 +840,44 @@ namespace Warpstone.Benchmarks.MiniJava
                 }
 
                 return true;
+            }
+
+            // Matched text that repeats, like identifiers, shares one string. Longer matches rarely repeat, so they skip the lookup.
+            // The table is direct-mapped by hash: a collision overwrites the slot. It has a slot per 16 characters of input, at most 512,
+            // so it costs little on small inputs.
+            private string Intern(int start, int length)
+            {
+                if (length > 32)
+                {
+                    return input.Substring(start, length);
+                }
+
+                var hash = length;
+                for (var i = start; i < start + length; i++)
+                {
+                    hash = unchecked((hash * 31) + input[i]);
+                }
+
+                var table = interned ??= CreateInternTable();
+                var slot = hash & (table.Length - 1);
+                var known = table[slot];
+                if (known != null && known.Length == length && string.CompareOrdinal(input, start, known, 0, length) == 0)
+                {
+                    return known;
+                }
+
+                return table[slot] = input.Substring(start, length);
+            }
+
+            private string?[] CreateInternTable()
+            {
+                var size = 16;
+                while (size < 512 && size * 16 < input.Length)
+                {
+                    size *= 2;
+                }
+
+                return new string?[size];
             }
 
             [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
@@ -927,6 +983,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P1(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.ClassDecl> value)
             {
                 if (!P2M(pos, out var end1) || !P3(end1, out end, out var value2))
@@ -965,9 +1022,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P3(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.ClassDecl> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.ClassDecl>)global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.ClassDecl>();
+                var stackStart = scratch0Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -980,16 +1038,31 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch0Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch0Count == scratch0.Length)
+                    {
+                        global::System.Array.Resize(ref scratch0, scratch0Count * 2);
+                    }
+                    scratch0[scratch0Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.ClassDecl>();
+                }
+                else
+                {
+                    var items = new global::Warpstone.Benchmarks.MiniJava.ClassDecl[count];
+                    global::System.Array.Copy(scratch0, stackStart, items, 0, count);
+                    scratch0Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
@@ -1018,6 +1091,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P5(int pos, out int end, out (string, string, global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IMember>) value)
             {
                 if (!P6(pos, out var end1, out var value1) || !P20(end1, out end, out var value2))
@@ -1031,6 +1105,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P6(int pos, out int end, out (string, string) value)
             {
                 if (!P7(pos, out var end1, out var value1) || !P18M(end1, out end))
@@ -1044,6 +1119,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P7(int pos, out int end, out (string, string) value)
             {
                 if (!P8(pos, out var end1, out var value1) || !P13(end1, out end, out var value2))
@@ -1057,6 +1133,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P8(int pos, out int end, out string value)
             {
                 if (!P9M(pos, out var end1) || !P11(end1, out end, out var value2))
@@ -1070,6 +1147,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P9(int pos, out int end, out string value)
             {
                 if (!P10(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1083,6 +1161,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P9M(int pos, out int end)
             {
                 if (!P10M(pos, out var end1) || !P2M(end1, out end))
@@ -1126,6 +1205,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P11(int pos, out int end, out string value)
             {
                 if (!P12(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1146,7 +1226,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = Intern(pos, stop - pos);
                     return true;
                 }
                 Expect(pos, "\\(\\?!\\(\\?:class\\|extends\\|public\\|private\\|protected\\|static\\|final\\|if\\|else\\|while\\|return\\|new\\|this\\|true\\|false\\|null\\|int\\|boolean\\|void\\)\\\\b\\)\\[A-Za-z_]\\[A-Za-z0-9_]\\*");
@@ -1156,6 +1236,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P13(int pos, out int end, out string value)
             {
                 switch (__S0[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -1174,6 +1255,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P14(int pos, out int end, out string value)
             {
                 if (!P15M(pos, out var end1) || !P11(end1, out end, out var value2))
@@ -1187,6 +1269,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P15(int pos, out int end, out string value)
             {
                 if (!P16(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1200,6 +1283,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P15M(int pos, out int end)
             {
                 if (!P16M(pos, out var end1) || !P2M(end1, out end))
@@ -1252,6 +1336,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P18(int pos, out int end, out string value)
             {
                 if (!P19(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1265,6 +1350,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P18M(int pos, out int end)
             {
                 if (!P19M(pos, out var end1) || !P2M(end1, out end))
@@ -1306,9 +1392,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P20(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IMember> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IMember>)global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.IMember>();
+                var stackStart = scratch1Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -1321,16 +1408,31 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch1Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch1Count == scratch1.Length)
+                    {
+                        global::System.Array.Resize(ref scratch1, scratch1Count * 2);
+                    }
+                    scratch1[scratch1Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.IMember>();
+                }
+                else
+                {
+                    var items = new global::Warpstone.Benchmarks.MiniJava.IMember[count];
+                    global::System.Array.Copy(scratch1, stackStart, items, 0, count);
+                    scratch1Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
@@ -1359,6 +1461,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P22(int pos, out int end, out (global::Warpstone.Benchmarks.MiniJava.Seq<string>, global::Warpstone.Benchmarks.MiniJava.TypeRef, string) value)
             {
                 if (!P23(pos, out var end1, out var value1) || !P11(end1, out end, out var value2))
@@ -1372,6 +1475,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P23(int pos, out int end, out (global::Warpstone.Benchmarks.MiniJava.Seq<string>, global::Warpstone.Benchmarks.MiniJava.TypeRef) value)
             {
                 if (!P24(pos, out var end1, out var value1) || !P37(end1, out end, out var value2))
@@ -1407,9 +1511,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P25(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<string> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<string>)global::System.Array.Empty<string>();
+                var stackStart = scratch2Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -1422,20 +1527,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch2Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch2Count == scratch2.Length)
+                    {
+                        global::System.Array.Resize(ref scratch2, scratch2Count * 2);
+                    }
+                    scratch2[scratch2Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<string>();
+                }
+                else
+                {
+                    var items = new string[count];
+                    global::System.Array.Copy(scratch2, stackStart, items, 0, count);
+                    scratch2Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P26(int pos, out int end, out string value)
             {
                 switch (__S1[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -1514,6 +1635,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P27(int pos, out int end, out string value)
             {
                 if (!P28(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1544,6 +1666,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P29(int pos, out int end, out string value)
             {
                 if (!P30(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1574,6 +1697,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P31(int pos, out int end, out string value)
             {
                 if (!P32(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1604,6 +1728,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P33(int pos, out int end, out string value)
             {
                 if (!P34(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1634,6 +1759,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P35(int pos, out int end, out string value)
             {
                 if (!P36(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1687,6 +1813,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P38(int pos, out int end, out string value)
             {
                 switch (__S2[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -1755,6 +1882,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P39(int pos, out int end, out string value)
             {
                 if (!P40(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1785,6 +1913,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P41(int pos, out int end, out string value)
             {
                 if (!P42(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1815,6 +1944,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P43(int pos, out int end, out string value)
             {
                 if (!P44(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1845,6 +1975,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P45(int pos, out int end, out bool value)
             {
                 switch (__S3[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -1887,6 +2018,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P47(int pos, out int end, out string value)
             {
                 if (!P48(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1900,6 +2032,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P47M(int pos, out int end)
             {
                 if (!P48M(pos, out var end1) || !P2M(end1, out end))
@@ -1941,6 +2074,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P49(int pos, out int end, out string value)
             {
                 if (!P50(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -1993,6 +2127,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P52(int pos, out int end, out global::System.Func<global::Warpstone.Benchmarks.MiniJava.Seq<string>, global::Warpstone.Benchmarks.MiniJava.TypeRef, string, global::Warpstone.Benchmarks.MiniJava.IMember> value)
             {
                 switch (__S4[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -2058,6 +2193,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P55(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.Param> value)
             {
                 if (!P56M(pos, out var end1) || !P58(end1, out end, out var value2))
@@ -2071,6 +2207,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P56(int pos, out int end, out string value)
             {
                 if (!P57(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -2084,6 +2221,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P56M(int pos, out int end)
             {
                 if (!P57M(pos, out var end1) || !P2M(end1, out end))
@@ -2127,7 +2265,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // AggregateParser
             public bool P58(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.Param> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.Param>)global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.Param>();
+                var stackStart = scratch3Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -2140,6 +2278,7 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch3Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
@@ -2150,16 +2289,31 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch3Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch3Count == scratch3.Length)
+                    {
+                        global::System.Array.Resize(ref scratch3, scratch3Count * 2);
+                    }
+                    scratch3[scratch3Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.Param>();
+                }
+                else
+                {
+                    var items = new global::Warpstone.Benchmarks.MiniJava.Param[count];
+                    global::System.Array.Copy(scratch3, stackStart, items, 0, count);
+                    scratch3Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
@@ -2187,6 +2341,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P60(int pos, out int end, out string value)
             {
                 if (!P61(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -2200,6 +2355,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P60M(int pos, out int end)
             {
                 if (!P61M(pos, out var end1) || !P2M(end1, out end))
@@ -2241,6 +2397,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P62(int pos, out int end, out string value)
             {
                 if (!P63(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -2254,6 +2411,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P62M(int pos, out int end)
             {
                 if (!P63M(pos, out var end1) || !P2M(end1, out end))
@@ -2319,6 +2477,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P65(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IStmt> value)
             {
                 if (!P66M(pos, out var end1) || !P67(end1, out end, out var value2))
@@ -2332,6 +2491,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P66(int pos, out int end, out string value)
             {
                 if (!P19(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -2345,6 +2505,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P66M(int pos, out int end)
             {
                 if (!P19M(pos, out var end1) || !P2M(end1, out end))
@@ -2356,9 +2517,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P67(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IStmt> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IStmt>)global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.IStmt>();
+                var stackStart = scratch4Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -2371,16 +2533,31 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch4Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch4Count == scratch4.Length)
+                    {
+                        global::System.Array.Resize(ref scratch4, scratch4Count * 2);
+                    }
+                    scratch4[scratch4Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.IStmt>();
+                }
+                else
+                {
+                    var items = new global::Warpstone.Benchmarks.MiniJava.IStmt[count];
+                    global::System.Array.Copy(scratch4, stackStart, items, 0, count);
+                    scratch4Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
@@ -2559,6 +2736,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P70(int pos, out int end, out string value)
             {
                 if (!P71(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -2572,6 +2750,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P70M(int pos, out int end)
             {
                 if (!P71M(pos, out var end1) || !P2M(end1, out end))
@@ -2637,6 +2816,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P73(int pos, out int end, out (global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IStmt) value)
             {
                 if (!P74(pos, out var end1, out var value1) || !P223(end1, out end, out var value2))
@@ -2650,6 +2830,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P74(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P75M(pos, out var end1) || !P77(end1, out end, out var value2))
@@ -2663,6 +2844,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P75(int pos, out int end, out string value)
             {
                 if (!P76(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -2676,6 +2858,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P75M(int pos, out int end)
             {
                 if (!P76M(pos, out var end1) || !P2M(end1, out end))
@@ -2719,6 +2902,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P77(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P78(pos, out var end1, out var value1) || !P184M(end1, out end))
@@ -2732,6 +2916,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P78(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P79M(pos, out var end1) || !P222(end1, out end, out var value2))
@@ -2745,6 +2930,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P79(int pos, out int end, out string value)
             {
                 if (!P57(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -2758,6 +2944,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P79M(int pos, out int end)
             {
                 if (!P57M(pos, out var end1) || !P2M(end1, out end))
@@ -2907,6 +3094,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P86(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 switch (__S6[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -2985,6 +3173,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P88(int pos, out int end, out string value)
             {
                 switch (__S7[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -3022,6 +3211,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P89(int pos, out int end, out string value)
             {
                 if (!P90(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3051,6 +3241,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P91(int pos, out int end, out string value)
             {
                 if (!P92(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3325,7 +3516,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = Intern(pos, stop - pos);
                     return true;
                 }
                 Expect(pos, "\\[0-9]\\+");
@@ -3366,7 +3557,7 @@ namespace Warpstone.Benchmarks.MiniJava
                 if (stop >= 0)
                 {
                     end = stop;
-                    value = input.Substring(pos, stop - pos);
+                    value = Intern(pos, stop - pos);
                     return true;
                 }
                 Expect(pos, "\"\\[\\^\"]\\*\"");
@@ -3563,6 +3754,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P108(int pos, out int end, out string value)
             {
                 if (!P109M(pos, out var end1) || !P111(end1, out end, out var value2))
@@ -3576,6 +3768,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P109(int pos, out int end, out string value)
             {
                 if (!P110(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3589,6 +3782,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P109M(int pos, out int end)
             {
                 if (!P110M(pos, out var end1) || !P2M(end1, out end))
@@ -3632,6 +3826,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P111(int pos, out int end, out string value)
             {
                 switch (__S9[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -3658,6 +3853,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P112(int pos, out int end, out string value)
             {
                 if (!P40(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3671,6 +3867,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P113(int pos, out int end, out global::System.Func<string, global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
                 switch (__S10[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -3732,6 +3929,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P115(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P116M(pos, out var end1) || !P222(end1, out end, out var value2))
@@ -3745,6 +3943,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P116(int pos, out int end, out string value)
             {
                 if (!P48(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3758,6 +3957,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P116M(int pos, out int end)
             {
                 if (!P48M(pos, out var end1) || !P2M(end1, out end))
@@ -3769,6 +3969,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P117(int pos, out int end, out string value)
             {
                 if (!P50(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3782,6 +3983,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P117M(int pos, out int end)
             {
                 if (!P50M(pos, out var end1) || !P2M(end1, out end))
@@ -3818,6 +4020,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P119(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
                 if (!P120M(pos, out var end1) || !P121(end1, out end, out var value2))
@@ -3831,6 +4034,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P120(int pos, out int end, out string value)
             {
                 if (!P57(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3844,6 +4048,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P120M(int pos, out int end)
             {
                 if (!P57M(pos, out var end1) || !P2M(end1, out end))
@@ -3857,7 +4062,7 @@ namespace Warpstone.Benchmarks.MiniJava
             // AggregateParser
             public bool P121(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IExpr>)global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.IExpr>();
+                var stackStart = scratch5Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -3870,6 +4075,7 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch5Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
@@ -3880,20 +4086,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch5Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch5Count == scratch5.Length)
+                    {
+                        global::System.Array.Resize(ref scratch5, scratch5Count * 2);
+                    }
+                    scratch5[scratch5Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<global::Warpstone.Benchmarks.MiniJava.IExpr>();
+                }
+                else
+                {
+                    var items = new global::Warpstone.Benchmarks.MiniJava.IExpr[count];
+                    global::System.Array.Copy(scratch5, stackStart, items, 0, count);
+                    scratch5Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P122(int pos, out int end, out string value)
             {
                 if (!P61(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3907,6 +4129,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P122M(int pos, out int end)
             {
                 if (!P61M(pos, out var end1) || !P2M(end1, out end))
@@ -3918,6 +4141,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P123(int pos, out int end, out string value)
             {
                 if (!P63(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -3931,6 +4155,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P123M(int pos, out int end)
             {
                 if (!P63M(pos, out var end1) || !P2M(end1, out end))
@@ -3965,6 +4190,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P125(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
                 switch (__S4[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -4016,6 +4242,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P128(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P129(pos, out var end1, out var value1) || !P131M(end1, out end))
@@ -4029,6 +4256,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P129(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P130M(pos, out var end1) || !P222(end1, out end, out var value2))
@@ -4042,6 +4270,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P130(int pos, out int end, out string value)
             {
                 if (!P57(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4055,6 +4284,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P130M(int pos, out int end)
             {
                 if (!P57M(pos, out var end1) || !P2M(end1, out end))
@@ -4066,6 +4296,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P131(int pos, out int end, out string value)
             {
                 if (!P63(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4079,6 +4310,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P131M(int pos, out int end)
             {
                 if (!P63M(pos, out var end1) || !P2M(end1, out end))
@@ -4090,9 +4322,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P132(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr>> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr>>)global::System.Array.Empty<global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr>>();
+                var stackStart = scratch6Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -4105,20 +4338,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch6Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch6Count == scratch6.Length)
+                    {
+                        global::System.Array.Resize(ref scratch6, scratch6Count * 2);
+                    }
+                    scratch6[scratch6Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr>>();
+                }
+                else
+                {
+                    var items = new global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr>[count];
+                    global::System.Array.Copy(scratch6, stackStart, items, 0, count);
+                    scratch6Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P133(int pos, out int end, out global::System.Func<global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
                 switch (__S11[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -4179,6 +4428,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P135(int pos, out int end, out string value)
             {
                 if (!P136M(pos, out var end1) || !P11(end1, out end, out var value2))
@@ -4192,6 +4442,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P136(int pos, out int end, out string value)
             {
                 if (!P137(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4205,6 +4456,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P136M(int pos, out int end)
             {
                 if (!P137M(pos, out var end1) || !P2M(end1, out end))
@@ -4246,6 +4498,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P138(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.Seq<global::Warpstone.Benchmarks.MiniJava.IExpr> value)
             {
                 switch (__S4[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -4288,6 +4541,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P140(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P141M(pos, out var end1) || !P222(end1, out end, out var value2))
@@ -4301,6 +4555,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P141(int pos, out int end, out string value)
             {
                 if (!P48(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4314,6 +4569,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P141M(int pos, out int end)
             {
                 if (!P48M(pos, out var end1) || !P2M(end1, out end))
@@ -4325,6 +4581,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P142(int pos, out int end, out string value)
             {
                 if (!P50(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4338,6 +4595,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P142M(int pos, out int end)
             {
                 if (!P50M(pos, out var end1) || !P2M(end1, out end))
@@ -4349,9 +4607,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P143(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>)global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                var stackStart = scratch7Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -4364,20 +4623,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch7Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch7Count == scratch7.Length)
+                    {
+                        global::System.Array.Resize(ref scratch7, scratch7Count * 2);
+                    }
+                    scratch7[scratch7Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                }
+                else
+                {
+                    var items = new (string, global::Warpstone.Benchmarks.MiniJava.IExpr)[count];
+                    global::System.Array.Copy(scratch7, stackStart, items, 0, count);
+                    scratch7Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P144(int pos, out int end, out (string, global::Warpstone.Benchmarks.MiniJava.IExpr) value)
             {
                 if (!P145(pos, out var end1, out var value1) || !P221(end1, out end, out var value2))
@@ -4391,6 +4666,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P145(int pos, out int end, out string value)
             {
                 switch (__S12[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -4447,6 +4723,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P146(int pos, out int end, out string value)
             {
                 if (!P147(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4476,6 +4753,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P148(int pos, out int end, out string value)
             {
                 if (!P149(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4505,6 +4783,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P150(int pos, out int end, out string value)
             {
                 if (!P151(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4534,9 +4813,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P152(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>)global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                var stackStart = scratch7Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -4549,20 +4829,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch7Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch7Count == scratch7.Length)
+                    {
+                        global::System.Array.Resize(ref scratch7, scratch7Count * 2);
+                    }
+                    scratch7[scratch7Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                }
+                else
+                {
+                    var items = new (string, global::Warpstone.Benchmarks.MiniJava.IExpr)[count];
+                    global::System.Array.Copy(scratch7, stackStart, items, 0, count);
+                    scratch7Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P153(int pos, out int end, out (string, global::Warpstone.Benchmarks.MiniJava.IExpr) value)
             {
                 if (!P154(pos, out var end1, out var value1) || !P85(end1, out end, out var value2))
@@ -4576,6 +4872,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P154(int pos, out int end, out string value)
             {
                 switch (__S13[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -4613,6 +4910,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P155(int pos, out int end, out string value)
             {
                 if (!P156(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4642,6 +4940,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P157(int pos, out int end, out string value)
             {
                 if (!P92(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4655,9 +4954,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P158(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>)global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                var stackStart = scratch7Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -4670,20 +4970,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch7Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch7Count == scratch7.Length)
+                    {
+                        global::System.Array.Resize(ref scratch7, scratch7Count * 2);
+                    }
+                    scratch7[scratch7Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                }
+                else
+                {
+                    var items = new (string, global::Warpstone.Benchmarks.MiniJava.IExpr)[count];
+                    global::System.Array.Copy(scratch7, stackStart, items, 0, count);
+                    scratch7Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P159(int pos, out int end, out (string, global::Warpstone.Benchmarks.MiniJava.IExpr) value)
             {
                 if (!P160(pos, out var end1, out var value1) || !P84(end1, out end, out var value2))
@@ -4697,6 +5013,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P160(int pos, out int end, out string value)
             {
                 switch (__S14[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -4754,6 +5071,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P161(int pos, out int end, out string value)
             {
                 if (!P162(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4783,6 +5101,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P163(int pos, out int end, out string value)
             {
                 if (!P164(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4812,6 +5131,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P165(int pos, out int end, out string value)
             {
                 if (!P166(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4841,6 +5161,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P167(int pos, out int end, out string value)
             {
                 if (!P168(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4870,9 +5191,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P169(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>)global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                var stackStart = scratch7Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -4885,20 +5207,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch7Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch7Count == scratch7.Length)
+                    {
+                        global::System.Array.Resize(ref scratch7, scratch7Count * 2);
+                    }
+                    scratch7[scratch7Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                }
+                else
+                {
+                    var items = new (string, global::Warpstone.Benchmarks.MiniJava.IExpr)[count];
+                    global::System.Array.Copy(scratch7, stackStart, items, 0, count);
+                    scratch7Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P170(int pos, out int end, out (string, global::Warpstone.Benchmarks.MiniJava.IExpr) value)
             {
                 if (!P171(pos, out var end1, out var value1) || !P83(end1, out end, out var value2))
@@ -4912,6 +5250,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P171(int pos, out int end, out string value)
             {
                 switch (__S15[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -4949,6 +5288,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P172(int pos, out int end, out string value)
             {
                 if (!P173(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -4978,6 +5318,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P174(int pos, out int end, out string value)
             {
                 if (!P175(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5007,9 +5348,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P176(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>)global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                var stackStart = scratch7Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -5022,20 +5364,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch7Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch7Count == scratch7.Length)
+                    {
+                        global::System.Array.Resize(ref scratch7, scratch7Count * 2);
+                    }
+                    scratch7[scratch7Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                }
+                else
+                {
+                    var items = new (string, global::Warpstone.Benchmarks.MiniJava.IExpr)[count];
+                    global::System.Array.Copy(scratch7, stackStart, items, 0, count);
+                    scratch7Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P177(int pos, out int end, out (string, global::Warpstone.Benchmarks.MiniJava.IExpr) value)
             {
                 if (!P178(pos, out var end1, out var value1) || !P82(end1, out end, out var value2))
@@ -5049,6 +5407,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P178(int pos, out int end, out string value)
             {
                 if (!P179(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5078,9 +5437,10 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AggregateParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P180(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)> value)
             {
-                var accumulator = (global::System.Collections.Generic.IReadOnlyList<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>)global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                var stackStart = scratch7Count;
                 var count = 0;
                 var next = pos;
                 end = pos;
@@ -5093,20 +5453,36 @@ namespace Warpstone.Benchmarks.MiniJava
                         {
                             break;
                         }
+                        scratch7Count = stackStart;
                         end = pos;
                         value = default!;
                         return false;
                     }
-                    accumulator = AddToList(accumulator, element);
+                    if (scratch7Count == scratch7.Length)
+                    {
+                        global::System.Array.Resize(ref scratch7, scratch7Count * 2);
+                    }
+                    scratch7[scratch7Count++] = element;
                     next = elementEnd;
                     end = elementEnd;
                     count++;
                 }
-                value = accumulator;
+                if (count == 0)
+                {
+                    value = global::System.Array.Empty<(string, global::Warpstone.Benchmarks.MiniJava.IExpr)>();
+                }
+                else
+                {
+                    var items = new (string, global::Warpstone.Benchmarks.MiniJava.IExpr)[count];
+                    global::System.Array.Copy(scratch7, stackStart, items, 0, count);
+                    scratch7Count = stackStart;
+                    value = items;
+                }
                 return true;
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P181(int pos, out int end, out (string, global::Warpstone.Benchmarks.MiniJava.IExpr) value)
             {
                 if (!P182(pos, out var end1, out var value1) || !P81(end1, out end, out var value2))
@@ -5120,6 +5496,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P182(int pos, out int end, out string value)
             {
                 if (!P183(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5149,6 +5526,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P184(int pos, out int end, out string value)
             {
                 if (!P63(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5162,6 +5540,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P184M(int pos, out int end)
             {
                 if (!P63M(pos, out var end1) || !P2M(end1, out end))
@@ -5173,6 +5552,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P185(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IStmt value)
             {
                 switch (__S0[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -5191,6 +5571,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P186(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IStmt value)
             {
                 if (!P187M(pos, out var end1) || !P223(end1, out end, out var value2))
@@ -5204,6 +5585,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P187(int pos, out int end, out string value)
             {
                 if (!P188(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5217,6 +5599,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P187M(int pos, out int end)
             {
                 if (!P188M(pos, out var end1) || !P2M(end1, out end))
@@ -5292,6 +5675,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P191(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P192M(pos, out var end1) || !P77(end1, out end, out var value2))
@@ -5305,6 +5689,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P192(int pos, out int end, out string value)
             {
                 if (!P193(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5318,6 +5703,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P192M(int pos, out int end)
             {
                 if (!P193M(pos, out var end1) || !P2M(end1, out end))
@@ -5385,6 +5771,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P195(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P196M(pos, out var end1) || !P198(end1, out end, out var value2))
@@ -5398,6 +5785,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P196(int pos, out int end, out string value)
             {
                 if (!P197(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5411,6 +5799,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P196M(int pos, out int end)
             {
                 if (!P197M(pos, out var end1) || !P2M(end1, out end))
@@ -5454,6 +5843,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P198(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 switch (__S16[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -5491,6 +5881,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P200(int pos, out int end, out string value)
             {
                 if (!P201(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5504,6 +5895,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P200M(int pos, out int end)
             {
                 if (!P201M(pos, out var end1) || !P2M(end1, out end))
@@ -5569,6 +5961,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P203(int pos, out int end, out (global::Warpstone.Benchmarks.MiniJava.TypeRef, string, global::Warpstone.Benchmarks.MiniJava.IExpr) value)
             {
                 if (!P204(pos, out var end1, out var value1) || !P205(end1, out end, out var value2))
@@ -5582,6 +5975,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P204(int pos, out int end, out (global::Warpstone.Benchmarks.MiniJava.TypeRef, string) value)
             {
                 if (!P37(pos, out var end1, out var value1) || !P11(end1, out end, out var value2))
@@ -5595,6 +5989,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P205(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 switch (__S17[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -5613,6 +6008,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P206(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P207M(pos, out var end1) || !P222(end1, out end, out var value2))
@@ -5626,6 +6022,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P207(int pos, out int end, out string value)
             {
                 if (!P208(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5639,6 +6036,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P207M(int pos, out int end)
             {
                 if (!P208M(pos, out var end1) || !P2M(end1, out end))
@@ -5680,6 +6078,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P209(int pos, out int end, out string value)
             {
                 if (!P201(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5693,6 +6092,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P209M(int pos, out int end)
             {
                 if (!P201M(pos, out var end1) || !P2M(end1, out end))
@@ -5728,6 +6128,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // AndParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P211(int pos, out int end, out (global::Warpstone.Benchmarks.MiniJava.IExpr, global::Warpstone.Benchmarks.MiniJava.IExpr) value)
             {
                 if (!P222(pos, out var end1, out var value1) || !P212(end1, out end, out var value2))
@@ -5741,6 +6142,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // OrParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P212(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 switch (__S17[pos < input.Length && input[pos] < 128 ? input[pos] : 128])
@@ -5759,6 +6161,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P213(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 if (!P214M(pos, out var end1) || !P222(end1, out end, out var value2))
@@ -5772,6 +6175,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P214(int pos, out int end, out string value)
             {
                 if (!P208(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5785,6 +6189,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P214M(int pos, out int end)
             {
                 if (!P208M(pos, out var end1) || !P2M(end1, out end))
@@ -5796,6 +6201,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P215(int pos, out int end, out string value)
             {
                 if (!P201(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5809,6 +6215,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P215M(int pos, out int end)
             {
                 if (!P201M(pos, out var end1) || !P2M(end1, out end))
@@ -5844,6 +6251,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P217(int pos, out int end, out string value)
             {
                 if (!P201(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5857,6 +6265,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P217M(int pos, out int end)
             {
                 if (!P201M(pos, out var end1) || !P2M(end1, out end))
@@ -5868,6 +6277,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P218(int pos, out int end, out string value)
             {
                 if (!P71(pos, out var end1, out var value1) || !P2M(end1, out end))
@@ -5881,6 +6291,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // SequenceParser, only matching
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P218M(int pos, out int end)
             {
                 if (!P71M(pos, out var end1) || !P2M(end1, out end))
@@ -5922,6 +6333,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StackGuardParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P220(int pos, out int end, out global::System.Collections.Generic.IReadOnlyList<global::Warpstone.Benchmarks.MiniJava.IStmt> value)
             {
                 global::System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
@@ -5929,6 +6341,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StackGuardParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P221(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 global::System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
@@ -5936,6 +6349,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StackGuardParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P222(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IExpr value)
             {
                 global::System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
@@ -5943,6 +6357,7 @@ namespace Warpstone.Benchmarks.MiniJava
             }
 
             // StackGuardParser
+            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
             public bool P223(int pos, out int end, out global::Warpstone.Benchmarks.MiniJava.IStmt value)
             {
                 global::System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();

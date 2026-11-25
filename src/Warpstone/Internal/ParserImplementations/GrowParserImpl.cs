@@ -13,13 +13,29 @@ namespace Warpstone.Internal.ParserImplementations
     internal sealed class GrowParserImpl<T> : ParserImplementationBase<GrowParser<T>, T>
     {
         private Continuation continuation = default!;
+        private AlternativeContinuation[] alternativeContinuations = default!;
         private IParserImplementation<T> inner = default!;
+        private OrParserImpl<T>? choice;
+        private int recursiveAlternatives;
+        private int alternativeCount;
 
         /// <inheritdoc />
         protected override void InitializeInternal(GrowParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {
             inner = (IParserImplementation<T>)parserLookup[parser.Parser];
-            continuation = new(inner);
+            continuation = new(this);
+
+            // The choice's alternatives are initialized after this, so they are read from it when parsing.
+#pragma warning disable S3215 // RecursiveAlternatives is only set for a choice.
+            choice = inner as OrParserImpl<T>;
+            recursiveAlternatives = choice is null ? 0 : parser.RecursiveAlternatives;
+            alternativeCount = recursiveAlternatives == 0 ? 0 : ((OrParser<T>)parser.Parser).Alternatives.Count;
+#pragma warning restore S3215
+            alternativeContinuations = new AlternativeContinuation[alternativeCount];
+            for (var i = 0; i < alternativeCount; i++)
+            {
+                alternativeContinuations[i] = new(this, i, i < recursiveAlternatives ? recursiveAlternatives - 1 : alternativeCount - 1);
+            }
         }
 
         /// <inheritdoc />
@@ -33,20 +49,21 @@ namespace Warpstone.Internal.ParserImplementations
             var lastResult = UnsafeParseResult.Failure(position);
             context.MemoTable[position, inner] = lastResult;
 
-            while (true)
+            // With RecursiveAlternatives, the first round skips the left-recursive alternatives, which fail without a seed,
+            // and later rounds skip the others, which would give the first round's seed again.
+            var newResult = recursiveAlternatives == 0
+                ? inner.Apply(context, position)
+                : ApplyAlternatives(context, position, recursiveAlternatives, alternativeCount);
+            while (ResultHasImproved(lastResult, newResult))
             {
-                var newResult = inner.Apply(context, position);
-                if (!ResultHasImproved(lastResult, newResult))
-                {
-                    break;
-                }
-
                 lastResult = newResult;
                 context.MemoTable[position, inner] = newResult;
+                newResult = recursiveAlternatives == 0
+                    ? inner.Apply(context, position)
+                    : ApplyAlternatives(context, position, 0, recursiveAlternatives);
             }
 
-            result = lastResult;
-            return result;
+            return lastResult;
         }
 
         /// <inheritdoc />
@@ -59,33 +76,99 @@ namespace Warpstone.Internal.ParserImplementations
             }
 
             context.MemoTable[position, inner] = UnsafeParseResult.Failure(position);
-            context.ExecutionStack.Push((position, continuation));
-            context.ExecutionStack.Push((position, inner));
+            StartRound(context, position, recursiveAlternatives);
+        }
+
+        private UnsafeParseResult ApplyAlternatives(IRecursiveParseContext context, int position, int from, int to)
+        {
+            var alternatives = choice!.Alternatives;
+            var last = to - 1;
+            for (var i = from; i < last; i++)
+            {
+                var result = alternatives[i].Apply(context, position);
+                if (result.Success)
+                {
+                    return result;
+                }
+            }
+
+            return alternatives[last].Apply(context, position);
+        }
+
+        /// <summary>
+        /// Pushes a round that starts at alternative <paramref name="from"/>, or the whole parser without <see cref="GrowParser{T}.RecursiveAlternatives"/>.
+        /// </summary>
+        private void StartRound(IIterativeParseContext context, int position, int from)
+        {
+            if (recursiveAlternatives == 0)
+            {
+                context.ExecutionStack.Push((position, continuation));
+                context.ExecutionStack.Push((position, inner));
+            }
+            else
+            {
+                context.ExecutionStack.Push((position, alternativeContinuations[from]));
+                context.ExecutionStack.Push((position, choice!.Alternatives[from]));
+            }
+        }
+
+        /// <summary>
+        /// Keeps <paramref name="newResult"/> as the seed and starts the next round if it improved on the seed,
+        /// or else ends with the seed.
+        /// </summary>
+        private void Accept(IIterativeParseContext context, int position, in UnsafeParseResult newResult)
+        {
+            var lastResult = context.MemoTable[position, inner];
+            if (!ResultHasImproved(lastResult, newResult))
+            {
+                context.ResultStack.Push(lastResult);
+                return;
+            }
+
+            context.MemoTable[position, inner] = newResult;
+            StartRound(context, position, 0);
         }
 
         private sealed class Continuation : ContinuationParserImplementationBase
         {
-            private readonly IParserImplementation inner;
+            private readonly GrowParserImpl<T> owner;
 
-            public Continuation(IParserImplementation inner)
+            public Continuation(GrowParserImpl<T> owner)
             {
-                this.inner = inner;
+                this.owner = owner;
+            }
+
+            public override void Apply(IIterativeParseContext context, int position)
+                => owner.Accept(context, position, context.ResultStack.Pop());
+        }
+
+        /// <summary>
+        /// Runs after alternative <c>index</c> of a round, and tries the next one up to <c>last</c> if it failed.
+        /// </summary>
+        private sealed class AlternativeContinuation : ContinuationParserImplementationBase
+        {
+            private readonly GrowParserImpl<T> owner;
+            private readonly int index;
+            private readonly int last;
+
+            public AlternativeContinuation(GrowParserImpl<T> owner, int index, int last)
+            {
+                this.owner = owner;
+                this.index = index;
+                this.last = last;
             }
 
             public override void Apply(IIterativeParseContext context, int position)
             {
-                var newResult = context.ResultStack.Pop();
-                var lastResult = context.MemoTable[position, inner];
-
-                if (!ResultHasImproved(lastResult, newResult))
+                var result = context.ResultStack.Pop();
+                if (result.Success || index == last)
                 {
-                    context.ResultStack.Push(lastResult);
+                    owner.Accept(context, position, result);
                     return;
                 }
 
-                context.MemoTable[position, inner] = newResult;
-                context.ExecutionStack.Push((position, this));
-                context.ExecutionStack.Push((position, inner));
+                context.ExecutionStack.Push((position, owner.alternativeContinuations[index + 1]));
+                context.ExecutionStack.Push((position, owner.choice!.Alternatives[index + 1]));
             }
         }
 

@@ -3,6 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Warpstone.Errors;
+using Warpstone.Internal;
 using Warpstone.Internal.Input;
 
 namespace Warpstone
@@ -11,7 +12,7 @@ namespace Warpstone
     /// Parsing context for iterative parsing.
     /// </summary>
     /// <typeparam name="T">The result type of the parsing.</typeparam>
-    public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParseContext
+    public sealed class IterativeParseContext<T> : IParseContext<T>, IIterativeParseContext, ScratchStacks.IOwner
     {
 #if NET9_0_OR_GREATER
         private readonly Lock lck = new();
@@ -26,6 +27,7 @@ namespace Warpstone
         private readonly Stack<(int Position, IParserImplementation Parser)> executionStack;
 
         private IParseResult<T>? result;
+        private ScratchStacks? scratch;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IterativeParseContext{T}"/> class.
@@ -73,6 +75,9 @@ namespace Warpstone
 
         /// <inheritdoc />
         public FailureTracker Failures { get; }
+
+        /// <inheritdoc />
+        ScratchStacks ScratchStacks.IOwner.Scratch => scratch ??= new();
 
         /// <inheritdoc />
         IMemoTable IParseContext.MemoTable => memoTable;

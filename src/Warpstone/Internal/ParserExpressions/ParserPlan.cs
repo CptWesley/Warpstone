@@ -75,7 +75,7 @@ namespace Warpstone.Internal.ParserExpressions
             {
                 foreach (var parser in leftRecursion.Leaders)
                 {
-                    steps.Add(Step.Wrap(typeof(GrowParser<>), parser));
+                    steps.Add(Step.Wrap(typeof(GrowParser<>), parser, LeftRecursionAnalysis.CountLeftRecursiveAlternatives(parser, leftRecursion.Components[parser], lazyTargets)));
                 }
 
                 foreach (var group in leftRecursion.LeaderlessGroups)

@@ -5,6 +5,7 @@
 
 using System.Threading;
 using Warpstone.Errors;
+using Warpstone.Internal;
 
 namespace Warpstone
 {
@@ -12,7 +13,7 @@ namespace Warpstone
     /// Parsing context for recursive parsing.
     /// </summary>
     /// <typeparam name="T">The result type of the parsing.</typeparam>
-    public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParseContext
+    public sealed class RecursiveParseContext<T> : IParseContext<T>, IRecursiveParseContext, ScratchStacks.IOwner
     {
 #if NET9_0_OR_GREATER
         private readonly System.Threading.Lock lck = new();
@@ -25,6 +26,7 @@ namespace Warpstone
         private readonly IParserImplementation<T> implementation;
 
         private IParseResult<T>? result;
+        private ScratchStacks? scratch;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RecursiveParseContext{T}"/> class.
@@ -68,6 +70,9 @@ namespace Warpstone
 
         /// <inheritdoc />
         public FailureTracker Failures { get; }
+
+        /// <inheritdoc />
+        ScratchStacks ScratchStacks.IOwner.Scratch => scratch ??= new();
 
         /// <inheritdoc />
         public bool Done => result is { };

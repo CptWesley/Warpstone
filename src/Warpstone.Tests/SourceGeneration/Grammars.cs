@@ -64,6 +64,12 @@ public static class Grammars
     /// <summary>Explicit memoization of a parser that is tried twice at the same position.</summary>
     public static readonly IParser<string> Memoized = CreateMemoized();
 
+    /// <summary>Words separated by spaces: a scanned regex whose matches are interned.</summary>
+    public static readonly IParser<IReadOnlyList<string>> Words = Many(Regex("[a-z0-9]+"), Char(' ')).ThenEnd();
+
+    /// <summary>Repetitions of one element type nested in each other, and a repetition that fails after collecting elements.</summary>
+    public static readonly IParser<string> NestedLists = CreateNestedLists();
+
     // The calculator of the README, written the same way.
     private static IParser<int> CreateCalculator()
     {
@@ -102,6 +108,17 @@ public static class Grammars
         num = Or(Lazy(() => num).ThenAdd(digit).Transform((x, y) => x + y), digit);
         expr = Or(Lazy(() => expr).ThenAdd(String("+")).ThenAdd(num).Transform((x, y, z) => x + y + z), num);
         return expr.ThenEnd();
+    }
+
+    private static IParser<string> CreateNestedLists()
+    {
+        IParser<string> item = null!;
+        var letter = Regex("[a-z]");
+        item = Or(
+            Char('[').Then(Many(Lazy(() => item))).ThenSkip(Char(']')).Transform(xs => "[" + string.Join(",", xs) + "]"),
+            Multiple(letter, 3, 3).Transform(xs => string.Concat(xs)),
+            letter);
+        return Many(item).Transform(xs => string.Join(";", xs)).ThenEnd();
     }
 
     private static IParser<string> CreateMemoized()

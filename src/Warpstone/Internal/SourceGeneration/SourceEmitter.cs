@@ -17,6 +17,7 @@ namespace Warpstone.Internal.SourceGeneration
     internal sealed partial class SourceEmitter
     {
         private const string MethodIndent = "                ";
+        private const int MaxInlinedLines = 32;
 
         private readonly SortedDictionary<(int Number, bool MatchOnly), string> methods = new();
         private readonly StringBuilder statics = new();
@@ -25,6 +26,7 @@ namespace Warpstone.Internal.SourceGeneration
         private readonly Dictionary<string, string> functionNames = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> helperNames = new(StringComparer.Ordinal);
         private readonly Dictionary<string, string> memoTables = new(StringComparer.Ordinal);
+        private readonly Dictionary<string, string> scratchStacks = new(StringComparer.Ordinal);
         private readonly List<string> memoSlots = new();
         private readonly StringBuilder constructor = new();
         private readonly Dictionary<CycleGrowGroup, string> cycleGroups = new();
@@ -379,6 +381,27 @@ namespace Warpstone.Internal.SourceGeneration
         }
 
         /// <summary>
+        /// Gets the scratch stack that repetitions collect elements of type <paramref name="elementType"/> on, like <see cref="ScratchStacks"/>.
+        /// It is a typed array field, with its count in a field named like it plus <c>Count</c>.
+        /// A generic stack class would run as shared generic code, which made MiniJava about 10% slower.
+        /// </summary>
+        /// <param name="elementType">The element type.</param>
+        /// <returns>The name of the field holding the array.</returns>
+        public string ScratchStack(Type elementType)
+        {
+            var type = TypeName(elementType);
+            if (!scratchStacks.TryGetValue(type, out var name))
+            {
+                name = $"scratch{scratchStacks.Count}";
+                scratchStacks[type] = name;
+                fields.Append($"            private {type}[] {name} = new {type}[16];\n");
+                fields.Append($"            private int {name}Count;\n");
+            }
+
+            return name;
+        }
+
+        /// <summary>
         /// Gets the table holding the state of a group of left-recursive parsers growing together, per position.
         /// </summary>
         /// <param name="group">The group.</param>
@@ -458,6 +481,7 @@ namespace Warpstone.Internal.SourceGeneration
             implementations = plan.CreateImplementations();
 
             var pending = new List<(IParser Parser, int Number)>();
+            var wrappers = new List<(IParser Wrapper, IParser Parser, string Inner, int Number)>();
             var lookup = plan.Execute(
                 parser =>
                 {
@@ -469,9 +493,15 @@ namespace Warpstone.Internal.SourceGeneration
                 (wrapper, parser, inner) =>
                 {
                     var number = methodCount++;
-                    EmitMethod(number, wrapper, new Dictionary<IParser, string>() { [parser] = inner }, valueNeeded: true);
+                    wrappers.Add((wrapper, parser, inner, number));
                     return $"P{number}";
                 });
+
+            // A wrapper runs the node it wraps, and may call the nodes of the wrapped parser's children (see GrowParser.RecursiveAlternatives).
+            foreach (var (wrapper, parser, inner, number) in wrappers)
+            {
+                EmitMethod(number, wrapper, new Dictionary<IParser, string>(lookup) { [parser] = inner }, valueNeeded: true);
+            }
 
             foreach (var (parser, number) in pending)
             {
@@ -487,6 +517,34 @@ namespace Warpstone.Internal.SourceGeneration
             return lookup[root];
         }
 
+        /// <summary>
+        /// Checks whether a method body is short enough to inline: at most <see cref="MaxInlinedLines"/> lines, without a <c>try</c>.
+        /// <c>Expect</c> calls and braces don't count, because without failure tracking they cost a branch at most.
+        /// Most of these are a token followed by whitespace, a wrapper, or a choice between tokens that fails on the first character.
+        /// On MiniJava, 12 lines gained nothing and 32 gained 3%; allowing a <c>try</c> (which .NET 10 can inline) gained nothing more.
+        /// </summary>
+        private static bool IsSmall(StringBuilder body)
+        {
+            // ponytail: line count as the size measure; count IL if it inlines methods that hurt.
+            var text = body.ToString();
+            if (text.Contains("try\n"))
+            {
+                return false;
+            }
+
+            var lines = 0;
+            foreach (var line in text.Split('\n'))
+            {
+                var code = line.Trim();
+                if (code.Length > 0 && code != "{" && code != "}" && !code.StartsWith("Expect(", StringComparison.Ordinal))
+                {
+                    lines++;
+                }
+            }
+
+            return lines <= MaxInlinedLines;
+        }
+
         private void EmitMethod(int number, IParser parser, IReadOnlyDictionary<IParser, string> lookup, bool valueNeeded)
         {
             resolver = lookup;
@@ -500,7 +558,7 @@ namespace Warpstone.Internal.SourceGeneration
 
             var method = new StringBuilder();
             method.Append($"            // {Describe(parser)}{(valueNeeded ? string.Empty : ", only matching")}\n");
-            if (inline)
+            if (inline || IsSmall(body))
             {
                 method.Append("            [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]\n");
             }

@@ -28,6 +28,7 @@ namespace Warpstone.Internal.ParserExpressions
         /// <param name="accumulate">The accumulation function.</param>
         /// <param name="seedCode">The source of <paramref name="createSeed"/>, or <see langword="null"/> if it is unknown.</param>
         /// <param name="accumulateCode">The source of <paramref name="accumulate"/>, or <see langword="null"/> if it is unknown.</param>
+        /// <param name="collectsList">Whether the accumulator is the list of elements, see <see cref="CollectsList"/>.</param>
 #pragma warning disable S107 // Methods should not have too many parameters
         public AggregateParser(
             IParser<TSource> element,
@@ -37,7 +38,8 @@ namespace Warpstone.Internal.ParserExpressions
             Func<TAccumulator> createSeed,
             Func<TAccumulator, TSource, TAccumulator> accumulate,
             CodeTemplate? seedCode,
-            CodeTemplate? accumulateCode)
+            CodeTemplate? accumulateCode,
+            bool collectsList = false)
 #pragma warning restore S107 // Methods should not have too many parameters
         {
             SeedCode = seedCode;
@@ -48,6 +50,7 @@ namespace Warpstone.Internal.ParserExpressions
             MaxCount = maxCount;
             CreateSeed = createSeed;
             Accumulate = accumulate;
+            CollectsList = collectsList;
         }
 
         /// <summary>
@@ -90,6 +93,13 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         public CodeTemplate? AccumulateCode { get; }
 
+        /// <summary>
+        /// Gets a value indicating whether the accumulator is the list of elements, as <see cref="Parsers.Many{TSource}(IParser{TSource})"/> builds it.
+        /// The elements are then collected on a scratch stack of the parse and copied into an array of the exact size at the end,
+        /// instead of calling <see cref="CreateSeed"/> and <see cref="Accumulate"/>.
+        /// </summary>
+        public bool CollectsList { get; }
+
         /// <inheritdoc />
         public override IParserImplementation<TAccumulator> CreateUninitializedImplementation()
             => new AggregateParserImpl<TSource, TAccumulator>();
@@ -102,7 +112,13 @@ namespace Warpstone.Internal.ParserExpressions
 
             // Only matching skips building the result, unless user code runs, which may throw.
             var accumulating = emitter.ValueNeeded || seed.UserCode || accumulate.UserCode;
-            if (accumulating)
+            var stack = accumulating && CollectsList ? emitter.ScratchStack(typeof(TSource)) : null;
+            var reset = stack is null ? null : $"{stack}Count = stackStart;";
+            if (stack is not null)
+            {
+                emitter.Line($"var stackStart = {stack}Count;");
+            }
+            else if (accumulating)
             {
                 emitter.Line($"var accumulator = {emitter.Expression(SeedCode, "seed")};");
             }
@@ -118,7 +134,7 @@ namespace Warpstone.Internal.ParserExpressions
                 emitter.Open($"if (count >= {MinCount})");
                 emitter.Line("break;");
                 emitter.Close();
-                emitter.Fail();
+                FailAndReset(emitter, reset);
                 emitter.Close();
             }
 
@@ -126,9 +142,16 @@ namespace Warpstone.Internal.ParserExpressions
             emitter.Open($"if (count >= {MinCount})");
             emitter.Line("break;");
             emitter.Close();
-            emitter.Fail();
+            FailAndReset(emitter, reset);
             emitter.Close();
-            if (accumulating)
+            if (stack is not null)
+            {
+                emitter.Open($"if ({stack}Count == {stack}.Length)");
+                emitter.Line($"global::System.Array.Resize(ref {stack}, {stack}Count * 2);");
+                emitter.Close();
+                emitter.Line($"{stack}[{stack}Count++] = element;");
+            }
+            else if (accumulating)
             {
                 emitter.Line($"accumulator = {emitter.Expression(AccumulateCode, "accumulation", "accumulator", "element")};");
             }
@@ -137,8 +160,36 @@ namespace Warpstone.Internal.ParserExpressions
             emitter.Line("end = elementEnd;");
             emitter.Line("count++;");
             emitter.Close();
-            emitter.Value("accumulator");
+            if (stack is null)
+            {
+                emitter.Value("accumulator");
+            }
+            else
+            {
+                // Pop the elements into an array of the exact size.
+                var type = emitter.TypeName(typeof(TSource));
+                emitter.Open("if (count == 0)");
+                emitter.Line($"value = global::System.Array.Empty<{type}>();");
+                emitter.Close();
+                emitter.Open("else");
+                emitter.Line($"var items = new {type}[count];");
+                emitter.Line($"global::System.Array.Copy({stack}, stackStart, items, 0, count);");
+                emitter.Line(reset!);
+                emitter.Line("value = items;");
+                emitter.Close();
+            }
+
             emitter.Line("return true;");
+        }
+
+        private static void FailAndReset(SourceEmitter emitter, string? reset)
+        {
+            if (reset is not null)
+            {
+                emitter.Line(reset);
+            }
+
+            emitter.Fail();
         }
 
         /// <inheritdoc />

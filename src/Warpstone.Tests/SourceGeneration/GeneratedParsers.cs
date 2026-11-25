@@ -40,6 +40,32 @@ public static class GeneratedParsers
     public static void KeyValues(string input)
         => GeneratedParser.ShouldMatchWarpstone(nameof(KeyValues), Grammars.KeyValues, input);
 
+    [TestCase("")]
+    [TestCase("ab")]
+    [TestCase("abcd")]
+    [TestCase("a[b[cde]f]g")]
+    [TestCase("[[]]")]
+    [TestCase("[ab")]
+    public static void NestedLists(string input)
+        => GeneratedParser.ShouldMatchWarpstone(nameof(NestedLists), Grammars.NestedLists, input);
+
+    [Test]
+    public static void Repeated_matches_share_one_string()
+    {
+        var words = (IReadOnlyList<string>)GeneratedParser.Compile(nameof(Grammars.Words), Grammars.Words)("foo bar bar").Value!;
+
+        words.Should().Equal("foo", "bar", "bar");
+        words[2].Should().BeSameAs(words[1]);
+    }
+
+    [Test]
+    public static void Interned_matches_that_collide_keep_their_text()
+    {
+        // More words than the 512 interning slots, each twice, and a word too long to intern.
+        var words = Enumerable.Range(0, 2000).Select(i => "w" + i).Append(new string('l', 40)).SelectMany(w => new[] { w, w }).ToArray();
+        GeneratedParser.ShouldMatchWarpstone(nameof(Grammars.Words), Grammars.Words, string.Join(' ', words));
+    }
+
     [TestCase("let")]
     [TestCase("let!")]
     [TestCase("letter")]

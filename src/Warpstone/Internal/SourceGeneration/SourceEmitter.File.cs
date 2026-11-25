@@ -291,6 +291,7 @@ namespace {{@namespace}}
             public global::System.Collections.Generic.HashSet<int> Limits;
         }
 
+
 {{statics}}{{MemoClasses()}}        private sealed class __Parser
         {
             private readonly string input;
@@ -299,6 +300,7 @@ namespace {{@namespace}}
             private int failureCount;
             private int failPos = -1;
             private int suppressed;
+            private string?[]? interned;
 {{fields}}
             public __Parser(string input, bool track)
             {
@@ -343,6 +345,44 @@ namespace {{@namespace}}
                 }
 
                 return true;
+            }
+
+            // Matched text that repeats, like identifiers, shares one string. Longer matches rarely repeat, so they skip the lookup.
+            // The table is direct-mapped by hash: a collision overwrites the slot. It has a slot per 16 characters of input, at most 512,
+            // so it costs little on small inputs.
+            private string Intern(int start, int length)
+            {
+                if (length > 32)
+                {
+                    return input.Substring(start, length);
+                }
+
+                var hash = length;
+                for (var i = start; i < start + length; i++)
+                {
+                    hash = unchecked((hash * 31) + input[i]);
+                }
+
+                var table = interned ??= CreateInternTable();
+                var slot = hash & (table.Length - 1);
+                var known = table[slot];
+                if (known != null && known.Length == length && string.CompareOrdinal(input, start, known, 0, length) == 0)
+                {
+                    return known;
+                }
+
+                return table[slot] = input.Substring(start, length);
+            }
+
+            private string?[] CreateInternTable()
+            {
+                var size = 16;
+                while (size < 512 && size * 16 < input.Length)
+                {
+                    size *= 2;
+                }
+
+                return new string?[size];
             }
 
             [global::System.Runtime.CompilerServices.MethodImpl(global::System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]

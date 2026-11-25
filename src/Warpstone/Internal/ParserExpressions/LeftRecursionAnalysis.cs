@@ -58,6 +58,7 @@ namespace Warpstone.Internal.ParserExpressions
                 else
                 {
                     info.Leaders.Add(leader);
+                    info.Components[leader] = set;
                 }
             }
 
@@ -113,6 +114,60 @@ namespace Warpstone.Internal.ParserExpressions
         }
 
         /// <summary>
+        /// Counts the alternatives a leader's growth rounds after the first can skip, such as <c>operand</c> in <c>e := e op operand | operand</c>.
+        /// The leader must be a choice whose first alternatives start with the leader itself, through a chain of sequences and maps,
+        /// and whose other alternatives are outside its left-recursive cycle. The first ones fail without a seed,
+        /// so the first round's result comes from the others, and those give the same result in every round.
+        /// </summary>
+        /// <param name="leader">The leader of a left-recursive cycle.</param>
+        /// <param name="component">The parsers of the leader's left-recursive cycles.</param>
+        /// <param name="lazyTargets">The targets of the lazy parsers.</param>
+        /// <returns>The number of leading alternatives that start with the leader, or 0 if the leader doesn't have this shape.</returns>
+        public static int CountLeftRecursiveAlternatives(IParser leader, ISet<IParser> component, IReadOnlyDictionary<ILazyParser, IParser> lazyTargets)
+        {
+            if (!IsInstanceOf(leader, typeof(OrParser<>)))
+            {
+                return 0;
+            }
+
+            var alternatives = new List<IParser>();
+            leader.AnalyzeLeftEdge(_ => false, alternatives);
+            var count = 0;
+            while (count < alternatives.Count && StartsWith(alternatives[count], leader, lazyTargets))
+            {
+                count++;
+            }
+
+            return count < alternatives.Count && alternatives.Skip(count).All(x => !component.Contains(Resolve(x, lazyTargets)))
+                ? count
+                : 0;
+        }
+
+        private static bool StartsWith(IParser parser, IParser leader, IReadOnlyDictionary<ILazyParser, IParser> lazyTargets)
+        {
+            var seen = new HashSet<IParser>();
+            var child = new List<IParser>();
+            parser = Resolve(parser, lazyTargets);
+            while (!ReferenceEquals(parser, leader))
+            {
+                if (!seen.Add(parser) || !Array.Exists(SpineKinds, kind => IsInstanceOf(parser, kind)))
+                {
+                    return false;
+                }
+
+                // Without nullable parsers, a sequence's left edge is its first part and a map's is its input.
+                child.Clear();
+                parser.AnalyzeLeftEdge(_ => false, child);
+                parser = Resolve(child[0], lazyTargets);
+            }
+
+            return true;
+        }
+
+        private static IParser Resolve(IParser parser, IReadOnlyDictionary<ILazyParser, IParser> lazyTargets)
+            => parser is ILazyParser lazy ? lazyTargets[lazy] : parser;
+
+        /// <summary>
         /// Checks whether the given parser is an explicit <see cref="GrowParser{T}"/>.
         /// </summary>
         /// <param name="parser">The parser to check.</param>
@@ -146,6 +201,8 @@ namespace Warpstone.Internal.ParserExpressions
         private const int MaxCheapParsers = 8;
 
         private static readonly Type[] CheapGenericKinds = [typeof(AndParser<,>), typeof(SequenceParser<,,>), typeof(MapParser<,>), typeof(ExpectedParser<>)];
+
+        private static readonly Type[] SpineKinds = [typeof(SequenceParser<,,>), typeof(AndParser<,>), typeof(MapParser<,>)];
 
         private static bool IsCheapKind(IParser parser)
             => parser is StringParser or CharacterParser or RegexParser or WhitespacesParser or OptionalWhitespacesParser or EndParser
@@ -292,6 +349,11 @@ namespace Warpstone.Internal.ParserExpressions
         /// The parsers that grow their seed, one per left-recursive component.
         /// </summary>
         public HashSet<IParser> Leaders { get; } = new();
+
+        /// <summary>
+        /// The parsers of each leader's strongly connected component of left edges.
+        /// </summary>
+        public Dictionary<IParser, HashSet<IParser>> Components { get; } = new();
 
         /// <summary>
         /// All parsers that are part of a left-recursive cycle. None of them may be memoized.

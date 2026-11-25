@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Warpstone.Internal;
 using Warpstone.Internal.ParserExpressions;
 
 namespace Warpstone.Internal.ParserImplementations
@@ -18,6 +19,7 @@ namespace Warpstone.Internal.ParserImplementations
         private Func<TAccumulator> createSeed = default!;
         private Func<TAccumulator, TSource, TAccumulator> accumulate = default!;
         private FirstContinuation firstContinuation = default!;
+        private bool collectsList;
 
         /// <inheritdoc />
         // A repetition fails with its first element, unless it may match nothing.
@@ -34,13 +36,23 @@ namespace Warpstone.Internal.ParserImplementations
             createSeed = parser.CreateSeed;
             accumulate = parser.Accumulate;
             firstContinuation = new(this);
+            collectsList = parser.CollectsList;
         }
+
+        /// <summary>
+        /// Gets the scratch stack to collect the elements on, or <see langword="null"/> to use the accumulation function.
+        /// </summary>
+        private ScratchStacks.Stack<TSource>? FindStack(IParseContext context)
+            => collectsList && context is ScratchStacks.IOwner owner ? owner.Scratch.Get<TSource>() : null;
 
         /// <inheritdoc />
 #pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
         public override UnsafeParseResult Apply(IRecursiveParseContext context, int position)
 #pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
         {
+            // Most repetitions match nothing, so the stack is only looked up for the first element.
+            ScratchStacks.Stack<TSource>? stack = null;
+            var start = 0;
             var acc = createSeed();
             var min = minCount;
             var max = maxCount;
@@ -69,6 +81,11 @@ namespace Warpstone.Internal.ParserImplementations
                             }
                             else
                             {
+                                if (stack is not null)
+                                {
+                                    stack.Truncate(start);
+                                }
+
                                 return delimiterResult;
                             }
                         }
@@ -87,19 +104,38 @@ namespace Warpstone.Internal.ParserImplementations
                     }
                     else
                     {
+                        if (stack is not null)
+                        {
+                            stack.Truncate(start);
+                        }
+
                         return result;
                     }
                 }
 
                 nextPos = result.NextPosition;
-                acc = accumulate(acc, (TSource)result.Value!);
+                if (stack is null && collectsList)
+                {
+                    stack = FindStack(context);
+                    start = stack?.Count ?? 0;
+                }
+
+                if (stack is null)
+                {
+                    acc = accumulate(acc, (TSource)result.Value!);
+                }
+                else
+                {
+                    stack.Push((TSource)result.Value!);
+                }
+
                 length = result.NextPosition - position;
 
                 min--;
                 max--;
             }
 
-            return new(position, length, acc);
+            return new(position, length, stack is null ? acc : (object)stack.PopFrom(start));
         }
 
         /// <inheritdoc />
@@ -132,7 +168,7 @@ namespace Warpstone.Internal.ParserImplementations
             {
                 if (context.ResultStack.Peek().Success)
                 {
-                    new Continuation(parser, position, parser.createSeed()).Apply(context, position);
+                    new Continuation(parser, position, parser.FindStack(context)).Apply(context, position);
                 }
                 else if (parser.minCount <= 0)
                 {
@@ -150,17 +186,21 @@ namespace Warpstone.Internal.ParserImplementations
         {
             private readonly AggregateParserImpl<TSource, TAccumulator> parser;
             private readonly int startPosition;
+            private readonly ScratchStacks.Stack<TSource>? stack;
+            private readonly int stackStart;
             private TAccumulator accumulator;
             private int length;
             private int minCount;
             private int maxCount;
             private bool afterDelimiter;
 
-            public Continuation(AggregateParserImpl<TSource, TAccumulator> parser, int startPosition, TAccumulator accumulator)
+            public Continuation(AggregateParserImpl<TSource, TAccumulator> parser, int startPosition, ScratchStacks.Stack<TSource>? stack)
             {
                 this.parser = parser;
                 this.startPosition = startPosition;
-                this.accumulator = accumulator;
+                this.stack = stack;
+                stackStart = stack?.Count ?? 0;
+                accumulator = stack is null ? parser.createSeed() : default!;
                 minCount = parser.minCount;
                 maxCount = parser.maxCount;
             }
@@ -171,7 +211,20 @@ namespace Warpstone.Internal.ParserImplementations
 
                 if (!result.Success)
                 {
-                    context.ResultStack.Push(minCount <= 0 ? new(startPosition, length, accumulator) : result);
+                    if (minCount <= 0)
+                    {
+                        context.ResultStack.Push(Complete());
+                    }
+                    else
+                    {
+                        if (stack is not null)
+                        {
+                            stack.Truncate(stackStart);
+                        }
+
+                        context.ResultStack.Push(result);
+                    }
+
                     return;
                 }
 
@@ -185,14 +238,22 @@ namespace Warpstone.Internal.ParserImplementations
                     return;
                 }
 
-                accumulator = parser.accumulate(accumulator, (TSource)result.Value!);
+                if (stack is null)
+                {
+                    accumulator = parser.accumulate(accumulator, (TSource)result.Value!);
+                }
+                else
+                {
+                    stack.Push((TSource)result.Value!);
+                }
+
                 length = nextPos - startPosition;
                 minCount--;
                 maxCount--;
 
                 if (maxCount <= 0)
                 {
-                    context.ResultStack.Push(new(startPosition, length, accumulator));
+                    context.ResultStack.Push(Complete());
                     return;
                 }
 
@@ -207,6 +268,9 @@ namespace Warpstone.Internal.ParserImplementations
                     context.ExecutionStack.Push((nextPos, parser.element));
                 }
             }
+
+            private UnsafeParseResult Complete()
+                => new(startPosition, length, stack is null ? accumulator : (object)stack.PopFrom(stackStart));
         }
     }
 }

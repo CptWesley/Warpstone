@@ -821,7 +821,8 @@ namespace Warpstone
                 static () => Array.Empty<TSource>(),
                 AddToList,
                 static (emitter, _) => $"(global::System.Collections.Generic.IReadOnlyList<{emitter.TypeName(typeof(TSource))}>)global::System.Array.Empty<{emitter.TypeName(typeof(TSource))}>()",
-                Code.Of("AddToList({0}, {1})"));
+                Code.Of("AddToList({0}, {1})"),
+                collectsList: true);
 
         /// <summary>
         /// Creates a parser applying the given parser multiple times and collects all results.
