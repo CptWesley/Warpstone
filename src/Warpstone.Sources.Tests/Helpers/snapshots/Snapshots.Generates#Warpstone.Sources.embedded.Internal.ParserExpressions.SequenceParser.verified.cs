@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -21,7 +22,8 @@ namespace Warpstone.Internal.ParserExpressions
         /// <typeparam name="TOut">The transformed result type.</typeparam>
         /// <param name="map">The transformation.</param>
         /// <returns>The new parser.</returns>
-        public IParser<TOut> Map<TOut>(Func<T, TOut> map);
+        /// <param name="mapCode">The source of <paramref name="map"/>, or <see langword="null"/> if it is unknown.</param>
+        public IParser<TOut> Map<TOut>(Func<T, TOut> map, CodeTemplate? mapCode);
     }
 
     /// <summary>
@@ -39,11 +41,13 @@ namespace Warpstone.Internal.ParserExpressions
         /// <param name="first">The first parser.</param>
         /// <param name="second">The second parser.</param>
         /// <param name="combine">Combines the results of both parsers.</param>
-        public SequenceParser(IParser<TFirst> first, IParser<TSecond> second, Func<TFirst, TSecond, TResult> combine)
+        /// <param name="combineCode">The source of <paramref name="combine"/>, or <see langword="null"/> if it is unknown.</param>
+        public SequenceParser(IParser<TFirst> first, IParser<TSecond> second, Func<TFirst, TSecond, TResult> combine, CodeTemplate? combineCode)
         {
             First = first;
             Second = second;
             Combine = combine;
+            CombineCode = combineCode;
         }
 
         /// <summary>
@@ -61,16 +65,35 @@ namespace Warpstone.Internal.ParserExpressions
         /// </summary>
         public Func<TFirst, TSecond, TResult> Combine { get; }
 
+        /// <summary>
+        /// Gets the source of <see cref="Combine"/>, or <see langword="null"/> if it is unknown.
+        /// </summary>
+        public CodeTemplate? CombineCode { get; }
+
         /// <inheritdoc />
-        public IParser<TOut> Map<TOut>(Func<TResult, TOut> map)
+        public IParser<TOut> Map<TOut>(Func<TResult, TOut> map, CodeTemplate? mapCode)
         {
             var combine = Combine;
-            return new SequenceParser<TFirst, TSecond, TOut>(First, Second, (first, second) => map(combine(first, second)));
+            return new SequenceParser<TFirst, TSecond, TOut>(First, Second, (first, second) => map(combine(first, second)), Code.Compose(mapCode, CombineCode));
         }
 
         /// <inheritdoc />
         public override IParserImplementation<TResult> CreateUninitializedImplementation()
             => new SequenceParserImpl<TFirst, TSecond, TResult>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            var combine = emitter.Analyze(CombineCode, "transformation", 2);
+            var written = emitter.Writes(combine);
+            var first = emitter.Invoke(First, "pos", "var end1", written && combine.Uses[0] ? "var value1" : null);
+            var second = emitter.Invoke(Second, "end1", "end", written && combine.Uses[1] ? "var value2" : null);
+            emitter.Open($"if (!{first} || !{second})");
+            emitter.Fail();
+            emitter.Close();
+            emitter.AssignValue(CombineCode, "transformation", "value1", "value2");
+            emitter.Line("return true;");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

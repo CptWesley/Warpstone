@@ -5,7 +5,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -32,6 +34,115 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
             => new OrParserImpl<T>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            var value = emitter.ValueNeeded ? "value" : null;
+            EmitFirstCharPlans(emitter, value);
+
+            for (var i = 0; i < Alternatives.Count - 1; i++)
+            {
+                emitter.Open($"if ({emitter.Invoke(Alternatives[i], "pos", "end", value)})");
+                emitter.Line("return true;");
+                emitter.Close();
+            }
+
+            // Every alternative reports its own failures, so a failing last alternative's result is the result.
+            emitter.Line($"return {emitter.Invoke(Alternatives[Alternatives.Count - 1], "pos", "end", value)};");
+        }
+
+        /// <summary>
+        /// Writes a switch on the next character that skips the alternatives that can't start with it, like <see cref="OrParserImpl{T}"/> does.
+        /// A skipped alternative still reports what it expected, so the errors stay the same.
+        /// </summary>
+#pragma warning disable S3776 // Cognitive Complexity of methods should not be too high
+        private void EmitFirstCharPlans(SourceEmitter emitter, string? value)
+#pragma warning restore S3776 // Cognitive Complexity of methods should not be too high
+        {
+            var firsts = Alternatives.Select(emitter.FirstCharsOf).ToArray();
+            if (firsts.All(first => first is null))
+            {
+                return;
+            }
+
+            var plans = new List<bool[]>();
+            var table = new byte[FirstChars.Count + 1];
+            for (var c = 0; c <= FirstChars.Count; c++)
+            {
+                var run = firsts.Select(first => first is null || (c < FirstChars.Count && first.Chars[c])).ToArray();
+                if (run.All(static r => r))
+                {
+                    continue;
+                }
+
+                var index = plans.FindIndex(plan => plan.SequenceEqual(run));
+                if (index < 0)
+                {
+                    plans.Add(run);
+                    index = plans.Count - 1;
+                }
+
+                table[c] = (byte)Math.Min(index + 1, byte.MaxValue);
+            }
+
+            if (plans.Count is 0 or >= byte.MaxValue)
+            {
+                return;
+            }
+
+            var lookup = emitter.Static("byte[]", $"new byte[] {{ {string.Join(", ", table)} }}");
+            emitter.Open($"switch ({lookup}[pos < input.Length && input[pos] < {FirstChars.Count} ? input[pos] : {FirstChars.Count}])");
+            for (var p = 0; p < plans.Count; p++)
+            {
+                var run = plans[p];
+                var lastRun = Array.LastIndexOf(run, true);
+                var reports = new List<string>();
+                emitter.Open($"case {p + 1}:");
+                for (var i = 0; i < run.Length; i++)
+                {
+                    if (!run[i])
+                    {
+                        reports.AddRange(firsts[i]!.Reports.Select(report => report.Expected));
+                        continue;
+                    }
+
+                    EmitReports(emitter, reports);
+                    var call = emitter.Invoke(Alternatives[i], "pos", "end", value);
+                    var reportsAfter = run.Skip(i + 1).Select((r, j) => r ? 0 : firsts[i + 1 + j]!.Reports.Count).Sum();
+                    if (i == lastRun && reportsAfter == 0)
+                    {
+                        emitter.Line($"return {call};");
+                    }
+                    else
+                    {
+                        emitter.Open($"if ({call})");
+                        emitter.Line("return true;");
+                        emitter.Close();
+                    }
+                }
+
+                if (lastRun < 0 || reports.Count > 0)
+                {
+                    EmitReports(emitter, reports);
+                    emitter.Fail();
+                }
+
+                emitter.Close();
+            }
+
+            emitter.Close();
+        }
+
+        private static void EmitReports(SourceEmitter emitter, List<string> reports)
+        {
+            foreach (var expected in reports.Distinct(StringComparer.Ordinal))
+            {
+                emitter.Line($"Expect(pos, {emitter.Literal(expected)});");
+            }
+
+            reports.Clear();
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

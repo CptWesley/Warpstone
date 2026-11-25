@@ -17,6 +17,11 @@ namespace Warpstone.Internal.ParserImplementations
         // Built on first use, when every alternative is initialized. Benign race: two threads build equal tables.
         private PlanTable? planTable;
 
+        /// <summary>
+        /// Gets the alternatives, in order. Only valid once this implementation is initialized.
+        /// </summary>
+        internal IParserImplementation<T>[] Alternatives => alternatives;
+
         /// <inheritdoc />
         protected override void InitializeInternal(OrParser<T> parser, IReadOnlyDictionary<IParser, IParserImplementation> parserLookup)
         {

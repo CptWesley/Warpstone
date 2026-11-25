@@ -48,7 +48,7 @@ Warpstone's implementation draws on the following work:
 | Monadic bind (context-sensitive parsing)       | ❌ | ✅ | 🟡<sup>5</sup> | ✅ | 🟡<sup>6</sup> | ✅ | ❌ |
 | Non-`char` token input                         | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ | 🟡<sup>7</sup> |
 | Streaming input (`TextReader`/`Stream`)        | ❌ | ❌ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Compiled / source-generated parsers            | ❌ | ❌ | ❌ | ❌ | ✅ | ❌ | ✅ |
+| Compiled / source-generated parsers            | ❌ | ❌ | 🟡<sup>8</sup> | ❌ | ✅ | ❌ | ✅ |
 | Source-only package (no assembly dependency)   | ❌ | ❌ | ✅ | ❌ | ❌ | ❌ | ❌ |
 
 1. Farkle is an LALR(1) parser generator, not a PEG/combinator library. It needs no memoization or backtracking and reports grammar conflicts when the grammar is built.
@@ -58,6 +58,7 @@ Warpstone's implementation draws on the following work:
 5. Via `Bind`. Left recursion through the selected parser is not grown and fails with an `InfiniteRecursionError`; a selected parser that is not part of the grammar is prepared for parsing each time a new instance is returned.
 6. Via `Switch`.
 7. Custom tokenizers, input is still text.
+8. Via `GenerateSource`, which writes C# for a parser that doesn't depend on Warpstone. `Bind`, `AsResult` and transformations that capture variables are not supported, and the generated parser takes `string` input only and always runs recursively.
 
 Third-party columns reflect each library's documentation and package API at the time of writing (Pidgin 3.5, Parlot 2.3, ParsecSharp 5.2, Farkle 7).
 
@@ -69,29 +70,33 @@ Mean CPU time per parse:
 
 | Library                          | Small     | Medium    | Large      |
 |----------------------------------|----------:|----------:|-----------:|
-| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.1 μs | 92.7 μs | 1.00 ms |
-| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 10.4 μs | 124.3 μs | 1.37 ms |
-| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 17.1 μs | 208.1 μs | 2.12 ms |
-| Warpstone V3                     | 24.7 μs | 297.1 μs | 2.86 ms |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 40.6 μs | 524.0 μs | 5.29 ms |
-| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 101.2 μs | 1.27 ms | 13.52 ms |
-| Warpstone V1                     | 487.5 μs | 6.21 ms | 60.29 ms |
-| [ParsecSharp](https://github.com/acple/ParsecSharp) | 549.1 μs | 6.84 ms | 67.45 ms |
-| Warpstone V2                     | 3.39 ms | 79.51 ms | 805.98 ms |
+| Warpstone V3 (source-generated) | 5.8 μs | 65.1 μs | 655.4 μs |
+| [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 8.5 μs | 99.5 μs | 1.03 ms |
+| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 9.0 μs | 105.4 μs | 1.08 ms |
+| [Parlot](https://github.com/sebastienros/parlot) (runtime) | 11.4 μs | 130.9 μs | 1.33 ms |
+| [Farkle](https://github.com/teo-tsirpanis/Farkle) | 17.7 μs | 202.2 μs | 2.04 ms |
+| Warpstone V3 | 20.2 μs | 223.6 μs | 2.26 ms |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 30.7 μs | 360.1 μs | 3.63 ms |
+| [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 107.4 μs | 1.35 ms | 13.74 ms |
+| Warpstone V1 | 517.1 μs | 6.32 ms | 58.49 ms |
+| [ParsecSharp](https://github.com/acple/ParsecSharp) | 583.2 μs | 7.15 ms | 70.06 ms |
+| Warpstone V2 | 3.50 ms | 93.92 ms | 797.75 ms |
 
 Memory allocated per parse:
 
 | Library                          | Small     | Medium    | Large      |
 |----------------------------------|----------:|----------:|-----------:|
+| Warpstone V3 (source-generated) | 8.4 KB | 65.0 KB | 576 KB |
 | [Farkle](https://github.com/teo-tsirpanis/Farkle) | 6.5 KB | 65.0 KB | 650 KB |
 | [Parlot](https://github.com/sebastienros/parlot) (source-generated) | 6.5 KB | 67.5 KB | 673 KB |
 | [Parlot](https://github.com/sebastienros/parlot) (runtime) | 6.6 KB | 67.5 KB | 673 KB |
-| Warpstone V3                     | 14.7 KB | 93.9 KB | 866 KB |
-| Warpstone V3 (left-recursive)<sup>7</sup> | 22.1 KB | 179.2 KB | 1,696 KB |
+| Warpstone V3 | 14.0 KB | 78.7 KB | 704 KB |
+| Warpstone V3 (left-recursive)<sup>7</sup> | 21.7 KB | 169.3 KB | 1,591 KB |
+| Warpstone V3 (source-generated, left-recursive)<sup>7</sup> | 18.6 KB | 173.2 KB | 1,655 KB |
 | [Pidgin](https://github.com/benjamin-hodgson/Pidgin) | 21.8 KB | 252.0 KB | 2,523 KB |
-| Warpstone V1                     | 1,578 KB | 19,116 KB | 191,131 KB |
+| Warpstone V1 | 1,578 KB | 19,116 KB | 191,131 KB |
 | [ParsecSharp](https://github.com/acple/ParsecSharp) | 1,956 KB | 24,179 KB | 242,814 KB |
-| Warpstone V2                     | 9,069 KB | 109,981 KB | 1,104,776 KB |
+| Warpstone V2 | 9,069 KB | 109,981 KB | 1,104,777 KB |
 
 7. Binary operators written as left-recursive rules instead of repetitions.
 
@@ -192,3 +197,32 @@ Output:
 Error at Index 4 Line 1 Column 5
 Expected number or '(' but found '*'
 ```
+
+### Generating a parser's source
+`GenerateSource` writes the C# source of a parser that runs without Warpstone, and runs about three times as fast (see [Performance](#performance)). Generate the file once, for example from a test or a small tool, and add it to your project:
+
+```cs
+File.WriteAllText("CalculatorParser.g.cs", Calculator.Expression.GenerateSource("MyApp", "CalculatorParser"));
+```
+
+The file declares `static partial class CalculatorParser` with `Parse(string)`, `TryParse(string, out int)` and `TryParse(string, out int, out ParseError?)`:
+
+```cs
+Console.WriteLine(CalculatorParser.Parse("1 + 2 * 3")); // 7
+```
+
+Regenerate the file whenever the grammar changes. Some limits:
+- The source of every transformation is copied from the `Transform` or `Aggregate` call that created it, so a transformation can only use its parameters and static members. A lambda that captures a variable is rejected. The file imports `System`, `System.Collections.Generic` and `System.Linq`. Pass other namespaces, or aliases such as `"G = MyApp.Grammar"`, as extra arguments.
+- `Bind`, the `Then`, `ThenAdd` and `ThenSkip` overloads that take a function, `AsResult`, and `Create` with a value that has no C# literal are not supported.
+- The generated parser always runs recursively, so very deep input throws an `InsufficientExecutionStackException`. A failed parse reports the furthest position and what was expected there. By default it finds that by parsing the failing input a second time (see below). Pass `ParseOptions` to `GenerateSource` to change that, or to turn off automatic memoization or growing.
+
+### Errors of a failed parse
+Keeping track of why a parse fails costs time, and a parse that succeeds never needs it. So by default (`FailureTracking.OnFailure`) Warpstone parses without tracking failures, and parses failing input a second time, now tracking them, to report its errors. Parsing is deterministic, so both parses fail the same way and the errors are the same, but transformations run twice for failing input. On MiniJava this makes a successful interpreted parse about 20% faster, and a generated one about twice as fast.
+
+To parse failing input only once, track failures all the time:
+
+```cs
+var result = Calculator.Expression.TryParse("1 + * 2", ParseOptions.Default with { FailureTracking = FailureTracking.Always });
+```
+
+Grammars that use `AsResult` or `Bind` always track failures, because `AsResult` needs the errors of a parser in the middle of a parse.

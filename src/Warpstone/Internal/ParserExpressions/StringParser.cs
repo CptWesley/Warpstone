@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -43,6 +44,31 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<string> CreateUninitializedImplementation()
             => new StringParserImpl(String, Culture, Options);
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            emitter.Inline();
+            var literal = emitter.Literal(String);
+            if (Options == CompareOptions.Ordinal)
+            {
+                emitter.Open($"if (input.Length - pos >= {String.Length} && string.CompareOrdinal(input, pos, {literal}, 0, {String.Length}) == 0)");
+                emitter.Value(literal);
+            }
+            else
+            {
+                var culture = Culture.Equals(CultureInfo.InvariantCulture)
+                    ? "global::System.Globalization.CultureInfo.InvariantCulture"
+                    : emitter.Static("global::System.Globalization.CultureInfo", $"global::System.Globalization.CultureInfo.GetCultureInfo({emitter.Literal(Culture.Name)})");
+                emitter.Open($"if (input.Length - pos >= {String.Length} && string.Compare(input, pos, {literal}, 0, {String.Length}, {culture}, (global::System.Globalization.CompareOptions){(int)Options}) == 0)");
+                emitter.Value($"input.Substring(pos, {String.Length})");
+            }
+
+            emitter.Line($"end = pos + {String.Length};");
+            emitter.Line("return true;");
+            emitter.Close();
+            emitter.Fail(@$"""{String}""");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

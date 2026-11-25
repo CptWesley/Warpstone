@@ -83,7 +83,10 @@ Shared MSBuild settings are split into `src/*.props`, which each project imports
    - wraps recursive nodes in `GrowParser` (the left-recursion "seed growing" approach, when `EnableAutomaticGrowingRecursion` is on, which is the default),
    - wires up all implementations through a lookup dictionary in `Initialize`.
 
-Adding a combinator therefore means adding an expression class, an `Impl` class, a factory method in `Parsers` or `ParserExtensions`, and support for both execution modes in the impl.
+   The memo/grow/stack-guard decisions live in `ParserPlan`, which both `GetImplementation` and source generation follow.
+3. **Source generation** (`Internal/SourceGeneration`): `ParserExtensions.GenerateSource` writes a Warpstone-free C# parser. Every expression implements `EmitSource`, which writes the body of `bool P{n}(int pos, out int end, out T value)` through `SourceEmitter`. Delegates can't be printed, so `Transform`/`Aggregate` capture their lambda text with `[CallerArgumentExpression]` and expressions carry it as a `CodeTemplate` (library combiners pass hand-written templates). Tests in `Warpstone.Tests/SourceGeneration` compile the output with Roslyn and compare it with the interpreter.
+
+Adding a combinator therefore means adding an expression class (with `EmitSource`), an `Impl` class, a factory method in `Parsers` or `ParserExtensions`, and support for both execution modes in the impl. A factory taking a delegate also needs its `CodeTemplate`, or generated parsers can't use it.
 
 ### Execution modes
 
@@ -91,7 +94,7 @@ Every implementation provides two `Apply` overloads:
 - `Apply(IRecursiveParseContext, int)`: direct recursive calls that return an `UnsafeParseResult`. This mode is fast but limited by stack depth.
 - `Apply(IIterativeParseContext, int)`: pushes work and continuations onto an explicit stack (`ContinuationParserImplementationBase` subclasses), so deep inputs don't overflow the stack.
 
-`ParseContext.Create` picks `IterativeParseContext` or `RecursiveParseContext` according to `ParseOptions.ExecutionMode`. In `Auto` mode it chooses iterative when the grammar is recursive or nested more than 256 deep. Tests usually run as `[TestCaseSource]` over all three modes (see `Warpstone.Tests/Parsers/MemoParser.cs`), and new parser tests should do the same.
+`ParseContext.Create` picks `IterativeParseContext` or `RecursiveParseContext` according to `ParseOptions.ExecutionMode`. Failures go to `IParseContext.Failures`; with the default `FailureTracking.OnFailure` that tracker is disabled and `UnsafeParseResult.AsSafe` parses a failed input again with `FailureTracking.Always` to build the errors (grammars with `AsResult` or `Bind` always track, see `FailureTracker.For`). Tests that count transformation calls on failing input must pick a mode. In `Auto` mode it chooses iterative when the grammar is recursive or nested more than 256 deep. Tests usually run as `[TestCaseSource]` over all three modes (see `Warpstone.Tests/Parsers/MemoParser.cs`), and new parser tests should do the same.
 
 Value-type results are boxed. That is why some impls have Ref and Boxed variants, for example `AndRefRefParserImpl` and `MapBoxedParserImpl`, chosen at runtime by `CreateUninitializedImplementation`.
 

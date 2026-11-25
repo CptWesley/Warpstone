@@ -6,4 +6,8 @@
     <ProjectReference Include="../Warpstone/Warpstone.csproj" />
   </ItemGroup>
 
+  <ItemGroup Label="Compiles generated parsers">
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+  </ItemGroup>
+
 </Project>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -65,6 +66,61 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<string> CreateUninitializedImplementation()
             => impl.Value;
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            var expected = System.Text.RegularExpressions.Regex.Escape(Pattern);
+            var options = Options | RegexOptions.ExplicitCapture;
+
+            // A simple pattern becomes a scanning loop, which needs no regex engine at all.
+            if (SimpleRegex.TryEmit(Pattern, options, emitter, out var scanner, out var text))
+            {
+                emitter.Inline();
+                emitter.Line($"var stop = {scanner}(input, pos);");
+                emitter.Open("if (stop >= 0)");
+                emitter.Line("end = stop;");
+
+                // A pattern like a keyword always matches the same text, which needs no new string.
+                emitter.Value(text is null ? "Intern(pos, stop - pos)" : emitter.Literal(text));
+                emitter.Line("return true;");
+                emitter.Close();
+                emitter.Fail(expected);
+                return;
+            }
+
+            // Every match starts with the literal prefix, which is cheaper to compare than to run the regex.
+            var prefix = RegexParserImpl.FindLiteralPrefix(Pattern, Options);
+            if (prefix.Length > 0)
+            {
+                emitter.Open($"if (input.Length - pos < {prefix.Length} || string.CompareOrdinal(input, pos, {emitter.Literal(prefix)}, 0, {prefix.Length}) != 0)");
+                emitter.Fail(expected);
+                emitter.Close();
+            }
+
+            var timeout = Timeout == TimeSpan.Zero || Timeout == TimeSpan.MaxValue ? string.Empty : $", global::System.TimeSpan.FromTicks({Timeout.Ticks}L)";
+            var regex = emitter.Static(
+                "global::System.Text.RegularExpressions.Regex",
+                $"new global::System.Text.RegularExpressions.Regex({emitter.Literal(@$"\G({Pattern})")}, (global::System.Text.RegularExpressions.RegexOptions){(int)options}{timeout})");
+            var match = emitter.Local("match");
+
+            // Matching without a value allocates nothing on .NET 7 and later.
+            emitter.Line("#if NET7_0_OR_GREATER");
+            emitter.Open($"foreach (var {match} in {regex}.EnumerateMatches(input, pos))");
+            emitter.Line($"end = pos + {match}.Length;");
+            emitter.Value($"Intern(pos, {match}.Length)");
+            emitter.Line("return true;");
+            emitter.Close();
+            emitter.Line("#else");
+            emitter.Line($"var {match} = {regex}.Match(input, pos);");
+            emitter.Open($"if ({match}.Success)");
+            emitter.Line($"end = pos + {match}.Length;");
+            emitter.Value($"Intern(pos, {match}.Length)");
+            emitter.Line("return true;");
+            emitter.Close();
+            emitter.Line("#endif");
+            emitter.Fail(expected);
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

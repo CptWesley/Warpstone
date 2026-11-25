@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -40,6 +41,10 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
             => throw new NotSupportedException("Lazy parsers should not occur in the parsers implementations constructed from the expressions.");
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+            => throw new NotSupportedException("Lazy parsers are resolved before the source is generated.");
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

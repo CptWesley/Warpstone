@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -36,6 +37,26 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
             => new MemoParserImpl<T>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            var table = emitter.MemoTable(Parser);
+            var entry = $"__Entry<{emitter.TypeName(typeof(T))}>";
+            emitter.Open($"if ({table}.TryGetValue(pos, out var hit))");
+            emitter.Open("if (hit.State == 1)");
+            emitter.Line("Error(pos, new global::System.InvalidOperationException(\"Infinite recursion at position \" + pos + \".\"));");
+            emitter.Fail();
+            emitter.Close();
+            emitter.Line("end = hit.End;");
+            emitter.Line("value = hit.Value;");
+            emitter.Line("return hit.State == 3;");
+            emitter.Close();
+            emitter.Line($"{table}[pos] = new {entry}(1, pos, default!);");
+            emitter.Line($"var success = {emitter.Call(Parser)}(pos, out end, out value);");
+            emitter.Line($"{table}[pos] = new {entry}((byte)(success ? 3 : 2), end, value);");
+            emitter.Line("return success;");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -27,6 +28,14 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<T> CreateUninitializedImplementation()
             => new PositiveLookaheadParserImpl<T>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            emitter.Line($"var success = {emitter.Invoke(Parser, "pos", "_", emitter.ValueNeeded ? "value" : null)};");
+            emitter.Line("end = pos;");
+            emitter.Line("return success;");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

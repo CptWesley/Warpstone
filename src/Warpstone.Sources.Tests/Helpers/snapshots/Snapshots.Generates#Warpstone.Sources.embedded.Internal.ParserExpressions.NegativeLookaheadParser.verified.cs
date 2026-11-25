@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -32,6 +33,21 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<T?> CreateUninitializedImplementation()
             => new NegativeLookaheadParserImpl<T>();
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            // The inner parser failing is what this parser wants, so those failures are not errors.
+            emitter.Line("suppressed++;");
+            emitter.Line($"var success = {emitter.Invoke(Parser, "pos", "_", null)};");
+            emitter.Line("suppressed--;");
+            emitter.Open("if (success)");
+            emitter.Fail("<not>");
+            emitter.Close();
+            emitter.Line("end = pos;");
+            emitter.Value("default!");
+            emitter.Line("return true;");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)

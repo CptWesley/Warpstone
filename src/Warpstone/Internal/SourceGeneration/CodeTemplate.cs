@@ -1,0 +1,68 @@
+using System;
+using System.Linq;
+
+namespace Warpstone.Internal.SourceGeneration
+{
+    /// <summary>
+    /// Writes the C# expression that computes what a delegate of a parser computes, for the generated source.
+    /// </summary>
+    /// <param name="emitter">The emitter writing the generated source.</param>
+    /// <param name="arguments">The arguments of the delegate: variables, or member accesses of variables, so a template may use them more than once.</param>
+    /// <returns>The C# expression.</returns>
+    internal delegate string CodeTemplate(SourceEmitter emitter, string[] arguments);
+
+    /// <summary>
+    /// Creates <see cref="CodeTemplate"/> instances.
+    /// </summary>
+    internal static class Code
+    {
+        /// <summary>
+        /// Creates a template from a composite format string, in which <c>{0}</c>, <c>{1}</c>, ... are the arguments.
+        /// </summary>
+        /// <param name="format">The format.</param>
+        /// <returns>The template.</returns>
+        public static CodeTemplate Of(string format)
+            => (_, arguments) => string.Format(System.Globalization.CultureInfo.InvariantCulture, format, arguments);
+
+        /// <summary>
+        /// Creates a template that invokes a user provided delegate, of which the source was captured at the call site.
+        /// </summary>
+        /// <param name="function">The delegate.</param>
+        /// <param name="source">The source of the delegate, or <see langword="null"/> if it is unknown.</param>
+        /// <returns>The template, or <see langword="null"/> if the source is unknown.</returns>
+        public static CodeTemplate? User(Delegate function, string? source)
+            => source is null
+            ? null
+            : (emitter, arguments) => $"{emitter.Function(function, source)}({string.Join(", ", arguments)})";
+
+        /// <summary>
+        /// Creates a template that passes the elements of its tuple argument as separate arguments to <paramref name="template"/>.
+        /// </summary>
+        /// <param name="template">The template taking the elements.</param>
+        /// <param name="count">The number of elements of the tuple.</param>
+        /// <returns>The template.</returns>
+        public static CodeTemplate? Spread(CodeTemplate? template, int count)
+            => template is null
+            ? null
+            : (emitter, arguments) => template(emitter, Enumerable.Range(1, count).Select(i => $"{arguments[0]}.Item{i}").ToArray());
+
+        /// <summary>
+        /// Creates a template that applies <paramref name="outer"/> to the result of <paramref name="inner"/>.
+        /// </summary>
+        /// <param name="outer">The template applied last.</param>
+        /// <param name="inner">The template applied first.</param>
+        /// <returns>The template.</returns>
+        public static CodeTemplate? Compose(CodeTemplate? outer, CodeTemplate? inner)
+            => outer is null || inner is null
+            ? null
+            : (emitter, arguments) => outer(emitter, [emitter.Temp(inner(emitter, arguments))]);
+
+        /// <summary>
+        /// Creates a template for the tuple built by <c>ThenAdd</c>: the elements of the first argument, followed by the second argument.
+        /// </summary>
+        /// <param name="count">The number of elements of the first argument.</param>
+        /// <returns>The template.</returns>
+        public static CodeTemplate AddToTuple(int count)
+            => (_, arguments) => $"({string.Join(", ", Enumerable.Range(1, count).Select(i => $"{arguments[0]}.Item{i}"))}, {arguments[1]})";
+    }
+}

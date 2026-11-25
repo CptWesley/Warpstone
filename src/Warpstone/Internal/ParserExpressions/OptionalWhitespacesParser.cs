@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Warpstone.Internal.ParserImplementations;
+using Warpstone.Internal.SourceGeneration;
 
 namespace Warpstone.Internal.ParserExpressions
 {
@@ -21,6 +22,18 @@ namespace Warpstone.Internal.ParserExpressions
         /// <inheritdoc />
         public override IParserImplementation<string> CreateUninitializedImplementation()
             => OptionalWhitespacesParserImpl.Instance;
+
+        /// <inheritdoc />
+        public override void EmitSource(SourceEmitter emitter)
+        {
+            emitter.Inline();
+            emitter.Line("end = pos;");
+            emitter.Open("while (end < input.Length && char.IsWhiteSpace(input[end]))");
+            emitter.Line("end++;");
+            emitter.Close();
+            emitter.Value("input.Substring(pos, end - pos)");
+            emitter.Line("return true;");
+        }
 
         /// <inheritdoc />
         protected override void PerformAnalysisStepInternal(IParserAnalysisInfo info, IReadOnlyList<IParser> trace)
